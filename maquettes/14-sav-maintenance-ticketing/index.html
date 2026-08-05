@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accueil SAV / Maintenance - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3' },
+                        error: { 500: '#f04438', 50: '#fef3f2' },
+                        warning: { 500: '#f79009', 50: '#fffaeb' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">SAV & Ticketing</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                    <span class="truncate">Accueil SAV</span>
+                </a>
+                <a href="ecr-14-01-registre-des-tickets-sav.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="ticket" class="w-5 h-5"></i>
+                    <span class="truncate">Registre des tickets</span>
+                </a>
+                <a href="ecr-14-04-suivi-d-intervention-sav-sur-ot.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="wrench" class="w-5 h-5"></i>
+                    <span class="truncate">Suivi d'intervention OT</span>
+                </a>
+                <a href="ecr-14-05-base-installee-et-garanties.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="server" class="w-5 h-5"></i>
+                    <span class="truncate">Base installée</span>
+                </a>
+                <a href="ecr-14-06-contrat-de-maintenance-et-sla.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                    <span class="truncate">Contrats & SLA</span>
+                </a>
+                <a href="ecr-14-07-portail-client-sav.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="globe" class="w-5 h-5"></i>
+                    <span class="truncate">Portail Client</span>
+                </a>
+            </nav>
+        </div>
+        <div class="p-4 border-t border-gray-200 dark:border-gray-800">
+            <div class="flex items-center gap-3">
+                <img src="https://ui-avatars.com/api/?name=Admin+Sys&background=465fff&color=fff" alt="Admin" class="w-8 h-8 rounded-full">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">Admin Sys</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate">admin@huberp.com</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+        <!-- Top Navigation -->
+        <header class="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 z-10">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <div class="flex flex-col">
+                    <div class="text-xs text-gray-500 dark:text-gray-400 font-medium">Module 14 • SAV / Maintenance / Ticketing</div>
+                    <h1 class="text-xl font-bold text-gray-900 dark:text-white">Accueil du module</h1>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <button class="p-2 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 relative">
+                    <i data-lucide="bell" class="w-5 h-5"></i>
+                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-error-500 rounded-full border-2 border-white dark:border-gray-900"></span>
+                </button>
+                <button onclick="document.documentElement.classList.toggle('dark')" class="p-2 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+                    <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+                    <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Content scrollable -->
+        <div class="flex-1 overflow-y-auto p-6">
+            <div class="max-w-5xl mx-auto space-y-6">
+                <!-- Welcome Section -->
+                <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 shadow-sm">
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Module 14 : SAV, Maintenance & Ticketing</h2>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">Ce module permet la gestion des incidents (tickets), le suivi des interventions de maintenance (SAV, OT), ainsi que l'administration de la base installée, des contrats et des SLA.</p>
+                    <div class="flex flex-wrap gap-3">
+                        <a href="ecr-14-02-formulaire-de-ticket-sav.html" class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-accent-600 text-white rounded-lg text-sm font-medium hover:bg-accent-700 transition-colors">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            Nouveau Ticket
+                        </a>
+                        <a href="ecr-14-01-registre-des-tickets-sav.html" class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            <i data-lucide="list" class="w-4 h-4"></i>
+                            Voir les tickets ouverts
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Sitemap / Index des écrans -->
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mt-8 mb-4">Index des maquettes du module</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    
+                    <a href="ecr-14-01-registre-des-tickets-sav.html" class="flex flex-col p-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl hover:border-accent-500 dark:hover:border-accent-500 transition-colors group">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="p-2 bg-accent-50 dark:bg-accent-900/30 text-accent-600 dark:text-accent-500 rounded-lg">
+                                <i data-lucide="list" class="w-5 h-5"></i>
+                            </div>
+                            <h4 class="font-medium text-gray-900 dark:text-white group-hover:text-accent-600 dark:group-hover:text-accent-500 transition-colors">1. Registre des tickets SAV</h4>
+                        </div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 flex-1">Vue d'entrée pour suivre les tickets, priorités, SLA et statuts de résolution.</p>
+                        <div class="text-xs text-gray-400 mt-3">ecr-14-01-registre-des-tickets-sav.html</div>
+                    </a>
+
+                    <a href="ecr-14-02-formulaire-de-ticket-sav.html" class="flex flex-col p-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl hover:border-accent-500 dark:hover:border-accent-500 transition-colors group">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="p-2 bg-accent-50 dark:bg-accent-900/30 text-accent-600 dark:text-accent-500 rounded-lg">
+                                <i data-lucide="file-plus" class="w-5 h-5"></i>
+                            </div>
+                            <h4 class="font-medium text-gray-900 dark:text-white group-hover:text-accent-600 dark:group-hover:text-accent-500 transition-colors">2. Formulaire de ticket SAV</h4>
+                        </div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 flex-1">Création d'un ticket à partir du contexte client, site, équipement ou contrat.</p>
+                        <div class="text-xs text-gray-400 mt-3">ecr-14-02-formulaire-de-ticket-sav.html</div>
+                    </a>
+
+                    <a href="ecr-14-03-fiche-ticket-sav.html" class="flex flex-col p-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl hover:border-accent-500 dark:hover:border-accent-500 transition-colors group">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="p-2 bg-accent-50 dark:bg-accent-900/30 text-accent-600 dark:text-accent-500 rounded-lg">
+                                <i data-lucide="file-text" class="w-5 h-5"></i>
+                            </div>
+                            <h4 class="font-medium text-gray-900 dark:text-white group-hover:text-accent-600 dark:group-hover:text-accent-500 transition-colors">3. Fiche ticket SAV</h4>
+                        </div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 flex-1">Qualification, diagnostic, résolution, cause racine, SLA et décision de facturabilité.</p>
+                        <div class="text-xs text-gray-400 mt-3">ecr-14-03-fiche-ticket-sav.html</div>
+                    </a>
+
+                    <a href="ecr-14-04-suivi-d-intervention-sav-sur-ot.html" class="flex flex-col p-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl hover:border-accent-500 dark:hover:border-accent-500 transition-colors group">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="p-2 bg-accent-50 dark:bg-accent-900/30 text-accent-600 dark:text-accent-500 rounded-lg">
+                                <i data-lucide="wrench" class="w-5 h-5"></i>
+                            </div>
+                            <h4 class="font-medium text-gray-900 dark:text-white group-hover:text-accent-600 dark:group-hover:text-accent-500 transition-colors">4. Suivi d'intervention SAV sur OT</h4>
+                        </div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 flex-1">Prolonge le ticket dans un écran OT partagé avec l'exécution terrain.</p>
+                        <div class="text-xs text-gray-400 mt-3">ecr-14-04-suivi-d-intervention-sav-sur-ot.html</div>
+                    </a>
+
+                    <a href="ecr-14-05-base-installee-et-garanties.html" class="flex flex-col p-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl hover:border-accent-500 dark:hover:border-accent-500 transition-colors group">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="p-2 bg-accent-50 dark:bg-accent-900/30 text-accent-600 dark:text-accent-500 rounded-lg">
+                                <i data-lucide="server" class="w-5 h-5"></i>
+                            </div>
+                            <h4 class="font-medium text-gray-900 dark:text-white group-hover:text-accent-600 dark:group-hover:text-accent-500 transition-colors">5. Base installée et garanties</h4>
+                        </div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 flex-1">Gestion du parc installé, de la garantie et de la couverture par équipement ou site.</p>
+                        <div class="text-xs text-gray-400 mt-3">ecr-14-05-base-installee-et-garanties.html</div>
+                    </a>
+
+                    <a href="ecr-14-06-contrat-de-maintenance-et-sla.html" class="flex flex-col p-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl hover:border-accent-500 dark:hover:border-accent-500 transition-colors group">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="p-2 bg-accent-50 dark:bg-accent-900/30 text-accent-600 dark:text-accent-500 rounded-lg">
+                                <i data-lucide="shield-check" class="w-5 h-5"></i>
+                            </div>
+                            <h4 class="font-medium text-gray-900 dark:text-white group-hover:text-accent-600 dark:group-hover:text-accent-500 transition-colors">6. Contrat de maintenance et SLA</h4>
+                        </div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 flex-1">Création, activation et évolution du contrat de maintenance avec ses SLA.</p>
+                        <div class="text-xs text-gray-400 mt-3">ecr-14-06-contrat-de-maintenance-et-sla.html</div>
+                    </a>
+
+                    <a href="ecr-14-07-portail-client-sav.html" class="flex flex-col p-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl hover:border-accent-500 dark:hover:border-accent-500 transition-colors group">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="p-2 bg-accent-50 dark:bg-accent-900/30 text-accent-600 dark:text-accent-500 rounded-lg">
+                                <i data-lucide="globe" class="w-5 h-5"></i>
+                            </div>
+                            <h4 class="font-medium text-gray-900 dark:text-white group-hover:text-accent-600 dark:group-hover:text-accent-500 transition-colors">7. Portail client SAV</h4>
+                        </div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 flex-1">Déclaration et suivi externe des tickets par le client ou son représentant.</p>
+                        <div class="text-xs text-gray-400 mt-3">ecr-14-07-portail-client-sav.html</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

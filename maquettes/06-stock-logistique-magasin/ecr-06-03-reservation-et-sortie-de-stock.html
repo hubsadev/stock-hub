@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Réservation & Sortie de Stock - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3', 900: '#054f31' },
+                        error: { 500: '#f04438', 50: '#fef3f2', 900: '#7a271d' },
+                        warning: { 500: '#f79009', 50: '#fffaeb', 900: '#7a4504' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20 shrink-0">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Stock & Logistique</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="home" class="w-5 h-5"></i>
+                    <span class="truncate">Accueil Module</span>
+                </a>
+                <a href="ecr-06-01-centre-de-reception-fournisseur.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="inbox" class="w-5 h-5"></i>
+                    <span class="truncate">Centre de réception</span>
+                </a>
+                <a href="ecr-06-02-fiche-reception.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="file-check-2" class="w-5 h-5"></i>
+                    <span class="truncate">Fiche réception</span>
+                </a>
+                <a href="ecr-06-03-reservation-et-sortie-de-stock.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500">
+                    <i data-lucide="arrow-up-right-square" class="w-5 h-5"></i>
+                    <span class="truncate">Réservation & Sortie</span>
+                </a>
+                <a href="ecr-06-04-transfert-et-retour-de-stock.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="arrow-left-right" class="w-5 h-5"></i>
+                    <span class="truncate">Transfert & Retour</span>
+                </a>
+                <a href="ecr-06-05-vue-stock-par-emplacement.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="package-search" class="w-5 h-5"></i>
+                    <span class="truncate">Vue Stock (Emplacement)</span>
+                </a>
+                <a href="ecr-06-06-inventaire-de-stock.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="clipboard-list" class="w-5 h-5"></i>
+                    <span class="truncate">Inventaire de stock</span>
+                </a>
+                <a href="ecr-06-07-litige-et-retour-fournisseur.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+                    <span class="truncate">Litige & Retour Fourn.</span>
+                </a>
+                        </nav>
+            <div class="mt-8">
+                <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Autres modules</div>
+                <nav class="space-y-1">
+                    <a href="../01-referentiel/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="database" class="w-5 h-5"></i>
+                        <span class="truncate">Référentiel</span>
+                    </a>
+                    <a href="../03-contrats-affaires-projets/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="briefcase" class="w-5 h-5"></i>
+                        <span class="truncate">Contrats & Affaires</span>
+                    </a>
+                    <a href="../05-achats/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+                        <span class="truncate">Achats</span>
+                    </a>
+                    <a href="../07-execution-terrain-ordres-de-travail/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="wrench" class="w-5 h-5"></i>
+                        <span class="truncate">Exécution Terrain</span>
+                    </a>
+                    <a href="../14-sav-maintenance-ticketing/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="life-buoy" class="w-5 h-5"></i>
+                        <span class="truncate">SAV & Maintenance</span>
+                    </a>
+                    <a href="../15-planning-coordination-operationnelle/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="calendar" class="w-5 h-5"></i>
+                        <span class="truncate">Planning & Coord.</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col min-w-0 bg-gray-50 dark:bg-gray-950">
+        <!-- Header -->
+        <header class="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 shrink-0">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                    <a href="index.html" class="hover:text-gray-900 dark:hover:text-white transition-colors">Stock & Logistique</a>
+                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                    <span class="text-gray-900 dark:text-white font-medium">Réservation & Sortie</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <button onclick="document.documentElement.classList.toggle('dark')" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <i data-lucide="moon" class="w-5 h-5"></i>
+                </button>
+                <div class="w-8 h-8 rounded-full bg-accent-100 dark:bg-accent-900 flex items-center justify-center text-accent-600 dark:text-accent-500 font-bold text-sm">
+                    JD
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Scrollable Area -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="max-w-4xl mx-auto space-y-6">
+                <!-- Page Title -->
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Opération : Réservation / Sortie de Stock</h1>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Affectez du stock à une affaire, un projet, un chantier ou sortez du matériel pour un technicien.</p>
+                </div>
+
+                <!-- Form Panel -->
+                <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-theme-xs">
+                    
+                    <!-- Tabs -->
+                    <div class="flex border-b border-gray-200 dark:border-gray-800 px-6 pt-2 gap-6">
+                        <button class="pb-3 text-sm font-semibold text-accent-600 dark:text-accent-500 border-b-2 border-accent-600 dark:border-accent-500">
+                            Sortie immédiate
+                        </button>
+                        <button class="pb-3 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 border-b-2 border-transparent">
+                            Réservation planifiée
+                        </button>
+                    </div>
+
+                    <div class="p-6 space-y-8">
+                        <!-- Section 1: Entête Mouvement -->
+                        <div class="space-y-4">
+                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider">1. Destination du matériel</h3>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="space-y-1.5">
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Type de destination <span class="text-error-500">*</span></label>
+                                    <select class="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500">
+                                        <option value="projet">Chantier / Projet</option>
+                                        <option value="ot">Ordre de Travail (Intervention)</option>
+                                        <option value="sav">SAV</option>
+                                        <option value="tech">Véhicule Technicien</option>
+                                    </select>
+                                </div>
+                                <div class="space-y-1.5">
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Entité de destination <span class="text-error-500">*</span></label>
+                                    <div class="relative">
+                                        <input type="text" value="PRJ-2023-014 - Rénovation Électrique Alpha" class="w-full pl-3 pr-10 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500">
+                                        <i data-lucide="search" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+                                    </div>
+                                </div>
+                                <div class="space-y-1.5 md:col-span-2">
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Justificatif / Bon de retrait</label>
+                                    <input type="text" placeholder="N° Bon de sortie, Référence externe..." class="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 2: Articles -->
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider">2. Articles à sortir</h3>
+                                <button class="text-sm text-accent-600 dark:text-accent-500 font-medium hover:underline flex items-center gap-1">
+                                    <i data-lucide="scan-line" class="w-4 h-4"></i>
+                                    Scan rapide
+                                </button>
+                            </div>
+                            
+                            <div class="border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
+                                <table class="w-full text-left text-sm text-gray-600 dark:text-gray-400">
+                                    <thead class="bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white font-medium border-b border-gray-200 dark:border-gray-800">
+                                        <tr>
+                                            <th class="px-4 py-3">Article</th>
+                                            <th class="px-4 py-3 text-center">Magasin Source</th>
+                                            <th class="px-4 py-3 text-center">Dispo.</th>
+                                            <th class="px-4 py-3 text-center w-32">Qté Sortie</th>
+                                            <th class="px-4 py-3 w-10"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
+                                        <!-- Ligne 1 -->
+                                        <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/20">
+                                            <td class="px-4 py-3">
+                                                <div class="font-medium text-gray-900 dark:text-white">Câble Cuivre 25mm² - Touret 100m</div>
+                                                <div class="text-xs text-gray-500 mt-0.5">REF: CAB-CU-25-100 <span class="text-gray-300 mx-1">|</span> Lot: L23-09-A</div>
+                                            </td>
+                                            <td class="px-4 py-3 text-center">
+                                                <select class="px-2 py-1 bg-transparent border-none text-sm focus:outline-none text-gray-700 dark:text-gray-300">
+                                                    <option>Dépôt Central (A-12)</option>
+                                                    <option>Magasin Secondaire</option>
+                                                </select>
+                                            </td>
+                                            <td class="px-4 py-3 text-center font-medium text-success-600">45</td>
+                                            <td class="px-4 py-3">
+                                                <input type="number" value="5" class="w-full px-2 py-1.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-md text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500 text-center font-semibold">
+                                            </td>
+                                            <td class="px-4 py-3 text-right">
+                                                <button class="text-gray-400 hover:text-error-500 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                                            </td>
+                                        </tr>
+
+                                        <!-- Ligne 2 -->
+                                        <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/20">
+                                            <td class="px-4 py-3">
+                                                <div class="font-medium text-gray-900 dark:text-white">Disjoncteur Différentiel 30mA</div>
+                                                <div class="text-xs text-gray-500 mt-0.5">REF: DISJ-30MA-40A</div>
+                                            </td>
+                                            <td class="px-4 py-3 text-center">
+                                                <select class="px-2 py-1 bg-transparent border-none text-sm focus:outline-none text-gray-700 dark:text-gray-300">
+                                                    <option>Dépôt Central (B-04)</option>
+                                                </select>
+                                            </td>
+                                            <td class="px-4 py-3 text-center font-medium text-warning-600">8</td>
+                                            <td class="px-4 py-3">
+                                                <div class="relative">
+                                                    <input type="number" value="10" class="w-full px-2 py-1.5 bg-red-50 dark:bg-red-900/10 border border-error-300 dark:border-error-700 rounded-md text-sm text-error-700 dark:text-error-400 focus:outline-none focus:ring-2 focus:ring-error-500 text-center font-semibold">
+                                                    <i data-lucide="alert-circle" class="absolute -right-6 top-1/2 -translate-y-1/2 w-4 h-4 text-error-500" title="Quantité supérieure au disponible"></i>
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-3 text-right">
+                                                <button class="text-gray-400 hover:text-error-500 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                                            </td>
+                                        </tr>
+
+                                        <!-- Add Line -->
+                                        <tr>
+                                            <td colspan="5" class="px-4 py-3 bg-gray-50/50 dark:bg-gray-800/20 text-center border-t border-dashed border-gray-300 dark:border-gray-700">
+                                                <button class="inline-flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-theme-xs">
+                                                    <i data-lucide="plus" class="w-4 h-4"></i>
+                                                    Ajouter un article
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="bg-red-50 dark:bg-red-900/20 border border-error-200 dark:border-error-800 rounded-lg p-3 flex items-start gap-3">
+                                <i data-lucide="alert-triangle" class="w-5 h-5 text-error-500 mt-0.5 shrink-0"></i>
+                                <div>
+                                    <h4 class="text-sm font-medium text-error-800 dark:text-error-300">Attention, stock insuffisant</h4>
+                                    <p class="text-xs text-error-600 dark:text-error-400 mt-1">La quantité demandée pour "Disjoncteur Différentiel 30mA" dépasse le stock disponible. Une sortie partielle sera générée, et le reste sera mis en attente.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 3: Validation -->
+                        <div class="border-t border-gray-200 dark:border-gray-800 pt-6 flex justify-end gap-3">
+                            <button class="px-5 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-theme-xs">
+                                Annuler
+                            </button>
+                            <button class="px-5 py-2.5 bg-accent-600 text-white rounded-lg hover:bg-accent-500 transition-colors text-sm font-medium shadow-theme-xs flex items-center gap-2">
+                                <i data-lucide="check" class="w-4 h-4"></i>
+                                Enregistrer la sortie
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

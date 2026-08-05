@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facture & Rapprochement - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3', 900: '#054f31' },
+                        error: { 500: '#f04438', 50: '#fef3f2', 900: '#7a271d' },
+                        warning: { 500: '#f79009', 50: '#fffaeb', 900: '#7a4504' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Achats</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="home" class="w-5 h-5"></i>
+                    <span class="truncate">Accueil Module</span>
+                </a>
+                <a href="ecr-05-01-registre-des-expressions-de-besoin.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="list" class="w-5 h-5"></i>
+                    <span class="truncate">Registre EB</span>
+                </a>
+                <a href="ecr-05-02-fiche-expression-de-besoin.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                    <span class="truncate">Fiche EB</span>
+                </a>
+                <a href="ecr-05-03-registre-des-demandes-d-achat.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="list-ordered" class="w-5 h-5"></i>
+                    <span class="truncate">Registre DA</span>
+                </a>
+                <a href="ecr-05-04-fiche-demande-d-achat.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="file-check" class="w-5 h-5"></i>
+                    <span class="truncate">Fiche DA</span>
+                </a>
+                <a href="ecr-05-05-comparatif-fournisseurs.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="git-compare" class="w-5 h-5"></i>
+                    <span class="truncate">Comparatif Fournisseurs</span>
+                </a>
+                <a href="ecr-05-06-commande-fournisseur.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+                    <span class="truncate">Commande Fournisseur</span>
+                </a>
+                <a href="ecr-05-07-facture-fournisseur-et-rapprochement.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500">
+                    <i data-lucide="receipt" class="w-5 h-5"></i>
+                    <span class="truncate">Facture & Rapprochement</span>
+                </a>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col min-w-0 bg-gray-50 dark:bg-gray-950">
+        
+        <!-- Header / Breadcrumb / Actions -->
+        <header class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shrink-0 z-10 sticky top-0">
+            <div class="flex items-center justify-between px-6 h-16">
+                <div class="flex items-center gap-4">
+                    <button class="md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                    
+                    <!-- Breadcrumbs -->
+                    <div class="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                        <a href="#" class="hover:text-gray-900 dark:hover:text-white transition-colors">Factures Fournisseur</a>
+                        <i data-lucide="chevron-right" class="w-4 h-4 mx-2"></i>
+                        <span class="text-gray-900 dark:text-white font-medium flex items-center gap-2">
+                            FAC-2023-8820
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-warning-50 text-warning-700 dark:bg-warning-900/30 dark:text-warning-500 border border-warning-200 dark:border-warning-800">
+                                En Rapprochement
+                            </span>
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <button class="px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                        <i data-lucide="message-square" class="w-4 h-4"></i>
+                        Ouvrir un litige
+                    </button>
+                    <button class="px-4 py-2 bg-success-600 hover:bg-success-700 text-white rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-sm">
+                        <i data-lucide="check-circle" class="w-4 h-4"></i>
+                        Valider pour paiement
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Scrollable Area -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="max-w-7xl mx-auto space-y-6">
+
+                <!-- Alert -->
+                <div class="bg-warning-50 dark:bg-warning-900/20 border border-warning-200 dark:border-warning-800 rounded-xl p-4 flex gap-3 items-start">
+                    <i data-lucide="alert-triangle" class="w-5 h-5 text-warning-600 dark:text-warning-500 mt-0.5 shrink-0"></i>
+                    <div>
+                        <h4 class="text-sm font-semibold text-warning-800 dark:text-warning-400">Écart détecté</h4>
+                        <p class="text-sm text-warning-700 dark:text-warning-300 mt-1">
+                            Un écart de facturation a été détecté par rapport à la commande initiale (variation de prix sur un article). Veuillez vérifier le rapprochement et valider la dérogation si l'écart est justifié, ou ouvrir un litige fournisseur.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Info Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Facture Fournisseur -->
+                    <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 shadow-theme-xs">
+                        <div class="flex items-center gap-2 mb-4">
+                            <i data-lucide="receipt" class="w-5 h-5 text-gray-400"></i>
+                            <h3 class="text-base font-semibold text-gray-900 dark:text-white">Facture Fournisseur</h3>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1">Fournisseur</span>
+                                <a href="../01-referentiel/ecr-01-02-fiche-tiers.html" class="font-bold text-gray-900 dark:text-white hover:text-accent-600 dark:hover:text-accent-500">TechDistri Pro</a>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1">N° Facture FRS</span>
+                                    <span class="font-medium text-gray-900 dark:text-white">FA-1104-55</span>
+                                </div>
+                                <div>
+                                    <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1">Date d'émission</span>
+                                    <span class="font-medium text-gray-900 dark:text-white">16 Nov 2023</span>
+                                </div>
+                                <div>
+                                    <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1">Date d'échéance</span>
+                                    <span class="font-medium text-gray-900 dark:text-white">16 Dec 2023</span>
+                                </div>
+                                <div>
+                                    <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1">Montant TTC Facturé</span>
+                                    <span class="font-bold text-gray-900 dark:text-white">5 136,00 €</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Commande Liée -->
+                    <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 shadow-theme-xs">
+                        <div class="flex items-center gap-2 mb-4">
+                            <i data-lucide="shopping-cart" class="w-5 h-5 text-gray-400"></i>
+                            <h3 class="text-base font-semibold text-gray-900 dark:text-white">Commande (Engagement)</h3>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1">N° Commande</span>
+                                <a href="ecr-05-06-commande-fournisseur.html" class="font-medium text-accent-600 dark:text-accent-400 hover:underline">CMD-2023-0182</a>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1">Date d'engagement</span>
+                                    <span class="font-medium text-gray-900 dark:text-white">28 Oct 2023</span>
+                                </div>
+                                <div>
+                                    <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1">Acheteur</span>
+                                    <span class="font-medium text-gray-900 dark:text-white">S. Martin</span>
+                                </div>
+                                <div class="col-span-2">
+                                    <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1">Montant TTC Engagé</span>
+                                    <span class="font-bold text-gray-900 dark:text-white">5 040,00 €</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Réception Liée -->
+                    <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 shadow-theme-xs">
+                        <div class="flex items-center gap-2 mb-4">
+                            <i data-lucide="package-check" class="w-5 h-5 text-gray-400"></i>
+                            <h3 class="text-base font-semibold text-gray-900 dark:text-white">Réception (Magasin)</h3>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1">Bon de Réception</span>
+                                <a href="../06-stock-logistique-magasin/ecr-06-03-bon-de-reception.html" class="font-medium text-accent-600 dark:text-accent-400 hover:underline">BL-2023-1102</a>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1">Date de réception</span>
+                                    <span class="font-medium text-gray-900 dark:text-white">15 Nov 2023</span>
+                                </div>
+                                <div>
+                                    <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1">Magasinier</span>
+                                    <span class="font-medium text-gray-900 dark:text-white">L. Gomez</span>
+                                </div>
+                                <div class="col-span-2 flex items-center gap-2 mt-2">
+                                    <i data-lucide="check-circle-2" class="w-5 h-5 text-success-500"></i>
+                                    <span class="text-sm font-medium text-success-700 dark:text-success-400">Réception conforme aux quantités.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Matrice de Rapprochement -->
+                <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-theme-xs overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
+                        <h3 class="text-base font-semibold text-gray-900 dark:text-white">Matrice de Rapprochement (Lignes)</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr>
+                                    <th class="px-6 py-3 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold" rowspan="2">
+                                        Article
+                                    </th>
+                                    <th class="px-6 py-2 border-b border-l border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold text-center" colspan="3">
+                                        Quantités
+                                    </th>
+                                    <th class="px-6 py-2 border-b border-l border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold text-center" colspan="3">
+                                        Prix Unitaire (HT)
+                                    </th>
+                                    <th class="px-6 py-3 border-b border-l border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold text-center" rowspan="2">
+                                        Statut Ligne
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th class="px-4 py-2 border-b border-l border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20 text-xs text-gray-500 text-right font-medium">Cmd</th>
+                                    <th class="px-4 py-2 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20 text-xs text-gray-500 text-right font-medium">Reçue</th>
+                                    <th class="px-4 py-2 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20 text-xs text-gray-900 dark:text-white text-right font-bold">Facturée</th>
+                                    
+                                    <th class="px-4 py-2 border-b border-l border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20 text-xs text-gray-500 text-right font-medium">Engagé</th>
+                                    <th class="px-4 py-2 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20 text-xs text-gray-900 dark:text-white text-right font-bold">Facturé</th>
+                                    <th class="px-4 py-2 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20 text-xs text-gray-500 text-right font-medium">Écart</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
+                                
+                                <!-- Ligne 1 - Conforme -->
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <div class="flex flex-col">
+                                            <span class="font-medium text-gray-900 dark:text-white">ART-EQ-405</span>
+                                            <span class="text-sm text-gray-500 dark:text-gray-400">Switch Réseau 24 ports</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-4 text-right text-sm text-gray-500 dark:border-l border-gray-200 dark:border-gray-800">10</td>
+                                    <td class="px-4 py-4 text-right text-sm text-gray-500">10</td>
+                                    <td class="px-4 py-4 text-right text-sm font-bold text-gray-900 dark:text-white">10</td>
+                                    
+                                    <td class="px-4 py-4 text-right text-sm text-gray-500 border-l border-gray-200 dark:border-gray-800">420,00 €</td>
+                                    <td class="px-4 py-4 text-right text-sm font-bold text-gray-900 dark:text-white">420,00 €</td>
+                                    <td class="px-4 py-4 text-right text-sm text-gray-500">0,00 €</td>
+                                    
+                                    <td class="px-6 py-4 text-center border-l border-gray-200 dark:border-gray-800">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-success-50 text-success-700 dark:bg-success-900/30 dark:text-success-400">
+                                            Conforme
+                                        </span>
+                                    </td>
+                                </tr>
+
+                                <!-- Ligne 2 - Ecart prix -->
+                                <tr class="bg-warning-50/30 dark:bg-warning-900/10 hover:bg-warning-50/50 dark:hover:bg-warning-900/20 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <div class="flex flex-col">
+                                            <span class="font-medium text-gray-900 dark:text-white">Frais de transport exceptionnels</span>
+                                            <span class="text-sm text-gray-500 dark:text-gray-400">Ligne ajoutée par le fournisseur</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-4 text-right text-sm text-gray-500 dark:border-l border-gray-200 dark:border-gray-800">0</td>
+                                    <td class="px-4 py-4 text-right text-sm text-gray-500">0</td>
+                                    <td class="px-4 py-4 text-right text-sm font-bold text-gray-900 dark:text-white">1</td>
+                                    
+                                    <td class="px-4 py-4 text-right text-sm text-gray-500 border-l border-gray-200 dark:border-gray-800">0,00 €</td>
+                                    <td class="px-4 py-4 text-right text-sm font-bold text-warning-700 dark:text-warning-400">80,00 €</td>
+                                    <td class="px-4 py-4 text-right text-sm font-bold text-warning-700 dark:text-warning-400">+80,00 €</td>
+                                    
+                                    <td class="px-6 py-4 text-center border-l border-gray-200 dark:border-gray-800">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-warning-100 text-warning-800 dark:bg-warning-900/50 dark:text-warning-400">
+                                            Écart Prix (+80€ HT)
+                                        </span>
+                                    </td>
+                                </tr>
+
+                                <!-- Totals -->
+                                <tr class="bg-gray-50 dark:bg-gray-800/50 border-t-2 border-gray-200 dark:border-gray-800 font-semibold text-gray-900 dark:text-white">
+                                    <td class="px-6 py-4 text-right" colspan="4">Total HT :</td>
+                                    <td class="px-4 py-4 text-right border-l border-gray-200 dark:border-gray-800 text-gray-500 font-normal">4 200,00 €</td>
+                                    <td class="px-4 py-4 text-right text-lg">4 280,00 €</td>
+                                    <td class="px-4 py-4 text-right text-warning-600 dark:text-warning-500 font-bold">+80,00 €</td>
+                                    <td class="px-6 py-4 border-l border-gray-200 dark:border-gray-800"></td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Footer Justification -->
+                <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 shadow-theme-xs">
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-4">Traitement des écarts</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Justification / Commentaire pour la validation du paiement</label>
+                            <textarea class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-accent-500 focus:border-transparent outline-none transition-colors min-h-[100px]" placeholder="Justifiez l'écart de facturation (ex: frais de port urgents validés par téléphone)..."></textarea>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="checkbox" id="derogation" class="w-4 h-4 text-accent-600 border-gray-300 rounded focus:ring-accent-500">
+                            <label for="derogation" class="text-sm font-medium text-gray-900 dark:text-white">Je confirme la dérogation et j'autorise le paiement avec cet écart.</label>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

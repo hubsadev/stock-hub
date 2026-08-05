@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historique chantier et corrections - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3', 900: '#054f31' },
+                        error: { 500: '#f04438', 50: '#fef3f2', 900: '#7a271d' },
+                        warning: { 500: '#f79009', 50: '#fffaeb', 900: '#7a4504' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20 shrink-0">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Avancement BTP</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="home" class="w-5 h-5"></i>
+                    <span class="truncate">Accueil Module</span>
+                </a>
+                <a href="ecr-11-01-saisie-d-avancement-chantier.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="activity" class="w-5 h-5"></i>
+                    <span class="truncate">Saisie Avancement</span>
+                </a>
+                <a href="ecr-11-02-gestion-des-attachements.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="paperclip" class="w-5 h-5"></i>
+                    <span class="truncate">Attachements</span>
+                </a>
+                <a href="ecr-11-03-registre-des-situations-de-travaux.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
+                    <span class="truncate">Situations de travaux</span>
+                </a>
+                <a href="ecr-11-04-historique-chantier-et-corrections.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500">
+                    <i data-lucide="history" class="w-5 h-5"></i>
+                    <span class="truncate">Historique & Corrections</span>
+                </a>
+                <a href="ecr-11-05-validation-client-attachement.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="check-circle" class="w-5 h-5"></i>
+                    <span class="truncate">Validation Client</span>
+                </a>
+            </nav>
+            
+            <div class="mt-8">
+                <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Modules liés</div>
+                <nav class="space-y-1">
+                    <a href="../03-contrats-affaires-projets/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="briefcase" class="w-5 h-5"></i>
+                        <span class="truncate">Affaires & Projets</span>
+                    </a>
+                    <a href="../07-execution-terrain-ordres-de-travail/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="hammer" class="w-5 h-5"></i>
+                        <span class="truncate">Exécution Terrain</span>
+                    </a>
+                    <a href="../12-facturation/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="receipt" class="w-5 h-5"></i>
+                        <span class="truncate">Facturation</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+        
+        <div class="p-4 border-t border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-3">
+                <img src="https://ui-avatars.com/api/?name=Sophie+R&background=465fff&color=fff" alt="User" class="w-8 h-8 rounded-full">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">Sophie R.</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate">Gestionnaire BTP</p>
+                </div>
+                <button onclick="document.documentElement.classList.toggle('dark')" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+                    <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+        <!-- Header -->
+        <header class="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 shrink-0 z-10">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <h2 class="text-lg font-bold text-gray-900 dark:text-white">Historique et corrections</h2>
+            </div>
+            <div class="flex items-center gap-3">
+                <button class="p-2 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" title="Filtrer l'historique">
+                    <i data-lucide="filter" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Content scrollable -->
+        <div class="flex-1 overflow-y-auto p-6">
+            
+            <div class="max-w-4xl mx-auto">
+                <!-- Context selection -->
+                <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 mb-8 shadow-sm">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sélectionner un chantier ou une affaire :</label>
+                    <select class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 dark:bg-gray-900 dark:text-white font-medium">
+                        <option value="prj-089">PRJ-2023-089 - Déploiement FTTH Zone Nord</option>
+                        <option value="prj-012">PRJ-2023-012 - Construction Gymnase municipal</option>
+                        <option value="prj-045">PRJ-2023-045 - Rénovation Électrique Tertiaire</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">Activité du chantier PRJ-2023-089</h3>
+                    <span class="text-sm text-gray-500 dark:text-gray-400">Derniers 30 jours</span>
+                </div>
+
+                <!-- Timeline / Activity Feed -->
+                <div class="relative border-l border-gray-200 dark:border-gray-800 ml-4 space-y-8 pb-8">
+                    
+                    <!-- Event: Correction de situation (Today) -->
+                    <div class="relative pl-8">
+                        <div class="absolute -left-3 top-1 w-6 h-6 rounded-full bg-accent-100 dark:bg-accent-900 border-2 border-white dark:border-gray-950 flex items-center justify-center">
+                            <i data-lucide="edit-3" class="w-3 h-3 text-accent-600 dark:text-accent-400"></i>
+                        </div>
+                        <div class="mb-1 flex items-center gap-2">
+                            <span class="text-sm font-medium text-gray-900 dark:text-white">Correction de quantité appliquée</span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">Aujourd'hui, 10:45</span>
+                        </div>
+                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 mt-2 shadow-sm">
+                            <p class="text-sm text-gray-600 dark:text-gray-300 mb-3">La situation <a href="#" class="text-accent-600 hover:underline">SIT-2023-11-042</a> a été corrigée suite au retour du maître d'œuvre (refus partiel).</p>
+                            <div class="bg-gray-50 dark:bg-gray-800/50 rounded p-3 text-sm">
+                                <p class="font-medium text-gray-900 dark:text-white mb-2">Modification sur article TER-001 (Fouille)</p>
+                                <div class="flex items-center gap-4">
+                                    <div class="text-gray-500 dark:text-gray-400 line-through decoration-red-500">Qté : 320,00 ml</div>
+                                    <i data-lucide="arrow-right" class="w-4 h-4 text-gray-400"></i>
+                                    <div class="font-bold text-success-600 dark:text-success-500">Qté corrigée : 280,00 ml</div>
+                                </div>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 italic mt-2">Motif : "Longueur non conforme sur le secteur B selon relevé contradictoire." - par Sophie R.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Event: Situation refusée (Hier) -->
+                    <div class="relative pl-8">
+                        <div class="absolute -left-3 top-1 w-6 h-6 rounded-full bg-error-100 dark:bg-error-900 border-2 border-white dark:border-gray-950 flex items-center justify-center">
+                            <i data-lucide="x" class="w-3 h-3 text-error-600 dark:text-error-400"></i>
+                        </div>
+                        <div class="mb-1 flex items-center gap-2">
+                            <span class="text-sm font-medium text-gray-900 dark:text-white">Situation rejetée par le client</span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">Hier, 16:30</span>
+                        </div>
+                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 mt-2 shadow-sm">
+                            <p class="text-sm text-gray-600 dark:text-gray-300">Le client "Opérateur Telecom SA" a rejeté la situation <a href="#" class="font-medium">SIT-2023-11-042</a>.</p>
+                            <p class="text-sm text-error-600 dark:text-error-400 mt-2 p-2 bg-error-50 dark:bg-error-900/10 rounded border border-error-100 dark:border-error-800">
+                                <strong>Commentaire client :</strong> Désaccord sur le métré des fouilles TER-001 secteur B.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Event: Attachement validé (Il y a 3 jours) -->
+                    <div class="relative pl-8">
+                        <div class="absolute -left-3 top-1 w-6 h-6 rounded-full bg-success-100 dark:bg-success-900 border-2 border-white dark:border-gray-950 flex items-center justify-center">
+                            <i data-lucide="check" class="w-3 h-3 text-success-600 dark:text-success-400"></i>
+                        </div>
+                        <div class="mb-1 flex items-center gap-2">
+                            <span class="text-sm font-medium text-gray-900 dark:text-white">Attachement validé en interne</span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">03/11/2023, 09:15</span>
+                        </div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                            L'attachement <a href="#" class="text-accent-600 hover:underline">ATT-2023-10-089</a> a été validé par la direction de travaux (Paul M.) et transformé en situation.
+                        </div>
+                    </div>
+
+                    <!-- Event: Saisie d'avancement (Il y a 5 jours) -->
+                    <div class="relative pl-8">
+                        <div class="absolute -left-3 top-1 w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 border-2 border-white dark:border-gray-950 flex items-center justify-center">
+                            <i data-lucide="activity" class="w-3 h-3 text-gray-600 dark:text-gray-400"></i>
+                        </div>
+                        <div class="mb-1 flex items-center gap-2">
+                            <span class="text-sm font-medium text-gray-900 dark:text-white">Saisie d'avancement mensuel</span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">01/11/2023, 17:45</span>
+                        </div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                            Avancement saisi pour la période d'Octobre 2023 par Marc D. (Conducteur Tx). <br>
+                            <em>12 articles mis à jour sur le chantier.</em>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-4">
+                    <button class="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+                        Charger l'historique précédent
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des attachements - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3', 900: '#054f31' },
+                        error: { 500: '#f04438', 50: '#fef3f2', 900: '#7a271d' },
+                        warning: { 500: '#f79009', 50: '#fffaeb', 900: '#7a4504' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20 shrink-0">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Avancement BTP</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="home" class="w-5 h-5"></i>
+                    <span class="truncate">Accueil Module</span>
+                </a>
+                <a href="ecr-11-01-saisie-d-avancement-chantier.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="activity" class="w-5 h-5"></i>
+                    <span class="truncate">Saisie Avancement</span>
+                </a>
+                <a href="ecr-11-02-gestion-des-attachements.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500">
+                    <i data-lucide="paperclip" class="w-5 h-5"></i>
+                    <span class="truncate">Attachements</span>
+                </a>
+                <a href="ecr-11-03-registre-des-situations-de-travaux.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
+                    <span class="truncate">Situations de travaux</span>
+                </a>
+                <a href="ecr-11-04-historique-chantier-et-corrections.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="history" class="w-5 h-5"></i>
+                    <span class="truncate">Historique & Corrections</span>
+                </a>
+                <a href="ecr-11-05-validation-client-attachement.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="check-circle" class="w-5 h-5"></i>
+                    <span class="truncate">Validation Client</span>
+                </a>
+            </nav>
+            
+            <div class="mt-8">
+                <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Modules liés</div>
+                <nav class="space-y-1">
+                    <a href="../03-contrats-affaires-projets/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="briefcase" class="w-5 h-5"></i>
+                        <span class="truncate">Affaires & Projets</span>
+                    </a>
+                    <a href="../07-execution-terrain-ordres-de-travail/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="hammer" class="w-5 h-5"></i>
+                        <span class="truncate">Exécution Terrain</span>
+                    </a>
+                    <a href="../12-facturation/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="receipt" class="w-5 h-5"></i>
+                        <span class="truncate">Facturation</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+        
+        <div class="p-4 border-t border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-3">
+                <img src="https://ui-avatars.com/api/?name=Sophie+R&background=465fff&color=fff" alt="User" class="w-8 h-8 rounded-full">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">Sophie R.</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate">Gestionnaire BTP</p>
+                </div>
+                <button onclick="document.documentElement.classList.toggle('dark')" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+                    <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+        <!-- Header -->
+        <header class="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 shrink-0 z-10">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <div>
+                    <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-0.5">
+                        <a href="#" class="hover:text-gray-700 dark:hover:text-gray-200 transition-colors">Attachements</a>
+                        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        <span class="text-gray-900 dark:text-gray-100 font-medium">ATT-2023-10-089</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="ecr-11-05-validation-client-attachement.html" class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-2">
+                    <i data-lucide="external-link" class="w-4 h-4"></i>
+                    Envoyer au client
+                </a>
+                <button class="px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
+                    <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                    Générer la situation
+                </button>
+            </div>
+        </header>
+
+        <!-- Content scrollable -->
+        <div class="flex-1 overflow-y-auto p-6">
+            
+            <!-- Document Header -->
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 mb-6 shadow-sm">
+                <div class="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-6">
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-accent-50 dark:bg-accent-900/30 flex items-center justify-center text-accent-600 dark:text-accent-500 shrink-0">
+                            <i data-lucide="paperclip" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-3 mb-1">
+                                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Attachement N° ATT-2023-10-089</h2>
+                                <span class="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800/50 uppercase tracking-wide">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                                    Validé en interne
+                                </span>
+                            </div>
+                            <p class="text-gray-500 dark:text-gray-400 text-sm">Chantier : PRJ-2023-089 - Déploiement FTTH Zone Nord</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Valorisation estimée HT</p>
+                        <p class="text-3xl font-bold text-gray-900 dark:text-white">45 890,50 €</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6 border-t border-gray-100 dark:border-gray-800 pt-6">
+                    <div>
+                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Période d'exécution</p>
+                        <p class="text-sm font-medium text-gray-900 dark:text-white">01/10/2023 - 31/10/2023</p>
+                    </div>
+                    <div>
+                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Date de création</p>
+                        <p class="text-sm font-medium text-gray-900 dark:text-white">02/11/2023</p>
+                    </div>
+                    <div>
+                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Créé par</p>
+                        <p class="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                            <img src="https://ui-avatars.com/api/?name=Marc+D&background=465fff&color=fff" class="w-5 h-5 rounded-full" alt="Marc">
+                            Marc D. (Conducteur Tx)
+                        </p>
+                    </div>
+                    <div>
+                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Client</p>
+                        <p class="text-sm font-medium text-gray-900 dark:text-white">Opérateur Telecom SA</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="border-b border-gray-200 dark:border-gray-800 mb-6">
+                <nav class="flex gap-6">
+                    <a href="#" class="px-1 py-3 text-sm font-medium text-accent-600 dark:text-accent-500 border-b-2 border-accent-600 dark:border-accent-500">Détail des quantités</a>
+                    <a href="#" class="px-1 py-3 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 border-b-2 border-transparent">Pièces jointes (4)</a>
+                    <a href="#" class="px-1 py-3 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 border-b-2 border-transparent">Historique & Validations</a>
+                </nav>
+            </div>
+
+            <!-- Table section -->
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm flex flex-col mb-6">
+                <div class="p-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
+                    <h3 class="font-bold text-gray-900 dark:text-white">Lignes d'attachement validées</h3>
+                    <button class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white flex items-center gap-1.5 border border-gray-200 dark:border-gray-700 px-3 py-1.5 rounded-lg">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        Exporter PDF
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm whitespace-nowrap">
+                        <thead class="bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-800">
+                            <tr>
+                                <th class="px-6 py-3 font-medium">Code Article</th>
+                                <th class="px-6 py-3 font-medium">Désignation</th>
+                                <th class="px-6 py-3 font-medium text-center">Unité</th>
+                                <th class="px-6 py-3 font-medium text-right">PU HT</th>
+                                <th class="px-6 py-3 font-medium text-right bg-accent-50/50 dark:bg-accent-900/10 text-accent-700 dark:text-accent-400">Qté du mois</th>
+                                <th class="px-6 py-3 font-medium text-right">Total Ligne HT</th>
+                                <th class="px-6 py-3 font-medium text-center">Preuves</th>
+                                <th class="px-6 py-3 font-medium text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
+                            
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">TER-001</td>
+                                <td class="px-6 py-4 text-gray-600 dark:text-gray-300">Fouille en tranchée mécanique</td>
+                                <td class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">ml</td>
+                                <td class="px-6 py-4 text-right text-gray-500 dark:text-gray-400">24,50 €</td>
+                                <td class="px-6 py-4 text-right font-bold text-accent-600 dark:text-accent-500 bg-accent-50/30 dark:bg-accent-900/5">320,00</td>
+                                <td class="px-6 py-4 text-right font-medium text-gray-900 dark:text-white">7 840,00 €</td>
+                                <td class="px-6 py-4 text-center">
+                                    <span class="inline-flex items-center justify-center bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300 text-xs px-2 py-1 rounded cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700" title="2 photos jointes">
+                                        <i data-lucide="image" class="w-3 h-3 mr-1"></i> 2
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <button class="text-gray-400 hover:text-accent-600 dark:hover:text-accent-500 transition-colors">
+                                        <i data-lucide="edit-2" class="w-4 h-4"></i>
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">FOU-045</td>
+                                <td class="px-6 py-4 text-gray-600 dark:text-gray-300">Pose de fourreaux TPC Ø 45 mm</td>
+                                <td class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">ml</td>
+                                <td class="px-6 py-4 text-right text-gray-500 dark:text-gray-400">12,00 €</td>
+                                <td class="px-6 py-4 text-right font-bold text-accent-600 dark:text-accent-500 bg-accent-50/30 dark:bg-accent-900/5">960,00</td>
+                                <td class="px-6 py-4 text-right font-medium text-gray-900 dark:text-white">11 520,00 €</td>
+                                <td class="px-6 py-4 text-center">
+                                    <span class="text-gray-300 dark:text-gray-600">-</span>
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <button class="text-gray-400 hover:text-accent-600 dark:hover:text-accent-500 transition-colors">
+                                        <i data-lucide="edit-2" class="w-4 h-4"></i>
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">CHB-L2T</td>
+                                <td class="px-6 py-4 text-gray-600 dark:text-gray-300">Pose de chambre L2T complète</td>
+                                <td class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">U</td>
+                                <td class="px-6 py-4 text-right text-gray-500 dark:text-gray-400">850,00 €</td>
+                                <td class="px-6 py-4 text-right font-bold text-accent-600 dark:text-accent-500 bg-accent-50/30 dark:bg-accent-900/5">8,00</td>
+                                <td class="px-6 py-4 text-right font-medium text-gray-900 dark:text-white">6 800,00 €</td>
+                                <td class="px-6 py-4 text-center">
+                                    <span class="inline-flex items-center justify-center bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300 text-xs px-2 py-1 rounded cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700" title="8 photos jointes (1 par chambre)">
+                                        <i data-lucide="image" class="w-3 h-3 mr-1"></i> 8
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <button class="text-gray-400 hover:text-accent-600 dark:hover:text-accent-500 transition-colors">
+                                        <i data-lucide="edit-2" class="w-4 h-4"></i>
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">FO-RACC</td>
+                                <td class="px-6 py-4 text-gray-600 dark:text-gray-300">Raccordement soudure FO par point</td>
+                                <td class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">U</td>
+                                <td class="px-6 py-4 text-right text-gray-500 dark:text-gray-400">131,54 €</td>
+                                <td class="px-6 py-4 text-right font-bold text-accent-600 dark:text-accent-500 bg-accent-50/30 dark:bg-accent-900/5">150,00</td>
+                                <td class="px-6 py-4 text-right font-medium text-gray-900 dark:text-white">19 730,50 €</td>
+                                <td class="px-6 py-4 text-center">
+                                    <span class="inline-flex items-center justify-center bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300 text-xs px-2 py-1 rounded cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700" title="Fiche de mesure OTDR jointe">
+                                        <i data-lucide="file-text" class="w-3 h-3 mr-1"></i> 1
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <button class="text-gray-400 hover:text-accent-600 dark:hover:text-accent-500 transition-colors">
+                                        <i data-lucide="edit-2" class="w-4 h-4"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tfoot class="bg-gray-50 dark:bg-gray-800/80">
+                            <tr>
+                                <td colspan="5" class="px-6 py-4 text-right font-bold text-gray-900 dark:text-white">Total estimé de l'attachement HT :</td>
+                                <td class="px-6 py-4 text-right font-bold text-gray-900 dark:text-white text-lg">45 890,50 €</td>
+                                <td colspan="2"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Warning/Correction panel example -->
+            <div class="bg-blue-50 border border-blue-200 dark:bg-blue-900/20 dark:border-blue-800 rounded-xl p-4 flex gap-4">
+                <div class="mt-0.5 text-blue-600 dark:text-blue-400">
+                    <i data-lucide="info" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h4 class="text-sm font-bold text-blue-900 dark:text-blue-300 mb-1">Prêt pour la validation client</h4>
+                    <p class="text-sm text-blue-700 dark:text-blue-400 mb-3">Toutes les lignes ont été vérifiées et les preuves associées sont conformes. Vous pouvez transmettre cet attachement au client pour signature ou générer directement la situation de travaux si le client a déjà donné son accord oral.</p>
+                    <div class="flex gap-3">
+                        <button class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-medium transition-colors">Transmettre par email au client</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

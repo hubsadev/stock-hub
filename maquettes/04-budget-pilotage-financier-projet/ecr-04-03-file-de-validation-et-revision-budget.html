@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File de Validation Budget - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3', 900: '#054f31' },
+                        error: { 500: '#f04438', 50: '#fef3f2', 900: '#7a271d' },
+                        warning: { 500: '#f79009', 50: '#fffaeb', 900: '#7a4504' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Budget & Pilotage</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="home" class="w-5 h-5"></i>
+                    <span class="truncate">Accueil Module</span>
+                </a>
+                <a href="ecr-04-01-fiche-budget-projet-affaire.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="folder-kanban" class="w-5 h-5"></i>
+                    <span class="truncate">Fiche Budget Affaire</span>
+                </a>
+                <a href="ecr-04-02-detail-budget-et-postes-de-cout.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="list-tree" class="w-5 h-5"></i>
+                    <span class="truncate">Détail Postes de Coût</span>
+                </a>
+                <a href="ecr-04-03-file-de-validation-et-revision-budget.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500">
+                    <i data-lucide="check-square" class="w-5 h-5"></i>
+                    <span class="truncate">File de Validation</span>
+                </a>
+                <a href="ecr-04-04-tableau-de-bord-budget-et-ecarts.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+                    <span class="truncate">Tableau de Bord Écarts</span>
+                </a>
+            </nav>
+            
+            <div class="mt-8">
+                <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Gouvernance</div>
+                <nav class="space-y-1">
+                    <a href="../16-gouvernance-validation-controle-interne/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="shield-check" class="w-5 h-5"></i>
+                        <span class="truncate">Supervision & Workflows</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col min-w-0 bg-gray-50 dark:bg-gray-950">
+        <!-- Header -->
+        <header class="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 shrink-0 z-10">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <div class="flex flex-col">
+                    <h1 class="text-lg font-semibold text-gray-900 dark:text-white">File de Validation Budgétaire</h1>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="relative">
+                    <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                    <input type="text" placeholder="Rechercher une affaire..." class="pl-9 pr-4 py-2 bg-gray-100 dark:bg-gray-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-accent-500 outline-none text-gray-900 dark:text-white w-64">
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Scrollable Area -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="max-w-7xl mx-auto space-y-6">
+
+                <!-- Tabs -->
+                <div class="flex items-center gap-4 border-b border-gray-200 dark:border-gray-800">
+                    <button class="px-4 py-3 text-sm font-medium text-accent-600 dark:text-accent-500 border-b-2 border-accent-600 dark:border-accent-500 bg-transparent flex items-center gap-2">
+                        En attente de ma validation
+                        <span class="bg-accent-100 text-accent-700 dark:bg-accent-900/50 dark:text-accent-400 px-2 py-0.5 rounded-full text-xs font-bold">2</span>
+                    </button>
+                    <button class="px-4 py-3 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 border-b-2 border-transparent bg-transparent flex items-center gap-2">
+                        Historique des validations
+                    </button>
+                    <button class="px-4 py-3 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 border-b-2 border-transparent bg-transparent flex items-center gap-2">
+                        Mes budgets soumis
+                    </button>
+                </div>
+
+                <!-- Actionable List -->
+                <div class="space-y-4">
+
+                    <!-- Item 1 -->
+                    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 hover:shadow-sm transition-shadow">
+                        <div class="flex items-start justify-between">
+                            <div class="flex items-start gap-4">
+                                <div class="p-3 bg-warning-50 text-warning-600 dark:bg-warning-900/30 dark:text-warning-500 rounded-lg shrink-0 mt-1">
+                                    <i data-lucide="git-pull-request" class="w-6 h-6"></i>
+                                </div>
+                                <div>
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <h3 class="font-semibold text-gray-900 dark:text-white text-lg">AFF-2023-089 - Implémentation ERP Client X</h3>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+                                            Révision V4
+                                        </span>
+                                    </div>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-3 max-w-2xl">
+                                        <strong>Motif :</strong> Intégration de l'avenant N°2 concernant les achats de licences supplémentaires.
+                                    </p>
+                                    <div class="flex items-center gap-6 text-sm">
+                                        <div class="flex flex-col">
+                                            <span class="text-gray-400 dark:text-gray-500 text-xs font-medium uppercase tracking-wider">Soumis par</span>
+                                            <span class="text-gray-900 dark:text-white font-medium flex items-center gap-1.5 mt-0.5">
+                                                <div class="w-4 h-4 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[10px] font-bold">AB</div>
+                                                A. Bernard (CP)
+                                            </span>
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="text-gray-400 dark:text-gray-500 text-xs font-medium uppercase tracking-wider">Montant cible</span>
+                                            <span class="text-gray-900 dark:text-white font-medium mt-0.5 flex items-center gap-2">
+                                                158 500 €
+                                                <span class="text-warning-600 dark:text-warning-500 text-xs font-semibold bg-warning-50 dark:bg-warning-900/30 px-1.5 rounded">+6 500 € vs V3</span>
+                                            </span>
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="text-gray-400 dark:text-gray-500 text-xs font-medium uppercase tracking-wider">Niveau Validation</span>
+                                            <span class="text-gray-900 dark:text-white font-medium mt-0.5">Direction Financière (Seuil > 5k€)</span>
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="text-gray-400 dark:text-gray-500 text-xs font-medium uppercase tracking-wider">Date soumission</span>
+                                            <span class="text-gray-900 dark:text-white font-medium mt-0.5">25 Oct 2023 à 14:32</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex flex-col gap-2 shrink-0">
+                                <button class="w-32 px-4 py-2 bg-success-600 hover:bg-success-700 text-white rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors shadow-sm">
+                                    <i data-lucide="check" class="w-4 h-4"></i>
+                                    Approuver
+                                </button>
+                                <button class="w-32 px-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 hover:bg-error-50 dark:hover:bg-error-900/20 text-error-600 dark:text-error-500 hover:border-error-300 dark:hover:border-error-700 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors">
+                                    <i data-lucide="x" class="w-4 h-4"></i>
+                                    Refuser
+                                </button>
+                                <a href="ecr-04-02-detail-budget-et-postes-de-cout.html" class="w-32 px-4 py-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white text-sm font-medium flex items-center justify-center gap-2 transition-colors">
+                                    Voir détails
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Item 2 -->
+                    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 hover:shadow-sm transition-shadow">
+                        <div class="flex items-start justify-between">
+                            <div class="flex items-start gap-4">
+                                <div class="p-3 bg-warning-50 text-warning-600 dark:bg-warning-900/30 dark:text-warning-500 rounded-lg shrink-0 mt-1">
+                                    <i data-lucide="file-plus" class="w-6 h-6"></i>
+                                </div>
+                                <div>
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <h3 class="font-semibold text-gray-900 dark:text-white text-lg">PROJ-2023-112 - Déploiement Fibre Zone B</h3>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+                                            Budget Initial (V1)
+                                        </span>
+                                    </div>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-3 max-w-2xl">
+                                        <strong>Motif :</strong> Création du budget suite à la signature du contrat.
+                                    </p>
+                                    <div class="flex items-center gap-6 text-sm">
+                                        <div class="flex flex-col">
+                                            <span class="text-gray-400 dark:text-gray-500 text-xs font-medium uppercase tracking-wider">Soumis par</span>
+                                            <span class="text-gray-900 dark:text-white font-medium flex items-center gap-1.5 mt-0.5">
+                                                <div class="w-4 h-4 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-[10px] font-bold">ML</div>
+                                                M. Lemoine (Dir. Projet)
+                                            </span>
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="text-gray-400 dark:text-gray-500 text-xs font-medium uppercase tracking-wider">Montant cible</span>
+                                            <span class="text-gray-900 dark:text-white font-medium mt-0.5 flex items-center gap-2">
+                                                420 000 €
+                                            </span>
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="text-gray-400 dark:text-gray-500 text-xs font-medium uppercase tracking-wider">Niveau Validation</span>
+                                            <span class="text-gray-900 dark:text-white font-medium mt-0.5">Comité de Direction</span>
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="text-gray-400 dark:text-gray-500 text-xs font-medium uppercase tracking-wider">Date soumission</span>
+                                            <span class="text-gray-900 dark:text-white font-medium mt-0.5">23 Oct 2023 à 09:15</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex flex-col gap-2 shrink-0">
+                                <button class="w-32 px-4 py-2 bg-success-600 hover:bg-success-700 text-white rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors shadow-sm">
+                                    <i data-lucide="check" class="w-4 h-4"></i>
+                                    Approuver
+                                </button>
+                                <button class="w-32 px-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 hover:bg-error-50 dark:hover:bg-error-900/20 text-error-600 dark:text-error-500 hover:border-error-300 dark:hover:border-error-700 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors">
+                                    <i data-lucide="x" class="w-4 h-4"></i>
+                                    Refuser
+                                </button>
+                                <a href="ecr-04-02-detail-budget-et-postes-de-cout.html" class="w-32 px-4 py-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white text-sm font-medium flex items-center justify-center gap-2 transition-colors">
+                                    Voir détails
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

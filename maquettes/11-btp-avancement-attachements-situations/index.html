@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 11 - BTP / Avancement / Attachements / Situations - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3', 900: '#054f31' },
+                        error: { 500: '#f04438', 50: '#fef3f2', 900: '#7a271d' },
+                        warning: { 500: '#f79009', 50: '#fffaeb', 900: '#7a4504' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen">
+    
+    <div class="max-w-5xl mx-auto py-12 px-6">
+        
+        <div class="mb-10">
+            <div class="flex items-center gap-3 text-accent-600 dark:text-accent-500 font-bold text-xl mb-6">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP - Maquettes</span>
+            </div>
+            <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">Module 11 : BTP / Avancement / Attachements / Situations</h1>
+            <p class="text-lg text-gray-600 dark:text-gray-400 max-w-3xl">
+                Ce module gère le suivi opérationnel et financier des chantiers : déclaration d'avancement physique, création des attachements (preuves d'exécution), validation client, facturation via les situations de travaux et gestion de l'historique/corrections.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+            <a href="ecr-11-01-saisie-d-avancement-chantier.html" class="block bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 hover:shadow-lg transition-all hover:border-accent-500 dark:hover:border-accent-500 group">
+                <div class="w-12 h-12 rounded-lg bg-accent-50 dark:bg-accent-900/30 flex items-center justify-center text-accent-600 dark:text-accent-500 mb-4 group-hover:scale-110 transition-transform">
+                    <i data-lucide="activity" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Saisie d'avancement chantier</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                    Déclaration de l'avancement physique ou quantitatif sur chantier (ECR-11-01).
+                </p>
+                <div class="flex items-center gap-2 text-xs font-medium text-accent-600 dark:text-accent-500">
+                    <span>Voir la maquette</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </div>
+            </a>
+
+            <a href="ecr-11-02-gestion-des-attachements.html" class="block bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 hover:shadow-lg transition-all hover:border-accent-500 dark:hover:border-accent-500 group">
+                <div class="w-12 h-12 rounded-lg bg-accent-50 dark:bg-accent-900/30 flex items-center justify-center text-accent-600 dark:text-accent-500 mb-4 group-hover:scale-110 transition-transform">
+                    <i data-lucide="paperclip" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Gestion des attachements</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                    Constitution et contrôle des pièces d'attachement servant de base aux situations (ECR-11-02).
+                </p>
+                <div class="flex items-center gap-2 text-xs font-medium text-accent-600 dark:text-accent-500">
+                    <span>Voir la maquette</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </div>
+            </a>
+
+            <a href="ecr-11-03-registre-des-situations-de-travaux.html" class="block bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 hover:shadow-lg transition-all hover:border-accent-500 dark:hover:border-accent-500 group">
+                <div class="w-12 h-12 rounded-lg bg-accent-50 dark:bg-accent-900/30 flex items-center justify-center text-accent-600 dark:text-accent-500 mb-4 group-hover:scale-110 transition-transform">
+                    <i data-lucide="file-spreadsheet" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Registre des situations de travaux</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                    Création, validation et suivi des situations de travaux (ECR-11-03).
+                </p>
+                <div class="flex items-center gap-2 text-xs font-medium text-accent-600 dark:text-accent-500">
+                    <span>Voir la maquette</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </div>
+            </a>
+
+            <a href="ecr-11-04-historique-chantier-et-corrections.html" class="block bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 hover:shadow-lg transition-all hover:border-accent-500 dark:hover:border-accent-500 group">
+                <div class="w-12 h-12 rounded-lg bg-accent-50 dark:bg-accent-900/30 flex items-center justify-center text-accent-600 dark:text-accent-500 mb-4 group-hover:scale-110 transition-transform">
+                    <i data-lucide="history" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Historique chantier et corrections</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                    Traçabilité des révisions, corrections et réémissions d'attachements ou situations (ECR-11-04).
+                </p>
+                <div class="flex items-center gap-2 text-xs font-medium text-accent-600 dark:text-accent-500">
+                    <span>Voir la maquette</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </div>
+            </a>
+
+            <a href="ecr-11-05-validation-client-attachement.html" class="block bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 hover:shadow-lg transition-all hover:border-accent-500 dark:hover:border-accent-500 group">
+                <div class="w-12 h-12 rounded-lg bg-accent-50 dark:bg-accent-900/30 flex items-center justify-center text-accent-600 dark:text-accent-500 mb-4 group-hover:scale-110 transition-transform">
+                    <i data-lucide="check-circle" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Validation client attachement</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                    Validation ou signature externe des quantites avant valorisation (ECR-11-05).
+                </p>
+                <div class="flex items-center gap-2 text-xs font-medium text-accent-600 dark:text-accent-500">
+                    <span>Voir la maquette</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </div>
+            </a>
+
+        </div>
+        
+        <div class="mt-12 flex justify-center">
+            <button onclick="document.documentElement.classList.toggle('dark')" class="flex items-center gap-2 px-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                <i data-lucide="moon" class="w-4 h-4 block dark:hidden"></i>
+                <i data-lucide="sun" class="w-4 h-4 hidden dark:block"></i>
+                <span class="block dark:hidden">Passer en mode sombre</span>
+                <span class="hidden dark:block">Passer en mode clair</span>
+            </button>
+        </div>
+        
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

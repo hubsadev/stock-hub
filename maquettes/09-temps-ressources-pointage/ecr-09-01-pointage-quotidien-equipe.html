@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pointage quotidien équipe - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3', 900: '#054f31' },
+                        error: { 500: '#f04438', 50: '#fef3f2', 900: '#7a271d' },
+                        warning: { 500: '#f79009', 50: '#fffaeb', 900: '#7a4504' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20 shrink-0">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="clock" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Pointage & Temps</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="home" class="w-5 h-5"></i>
+                    <span class="truncate">Accueil Module</span>
+                </a>
+                <a href="ecr-09-01-pointage-quotidien-equipe.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500">
+                    <i data-lucide="users" class="w-5 h-5"></i>
+                    <span class="truncate">Pointage Équipe</span>
+                </a>
+                <a href="ecr-09-02-imputation-et-ressources-pointees.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="git-merge" class="w-5 h-5"></i>
+                    <span class="truncate">Imputation Détail</span>
+                </a>
+                <a href="ecr-09-03-validation-et-consultation-des-pointages.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="check-circle" class="w-5 h-5"></i>
+                    <span class="truncate">Validation</span>
+                </a>
+            </nav>
+            
+            <div class="mt-8">
+                <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Modules liés</div>
+                <nav class="space-y-1">
+                    <a href="../15-planning-coordination-operationnelle/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="calendar" class="w-5 h-5"></i>
+                        <span class="truncate">Planning & Coord.</span>
+                    </a>
+                    <a href="../07-execution-terrain-ordres-de-travail/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="hammer" class="w-5 h-5"></i>
+                        <span class="truncate">Exécution Terrain</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+        
+        <div class="p-4 border-t border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-3">
+                <img src="https://ui-avatars.com/api/?name=Jean+D&background=465fff&color=fff" alt="User" class="w-8 h-8 rounded-full">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">Jean Dupont</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate">Chef d'Équipe</p>
+                </div>
+                <button onclick="document.documentElement.classList.toggle('dark')" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <i data-lucide="moon" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full bg-gray-50 dark:bg-gray-950 relative min-w-0">
+        
+        <!-- Header -->
+        <header class="h-16 flex items-center justify-between px-6 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                    <a href="#" class="hover:text-gray-900 dark:hover:text-white transition-colors">Pointage</a>
+                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                    <span class="font-medium text-gray-900 dark:text-white">Saisie quotidienne</span>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <button class="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-sm">
+                    <i data-lucide="save" class="w-4 h-4"></i>
+                    Enregistrer brouillon
+                </button>
+                <button class="flex items-center gap-2 px-4 py-1.5 text-sm font-medium text-white bg-accent-600 hover:bg-accent-700 dark:bg-accent-500 dark:hover:bg-accent-600 rounded-lg transition-colors shadow-sm">
+                    <i data-lucide="send" class="w-4 h-4"></i>
+                    Soumettre la feuille
+                </button>
+            </div>
+        </header>
+
+        <!-- Content Area -->
+        <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
+            <div class="max-w-6xl mx-auto space-y-6">
+
+                <!-- Page Title & Status -->
+                <div class="flex justify-between items-end">
+                    <div>
+                        <div class="flex items-center gap-3 mb-1">
+                            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Pointage Équipe : Maçons A</h1>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+                                Brouillon
+                            </span>
+                        </div>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm">Saisie des heures pour le <span class="font-semibold text-gray-900 dark:text-white">Mardi 24 Octobre 2023</span></p>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <!-- Date Navigation -->
+                        <div class="flex items-center bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm p-1">
+                            <button class="p-1.5 text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors">
+                                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                            </button>
+                            <div class="flex items-center gap-2 px-3 py-1 text-sm font-medium text-gray-900 dark:text-white border-x border-gray-100 dark:border-gray-800">
+                                <i data-lucide="calendar" class="w-4 h-4 text-gray-400"></i>
+                                24/10/2023
+                            </div>
+                            <button class="p-1.5 text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors">
+                                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alert Information -->
+                <div class="bg-accent-50 dark:bg-accent-900/20 border border-accent-200 dark:border-accent-800/50 rounded-xl p-4 flex gap-3">
+                    <i data-lucide="info" class="w-5 h-5 text-accent-600 dark:text-accent-500 shrink-0 mt-0.5"></i>
+                    <div>
+                        <h4 class="text-sm font-semibold text-accent-900 dark:text-accent-100">Imputation globale vs détaillée</h4>
+                        <p class="text-sm text-accent-700 dark:text-accent-300 mt-1">
+                            Vous pouvez imputer l'ensemble de la journée d'un membre à un même chantier ici. Si le membre a travaillé sur plusieurs tâches ou chantiers, utilisez le bouton "Détail" pour répartir les heures.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Pointage Table -->
+                <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400">
+                                <tr>
+                                    <th class="px-4 py-3 font-medium w-1/4">Membre de l'équipe</th>
+                                    <th class="px-4 py-3 font-medium w-24 text-center">Présence</th>
+                                    <th class="px-4 py-3 font-medium w-24 text-center">H. Normales</th>
+                                    <th class="px-4 py-3 font-medium w-24 text-center">H. Supp.</th>
+                                    <th class="px-4 py-3 font-medium">Imputation principale (OT / Affaire)</th>
+                                    <th class="px-4 py-3 font-medium w-32 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
+                                
+                                <!-- Ligne 1: Complète, 1 chantier -->
+                                <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/20 transition-colors group">
+                                    <td class="px-4 py-3">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs font-bold text-gray-600 dark:text-gray-300">
+                                                AL
+                                            </div>
+                                            <div>
+                                                <div class="font-medium text-gray-900 dark:text-white">Alain Lefort</div>
+                                                <div class="text-xs text-gray-500">Maçon N3</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
+                                        <input type="checkbox" checked class="rounded border-gray-300 text-accent-600 focus:ring-accent-500 dark:border-gray-600 dark:bg-gray-700 w-4 h-4 cursor-pointer">
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <input type="number" value="7.0" step="0.5" class="w-full text-center px-2 py-1.5 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-accent-500 focus:border-accent-500 text-sm">
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <input type="number" value="0.0" step="0.5" class="w-full text-center px-2 py-1.5 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-accent-500 focus:border-accent-500 text-sm">
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div class="flex items-center relative">
+                                            <select class="w-full appearance-none pl-3 pr-8 py-1.5 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-accent-500 focus:border-accent-500 truncate">
+                                                <option>[OT-23-401] Chantier Gare Sud - Gros œuvre</option>
+                                                <option>[OT-23-402] Chantier Lycée - Fondations</option>
+                                                <option>-- Réparti sur plusieurs (Voir détail) --</option>
+                                            </select>
+                                            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 absolute right-2 pointer-events-none"></i>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-right">
+                                        <a href="ecr-09-02-imputation-et-ressources-pointees.html" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-accent-700 dark:text-accent-400 bg-accent-50 dark:bg-accent-900/30 hover:bg-accent-100 dark:hover:bg-accent-900/50 rounded transition-colors">
+                                            <i data-lucide="split-square-horizontal" class="w-3.5 h-3.5"></i>
+                                            Détail
+                                        </a>
+                                    </td>
+                                </tr>
+
+                                <!-- Ligne 2: Partagé, 2 chantiers -->
+                                <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/20 transition-colors group">
+                                    <td class="px-4 py-3">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs font-bold text-gray-600 dark:text-gray-300">
+                                                MB
+                                            </div>
+                                            <div>
+                                                <div class="font-medium text-gray-900 dark:text-white">Marc Bernard</div>
+                                                <div class="text-xs text-gray-500">Maçon N2</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
+                                        <input type="checkbox" checked class="rounded border-gray-300 text-accent-600 focus:ring-accent-500 dark:border-gray-600 dark:bg-gray-700 w-4 h-4 cursor-pointer">
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <input type="number" value="7.0" disabled class="w-full text-center px-2 py-1.5 border border-gray-200 dark:border-gray-800 rounded bg-gray-50 dark:bg-gray-800/50 text-gray-500 text-sm">
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <input type="number" value="1.5" disabled class="w-full text-center px-2 py-1.5 border border-gray-200 dark:border-gray-800 rounded bg-gray-50 dark:bg-gray-800/50 text-gray-500 text-sm">
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div class="flex items-center relative">
+                                            <select disabled class="w-full appearance-none pl-3 pr-8 py-1.5 border border-gray-200 dark:border-gray-800 rounded bg-gray-50 dark:bg-gray-800/50 text-gray-500 text-sm italic">
+                                                <option selected>-- 2 imputations (Voir détail) --</option>
+                                            </select>
+                                            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-300 absolute right-2 pointer-events-none"></i>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-right">
+                                        <a href="ecr-09-02-imputation-et-ressources-pointees.html" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-white bg-accent-600 dark:bg-accent-500 hover:bg-accent-700 dark:hover:bg-accent-600 rounded transition-colors shadow-sm">
+                                            <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                                            Modifier
+                                        </a>
+                                    </td>
+                                </tr>
+
+                                <!-- Ligne 3: Absent -->
+                                <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/20 transition-colors group">
+                                    <td class="px-4 py-3">
+                                        <div class="flex items-center gap-3 opacity-60">
+                                            <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs font-bold text-gray-600 dark:text-gray-300">
+                                                SM
+                                            </div>
+                                            <div>
+                                                <div class="font-medium text-gray-900 dark:text-white">Sophie Martin</div>
+                                                <div class="text-xs text-gray-500">Apprentie</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
+                                        <input type="checkbox" class="rounded border-gray-300 text-accent-600 focus:ring-accent-500 dark:border-gray-600 dark:bg-gray-700 w-4 h-4 cursor-pointer">
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <input type="number" disabled class="w-full text-center px-2 py-1.5 border border-gray-200 dark:border-gray-800 rounded bg-gray-50 dark:bg-gray-800/50 text-gray-400 text-sm">
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <input type="number" disabled class="w-full text-center px-2 py-1.5 border border-gray-200 dark:border-gray-800 rounded bg-gray-50 dark:bg-gray-800/50 text-gray-400 text-sm">
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div class="flex items-center relative opacity-60">
+                                            <select disabled class="w-full appearance-none pl-3 pr-8 py-1.5 border border-gray-300 dark:border-gray-700 rounded bg-gray-50 dark:bg-gray-800/50 text-gray-500 text-sm">
+                                                <option selected>-- Absent --</option>
+                                            </select>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-right">
+                                        <!-- Actions disable -->
+                                    </td>
+                                </tr>
+                                
+                                <!-- Ligne d'ajout rapide -->
+                                <tr>
+                                    <td colspan="6" class="px-4 py-3 border-t border-dashed border-gray-200 dark:border-gray-800">
+                                        <button class="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-accent-600 dark:text-gray-400 dark:hover:text-accent-400 transition-colors">
+                                            <i data-lucide="plus" class="w-4 h-4"></i>
+                                            Ajouter un membre temporaire à l'équipe
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot class="bg-gray-50 dark:bg-gray-800/80 border-t border-gray-200 dark:border-gray-800">
+                                <tr>
+                                    <td colspan="2" class="px-4 py-3 text-right font-medium text-gray-900 dark:text-white">
+                                        Totaux journaliers
+                                    </td>
+                                    <td class="px-4 py-3 text-center font-bold text-gray-900 dark:text-white">
+                                        14.0 h
+                                    </td>
+                                    <td class="px-4 py-3 text-center font-bold text-gray-900 dark:text-white">
+                                        1.5 h
+                                    </td>
+                                    <td colspan="2" class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                                        2 personnes présentes
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Ressources Section (Quick link) -->
+                <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm p-5 flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-lg bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-500 flex items-center justify-center">
+                            <i data-lucide="truck" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-medium text-gray-900 dark:text-white">Imputation des ressources matérielles</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Avez-vous utilisé des engins, véhicules ou outils spécifiques à facturer / imputer ?</p>
+                        </div>
+                    </div>
+                    <a href="ecr-09-02-imputation-et-ressources-pointees.html" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">
+                        Déclarer des ressources
+                    </a>
+                </div>
+
+                <!-- Commentaires -->
+                <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm p-5">
+                    <h3 class="font-medium text-gray-900 dark:text-white mb-3">Commentaire (facultatif)</h3>
+                    <textarea class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-accent-500 focus:border-accent-500" rows="3" placeholder="Une remarque particulière sur la journée (intempéries, retard livraison...) ?"></textarea>
+                </div>
+
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

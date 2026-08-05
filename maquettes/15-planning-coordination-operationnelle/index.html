@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 15 - Planning & Coordination - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        gray: { 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 800: '#1f2937', 900: '#111827', 950: '#0c111d' }
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen">
+    
+    <div class="max-w-5xl mx-auto py-12 px-6">
+        
+        <div class="mb-10">
+            <div class="flex items-center gap-3 text-accent-600 dark:text-accent-500 font-bold text-xl mb-6">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP - Maquettes</span>
+            </div>
+            <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">Module 15 : Planning & Coordination opérationnelle</h1>
+            <p class="text-lg text-gray-600 dark:text-gray-400 max-w-3xl">
+                Ce module permet de planifier les projets, d'affecter les ressources (équipes et matériels) et d'avoir une vision globale consolidée pour éviter les conflits d'allocation.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+            <!-- ECR-15-01 -->
+            <a href="ecr-15-01-planning-projet.html" class="group bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 shadow-sm hover:shadow-md hover:border-accent-300 dark:hover:border-accent-700 transition-all">
+                <div class="w-12 h-12 bg-accent-50 dark:bg-accent-900/30 text-accent-600 dark:text-accent-500 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <i data-lucide="calendar-days" class="w-6 h-6"></i>
+                </div>
+                <div class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">ECR-15-01</div>
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-accent-600 dark:group-hover:text-accent-400 transition-colors">Planning projet</h2>
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                    Vue locale des activités planifiées, jalons et affectations sur un projet spécifique (Gantt).
+                </p>
+            </a>
+
+            <!-- ECR-15-02 -->
+            <a href="ecr-15-02-fiche-activite-planifiee.html" class="group bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 shadow-sm hover:shadow-md hover:border-accent-300 dark:hover:border-accent-700 transition-all">
+                <div class="w-12 h-12 bg-accent-50 dark:bg-accent-900/30 text-accent-600 dark:text-accent-500 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <i data-lucide="file-text" class="w-6 h-6"></i>
+                </div>
+                <div class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">ECR-15-02</div>
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-accent-600 dark:group-hover:text-accent-400 transition-colors">Fiche activité</h2>
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                    Détail d'une activité avec ressources, dépendances et replanification.
+                </p>
+            </a>
+
+            <!-- ECR-15-03 -->
+            <a href="ecr-15-03-planning-consolide.html" class="group bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 shadow-sm hover:shadow-md hover:border-accent-300 dark:hover:border-accent-700 transition-all">
+                <div class="w-12 h-12 bg-accent-50 dark:bg-accent-900/30 text-accent-600 dark:text-accent-500 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <i data-lucide="layers-3" class="w-6 h-6"></i>
+                </div>
+                <div class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">ECR-15-03</div>
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-accent-600 dark:group-hover:text-accent-400 transition-colors">Planning consolidé</h2>
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                    Vision transverse des charges, disponibilités et collisions de planning inter-projets.
+                </p>
+            </a>
+            
+        </div>
+
+        <div class="mt-12 p-6 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Modules associés</h3>
+            <ul class="flex flex-wrap gap-3">
+                <li>
+                    <a href="../03-contrats-affaires-projets/index.html" class="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors">
+                        <i data-lucide="briefcase" class="w-4 h-4 text-gray-500"></i>
+                        03 - Affaires & Projets
+                    </a>
+                </li>
+                <li>
+                    <a href="../06-stock-logistique-magasin/index.html" class="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors">
+                        <i data-lucide="package" class="w-4 h-4 text-gray-500"></i>
+                        06 - Stocks & Logistique
+                    </a>
+                </li>
+                <li>
+                    <a href="../07-execution-terrain-ordres-de-travail/index.html" class="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors">
+                        <i data-lucide="hammer" class="w-4 h-4 text-gray-500"></i>
+                        07 - Exécution Terrain
+                    </a>
+                </li>
+                <li>
+                    <a href="../18-vue-transverse-affaire-projet/index.html" class="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors">
+                        <i data-lucide="globe" class="w-4 h-4 text-gray-500"></i>
+                        18 - Vue Transverse Projet
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

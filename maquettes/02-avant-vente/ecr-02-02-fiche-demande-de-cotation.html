@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demande de cotation - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3' },
+                        error: { 500: '#f04438', 50: '#fef3f2' },
+                        warning: { 500: '#f79009', 50: '#fffaeb' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Avant-vente</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="home" class="w-5 h-5"></i>
+                    <span class="truncate">Accueil Avant-vente</span>
+                </a>
+                <a href="ecr-02-01-pipeline-avant-vente.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="kanban" class="w-5 h-5"></i>
+                    <span class="truncate">Pipeline</span>
+                </a>
+                <a href="ecr-02-02-fiche-demande-de-cotation.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500">
+                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                    <span class="truncate">Demandes de cotation</span>
+                </a>
+                <a href="ecr-02-04-fiche-offre.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 flex-1 justify-between">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="briefcase" class="w-5 h-5"></i>
+                        <span class="truncate">Offres & Devis</span>
+                    </div>
+                    <span class="bg-warning-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-md">2</span>
+                </a>
+                <a href="ecr-02-03-atelier-d-etude-et-de-chiffrage.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="calculator" class="w-5 h-5"></i>
+                    <span class="truncate">Atelier de chiffrage</span>
+                </a>
+            </nav>
+                    <div class="mt-8">
+                <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Autres modules</div>
+                <nav class="space-y-1">
+                    <a href="../01-referentiel/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="database" class="w-5 h-5"></i>
+                        <span class="truncate">Référentiel</span>
+                    </a>
+                    <a href="../03-contrats-affaires-projets/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="folder-check" class="w-5 h-5"></i>
+                        <span class="truncate">Contrats & Affaires</span>
+                    </a>
+                    <a href="../16-gouvernance-validation-controle-interne/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="check-square" class="w-5 h-5"></i>
+                        <span class="truncate">Gouvernance</span>
+                    </a>
+                </nav>
+            </div>
+</div>
+        
+        <div class="p-4 border-t border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-3">
+                <img src="https://ui-avatars.com/api/?name=Marie+C&background=465fff&color=fff" alt="User" class="w-8 h-8 rounded-full">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">Marie C.</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate">Commerciale</p>
+                </div>
+                <button onclick="document.documentElement.classList.toggle('dark')" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+                    <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+        <!-- Header -->
+        <header class="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 shrink-0 z-10">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <div class="flex flex-col">
+                    <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                        <a href="ecr-02-01-pipeline-avant-vente.html" class="hover:text-gray-900 dark:hover:text-white transition-colors">Pipeline</a>
+                        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        <span class="text-gray-900 dark:text-gray-100 font-medium">Demande DC-2023-0142</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <button class="text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 px-3 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-200 dark:border-gray-700 flex items-center gap-2">
+                    <i data-lucide="edit-3" class="w-4 h-4"></i>
+                    <span class="hidden sm:inline">Modifier</span>
+                </button>
+                <a href="ecr-02-03-atelier-d-etude-et-de-chiffrage.html" class="bg-accent-600 hover:bg-accent-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm">
+                    <i data-lucide="play" class="w-4 h-4"></i>
+                    Lancer l'étude
+                </a>
+            </div>
+        </header>
+
+        <!-- Content scrollable -->
+        <div class="flex-1 overflow-y-auto p-6">
+            <div class="max-w-6xl mx-auto space-y-6">
+                
+                <!-- Title & Status row -->
+                <div class="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                    <div>
+                        <div class="flex items-center gap-3 mb-1">
+                            <span class="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-mono px-2.5 py-1 rounded-md border border-gray-200 dark:border-gray-700">DC-2023-0142</span>
+                            <span class="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-medium px-2.5 py-1 rounded-full flex items-center gap-1.5 border border-gray-200 dark:border-gray-700">
+                                <div class="w-1.5 h-1.5 rounded-full bg-gray-500"></div> Nouvelle
+                            </span>
+                        </div>
+                        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Renouvellement Parc IT et Infogérance</h1>
+                    </div>
+                    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-3 flex items-center gap-6 shadow-sm shrink-0">
+                        <div>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Responsable</p>
+                            <div class="flex items-center gap-2">
+                                <img src="https://ui-avatars.com/api/?name=Marie+C&background=465fff&color=fff" class="w-5 h-5 rounded-full" alt="">
+                                <span class="text-sm font-medium text-gray-900 dark:text-white">Marie C.</span>
+                            </div>
+                        </div>
+                        <div class="w-px h-8 bg-gray-200 dark:bg-gray-800"></div>
+                        <div>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Date limite</p>
+                            <div class="flex items-center gap-2 text-error-600 dark:text-error-500">
+                                <i data-lucide="calendar-clock" class="w-4 h-4"></i>
+                                <span class="text-sm font-medium">24 Nov. 2023</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Main Content Left (2/3) -->
+                    <div class="lg:col-span-2 space-y-6">
+                        
+                        <!-- Informations générales -->
+                        <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                            <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
+                                <h2 class="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <i data-lucide="building-2" class="w-5 h-5 text-gray-400"></i>
+                                    Client & Contexte
+                                </h2>
+                            </div>
+                            <div class="p-5">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Client</p>
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center font-bold text-gray-500">
+                                                AC
+                                            </div>
+                                            <div>
+                                                <a href="../01-referentiel/ecr-01-02-fiche-tiers.html" class="font-medium text-accent-600 dark:text-accent-500 hover:underline">Acme Corp SA</a>
+                                                <p class="text-xs text-gray-500 dark:text-gray-400">Client existant • Industrie</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Contact principal</p>
+                                        <div class="flex items-center gap-2">
+                                            <i data-lucide="user" class="w-4 h-4 text-gray-400"></i>
+                                            <span class="text-sm font-medium text-gray-900 dark:text-white">Jean Dupont</span>
+                                        </div>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400 ml-6">DSI • j.dupont@acme.com</p>
+                                    </div>
+                                    <div class="md:col-span-2 mt-2 pt-4 border-t border-gray-100 dark:border-gray-800">
+                                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Description du besoin</p>
+                                        <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg border border-gray-100 dark:border-gray-800">
+                                            Le client souhaite renouveler l'intégralité de son parc de postes de travail (env. 150 postes) suite à l'ouverture de 2 nouvelles succursales. 
+                                            <br><br>
+                                            En parallèle, il y a une demande pour une prestation d'infogérance sur 3 ans (N1/N2) avec astreinte H24. Le cahier des charges détaillé est en pièce jointe. Une réponse rapide est attendue pour caler le budget avant la fin de l'année.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Paramètres de l'offre -->
+                        <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                            <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-800">
+                                <h2 class="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <i data-lucide="sliders" class="w-5 h-5 text-gray-400"></i>
+                                    Paramètres de la demande
+                                </h2>
+                            </div>
+                            <div class="p-0">
+                                <table class="w-full text-sm text-left">
+                                    <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
+                                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                            <th class="px-5 py-3 font-medium text-gray-500 dark:text-gray-400 w-1/3 bg-gray-50 dark:bg-gray-800/30">Type de demande</th>
+                                            <td class="px-5 py-3 text-gray-900 dark:text-gray-100">Appel d'offre privé</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                            <th class="px-5 py-3 font-medium text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/30">Montant estimé (Budget client)</th>
+                                            <td class="px-5 py-3 font-semibold text-gray-900 dark:text-white">~ 85 000 € HT</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                            <th class="px-5 py-3 font-medium text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/30">Probabilité de gain</th>
+                                            <td class="px-5 py-3">
+                                                <div class="flex items-center gap-2">
+                                                    <div class="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                                        <div class="bg-warning-500 h-2 rounded-full" style="width: 60%"></div>
+                                                    </div>
+                                                    <span class="font-medium text-gray-900 dark:text-white">60%</span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                            <th class="px-5 py-3 font-medium text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/30">Lieu de livraison / prestation</th>
+                                            <td class="px-5 py-3 text-gray-900 dark:text-gray-100">Multi-sites (Siège + 2 agences, région parisienne)</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Sidebar Right (1/3) -->
+                    <div class="space-y-6">
+                        
+                        <!-- Documents joints -->
+                        <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                            <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
+                                <h2 class="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <i data-lucide="paperclip" class="w-5 h-5 text-gray-400"></i>
+                                    Pièces jointes
+                                </h2>
+                                <button class="text-accent-600 hover:text-accent-700 dark:text-accent-500 dark:hover:text-accent-400">
+                                    <i data-lucide="plus" class="w-5 h-5"></i>
+                                </button>
+                            </div>
+                            <div class="p-3">
+                                <ul class="space-y-2">
+                                    <li>
+                                        <a href="#" class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 group transition-colors">
+                                            <div class="w-8 h-8 rounded bg-error-50 dark:bg-error-900/20 text-error-600 flex items-center justify-center shrink-0">
+                                                <i data-lucide="file-text" class="w-4 h-4"></i>
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-sm font-medium text-gray-900 dark:text-white truncate group-hover:text-accent-600">CCTP_Acme_Parc_IT.pdf</p>
+                                                <p class="text-xs text-gray-500">2.4 MB • 12 Nov.</p>
+                                            </div>
+                                            <i data-lucide="download" class="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#" class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 group transition-colors">
+                                            <div class="w-8 h-8 rounded bg-success-50 dark:bg-success-900/20 text-success-600 flex items-center justify-center shrink-0">
+                                                <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-sm font-medium text-gray-900 dark:text-white truncate group-hover:text-accent-600">BPU_Trame_Reponse.xlsx</p>
+                                                <p class="text-xs text-gray-500">145 KB • 12 Nov.</p>
+                                            </div>
+                                            <i data-lucide="download" class="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Historique / Activité -->
+                        <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden flex flex-col h-[400px]">
+                            <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-800 shrink-0">
+                                <h2 class="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <i data-lucide="history" class="w-5 h-5 text-gray-400"></i>
+                                    Activité
+                                </h2>
+                            </div>
+                            <div class="p-5 flex-1 overflow-y-auto no-scrollbar relative">
+                                <!-- Ligne continue -->
+                                <div class="absolute top-5 bottom-5 left-7 w-px bg-gray-200 dark:bg-gray-800"></div>
+                                
+                                <div class="space-y-6 relative">
+                                    
+                                    <!-- Évènement -->
+                                    <div class="flex gap-4">
+                                        <div class="w-5 h-5 rounded-full bg-accent-100 border-2 border-white dark:border-gray-900 flex items-center justify-center shrink-0 z-10 text-accent-600">
+                                            <i data-lucide="edit-2" class="w-3 h-3"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-900 dark:text-white"><span class="font-medium">Marie C.</span> a modifié la probabilité de gain (40% → 60%)</p>
+                                            <p class="text-xs text-gray-500 mt-1">Aujourd'hui, 10:42</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Évènement -->
+                                    <div class="flex gap-4">
+                                        <div class="w-5 h-5 rounded-full bg-gray-200 dark:bg-gray-700 border-2 border-white dark:border-gray-900 flex items-center justify-center shrink-0 z-10">
+                                            <i data-lucide="paperclip" class="w-3 h-3 text-gray-600 dark:text-gray-300"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-900 dark:text-white"><span class="font-medium">Jean Dupont (Client)</span> a envoyé 2 documents.</p>
+                                            <p class="text-xs text-gray-500 mt-1">12 Nov. 2023, 14:15</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Évènement -->
+                                    <div class="flex gap-4">
+                                        <div class="w-5 h-5 rounded-full bg-green-100 border-2 border-white dark:border-gray-900 flex items-center justify-center shrink-0 z-10 text-green-600">
+                                            <i data-lucide="plus" class="w-3 h-3"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-900 dark:text-white"><span class="font-medium">Marie C.</span> a créé la demande de cotation.</p>
+                                            <p class="text-xs text-gray-500 mt-1">12 Nov. 2023, 11:30</p>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <!-- Input message -->
+                            <div class="p-3 border-t border-gray-200 dark:border-gray-800 shrink-0 bg-gray-50 dark:bg-gray-900/50">
+                                <div class="relative">
+                                    <input type="text" placeholder="Ajouter une note..." class="w-full pl-3 pr-10 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-500 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
+                                    <button class="absolute right-2 top-1.5 text-gray-400 hover:text-accent-500 p-1">
+                                        <i data-lucide="send" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

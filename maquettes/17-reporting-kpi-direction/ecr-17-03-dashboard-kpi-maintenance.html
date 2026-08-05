@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KPI Maintenance & SAV - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3' },
+                        error: { 500: '#f04438', 50: '#fef3f2' },
+                        warning: { 500: '#f79009', 50: '#fffaeb' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Reporting & KPI</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                    <span class="truncate">Accueil Reporting</span>
+                </a>
+                <a href="ecr-17-01-dashboard-kpi-commerciaux.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="trending-up" class="w-5 h-5"></i>
+                    <span class="truncate">KPI Commerciaux</span>
+                </a>
+                <a href="ecr-17-02-dashboard-kpi-projet-finance.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="pie-chart" class="w-5 h-5"></i>
+                    <span class="truncate">KPI Projet & Finance</span>
+                </a>
+                <a href="ecr-17-03-dashboard-kpi-maintenance.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500">
+                    <i data-lucide="activity" class="w-5 h-5"></i>
+                    <span class="truncate">KPI Maintenance</span>
+                </a>
+            </nav>
+            <div class="mt-8">
+                <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Navigation Globale</div>
+                <nav class="space-y-1">
+                    <a href="../index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                        <span class="truncate">Retour à l'accueil</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+        <!-- Top Navigation -->
+        <header class="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 z-10 shrink-0">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <div class="flex flex-col">
+                    <div class="flex items-center gap-2">
+                        <a href="index.html" class="text-xs text-gray-500 dark:text-gray-400 font-medium hover:text-accent-600 transition-colors">Direction</a>
+                        <i data-lucide="chevron-right" class="w-3 h-3 text-gray-400"></i>
+                        <div class="text-xs text-gray-500 dark:text-gray-400 font-medium">Dashboards</div>
+                    </div>
+                    <h1 class="text-xl font-bold text-gray-900 dark:text-white">KPI Maintenance & SAV</h1>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3 hidden lg:flex">
+                <div class="relative">
+                    <select class="appearance-none bg-gray-50 border border-gray-200 text-gray-700 py-2 pl-3 pr-8 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300">
+                        <option>Ce Mois</option>
+                        <option>Mois Dernier</option>
+                        <option>Ce Trimestre</option>
+                    </select>
+                    <i data-lucide="calendar" class="w-4 h-4 text-gray-400 absolute right-2.5 top-2.5 pointer-events-none"></i>
+                </div>
+                <div class="relative">
+                    <select class="appearance-none bg-gray-50 border border-gray-200 text-gray-700 py-2 pl-3 pr-8 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300">
+                        <option>Tous Contrats SLA</option>
+                        <option>SLA Premium (4h)</option>
+                        <option>SLA Standard (48h)</option>
+                    </select>
+                    <i data-lucide="shield" class="w-4 h-4 text-gray-400 absolute right-2.5 top-2.5 pointer-events-none"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content scrollable area -->
+        <div class="flex-1 overflow-y-auto p-6 lg:p-8">
+            <div class="max-w-7xl mx-auto space-y-6">
+                
+                <!-- Maintenance KPIs -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white dark:bg-gray-900 rounded-xl p-5 border border-gray-200 dark:border-gray-800 shadow-sm">
+                        <div class="flex justify-between items-start mb-2">
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Tickets Ouverts</p>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+                                Total: 142
+                            </span>
+                        </div>
+                        <h3 class="text-3xl font-bold text-gray-900 dark:text-white">28</h3>
+                        <p class="text-xs text-gray-500 mt-1">Dont 5 en attente client</p>
+                    </div>
+
+                    <div class="bg-white dark:bg-gray-900 rounded-xl p-5 border border-gray-200 dark:border-gray-800 shadow-sm">
+                        <div class="flex justify-between items-start mb-2">
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Respect des SLA</p>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-success-50 text-success-600 dark:bg-success-900/20 dark:text-success-500">
+                                Objectif: 90%
+                            </span>
+                        </div>
+                        <h3 class="text-3xl font-bold text-gray-900 dark:text-white">94.2%</h3>
+                        <div class="w-full bg-gray-100 rounded-full h-1.5 mt-2 dark:bg-gray-800">
+                            <div class="bg-success-500 h-1.5 rounded-full" style="width: 94.2%"></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white dark:bg-gray-900 rounded-xl p-5 border border-gray-200 dark:border-gray-800 shadow-sm">
+                        <div class="flex justify-between items-start mb-2">
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Temps Moyen (MTTR)</p>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-error-50 text-error-600 dark:bg-error-900/20 dark:text-error-500">
+                                <i data-lucide="trending-up" class="w-3 h-3 mr-1"></i> +2h
+                            </span>
+                        </div>
+                        <h3 class="text-3xl font-bold text-gray-900 dark:text-white">14h 30m</h3>
+                        <p class="text-xs text-gray-500 mt-1">Sur les tickets résolus ce mois</p>
+                    </div>
+
+                    <div class="bg-white dark:bg-gray-900 rounded-xl p-5 border border-gray-200 dark:border-gray-800 shadow-sm">
+                        <div class="flex justify-between items-start mb-2">
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Taux de Récurrence</p>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-success-50 text-success-600 dark:bg-success-900/20 dark:text-success-500">
+                                <i data-lucide="trending-down" class="w-3 h-3 mr-1"></i> -1%
+                            </span>
+                        </div>
+                        <h3 class="text-3xl font-bold text-gray-900 dark:text-white">4.5%</h3>
+                        <p class="text-xs text-gray-500 mt-1">Interventions successives < 30j</p>
+                    </div>
+                </div>
+
+                <!-- Charts Area -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Volume de tickets -->
+                    <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm p-6">
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-6">Créations vs Résolutions (30j)</h3>
+                        <div class="h-48 relative flex items-end gap-2 border-b border-gray-200 dark:border-gray-800 pb-2">
+                            <!-- Simulating line area chart visually with bars for simplicity -->
+                            <div class="flex-1 flex flex-col justify-end gap-1 h-full relative group">
+                                <div class="w-full bg-blue-100 dark:bg-blue-900/40 rounded-t" style="height: 60%"></div>
+                                <div class="w-full bg-emerald-500 absolute bottom-0 opacity-80" style="height: 50%"></div>
+                            </div>
+                            <div class="flex-1 flex flex-col justify-end gap-1 h-full relative group">
+                                <div class="w-full bg-blue-100 dark:bg-blue-900/40 rounded-t" style="height: 70%"></div>
+                                <div class="w-full bg-emerald-500 absolute bottom-0 opacity-80" style="height: 80%"></div>
+                            </div>
+                            <div class="flex-1 flex flex-col justify-end gap-1 h-full relative group">
+                                <div class="w-full bg-blue-100 dark:bg-blue-900/40 rounded-t" style="height: 40%"></div>
+                                <div class="w-full bg-emerald-500 absolute bottom-0 opacity-80" style="height: 45%"></div>
+                            </div>
+                            <div class="flex-1 flex flex-col justify-end gap-1 h-full relative group">
+                                <div class="w-full bg-blue-100 dark:bg-blue-900/40 rounded-t" style="height: 90%"></div>
+                                <div class="w-full bg-emerald-500 absolute bottom-0 opacity-80" style="height: 60%"></div>
+                            </div>
+                            <div class="flex-1 flex flex-col justify-end gap-1 h-full relative group">
+                                <div class="w-full bg-blue-100 dark:bg-blue-900/40 rounded-t" style="height: 50%"></div>
+                                <div class="w-full bg-emerald-500 absolute bottom-0 opacity-80" style="height: 70%"></div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-500 mt-2">
+                            <span>S-4</span>
+                            <span>S-3</span>
+                            <span>S-2</span>
+                            <span>S-1</span>
+                            <span>Cette Semaine</span>
+                        </div>
+                        <div class="flex justify-center gap-6 mt-4">
+                            <div class="flex items-center gap-2 text-sm"><span class="w-3 h-3 bg-blue-200 rounded-sm"></span> Créés (142)</div>
+                            <div class="flex items-center gap-2 text-sm"><span class="w-3 h-3 bg-emerald-500 rounded-sm"></span> Résolus (156)</div>
+                        </div>
+                    </div>
+
+                    <!-- Répartition par catégorie -->
+                    <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm p-6">
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-6">Tickets par Catégorie</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-gray-700 dark:text-gray-300 font-medium">Panne Matérielle (45%)</span>
+                                    <span class="font-bold text-gray-900 dark:text-white">64</span>
+                                </div>
+                                <div class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-2">
+                                    <div class="bg-error-500 h-2 rounded-full" style="width: 45%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-gray-700 dark:text-gray-300 font-medium">Configuration / Logiciel (30%)</span>
+                                    <span class="font-bold text-gray-900 dark:text-white">42</span>
+                                </div>
+                                <div class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-2">
+                                    <div class="bg-warning-500 h-2 rounded-full" style="width: 30%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-gray-700 dark:text-gray-300 font-medium">Maintenance Préventive (15%)</span>
+                                    <span class="font-bold text-gray-900 dark:text-white">21</span>
+                                </div>
+                                <div class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-2">
+                                    <div class="bg-emerald-500 h-2 rounded-full" style="width: 15%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-gray-700 dark:text-gray-300 font-medium">Autre Demande (10%)</span>
+                                    <span class="font-bold text-gray-900 dark:text-white">15</span>
+                                </div>
+                                <div class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-2">
+                                    <div class="bg-gray-400 h-2 rounded-full" style="width: 10%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tickets Hors SLA ou Récurrents -->
+                <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
+                    <div class="p-6 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                            <h3 class="text-lg font-bold text-gray-900 dark:text-white">Tickets à risque (Hors SLA / Récurrents)</h3>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-gray-600 dark:text-gray-400">
+                            <thead class="bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-800">
+                                <tr>
+                                    <th class="px-6 py-3 font-medium">N° Ticket</th>
+                                    <th class="px-6 py-3 font-medium">Client / Site</th>
+                                    <th class="px-6 py-3 font-medium">Anomalie</th>
+                                    <th class="px-6 py-3 font-medium text-center">Âge</th>
+                                    <th class="px-6 py-3 font-medium text-right">Statut / Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                    <td class="px-6 py-3 font-medium">
+                                        <a href="../14-sav-maintenance-ticketing/ecr-14-02-fiche-ticket.html" class="text-accent-600 hover:text-accent-700 dark:text-accent-500 font-bold transition-colors">TCK-8942</a>
+                                    </td>
+                                    <td class="px-6 py-3">
+                                        <div class="font-medium text-gray-900 dark:text-white">Hôpital Nord</div>
+                                        <div class="text-xs">Chaufferie Principale</div>
+                                    </td>
+                                    <td class="px-6 py-3">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-error-50 text-error-600 dark:bg-error-900/20">Hors SLA (Dép. 12h)</span>
+                                    </td>
+                                    <td class="px-6 py-3 text-center font-medium">16h</td>
+                                    <td class="px-6 py-3 text-right">
+                                        <button class="text-accent-600 hover:text-accent-700 text-sm font-medium">Escalader</button>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                    <td class="px-6 py-3 font-medium">
+                                        <a href="../14-sav-maintenance-ticketing/ecr-14-02-fiche-ticket.html" class="text-accent-600 hover:text-accent-700 dark:text-accent-500 font-bold transition-colors">TCK-8955</a>
+                                    </td>
+                                    <td class="px-6 py-3">
+                                        <div class="font-medium text-gray-900 dark:text-white">Tour Horizon</div>
+                                        <div class="text-xs">Ascenseur Batterie B</div>
+                                    </td>
+                                    <td class="px-6 py-3">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-warning-50 text-warning-600 dark:bg-warning-900/20">Récurrent (3ème fois)</span>
+                                    </td>
+                                    <td class="px-6 py-3 text-center">8h</td>
+                                    <td class="px-6 py-3 text-right">
+                                        <button class="text-accent-600 hover:text-accent-700 text-sm font-medium">Expertise req.</button>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                    <td class="px-6 py-3 font-medium">
+                                        <a href="../14-sav-maintenance-ticketing/ecr-14-02-fiche-ticket.html" class="text-accent-600 hover:text-accent-700 dark:text-accent-500 font-bold transition-colors">TCK-8930</a>
+                                    </td>
+                                    <td class="px-6 py-3">
+                                        <div class="font-medium text-gray-900 dark:text-white">Campus Université</div>
+                                        <div class="text-xs">Baie Réseau Bât 4</div>
+                                    </td>
+                                    <td class="px-6 py-3">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-error-50 text-error-600 dark:bg-error-900/20">Hors SLA (Dép. 2h)</span>
+                                    </td>
+                                    <td class="px-6 py-3 text-center font-medium">6h</td>
+                                    <td class="px-6 py-3 text-right">
+                                        <button class="text-accent-600 hover:text-accent-700 text-sm font-medium">Assigner</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

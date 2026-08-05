@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fiche Article - Référentiel - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3' },
+                        error: { 500: '#f04438', 50: '#fef3f2' },
+                        warning: { 500: '#f79009', 50: '#fffaeb' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Référentiel</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                    <span class="truncate">Accueil Référentiel</span>
+                </a>
+                <a href="ecr-01-01-catalogue-des-tiers.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="users" class="w-5 h-5"></i>
+                    <span class="truncate">Catalogue des Tiers</span>
+                </a>
+                <a href="ecr-01-03-catalogue-articles-et-prestations.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500">
+                    <i data-lucide="package" class="w-5 h-5"></i>
+                    <span class="truncate">Articles & Prestations</span>
+                </a>
+                <a href="ecr-01-04-fiche-article-ou-prestation.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-accent-600 bg-transparent dark:text-accent-400 pl-11">
+                    <span class="truncate font-semibold">↳ Fiche Article</span>
+                </a>
+                <a href="ecr-01-05-referentiel-sites-et-depots.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="map-pin" class="w-5 h-5"></i>
+                    <span class="truncate">Sites & Dépôts</span>
+                </a>
+                <a href="ecr-01-06-referentiel-ressources-operationnelles.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="truck" class="w-5 h-5"></i>
+                    <span class="truncate">Ressources Opérat.</span>
+                </a>
+            </nav>
+        </div>
+        
+        <div class="p-4 border-t border-gray-200 dark:border-gray-800">
+            <div class="flex items-center gap-3">
+                <img src="https://ui-avatars.com/api/?name=Admin+Sys&background=465fff&color=fff" alt="Admin" class="w-8 h-8 rounded-full">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">Admin Sys</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate">admin@huberp.com</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+        <!-- Top Navigation -->
+        <header class="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 z-10 shrink-0">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                
+                <nav class="flex" aria-label="Breadcrumb">
+                    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                        <li class="inline-flex items-center">
+                            <a href="index.html" class="inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
+                                Référentiel
+                            </a>
+                        </li>
+                        <li>
+                            <div class="flex items-center">
+                                <i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i>
+                                <a href="ecr-01-03-catalogue-articles-et-prestations.html" class="ml-1 text-sm font-medium text-gray-500 hover:text-gray-900 md:ml-2 dark:text-gray-400 dark:hover:text-white">Catalogue Articles</a>
+                            </div>
+                        </li>
+                        <li aria-current="page">
+                            <div class="flex items-center">
+                                <i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i>
+                                <span class="ml-1 text-sm font-medium text-gray-900 md:ml-2 dark:text-gray-100">SRV-DL-380</span>
+                            </div>
+                        </li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="flex items-center gap-4">
+                <button class="text-gray-400 hover:text-error-600 dark:hover:text-error-500 transition-colors" title="Désactiver l'article">
+                    <i data-lucide="power" class="w-5 h-5"></i>
+                </button>
+                <div class="h-6 w-px bg-gray-300 dark:bg-gray-700"></div>
+                <div class="relative group">
+                    <button class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm">
+                        <span>Actions liées</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                    </button>
+                    <!-- Dropdown menu -->
+                    <div class="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 border border-gray-200 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-700 hidden group-hover:block z-50">
+                        <div class="py-1">
+                            <a href="../05-achats/index.html" class="group flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-colors">
+                                <i data-lucide="shopping-cart" class="mr-3 h-4 w-4 text-gray-400 group-hover:text-gray-500 dark:text-gray-400"></i>
+                                Expression de Besoin
+                            </a>
+                        </div>
+                        <div class="py-1">
+                            <a href="../06-stock-logistique-magasin/index.html" class="group flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-colors">
+                                <i data-lucide="package" class="mr-3 h-4 w-4 text-gray-400 group-hover:text-gray-500 dark:text-gray-400"></i>
+                                Consulter le stock
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <button class="px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm">
+                    Annuler
+                </button>
+                <button class="px-4 py-2 bg-accent-600 text-white rounded-lg text-sm font-medium hover:bg-accent-700 transition-colors shadow-sm">
+                    Enregistrer
+                </button>
+            </div>
+        </header>
+
+        <!-- Content scrollable area -->
+        <div class="flex-1 overflow-y-auto p-6 bg-gray-50 dark:bg-gray-950">
+            
+            <div class="max-w-5xl mx-auto">
+                
+                <!-- Page Header (Article Info) -->
+                <div class="mb-6 flex items-start justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="h-16 w-16 rounded-xl bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400 flex items-center justify-center font-bold text-2xl uppercase shadow-sm border border-blue-200 dark:border-blue-800/30">
+                            <i data-lucide="server" class="w-8 h-8"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-3 mb-1">
+                                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Serveur HP ProLiant DL380 Gen10</h1>
+                                <span class="inline-flex items-center rounded-full bg-success-50 dark:bg-success-900/20 px-2.5 py-0.5 text-xs font-medium text-success-600 dark:text-success-400 uppercase border border-success-200 dark:border-success-800/30">
+                                    Actif
+                                </span>
+                            </div>
+                            <div class="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                                <span class="flex items-center gap-1"><i data-lucide="hash" class="w-4 h-4"></i> SRV-DL-380</span>
+                                <span class="flex items-center gap-1"><i data-lucide="box" class="w-4 h-4"></i> Matériel • Serveurs & Infrastructure</span>
+                                <span class="flex items-center gap-1"><i data-lucide="barcode" class="w-4 h-4"></i> EAN: 0190017409245</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <div class="border-b border-gray-200 dark:border-gray-800 mb-6">
+                    <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                        <a href="#" class="border-accent-500 text-accent-600 dark:text-accent-500 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" aria-current="page">
+                            Général & Achat
+                        </a>
+                        <a href="#" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
+                            Caractéristiques Techniques
+                        </a>
+                        <a href="#" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors relative">
+                            Traçabilité & Stock
+                            <span class="absolute top-2 -right-3 inline-flex items-center justify-center w-2 h-2 rounded-full bg-accent-500 ring-2 ring-gray-50 dark:ring-gray-950"></span>
+                        </a>
+                        <a href="#" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
+                            Historique
+                        </a>
+                    </nav>
+                </div>
+
+                <!-- Form Content -->
+                <div class="space-y-6">
+                    
+                    <!-- Section: Données de base -->
+                    <div class="bg-white dark:bg-gray-900 shadow-sm rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20">
+                            <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">Définition</h3>
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Typologie et classification de base du produit.</p>
+                        </div>
+                        <div class="p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="type_article" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type d'article <span class="text-error-500">*</span></label>
+                                    <select id="type_article" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm focus:border-accent-500 focus:ring-accent-500 sm:text-sm px-3 py-2 border">
+                                        <option value="materiel" selected>Matériel (Géré en stock)</option>
+                                        <option value="prestation">Prestation / Service (Non stocké)</option>
+                                        <option value="consommable">Consommable (Non suivi individuellement)</option>
+                                        <option value="logiciel">Licence logicielle</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label for="categorie" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Catégorie Métier <span class="text-error-500">*</span></label>
+                                    <select id="categorie" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm focus:border-accent-500 focus:ring-accent-500 sm:text-sm px-3 py-2 border">
+                                        <option value="serveur" selected>Serveurs & Infrastructure</option>
+                                        <option value="poste">Postes de travail</option>
+                                        <option value="reseau">Equipement Réseau</option>
+                                        <option value="accessoire">Accessoires & Périphériques</option>
+                                    </select>
+                                </div>
+
+                                <div class="md:col-span-2">
+                                    <label for="libelle" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Libellé principal <span class="text-error-500">*</span></label>
+                                    <input type="text" id="libelle" value="Serveur HP ProLiant DL380 Gen10" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm focus:border-accent-500 focus:ring-accent-500 sm:text-sm px-3 py-2 border">
+                                </div>
+
+                                <div class="md:col-span-2">
+                                    <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description / Résumé <span class="text-gray-400 font-normal">(Affiché sur devis)</span></label>
+                                    <textarea id="description" rows="2" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm focus:border-accent-500 focus:ring-accent-500 sm:text-sm px-3 py-2 border">CPU Intel Xeon Silver 4208 (8 cœurs, 2.1 GHz), 32GB RAM DDR4 (1x 32GB RDIMM), Contrôleur stockage P408i-a, Sans disque dur, Alimentation 500W.</textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section: Fiscalite / Achats -->
+                    <div class="bg-white dark:bg-gray-900 shadow-sm rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20">
+                            <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">Commercial & Valorisation</h3>
+                        </div>
+                        <div class="p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                
+                                <div>
+                                    <label for="unite" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Unité de Gestion <span class="text-error-500">*</span></label>
+                                    <select id="unite" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm focus:border-accent-500 focus:ring-accent-500 sm:text-sm px-3 py-2 border">
+                                        <option value="u" selected>U (Unité)</option>
+                                        <option value="h">Heure</option>
+                                        <option value="j">Jour</option>
+                                        <option value="kg">KG</option>
+                                        <option value="ml">Mètre Linéaire</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label for="tva" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Taux de TVA <span class="text-error-500">*</span></label>
+                                    <select id="tva" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm focus:border-accent-500 focus:ring-accent-500 sm:text-sm px-3 py-2 border">
+                                        <option value="20" selected>Normale (20.0%)</option>
+                                        <option value="10">Intermédiaire (10.0%)</option>
+                                        <option value="5.5">Réduite (5.5%)</option>
+                                        <option value="0">Exonéré (0%)</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label for="pmp" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Coût Standard / PMP</label>
+                                    <div class="relative rounded-md shadow-sm">
+                                        <input type="text" id="pmp" value="1 850,00" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white pr-10 focus:border-accent-500 focus:ring-accent-500 sm:text-sm px-3 py-2 border">
+                                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                                            <span class="text-gray-500 sm:text-sm">€</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section: Traçabilité Aperçu -->
+                    <div class="bg-warning-50/50 dark:bg-warning-900/10 shadow-sm rounded-xl border border-warning-200 dark:border-warning-800/30 overflow-hidden relative">
+                        <div class="absolute top-0 right-0 p-4 opacity-10">
+                            <i data-lucide="scan-barcode" class="w-24 h-24 text-warning-500"></i>
+                        </div>
+                        <div class="px-6 py-4 border-b border-warning-200 dark:border-warning-800/30">
+                            <h3 class="text-lg font-medium leading-6 text-warning-800 dark:text-warning-300 flex items-center gap-2">
+                                <i data-lucide="shield-alert" class="w-5 h-5"></i>
+                                Règles de Traçabilité Exigées
+                            </h3>
+                        </div>
+                        <div class="p-6 relative z-10">
+                            <div class="flex items-center gap-6">
+                                <div class="flex-1">
+                                    <p class="text-sm text-gray-700 dark:text-gray-300">
+                                        Cet article est paramétré en tant que <strong>matériel critique</strong>. Il nécessite un suivi rigoureux en stock via des numéros de série uniques pour le suivi de garantie.
+                                    </p>
+                                </div>
+                                <div class="shrink-0 space-y-3">
+                                    <!-- Toggle Switches -->
+                                    <label class="flex items-center gap-3 cursor-pointer">
+                                        <div class="relative">
+                                            <input type="checkbox" class="sr-only" checked>
+                                            <div class="block bg-accent-600 w-10 h-6 rounded-full transition-colors"></div>
+                                            <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform transform translate-x-4"></div>
+                                        </div>
+                                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Gestion par Numéro de Série</span>
+                                    </label>
+                                    
+                                    <label class="flex items-center gap-3 cursor-pointer">
+                                        <div class="relative">
+                                            <input type="checkbox" class="sr-only">
+                                            <div class="block bg-gray-300 dark:bg-gray-600 w-10 h-6 rounded-full transition-colors"></div>
+                                            <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform"></div>
+                                        </div>
+                                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Gestion par Lots</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            
+        </div>
+    </main>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Synthèse - ERPHub V1</title>
+  <link rel="icon" href="data:,"><link rel="stylesheet" href="styles.css"><script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar"><a class="brand" href="index.html"><span class="brand-mark"><i data-lucide="layers"></i></span><span>HubERP</span></a><nav class="nav"><div class="nav-section">Travail</div><a class="nav-link" href="01-projets.html"><i data-lucide="folder-kanban"></i>Projets</a><a class="nav-link" href="02-a-traiter.html"><i data-lucide="inbox"></i>À traiter</a><a class="nav-link" href="04-offres.html"><i data-lucide="briefcase"></i>Offres commerciales</a><a class="nav-link" href="05-clients.html"><i data-lucide="building-2"></i>Clients</a><a class="nav-link" href="06-depenses.html"><i data-lucide="receipt"></i>Dépenses</a><a class="nav-link" href="07-heures.html"><i data-lucide="clock"></i>Heures</a><a class="nav-link" href="08-factures.html"><i data-lucide="file-text"></i>Factures</a><a class="nav-link" href="09-encaissements.html"><i data-lucide="wallet"></i>Encaissements</a><a class="nav-link" href="10-documents.html"><i data-lucide="files"></i>Documents</a><div class="nav-section">Pilotage</div><a class="nav-link active" href="11-synthese.html"><i data-lucide="bar-chart-3"></i>Synthèse</a><a class="nav-link" href="12-parametres.html"><i data-lucide="settings"></i>Paramètres</a></nav><div class="user-card"><div class="avatar">AD</div><div><div class="user-name">Awa Diarra</div><div class="user-role">Direction</div></div></div></aside>
+    <main class="main"><header class="topbar"><div class="breadcrumb"><span>Pilotage</span><i data-lucide="chevron-right"></i><strong>Synthèse</strong></div><div class="top-actions"><a class="button secondary" href="01-projets.html"><i data-lucide="folder-kanban"></i>Retour projets</a></div></header>
+      <div class="content"><section class="page"><div class="page-head"><div><p class="eyebrow">Synthèse secondaire</p><h1>Vue globale Direction</h1><p class="lead">Un complément au registre projets, pas la page d’accueil.</p></div></div>
+        <div class="metric-grid"><div class="metric"><div class="metric-label">Projets actifs</div><div class="metric-value">18</div><div class="metric-note">Tous périmètres</div></div><div class="metric"><div class="metric-label">À risque</div><div class="metric-value">3</div><div class="metric-note">Budget ou cash</div></div><div class="metric"><div class="metric-label">À facturer</div><div class="metric-value">5</div><div class="metric-note">Actions compta</div></div><div class="metric"><div class="metric-label">À clôturer</div><div class="metric-value">1</div><div class="metric-note">Dossier complet</div></div></div>
+        <div class="panel"><div class="panel-head"><h2>Projets à surveiller</h2></div><div class="table-wrap"><table class="table"><thead><tr><th>Projet</th><th>Phase</th><th>Signal</th><th>Prochaine action</th></tr></thead><tbody><tr><td><strong>PROJ-2026-002</strong></td><td><span class="phase execution">Exécution</span></td><td><span class="badge danger">Budget à risque</span></td><td>Contrôle dépense</td></tr><tr><td><strong>PROJ-2026-001</strong></td><td><span class="phase validation">Validation</span></td><td><span class="badge warning">Budget à valider</span></td><td>Décision Direction</td></tr></tbody></table></div></div>
+      </section></div>
+    </main>
+  </div>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

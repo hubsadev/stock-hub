@@ -1,0 +1,217 @@
+﻿Modele de donnees cible - Stock Hub
+
+1. Article
+- id
+- codeArticle
+- famille
+- designation
+- unite
+- fournisseurHabituel
+- emplacementDefaut
+- stockMin
+- stockMax
+- stockSecurite
+- prixUnitaire
+- stockInitial
+- statut
+- dateCreation
+- modeSuivi
+- seuilReapprovisionnement
+
+2. Equipement
+- id
+- codeInventaire
+- designation
+- quantite
+- marque
+- numeroSerie
+- etat
+- employeAffecte
+- localisation
+- dateAchat
+- garantieJusquAu
+- observation
+- projetActuel
+- statutActuel
+
+3. Emplacement
+- id
+- nom
+- type
+- responsable
+- actif
+
+Types possibles :
+- Magasin Bureau
+- Depot FTTH
+- Depot GSM
+- Depot BTP
+- Chantier
+- Vehicule
+- Employe / technicien
+- Autre
+
+4. Fournisseur
+- id
+- nom
+- contact
+- telephone
+- email
+- actif
+
+5. Projet / Chantier
+- id
+- codeProjet
+- nomProjet
+- client
+- region
+- ville
+- chantier
+- chefProjet
+- conducteurTravaux
+- responsableLogistique
+- sousTraitant
+- budgetMateriel
+- dateDebut
+- dateFinPrevue
+- statut
+
+6. MouvementStock
+- id
+- numeroMouvement
+- type
+- date
+- articleId
+- equipementId
+- quantite
+- origine
+- destination
+- fournisseur
+- projet
+- employe
+- responsable
+- motif
+- prixUnitaire
+- montant
+- observation
+- createdBy
+- createdAt
+
+Types de mouvement :
+- ENTREE
+- SORTIE
+- AFFECTATION
+- RETOUR
+- TRANSFERT
+- AJUSTEMENT
+
+7. StockLevel
+- articleId
+- emplacementId
+- stockInitial
+- totalEntrees
+- totalSorties
+- stockActuel
+- stockMin
+- stockMax
+- statut
+- valeurStock
+
+Statuts stock :
+- DISPONIBLE
+- CRITIQUE
+- RUPTURE
+- SURSTOCK
+
+8. AffectationMateriel
+- id
+- numeroMouvement
+- equipementId
+- projetId
+- employeBeneficiaire
+- magasinDepart
+- dateSortie
+- dateRetourPrevue
+- dateRetourEffective
+- statut
+- retard
+- observation
+
+Statuts affectation :
+- AFFECTE
+- RETOURNE
+- EN_RETARD
+- PERDU
+- VOLE
+- EN_MAINTENANCE
+- REFORME
+
+9. RetourMateriel
+- id
+- sortieOrigineId
+- articleId
+- equipementId
+- quantiteRetournee
+- dateRetour
+- etatRetour
+- decisionStock
+- commentaire
+- createdBy
+- createdAt
+
+Etats retour :
+- BON
+- ABIME
+- PERDU
+- A_REPARER
+- A_REFORMER
+
+Decisions stock :
+- REINTEGRER
+- BLOQUER_CONTROLE
+- SORTIR_DEFINITIVEMENT
+
+10. TransfertStock
+- id
+- numeroTransfert
+- articleId
+- quantite
+- emplacementSourceId
+- emplacementDestinationId
+- dateTransfert
+- responsable
+- statut
+- observation
+
+11. PieceJointe
+- id
+- objetType
+- objetId
+- nomFichier
+- typeFichier
+- url
+- uploadedBy
+- uploadedAt
+
+12. AuditLog
+- id
+- date
+- utilisateur
+- action
+- objetType
+- objetId
+- ancienneValeur
+- nouvelleValeur
+- commentaire
+
+13. Parametre
+- familles
+- emplacements
+- fournisseurs
+- statutsArticle
+- statutsEquipement
+- statutsStock
+- regions
+- clients
+- statutsProjet
+

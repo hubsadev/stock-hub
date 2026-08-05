@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vue Stock par Emplacement - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3', 900: '#054f31' },
+                        error: { 500: '#f04438', 50: '#fef3f2', 900: '#7a271d' },
+                        warning: { 500: '#f79009', 50: '#fffaeb', 900: '#7a4504' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20 shrink-0">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Stock & Logistique</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="home" class="w-5 h-5"></i>
+                    <span class="truncate">Accueil Module</span>
+                </a>
+                <a href="ecr-06-01-centre-de-reception-fournisseur.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="inbox" class="w-5 h-5"></i>
+                    <span class="truncate">Centre de réception</span>
+                </a>
+                <a href="ecr-06-02-fiche-reception.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="file-check-2" class="w-5 h-5"></i>
+                    <span class="truncate">Fiche réception</span>
+                </a>
+                <a href="ecr-06-03-reservation-et-sortie-de-stock.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="arrow-up-right-square" class="w-5 h-5"></i>
+                    <span class="truncate">Réservation & Sortie</span>
+                </a>
+                <a href="ecr-06-04-transfert-et-retour-de-stock.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="arrow-left-right" class="w-5 h-5"></i>
+                    <span class="truncate">Transfert & Retour</span>
+                </a>
+                <a href="ecr-06-05-vue-stock-par-emplacement.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500">
+                    <i data-lucide="package-search" class="w-5 h-5"></i>
+                    <span class="truncate">Vue Stock (Emplacement)</span>
+                </a>
+                <a href="ecr-06-06-inventaire-de-stock.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="clipboard-list" class="w-5 h-5"></i>
+                    <span class="truncate">Inventaire de stock</span>
+                </a>
+                <a href="ecr-06-07-litige-et-retour-fournisseur.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+                    <span class="truncate">Litige & Retour Fourn.</span>
+                </a>
+                        </nav>
+            <div class="mt-8">
+                <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Autres modules</div>
+                <nav class="space-y-1">
+                    <a href="../01-referentiel/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="database" class="w-5 h-5"></i>
+                        <span class="truncate">Référentiel</span>
+                    </a>
+                    <a href="../03-contrats-affaires-projets/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="briefcase" class="w-5 h-5"></i>
+                        <span class="truncate">Contrats & Affaires</span>
+                    </a>
+                    <a href="../05-achats/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+                        <span class="truncate">Achats</span>
+                    </a>
+                    <a href="../07-execution-terrain-ordres-de-travail/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="wrench" class="w-5 h-5"></i>
+                        <span class="truncate">Exécution Terrain</span>
+                    </a>
+                    <a href="../14-sav-maintenance-ticketing/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="life-buoy" class="w-5 h-5"></i>
+                        <span class="truncate">SAV & Maintenance</span>
+                    </a>
+                    <a href="../15-planning-coordination-operationnelle/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="calendar" class="w-5 h-5"></i>
+                        <span class="truncate">Planning & Coord.</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col min-w-0 bg-gray-50 dark:bg-gray-950">
+        <!-- Header -->
+        <header class="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 shrink-0">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                    <a href="index.html" class="hover:text-gray-900 dark:hover:text-white transition-colors">Stock & Logistique</a>
+                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                    <span class="text-gray-900 dark:text-white font-medium">Pilotage des stocks</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <button onclick="document.documentElement.classList.toggle('dark')" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <i data-lucide="moon" class="w-5 h-5"></i>
+                </button>
+                <div class="w-8 h-8 rounded-full bg-accent-100 dark:bg-accent-900 flex items-center justify-center text-accent-600 dark:text-accent-500 font-bold text-sm">
+                    JD
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Scrollable Area -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="max-w-7xl mx-auto space-y-6">
+                
+                <!-- Page Header -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Vue Stock par Emplacement</h1>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Consultez les niveaux de stock, les réservations et les alertes de réapprovisionnement.</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm font-medium shadow-theme-xs">
+                            <i data-lucide="download" class="w-4 h-4"></i>
+                            Exporter CSV
+                        </button>
+                        <a href="ecr-06-03-reservation-et-sortie-de-stock.html" class="flex items-center gap-2 px-4 py-2 bg-accent-600 text-white rounded-lg hover:bg-accent-500 transition-colors text-sm font-medium shadow-theme-xs">
+                            <i data-lucide="arrow-up-right-square" class="w-4 h-4"></i>
+                            Sortie rapide
+                        </a>
+                    </div>
+                </div>
+
+                <!-- KPI Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white dark:bg-gray-900 p-5 rounded-xl border border-gray-200 dark:border-gray-800 shadow-theme-xs">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Articles (Réf.)</span>
+                            <div class="p-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-500 rounded-lg">
+                                <i data-lucide="box" class="w-5 h-5"></i>
+                            </div>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-900 dark:text-white">3 402</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">Gérés en stock</div>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-gray-900 p-5 rounded-xl border border-gray-200 dark:border-gray-800 shadow-theme-xs">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Sous le seuil d'alerte</span>
+                            <div class="p-2 bg-orange-50 dark:bg-orange-900/30 text-warning-500 rounded-lg">
+                                <i data-lucide="trending-down" class="w-5 h-5"></i>
+                            </div>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-900 dark:text-white">24</div>
+                        <div class="text-sm text-warning-600 dark:text-warning-500 mt-1 font-medium">À réapprovisionner</div>
+                    </div>
+
+                    <div class="bg-white dark:bg-gray-900 p-5 rounded-xl border border-gray-200 dark:border-gray-800 shadow-theme-xs">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-medium text-gray-500 dark:text-gray-400">En rupture de stock</span>
+                            <div class="p-2 bg-red-50 dark:bg-red-900/30 text-error-500 rounded-lg">
+                                <i data-lucide="alert-octagon" class="w-5 h-5"></i>
+                            </div>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-900 dark:text-white">5</div>
+                        <div class="text-sm text-error-600 mt-1 font-medium">
+                            Bloquant pour 2 projets
+                        </div>
+                    </div>
+
+                    <div class="bg-white dark:bg-gray-900 p-5 rounded-xl border border-gray-200 dark:border-gray-800 shadow-theme-xs">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Valorisation stock (est.)</span>
+                            <div class="p-2 bg-green-50 dark:bg-green-900/30 text-success-500 rounded-lg">
+                                <i data-lucide="coins" class="w-5 h-5"></i>
+                            </div>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-900 dark:text-white">245 k€</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">+2.4% vs mois dernier</div>
+                    </div>
+                </div>
+
+                <!-- Filters & Search -->
+                <div class="bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-800 shadow-theme-xs flex flex-col md:flex-row gap-4">
+                    <div class="flex-1 relative">
+                        <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"></i>
+                        <input type="text" placeholder="Rechercher une référence, désignation..." class="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 dark:text-white">
+                    </div>
+                    <div class="flex flex-wrap gap-3">
+                        <select class="px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-accent-500">
+                            <option value="">Tous les emplacements</option>
+                            <option value="d1" selected>Dépôt Central (Paris)</option>
+                            <option value="d2">Dépôt Secondaire (Lyon)</option>
+                            <option value="c1">Chantiers en cours</option>
+                            <option value="v1">Véhicules (Tech.)</option>
+                        </select>
+                        <select class="px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-accent-500">
+                            <option value="">Famille: Toutes</option>
+                            <option value="f1">Matériel Électrique</option>
+                            <option value="f2">Outillage</option>
+                            <option value="f3">EPI</option>
+                        </select>
+                        <select class="px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-accent-500">
+                            <option value="">Statut: Tous</option>
+                            <option value="s1">Normal</option>
+                            <option value="s2">Alerte (Seuil atteint)</option>
+                            <option value="s3">Rupture</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Data Table -->
+                <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-theme-xs overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-gray-600 dark:text-gray-400">
+                            <thead class="bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white font-medium border-b border-gray-200 dark:border-gray-800">
+                                <tr>
+                                    <th class="px-4 py-3">Référence & Désignation</th>
+                                    <th class="px-4 py-3">Famille</th>
+                                    <th class="px-4 py-3 text-right">Physique</th>
+                                    <th class="px-4 py-3 text-right">Réservé</th>
+                                    <th class="px-4 py-3 text-right">Disponible</th>
+                                    <th class="px-4 py-3 text-right">En Transit</th>
+                                    <th class="px-4 py-3 text-center">Statut</th>
+                                    <th class="px-4 py-3 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
+                                <!-- Ligne 1 - Normal -->
+                                <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/20">
+                                    <td class="px-4 py-3">
+                                        <div class="font-medium text-gray-900 dark:text-white">Câble Cuivre 25mm² - Touret 100m</div>
+                                        <div class="text-xs text-gray-500 mt-0.5">CAB-CU-25-100</div>
+                                    </td>
+                                    <td class="px-4 py-3">Mat. Électrique</td>
+                                    <td class="px-4 py-3 text-right text-gray-900 dark:text-white">45</td>
+                                    <td class="px-4 py-3 text-right text-warning-600">5</td>
+                                    <td class="px-4 py-3 text-right font-semibold text-success-600">40</td>
+                                    <td class="px-4 py-3 text-right text-gray-500">10</td>
+                                    <td class="px-4 py-3 text-center">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-50 text-success-700 dark:bg-green-900/30 dark:text-success-400">Normal</span>
+                                    </td>
+                                    <td class="px-4 py-3 text-right">
+                                        <button class="text-gray-400 hover:text-accent-600 transition-colors" title="Voir l'historique"><i data-lucide="history" class="w-4 h-4"></i></button>
+                                    </td>
+                                </tr>
+
+                                <!-- Ligne 2 - Alerte -->
+                                <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/20">
+                                    <td class="px-4 py-3">
+                                        <div class="font-medium text-gray-900 dark:text-white">Disjoncteur Différentiel 30mA</div>
+                                        <div class="text-xs text-gray-500 mt-0.5">DISJ-30MA-40A</div>
+                                    </td>
+                                    <td class="px-4 py-3">Mat. Électrique</td>
+                                    <td class="px-4 py-3 text-right text-gray-900 dark:text-white">8</td>
+                                    <td class="px-4 py-3 text-right text-warning-600">2</td>
+                                    <td class="px-4 py-3 text-right font-semibold text-warning-600">6</td>
+                                    <td class="px-4 py-3 text-right text-gray-500">0</td>
+                                    <td class="px-4 py-3 text-center">
+                                        <div class="flex flex-col items-center gap-1">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-50 text-warning-700 dark:bg-orange-900/30 dark:text-warning-400">Alerte</span>
+                                            <span class="text-[10px] text-gray-500">Seuil: 10</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-right">
+                                        <button class="text-gray-400 hover:text-accent-600 transition-colors" title="Créer une Demande d'Achat"><i data-lucide="shopping-cart" class="w-4 h-4"></i></button>
+                                    </td>
+                                </tr>
+
+                                <!-- Ligne 3 - Rupture -->
+                                <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/20">
+                                    <td class="px-4 py-3">
+                                        <div class="font-medium text-gray-900 dark:text-white">Coffret Électrique Industriel IP65</div>
+                                        <div class="text-xs text-gray-500 mt-0.5">COF-IND-IP65</div>
+                                    </td>
+                                    <td class="px-4 py-3">Boîtiers</td>
+                                    <td class="px-4 py-3 text-right text-gray-900 dark:text-white">2</td>
+                                    <td class="px-4 py-3 text-right text-warning-600">2</td>
+                                    <td class="px-4 py-3 text-right font-semibold text-error-600">0</td>
+                                    <td class="px-4 py-3 text-right text-gray-500">5 <i data-lucide="truck" class="w-3 h-3 inline text-accent-500" title="En livraison"></i></td>
+                                    <td class="px-4 py-3 text-center">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-50 text-error-700 dark:bg-red-900/30 dark:text-error-400">Rupture</span>
+                                    </td>
+                                    <td class="px-4 py-3 text-right">
+                                        <button class="text-gray-400 hover:text-accent-600 transition-colors" title="Voir l'historique"><i data-lucide="history" class="w-4 h-4"></i></button>
+                                    </td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-800 flex items-center justify-between">
+                        <span class="text-sm text-gray-500 dark:text-gray-400">Affichage de 1 à 3 sur 2 104 lignes (Dépôt Central)</span>
+                        <div class="flex items-center gap-2">
+                            <button class="p-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50" disabled>
+                                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                            </button>
+                            <button class="p-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800">
+                                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

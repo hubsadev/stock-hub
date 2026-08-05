@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saisie d'avancement chantier - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3', 900: '#054f31' },
+                        error: { 500: '#f04438', 50: '#fef3f2', 900: '#7a271d' },
+                        warning: { 500: '#f79009', 50: '#fffaeb', 900: '#7a4504' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20 shrink-0">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Avancement BTP</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="home" class="w-5 h-5"></i>
+                    <span class="truncate">Accueil Module</span>
+                </a>
+                <a href="ecr-11-01-saisie-d-avancement-chantier.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500">
+                    <i data-lucide="activity" class="w-5 h-5"></i>
+                    <span class="truncate">Saisie Avancement</span>
+                </a>
+                <a href="ecr-11-02-gestion-des-attachements.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="paperclip" class="w-5 h-5"></i>
+                    <span class="truncate">Attachements</span>
+                </a>
+                <a href="ecr-11-03-registre-des-situations-de-travaux.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
+                    <span class="truncate">Situations de travaux</span>
+                </a>
+                <a href="ecr-11-04-historique-chantier-et-corrections.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="history" class="w-5 h-5"></i>
+                    <span class="truncate">Historique & Corrections</span>
+                </a>
+                <a href="ecr-11-05-validation-client-attachement.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="check-circle" class="w-5 h-5"></i>
+                    <span class="truncate">Validation Client</span>
+                </a>
+            </nav>
+            
+            <div class="mt-8">
+                <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Modules liés</div>
+                <nav class="space-y-1">
+                    <a href="../03-contrats-affaires-projets/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="briefcase" class="w-5 h-5"></i>
+                        <span class="truncate">Affaires & Projets</span>
+                    </a>
+                    <a href="../07-execution-terrain-ordres-de-travail/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="hammer" class="w-5 h-5"></i>
+                        <span class="truncate">Exécution Terrain</span>
+                    </a>
+                    <a href="../12-facturation/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="receipt" class="w-5 h-5"></i>
+                        <span class="truncate">Facturation</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+        
+        <div class="p-4 border-t border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-3">
+                <img src="https://ui-avatars.com/api/?name=Marc+D&background=465fff&color=fff" alt="User" class="w-8 h-8 rounded-full">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">Marc D.</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate">Conducteur de Travaux</p>
+                </div>
+                <button onclick="document.documentElement.classList.toggle('dark')" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+                    <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+        <!-- Header -->
+        <header class="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 shrink-0 z-10">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <div>
+                    <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-0.5">
+                        <a href="#" class="hover:text-gray-700 dark:hover:text-gray-200 transition-colors">Chantiers</a>
+                        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        <span class="text-gray-900 dark:text-gray-100 font-medium">PRJ-2023-089 - Déploiement FTTH Zone Nord</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="inline-flex items-center gap-1.5 py-1 px-3 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
+                    <span class="w-2 h-2 rounded-full bg-gray-500"></span>
+                    Brouillon
+                </span>
+                <button class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    Sauvegarder
+                </button>
+                <button class="px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
+                    <i data-lucide="check" class="w-4 h-4"></i>
+                    Soumettre l'avancement
+                </button>
+            </div>
+        </header>
+
+        <!-- Content scrollable -->
+        <div class="flex-1 overflow-y-auto p-6">
+            
+            <!-- Context Header -->
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 mb-6 shadow-sm">
+                <div class="flex flex-col md:flex-row md:items-start justify-between gap-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Saisie d'avancement : Octobre 2023</h2>
+                        <div class="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                            <div class="flex items-center gap-1.5">
+                                <i data-lucide="calendar" class="w-4 h-4"></i>
+                                <span>Période : 01/10/2023 au 31/10/2023</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <i data-lucide="user" class="w-4 h-4"></i>
+                                <span>Chef de chantier : Marc Dupont</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <i data-lucide="map-pin" class="w-4 h-4"></i>
+                                <span>Secteur : Zone Nord - Lot 2</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-4">
+                        <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 border border-gray-100 dark:border-gray-700 text-center min-w-[120px]">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Avancement Global</p>
+                            <p class="text-xl font-bold text-accent-600 dark:text-accent-400">42%</p>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 border border-gray-100 dark:border-gray-700 text-center min-w-[120px]">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Articles saisis</p>
+                            <p class="text-xl font-bold text-gray-900 dark:text-white">12 / 45</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table section -->
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm flex flex-col">
+                <div class="p-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <h3 class="font-bold text-gray-900 dark:text-white">Détail des unités d'oeuvre</h3>
+                        <span class="bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 text-xs py-0.5 px-2 rounded-full font-medium">Bordereau des Prix Unitaires (BPU)</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="relative">
+                            <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                            <input type="text" placeholder="Rechercher un article..." class="pl-9 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 dark:bg-gray-900 dark:text-white w-64">
+                        </div>
+                        <button class="p-2 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                            <i data-lucide="filter" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm whitespace-nowrap">
+                        <thead class="bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400">
+                            <tr>
+                                <th class="px-6 py-3 font-medium">Code Article</th>
+                                <th class="px-6 py-3 font-medium">Désignation</th>
+                                <th class="px-6 py-3 font-medium text-center">Unité</th>
+                                <th class="px-6 py-3 font-medium text-right">Qté Marché</th>
+                                <th class="px-6 py-3 font-medium text-right">Qté Précédente</th>
+                                <th class="px-6 py-3 font-medium text-right text-accent-600 dark:text-accent-500">Saisie du mois</th>
+                                <th class="px-6 py-3 font-medium text-right">Cumul</th>
+                                <th class="px-6 py-3 font-medium text-right">Avancement</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
+                            
+                            <!-- Row 1 : Terrasement -->
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">TER-001</td>
+                                <td class="px-6 py-4 text-gray-600 dark:text-gray-300">
+                                    <div class="w-48 truncate" title="Fouille en tranchée mécanique pour réseaux">Fouille en tranchée mécanique pour réseaux</div>
+                                </td>
+                                <td class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">ml</td>
+                                <td class="px-6 py-4 text-right text-gray-900 dark:text-white">1 500,00</td>
+                                <td class="px-6 py-4 text-right text-gray-500 dark:text-gray-400">850,00</td>
+                                <td class="px-6 py-4 text-right">
+                                    <input type="number" value="320" class="w-24 text-right border border-gray-300 dark:border-gray-600 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-accent-500 dark:bg-gray-900 dark:text-white">
+                                </td>
+                                <td class="px-6 py-4 text-right font-medium text-gray-900 dark:text-white">1 170,00</td>
+                                <td class="px-6 py-4 text-right">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <span class="text-gray-900 dark:text-white">78%</span>
+                                        <div class="w-16 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                            <div class="h-full bg-accent-500" style="width: 78%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Row 2 : Pose fourreaux -->
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">FOU-045</td>
+                                <td class="px-6 py-4 text-gray-600 dark:text-gray-300">
+                                    <div class="w-48 truncate" title="Pose de fourreaux TPC Ø 45 mm">Pose de fourreaux TPC Ø 45 mm</div>
+                                </td>
+                                <td class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">ml</td>
+                                <td class="px-6 py-4 text-right text-gray-900 dark:text-white">4 500,00</td>
+                                <td class="px-6 py-4 text-right text-gray-500 dark:text-gray-400">2 550,00</td>
+                                <td class="px-6 py-4 text-right">
+                                    <input type="number" value="960" class="w-24 text-right border border-gray-300 dark:border-gray-600 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-accent-500 dark:bg-gray-900 dark:text-white">
+                                </td>
+                                <td class="px-6 py-4 text-right font-medium text-gray-900 dark:text-white">3 510,00</td>
+                                <td class="px-6 py-4 text-right">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <span class="text-gray-900 dark:text-white">78%</span>
+                                        <div class="w-16 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                            <div class="h-full bg-accent-500" style="width: 78%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Row 3 : Chambres -->
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors bg-orange-50/30 dark:bg-orange-900/10">
+                                <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">CHB-L2T</td>
+                                <td class="px-6 py-4 text-gray-600 dark:text-gray-300 flex items-center gap-2">
+                                    <i data-lucide="alert-triangle" class="w-4 h-4 text-warning-500" title="Dépassement de la quantité marché détecté"></i>
+                                    <div class="w-44 truncate" title="Pose de chambre L2T complète">Pose de chambre L2T complète</div>
+                                </td>
+                                <td class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">U</td>
+                                <td class="px-6 py-4 text-right text-gray-900 dark:text-white">45,00</td>
+                                <td class="px-6 py-4 text-right text-gray-500 dark:text-gray-400">40,00</td>
+                                <td class="px-6 py-4 text-right">
+                                    <input type="number" value="8" class="w-24 text-right border border-warning-300 dark:border-warning-600 focus:ring-warning-500 rounded px-2 py-1 focus:outline-none focus:ring-2 dark:bg-gray-900 dark:text-white">
+                                </td>
+                                <td class="px-6 py-4 text-right font-bold text-warning-600 dark:text-warning-500">48,00</td>
+                                <td class="px-6 py-4 text-right">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <span class="text-warning-600 dark:text-warning-500 font-bold">106%</span>
+                                        <div class="w-16 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                            <div class="h-full bg-warning-500" style="width: 100%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Row 4 : Réfection -->
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">REF-ENR</td>
+                                <td class="px-6 py-4 text-gray-600 dark:text-gray-300">
+                                    <div class="w-48 truncate" title="Réfection enrobé à chaud">Réfection enrobé à chaud</div>
+                                </td>
+                                <td class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">m²</td>
+                                <td class="px-6 py-4 text-right text-gray-900 dark:text-white">600,00</td>
+                                <td class="px-6 py-4 text-right text-gray-500 dark:text-gray-400">200,00</td>
+                                <td class="px-6 py-4 text-right">
+                                    <input type="number" value="" placeholder="0.00" class="w-24 text-right border border-gray-300 dark:border-gray-600 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-accent-500 dark:bg-gray-900 dark:text-white">
+                                </td>
+                                <td class="px-6 py-4 text-right font-medium text-gray-900 dark:text-white">200,00</td>
+                                <td class="px-6 py-4 text-right">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <span class="text-gray-900 dark:text-white">33%</span>
+                                        <div class="w-16 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                            <div class="h-full bg-accent-500" style="width: 33%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Row 5 : Raccordement -->
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">FO-RACC</td>
+                                <td class="px-6 py-4 text-gray-600 dark:text-gray-300">
+                                    <div class="w-48 truncate" title="Raccordement soudure FO par point">Raccordement soudure FO par point</div>
+                                </td>
+                                <td class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">U</td>
+                                <td class="px-6 py-4 text-right text-gray-900 dark:text-white">2 400,00</td>
+                                <td class="px-6 py-4 text-right text-gray-500 dark:text-gray-400">0,00</td>
+                                <td class="px-6 py-4 text-right">
+                                    <input type="number" value="150" class="w-24 text-right border border-gray-300 dark:border-gray-600 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-accent-500 dark:bg-gray-900 dark:text-white">
+                                </td>
+                                <td class="px-6 py-4 text-right font-medium text-gray-900 dark:text-white">150,00</td>
+                                <td class="px-6 py-4 text-right">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <span class="text-gray-900 dark:text-white">6%</span>
+                                        <div class="w-16 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                            <div class="h-full bg-accent-500" style="width: 6%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="p-4 border-t border-gray-200 dark:border-gray-800 flex items-center justify-between">
+                    <span class="text-sm text-gray-500 dark:text-gray-400">Affichage de 1 à 5 sur 45 articles du marché</span>
+                    <div class="flex gap-1">
+                        <button class="px-3 py-1 border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-400 cursor-not-allowed">Précédent</button>
+                        <button class="px-3 py-1 border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700">1</button>
+                        <button class="px-3 py-1 border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700">2</button>
+                        <button class="px-3 py-1 border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700">...</button>
+                        <button class="px-3 py-1 border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700">9</button>
+                        <button class="px-3 py-1 border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700">Suivant</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes and Attachments context -->
+            <div class="mt-6 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
+                <h3 class="font-bold text-gray-900 dark:text-white mb-4">Informations complémentaires</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Commentaires sur l'avancement</label>
+                        <textarea rows="3" class="w-full border border-gray-300 dark:border-gray-700 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 dark:bg-gray-900 dark:text-white" placeholder="Ex: Avancement plus lent sur le secteur Nord à cause des intempéries..."></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Justificatifs rapides (Photos chantier)</label>
+                        <div class="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-6 text-center hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer">
+                            <i data-lucide="upload-cloud" class="w-8 h-8 text-gray-400 mx-auto mb-2"></i>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Glissez-déposez des photos ou <span class="text-accent-600 dark:text-accent-500 font-medium">cliquez pour parcourir</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Périmètres d'Accès - Administration ERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3' },
+                        error: { 500: '#f04438', 50: '#fef3f2' },
+                        warning: { 500: '#f79009', 50: '#fffaeb' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20 shrink-0">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Administration</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <span class="text-lg">🏠</span>
+                    <span class="truncate">Accueil Administration</span>
+                </a>
+                <a href="ecr-19-01-assistant-de-mise-en-place-initiale-erp.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <span class="text-lg">✨</span>
+                    <span class="truncate">Assistant Initial</span>
+                </a>
+                <a href="ecr-19-02-parametres-globaux-erp.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <span class="text-lg">⚙️</span>
+                    <span class="truncate">Paramètres Globaux</span>
+                </a>
+                <a href="ecr-19-03-connexion-erp.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <span class="text-lg">🔑</span>
+                    <span class="truncate">Connexion</span>
+                </a>
+                <a href="ecr-19-04-annuaire-des-utilisateurs.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <span class="text-lg">👥</span>
+                    <span class="truncate">Annuaire Utilisateurs</span>
+                </a>
+                <a href="ecr-19-05-fiche-utilisateur.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <span class="text-lg">👤</span>
+                    <span class="truncate">Fiche Utilisateur</span>
+                </a>
+                <a href="ecr-19-06-invitation-utilisateur.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <span class="text-lg">✉️</span>
+                    <span class="truncate">Invitation Utilisateur</span>
+                </a>
+                <a href="ecr-19-07-roles-et-permissions.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <span class="text-lg">🛡️</span>
+                    <span class="truncate">Rôles & Permissions</span>
+                </a>
+                <a href="ecr-19-08-perimetres-d-acces.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500">
+                    <span class="text-lg">🗺️</span>
+                    <span class="truncate">Périmètres d'Accès</span>
+                </a>
+                <a href="ecr-19-09-sessions-actives.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <span class="text-lg">⏱️</span>
+                    <span class="truncate">Sessions Actives</span>
+                </a>
+                <a href="ecr-19-10-audit-administration.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <span class="text-lg">📋</span>
+                    <span class="truncate">Audit Administration</span>
+                </a>
+                <a href="ecr-19-11-societes-fiscalite-et-numerotation.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <span class="text-lg">🏢</span>
+                    <span class="truncate">Sociétés & Fiscalité</span>
+                </a>
+                <a href="ecr-19-12-comptes-externes-et-invites.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <span class="text-lg">🤝</span>
+                    <span class="truncate">Comptes Externes</span>
+                </a>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+        <!-- Topbar Context -->
+        <div class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-8 py-4 sticky top-0 z-10">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-1">
+                        <span>Administration ERP</span>
+                        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        <span class="text-gray-900 dark:text-gray-100 font-medium">Sécurité</span>
+                    </div>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Périmètres d'Accès</h1>
+                </div>
+                <div class="flex gap-3">
+                    <button class="px-4 py-2 bg-accent-600 text-white rounded-lg font-medium text-sm hover:bg-accent-700 transition shadow-sm flex items-center gap-2">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        Créer un périmètre
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Page Content -->
+        <div class="flex-1 overflow-y-auto p-8 no-scrollbar flex justify-center">
+            
+            <div class="w-full max-w-5xl space-y-6 pb-12">
+                
+                <div class="bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 p-4 rounded-xl border border-blue-100 dark:border-blue-900/50 flex gap-3 text-sm mb-6">
+                    <i data-lucide="info" class="w-5 h-5 shrink-0 text-blue-600 dark:text-blue-400"></i>
+                    <p>Les périmètres restreignent la visibilité des données. Si un utilisateur possède le rôle "Créer Facture" et le périmètre "Agence Nord", il ne pourra créer et voir des factures que pour l'Agence Nord.</p>
+                </div>
+
+                <!-- Perimeters Table -->
+                <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                    <div class="p-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/20">
+                        <div class="relative w-64">
+                            <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-gray-400"></i>
+                            <input type="text" placeholder="Rechercher un périmètre..." class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500/50">
+                        </div>
+                    </div>
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800 text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold">
+                                <th class="px-6 py-3">Nom du Périmètre</th>
+                                <th class="px-6 py-3">Axe Dimensionnel</th>
+                                <th class="px-6 py-3">Règles et Filtres Appliqués</th>
+                                <th class="px-6 py-3">Assignations</th>
+                                <th class="px-6 py-3 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-800 text-sm">
+                            
+                            <!-- Row 1 -->
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">
+                                    Filiale Belgique Globale
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-xs font-medium text-gray-700 dark:text-gray-300">Société</span>
+                                </td>
+                                <td class="px-6 py-4 text-gray-600 dark:text-gray-400">
+                                    <p>Société = "HubERP Belgique SA"</p>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-accent-600 hover:underline cursor-pointer">14 Utilisateurs</span>
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <button class="text-gray-400 hover:text-accent-600 transition-colors">
+                                        <i data-lucide="edit-2" class="w-4 h-4"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            
+                            <!-- Row 2 -->
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">
+                                    Région Nord / Agences Locales
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-xs font-medium text-gray-700 dark:text-gray-300">Agence</span>
+                                </td>
+                                <td class="px-6 py-4 text-gray-600 dark:text-gray-400">
+                                    <p>Agence = "Lille" OU Agence = "Amiens"</p>
+                                    <p class="text-xs text-gray-500 mt-1">+ Restriction Dépôt associée</p>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-accent-600 hover:underline cursor-pointer">8 Utilisateurs</span>
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <button class="text-gray-400 hover:text-accent-600 transition-colors">
+                                        <i data-lucide="edit-2" class="w-4 h-4"></i>
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <!-- Row 3 -->
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">
+                                    Projet "Grand Stade" Uniquement
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-xs font-medium text-gray-700 dark:text-gray-300">Affaire / Projet</span>
+                                </td>
+                                <td class="px-6 py-4 text-gray-600 dark:text-gray-400">
+                                    <p>Affaire = "PRJ-2024-0012"</p>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-accent-600 hover:underline cursor-pointer">45 Utilisateurs</span>
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <button class="text-gray-400 hover:text-accent-600 transition-colors">
+                                        <i data-lucide="edit-2" class="w-4 h-4"></i>
+                                    </button>
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

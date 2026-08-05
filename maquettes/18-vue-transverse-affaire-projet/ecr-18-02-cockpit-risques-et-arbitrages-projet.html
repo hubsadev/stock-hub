@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cockpit Risques & Arbitrages - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3', 900: '#054f31' },
+                        error: { 500: '#f04438', 50: '#fef3f2', 900: '#7a271d' },
+                        warning: { 500: '#f79009', 50: '#fffaeb', 900: '#7a4504' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20 shrink-0">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Vue Transverse</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="home" class="w-5 h-5"></i>
+                    <span class="truncate">Accueil Module</span>
+                </a>
+                <a href="ecr-18-01-vue-360-affaire-projet.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="pie-chart" class="w-5 h-5"></i>
+                    <span class="truncate">Vue 360 Projet</span>
+                </a>
+                <a href="ecr-18-02-cockpit-risques-et-arbitrages-projet.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/50 dark:text-accent-400">
+                    <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+                    <span class="truncate">Cockpit Risques</span>
+                </a>
+                <a href="ecr-18-03-registre-des-risques-projet.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="list-checks" class="w-5 h-5"></i>
+                    <span class="truncate">Registre Risques</span>
+                </a>
+            </nav>
+            
+            <div class="mt-8">
+                <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Liens Projets</div>
+                <nav class="space-y-1">
+                    <a href="../03-contrats-affaires-projets/ecr-03-04-fiche-affaire-projet.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="folder-kanban" class="w-5 h-5"></i>
+                        <span class="truncate">Fiche Projet Métier</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+        
+        <div class="p-4 border-t border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-3">
+                <img src="https://ui-avatars.com/api/?name=Jean+Dupont&background=e1edff&color=1e26af" alt="User" class="w-9 h-9 rounded-full">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">Jean Dupont</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate">Dir. Projets</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col min-w-0 bg-gray-50 dark:bg-gray-950 overflow-hidden">
+        
+        <!-- Header -->
+        <header class="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 shrink-0">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                    <a href="../03-contrats-affaires-projets/ecr-03-03-registre-des-affaires-et-projets.html" class="hover:text-accent-600 transition-colors">Projets</a>
+                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                    <a href="../03-contrats-affaires-projets/ecr-03-04-fiche-affaire-projet.html" class="hover:text-accent-600 transition-colors">PRJ-2023-089</a>
+                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                    <span class="font-medium text-gray-900 dark:text-white">Cockpit Risques & Arbitrages</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-error-50 text-error-700 border border-error-200 dark:bg-error-900/30 dark:border-error-800/50 dark:text-error-400 shadow-sm">
+                    <span class="w-2 h-2 rounded-full bg-error-500 animate-pulse"></span>
+                    PROJET SOUS SURVEILLANCE
+                </span>
+                <div class="h-8 w-px bg-gray-200 dark:bg-gray-700 mx-2"></div>
+                <button class="flex items-center gap-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 px-4 py-2 rounded-lg transition-colors">
+                    <i data-lucide="file-output" class="w-4 h-4"></i>
+                    <span>Rapport Flash</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Content scrollable area -->
+        <div class="flex-1 overflow-y-auto p-6">
+            <div class="max-w-7xl mx-auto space-y-6">
+                
+                <!-- Status Banner / Alert context -->
+                <div class="bg-error-50 dark:bg-error-900/10 border-l-4 border-error-500 p-5 rounded-r-xl shadow-sm">
+                    <div class="flex items-start justify-between">
+                        <div class="flex items-start gap-4">
+                            <i data-lucide="siren" class="w-6 h-6 text-error-500 mt-0.5"></i>
+                            <div>
+                                <h2 class="text-lg font-bold text-gray-900 dark:text-error-100 mb-1">Mise sous surveillance activée</h2>
+                                <p class="text-sm text-error-800 dark:text-error-200 max-w-3xl">Déclenchée le 14/02/2024 par <strong>Jean Dupont (Dir. Projets)</strong>. <br>Motif : Retard critique d'approvisionnement induisant une dérive de planning > 15 jours sur le chemin critique et une menace directe sur la marge à terminaison (Pénalités de retard applicables).</p>
+                                <div class="mt-3 flex gap-3">
+                                    <button class="text-xs font-medium px-3 py-1.5 bg-white text-error-600 rounded border border-error-200 hover:bg-error-50 transition-colors shadow-sm">Lever la surveillance</button>
+                                    <button class="text-xs font-medium px-3 py-1.5 bg-error-600 text-white rounded hover:bg-error-700 transition-colors shadow-sm">Convoquer Comex Flash</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-right flex flex-col items-end">
+                            <span class="text-xs text-error-600 dark:text-error-400 font-medium bg-error-100 px-2 py-1 rounded">Niveau Alerte : 4/5</span>
+                            <span class="text-xs text-gray-500 mt-2">Dernière maj : Aujourd'hui, 09:12</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Grid - Cockpit -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Left Column - Key Drifts & KPIs -->
+                    <div class="lg:col-span-1 space-y-6">
+                        
+                        <!-- Synthèse Dérives -->
+                        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-5">
+                            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                                <i data-lucide="trending-down" class="w-5 h-5 text-gray-400"></i>
+                                Synthèse des Dérives
+                            </h3>
+                            
+                            <div class="space-y-4">
+                                <div class="p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <div class="flex items-center gap-2"><p class="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2"><i data-lucide="calendar-clock" class="w-4 h-4 text-warning-500"></i> Planning (Chemin critique)</p><a href="../15-planning-coordination-operationnelle/index.html" class="text-accent-600 hover:text-accent-700" title="Voir le planning"><i data-lucide="external-link" class="w-4 h-4"></i></a></div>
+                                        <span class="text-xs font-bold text-error-600 bg-error-100 px-1.5 py-0.5 rounded">+ 22 Jours</span>
+                                    </div>
+                                    <div class="text-xs text-gray-500">Impact prévisionnel fin : 07/07/2024 au lieu du 15/06/2024.</div>
+                                </div>
+                                
+                                <div class="p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <div class="flex items-center gap-2"><p class="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2"><i data-lucide="pie-chart" class="w-4 h-4 text-error-500"></i> Marge Atterrissage</p><a href="../04-budget-pilotage-financier-projet/index.html" class="text-accent-600 hover:text-accent-700" title="Voir les dérives de marge"><i data-lucide="external-link" class="w-4 h-4"></i></a></div>
+                                        <span class="text-xs font-bold text-error-600 bg-error-100 px-1.5 py-0.5 rounded">- 3.5 Pts</span>
+                                    </div>
+                                    <div class="text-xs text-gray-500 flex justify-between">
+                                        <span>Cible : 22.0%</span>
+                                        <span class="font-medium text-gray-900">Actuel : 18.5%</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <p class="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2"><i data-lucide="banknote" class="w-4 h-4 text-success-500"></i> Pénalités potentielles</p>
+                                        <span class="text-xs font-bold text-error-600 bg-error-100 px-1.5 py-0.5 rounded">Jusqu'à 45 K€</span>
+                                    </div>
+                                    <div class="text-xs text-gray-500">Plafond contractuel : 5% du CA global. Déclenchement au 20/06.</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Blocages Opérationnels en cours -->
+                        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-5">
+                            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                                <i data-lucide="ban" class="w-5 h-5 text-gray-400"></i>
+                                Blocages Actifs (2)
+                            </h3>
+                            
+                            <ul class="space-y-3">
+                                <li class="flex items-start gap-3 p-3 bg-red-50 border border-red-100 rounded-lg">
+                                    <i data-lucide="ban" class="w-4 h-4 text-red-600 mt-0.5 shrink-0"></i>
+                                    <div>
+                                        <p class="text-sm font-medium text-red-900 mb-1">Livraison câblages spécifique bloquée en douane</p>
+                                        <p class="text-xs text-red-700">Bloque OT-006 (Tirage zone B). Source: <a href="../05-achats/index.html" class="text-accent-600 hover:underline">CMD-2024-0045</a></p>
+                                        <div class="mt-2 text-xs font-medium text-red-800">Assigné à: Serv. Achats</div>
+                                    </div>
+                                </li>
+                                <li class="flex items-start gap-3 p-3 bg-orange-50 border border-orange-100 rounded-lg">
+                                    <i data-lucide="shield-alert" class="w-4 h-4 text-orange-600 mt-0.5 shrink-0"></i>
+                                    <div>
+                                        <p class="text-sm font-medium text-orange-900 mb-1"><a href="../03-contrats-affaires-projets/ecr-03-01-registre-des-contrats.html" class="hover:underline hover:text-orange-700">Avenant #2 non validé client</a></p>
+                                        <p class="text-xs text-orange-700">Bloque le démarrage de la zone Tracé Modifié.</p>
+                                        <div class="mt-2 text-xs font-medium text-orange-800">Assigné à: Dir. Commerciale</div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                    </div>
+                    
+                    <!-- Right Column - Risk Register View & Arbitrations -->
+                    <div class="lg:col-span-2 space-y-6">
+                        
+                        <!-- Top Risks Table -->
+                        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 flex flex-col">
+                            <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center bg-gray-50/50">
+                                <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <i data-lucide="activity" class="w-5 h-5 text-gray-400"></i>
+                                    Top Risques & Actions de mitigation
+                                </h3>
+                                <div class="flex gap-2">
+                                    <a href="ecr-18-03-registre-des-risques-projet.html" class="flex items-center gap-2 text-sm text-gray-600 bg-white border border-gray-300 hover:bg-gray-50 px-3 py-1.5 rounded-lg transition-colors font-medium">
+                                        <i data-lucide="book-open-check" class="w-4 h-4"></i> Ouvrir Registre Complet
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-sm text-gray-600 dark:text-gray-400">
+                                    <thead class="bg-gray-50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 text-xs uppercase font-medium">
+                                        <tr>
+                                            <th class="px-4 py-3">ID & Description du risque</th>
+                                            <th class="px-4 py-3 text-center">Criticité</th>
+                                            <th class="px-4 py-3">Owner & Mitigation</th>
+                                            <th class="px-4 py-3 text-right">Avancement</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                                        
+                                        <!-- Risk Row 1 -->
+                                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                            <td class="px-4 py-4">
+                                                <div class="font-medium text-gray-900 dark:text-white mb-1">RSK-001 : Défaillance fournisseur sous-traitant (BTP)</div>
+                                                <div class="text-xs text-gray-500">Retard de 2 semaines accumulé sur le gros oeuvre affectant la suite.</div>
+                                            </td>
+                                            <td class="px-4 py-4 text-center">
+                                                <span class="px-2 py-1 text-xs font-bold rounded bg-error-100 text-error-700 border border-error-200">Haute (9/10)</span>
+                                            </td>
+                                            <td class="px-4 py-4">
+                                                <div class="flex items-center gap-2 text-xs mb-1">
+                                                    <i data-lucide="user" class="w-3 h-3"></i> Marc L. (CDP)
+                                                </div>
+                                                <div class="text-xs">Mise en place équipe supp. week-end.</div>
+                                            </td>
+                                            <td class="px-4 py-4 text-right">
+                                                <span class="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium rounded-md bg-warning-50 text-warning-700 border border-warning-100">
+                                                    <i data-lucide="loader-2" class="w-3 h-3 animate-spin"></i> En mitigation
+                                                </span>
+                                                <div class="text-[10px] text-gray-500 mt-1">Échéance: 25/02</div>
+                                            </td>
+                                        </tr>
+                                        
+                                        <!-- Risk Row 2 -->
+                                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors bg-orange-50/30">
+                                            <td class="px-4 py-4">
+                                                <div class="font-medium text-gray-900 dark:text-white mb-1 flex items-center gap-2">RSK-004 : Bloquage Douane Matériel Elec <i data-lucide="corner-down-left" class="w-4 h-4 text-orange-500" title="Cause un blocage"></i></div>
+                                                <div class="text-xs text-gray-500">Matériel spécifique bloqué à l'import, retarde le tirage câble.</div>
+                                            </td>
+                                            <td class="px-4 py-4 text-center">
+                                                <span class="px-2 py-1 text-xs font-bold rounded bg-error-100 text-error-700 border border-error-200">Critique (10/10)</span>
+                                            </td>
+                                            <td class="px-4 py-4">
+                                                <div class="flex items-center gap-2 text-xs mb-1">
+                                                    <i data-lucide="user" class="w-3 h-3"></i> S. Achats
+                                                </div>
+                                                <div class="text-xs">Recherche stock équivalent localement.</div>
+                                            </td>
+                                            <td class="px-4 py-4 text-right">
+                                                <span class="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium rounded-md bg-error-50 text-error-700 border border-error-100">
+                                                    <i data-lucide="triangle-alert" class="w-3 h-3"></i> ESCALADÉ
+                                                </span>
+                                                <div class="text-[10px] text-error-600 font-medium mt-1">Arbitrage requis dir.</div>
+                                            </td>
+                                        </tr>
+                                        
+                                        <!-- Risk Row 3 -->
+                                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                            <td class="px-4 py-4">
+                                                <div class="font-medium text-gray-900 dark:text-white mb-1">RSK-002 : Dépassement Budget Heures Etudes</div>
+                                                <div class="text-xs text-gray-500">Complexité technique sous-estimée en AVV. +150h cons.</div>
+                                            </td>
+                                            <td class="px-4 py-4 text-center">
+                                                <span class="px-2 py-1 text-xs font-medium rounded bg-warning-100 text-warning-700 border border-warning-200">Moyenne (6/10)</span>
+                                            </td>
+                                            <td class="px-4 py-4">
+                                                <div class="flex items-center gap-2 text-xs mb-1">
+                                                    <i data-lucide="user" class="w-3 h-3"></i> Bureau Etudes
+                                                </div>
+                                                <div class="text-xs text-gray-400">Action terminée. Marge impactée.</div>
+                                            </td>
+                                            <td class="px-4 py-4 text-right">
+                                                <span class="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium rounded-md bg-gray-100 text-gray-600 border border-gray-200">
+                                                    <i data-lucide="check" class="w-3 h-3"></i> Clos (Accepté)
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Arbitrages à rendre -->
+                        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 flex flex-col">
+                            <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center bg-gray-50/50">
+                                <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <i data-lucide="gavel" class="w-5 h-5 text-gray-400"></i>
+                                    Arbitrages & Escalades (1)
+                                </h3>
+                            </div>
+                            
+                            <div class="p-5">
+                                <div class="border border-orange-200 rounded-lg p-4 bg-orange-50/50">
+                                    <div class="flex justify-between items-start mb-3">
+                                        <h4 class="font-bold text-gray-900 flex items-center gap-2"><i data-lucide="alert-circle" class="w-4 h-4 text-orange-500"></i> Arbitrage sur RSK-004 : Achat stock de substitution</h4>
+                                        <span class="text-xs text-gray-500">Escaladé le 13/02 par Achats</span>
+                                    </div>
+                                    <p class="text-sm text-gray-700 mb-4">Pour éviter un arrêt de chantier de 3 semaines (coût estimé pénalités : 35 K€), l'équipe achat propose l'acquisition d'un lot de substitution auprès d'un fournisseur local non-référencé, avec surcoût sec de 12 K€ et paiement comptant requis.</p>
+                                    
+                                    <div class="flex gap-3 justify-end mt-4 pt-4 border-t border-orange-200/50">
+                                        <button class="px-4 py-2 text-sm font-medium bg-white text-gray-700 border border-gray-300 rounded hover:bg-gray-50">Refuser la proposition</button>
+                                        <button class="px-4 py-2 text-sm font-medium bg-accent-600 text-white rounded hover:bg-accent-700 shadow-sm">Valider le surcoût (12 K€) & Débloquer</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

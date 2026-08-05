@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exécution terrain & Ordres de travail - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3', 900: '#054f31' },
+                        error: { 500: '#f04438', 50: '#fef3f2', 900: '#7a271d' },
+                        warning: { 500: '#f79009', 50: '#fffaeb', 900: '#7a4504' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20 shrink-0">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Exécution terrain</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500">
+                    <i data-lucide="home" class="w-5 h-5"></i>
+                    <span class="truncate">Accueil Module</span>
+                </a>
+                <a href="ecr-07-01-liste-planning-des-ordres-de-travail.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="calendar-days" class="w-5 h-5"></i>
+                    <span class="truncate">Planning des OT</span>
+                </a>
+                <a href="ecr-07-02-formulaire-creation-ot.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                    <span class="truncate">Nouveau OT</span>
+                </a>
+                <a href="ecr-07-03-fiche-ot-back-office.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                    <span class="truncate">Fiche OT (Back-office)</span>
+                </a>
+                <a href="ecr-07-04-fiche-ot-mobile-terrain.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="smartphone" class="w-5 h-5"></i>
+                    <span class="truncate">Vue Mobile Terrain</span>
+                </a>
+                <a href="ecr-07-05-validation-et-cloture-ot.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="check-circle" class="w-5 h-5"></i>
+                    <span class="truncate">Validation & Clôture</span>
+                </a>
+            </nav>
+
+            <div class="mt-8">
+                <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Autres modules</div>
+                <nav class="space-y-1">
+                    <a href="../01-referentiel/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="database" class="w-5 h-5"></i>
+                        <span class="truncate">Référentiel</span>
+                    </a>
+                    <a href="../06-stock-logistique-magasin/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="package" class="w-5 h-5"></i>
+                        <span class="truncate">Stock & Logistique</span>
+                    </a>
+                    <a href="../09-temps-ressources-pointage/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="clock" class="w-5 h-5"></i>
+                        <span class="truncate">Temps & Pointage</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+        
+        <div class="p-4 border-t border-gray-200 dark:border-gray-800">
+            <div class="flex items-center gap-3">
+                <img src="https://ui-avatars.com/api/?name=Admin+User&background=f2f7ff&color=465fff" alt="User" class="w-9 h-9 rounded-full">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">Admin Terrain</p>
+                    <p class="text-xs text-gray-500 truncate">admin@huberp.com</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden bg-gray-50 dark:bg-gray-950">
+        <!-- Header -->
+        <header class="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 shrink-0">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <h1 class="text-xl font-semibold text-gray-900 dark:text-white">Module Exécution terrain & Ordres de travail</h1>
+            </div>
+            <div class="flex items-center gap-4">
+                <button class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                    <i data-lucide="bell" class="w-5 h-5"></i>
+                </button>
+                <button class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                    <i data-lucide="settings" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Content scrollable -->
+        <div class="flex-1 overflow-auto p-6">
+            <div class="max-w-5xl mx-auto space-y-8">
+                
+                <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-8 shadow-sm">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Bienvenue dans le module Exécution Terrain</h2>
+                    <p class="text-gray-600 dark:text-gray-400 mb-6 max-w-3xl">
+                        Ce module gère le cycle de vie complet des ordres de travail (OT), de leur création et planification en back-office jusqu'à leur exécution sur le terrain par les équipes mobiles, en passant par la remontée des preuves et la clôture.
+                    </p>
+                </div>
+
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white">Catalogue des écrans (Maquettes)</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    
+                    <a href="ecr-07-01-liste-planning-des-ordres-de-travail.html" class="group bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 hover:border-accent-500 hover:shadow-md transition-all">
+                        <div class="w-12 h-12 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-4 group-hover:scale-110 transition-transform">
+                            <i data-lucide="calendar-days" class="w-6 h-6"></i>
+                        </div>
+                        <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">ECR-07-01</h4>
+                        <p class="font-medium text-gray-900 dark:text-gray-100 mb-2">Liste / Planning OT</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Visualisation et priorisation des OT à planifier ou suivre.</p>
+                    </a>
+
+                    <a href="ecr-07-02-formulaire-creation-ot.html" class="group bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 hover:border-accent-500 hover:shadow-md transition-all">
+                        <div class="w-12 h-12 rounded-lg bg-green-50 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400 mb-4 group-hover:scale-110 transition-transform">
+                            <i data-lucide="plus-circle" class="w-6 h-6"></i>
+                        </div>
+                        <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">ECR-07-02</h4>
+                        <p class="font-medium text-gray-900 dark:text-gray-100 mb-2">Formulaire création OT</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Création initiale avec rattachement, équipe, dates et prérequis.</p>
+                    </a>
+
+                    <a href="ecr-07-03-fiche-ot-back-office.html" class="group bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 hover:border-accent-500 hover:shadow-md transition-all">
+                        <div class="w-12 h-12 rounded-lg bg-purple-50 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 dark:text-purple-400 mb-4 group-hover:scale-110 transition-transform">
+                            <i data-lucide="file-text" class="w-6 h-6"></i>
+                        </div>
+                        <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">ECR-07-03</h4>
+                        <p class="font-medium text-gray-900 dark:text-gray-100 mb-2">Fiche OT Back-office</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Suivi détaillé de l'exécution, anomalies et planification.</p>
+                    </a>
+
+                    <a href="ecr-07-04-fiche-ot-mobile-terrain.html" class="group bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 hover:border-accent-500 hover:shadow-md transition-all">
+                        <div class="w-12 h-12 rounded-lg bg-orange-50 dark:bg-orange-900/30 flex items-center justify-center text-orange-600 dark:text-orange-400 mb-4 group-hover:scale-110 transition-transform">
+                            <i data-lucide="smartphone" class="w-6 h-6"></i>
+                        </div>
+                        <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">ECR-07-04</h4>
+                        <p class="font-medium text-gray-900 dark:text-gray-100 mb-2">Fiche OT Mobile Terrain</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Vue optimisée mobile pour la saisie des temps et preuves sur site.</p>
+                    </a>
+
+                    <a href="ecr-07-05-validation-et-cloture-ot.html" class="group bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 hover:border-accent-500 hover:shadow-md transition-all">
+                        <div class="w-12 h-12 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 mb-4 group-hover:scale-110 transition-transform">
+                            <i data-lucide="check-circle" class="w-6 h-6"></i>
+                        </div>
+                        <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">ECR-07-05</h4>
+                        <p class="font-medium text-gray-900 dark:text-gray-100 mb-2">Validation et Clôture OT</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Validation post-terrain et clôture administrative.</p>
+                    </a>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

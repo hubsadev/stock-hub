@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accueil Référentiel - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3' },
+                        error: { 500: '#f04438', 50: '#fef3f2' },
+                        warning: { 500: '#f79009', 50: '#fffaeb' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Référentiel</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                    <span class="truncate">Accueil Référentiel</span>
+                </a>
+                <a href="ecr-01-01-catalogue-des-tiers.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="users" class="w-5 h-5"></i>
+                    <span class="truncate">Catalogue des Tiers</span>
+                </a>
+                <a href="ecr-01-02-fiche-tiers.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 pl-11 hidden">
+                    <span class="truncate">Fiche Tiers</span>
+                </a>
+                <a href="ecr-01-03-catalogue-articles-et-prestations.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="package" class="w-5 h-5"></i>
+                    <span class="truncate">Articles & Prestations</span>
+                </a>
+                <a href="ecr-01-04-fiche-article-ou-prestation.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 pl-11 hidden">
+                    <span class="truncate">Fiche Article</span>
+                </a>
+                <a href="ecr-01-05-referentiel-sites-et-depots.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="map-pin" class="w-5 h-5"></i>
+                    <span class="truncate">Sites & Dépôts</span>
+                </a>
+                <a href="ecr-01-06-referentiel-ressources-operationnelles.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="truck" class="w-5 h-5"></i>
+                    <span class="truncate">Ressources Opérat.</span>
+                </a>
+            </nav>
+        </div>
+        
+        <div class="p-4 border-t border-gray-200 dark:border-gray-800">
+            <div class="flex items-center gap-3">
+                <img src="https://ui-avatars.com/api/?name=Admin+Sys&background=465fff&color=fff" alt="Admin" class="w-8 h-8 rounded-full">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">Admin Sys</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate">admin@huberp.com</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+        <!-- Top Navigation -->
+        <header class="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 z-10">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <div class="flex flex-col">
+                    <div class="text-xs text-gray-500 dark:text-gray-400 font-medium">Module 01</div>
+                    <h1 class="text-xl font-bold text-gray-900 dark:text-white">Accueil Référentiel</h1>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <button class="p-2 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 relative">
+                    <i data-lucide="bell" class="w-5 h-5"></i>
+                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-error-500 rounded-full"></span>
+                </button>
+                <button class="p-2 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+                    <i data-lucide="search" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Content scrollable area -->
+        <div class="flex-1 overflow-y-auto p-6 lg:p-8">
+            <div class="max-w-7xl mx-auto space-y-8">
+                
+                <!-- Welcome Banner -->
+                <div class="bg-white dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">Bienvenue dans le Référentiel Central</h2>
+                        <p class="text-gray-500 dark:text-gray-400">Gérez ici la base de données maîtresse de votre ERP : Tiers, Articles, Sites, et Ressources.</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <a href="ecr-01-01-catalogue-des-tiers.html" class="px-4 py-2 bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500 rounded-lg text-sm font-medium hover:bg-accent-100 dark:hover:bg-accent-900/50 transition-colors">
+                            Voir les Tiers
+                        </a>
+                        <a href="ecr-01-03-catalogue-articles-et-prestations.html" class="px-4 py-2 bg-accent-600 text-white rounded-lg text-sm font-medium hover:bg-accent-700 transition-colors shadow-sm">
+                            Catalogue Articles
+                        </a>
+                    </div>
+                </div>
+
+                <!-- KPIs -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white dark:bg-gray-900 rounded-xl p-5 border border-gray-200 dark:border-gray-800 shadow-sm flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-500 flex items-center justify-center">
+                            <i data-lucide="users" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Tiers Actifs</p>
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white">1,284</h3>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-gray-900 rounded-xl p-5 border border-gray-200 dark:border-gray-800 shadow-sm flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-500 flex items-center justify-center">
+                            <i data-lucide="package" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Articles & Prestations</p>
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white">8,405</h3>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-gray-900 rounded-xl p-5 border border-gray-200 dark:border-gray-800 shadow-sm flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-lg bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-500 flex items-center justify-center">
+                            <i data-lucide="map-pin" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Sites & Dépôts</p>
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white">24</h3>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-gray-900 rounded-xl p-5 border border-gray-200 dark:border-gray-800 shadow-sm flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-lg bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-500 flex items-center justify-center">
+                            <i data-lucide="truck" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Ressources Opérat.</p>
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white">142</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Cards -->
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white pt-4">Navigation Rapide</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Card 1 -->
+                    <a href="ecr-01-01-catalogue-des-tiers.html" class="block bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow p-6 group">
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 flex items-center justify-center group-hover:bg-accent-50 group-hover:text-accent-600 dark:group-hover:bg-accent-900/30 dark:group-hover:text-accent-500 transition-colors">
+                                <i data-lucide="users" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-1 group-hover:text-accent-600 dark:group-hover:text-accent-500 transition-colors">Catalogue des Tiers</h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Gestion des clients, fournisseurs et partenaires. Consultation et création des fiches tiers.</p>
+                            </div>
+                        </div>
+                    </a>
+                    
+                    <!-- Card 2 -->
+                    <a href="ecr-01-03-catalogue-articles-et-prestations.html" class="block bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow p-6 group">
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 flex items-center justify-center group-hover:bg-accent-50 group-hover:text-accent-600 dark:group-hover:bg-accent-900/30 dark:group-hover:text-accent-500 transition-colors">
+                                <i data-lucide="package" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-1 group-hover:text-accent-600 dark:group-hover:text-accent-500 transition-colors">Catalogue Articles & Prestations</h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Base de données des produits matériels et des services, utilisée par les Achats et l'Avant-Vente.</p>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- Card 3 -->
+                    <a href="ecr-01-05-referentiel-sites-et-depots.html" class="block bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow p-6 group">
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 flex items-center justify-center group-hover:bg-accent-50 group-hover:text-accent-600 dark:group-hover:bg-accent-900/30 dark:group-hover:text-accent-500 transition-colors">
+                                <i data-lucide="map-pin" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-1 group-hover:text-accent-600 dark:group-hover:text-accent-500 transition-colors">Sites & Dépôts</h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Gestion des lieux géographiques, agences, et entrepôts logistiques pour la gestion des stocks.</p>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- Card 4 -->
+                    <a href="ecr-01-06-referentiel-ressources-operationnelles.html" class="block bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow p-6 group">
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 flex items-center justify-center group-hover:bg-accent-50 group-hover:text-accent-600 dark:group-hover:bg-accent-900/30 dark:group-hover:text-accent-500 transition-colors">
+                                <i data-lucide="truck" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-1 group-hover:text-accent-600 dark:group-hover:text-accent-500 transition-colors">Ressources Opérationnelles</h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Ressources humaines (employés, sous-traitants) et matérielles (véhicules, équipements).</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </main>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

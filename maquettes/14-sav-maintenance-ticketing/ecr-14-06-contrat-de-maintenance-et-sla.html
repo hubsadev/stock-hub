@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contrat CT-2023-45 (Gold) - SAV / Maintenance - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3' },
+                        error: { 500: '#f04438', 50: '#fef3f2' },
+                        warning: { 500: '#f79009', 50: '#fffaeb' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">SAV & Ticketing</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                    <span class="truncate">Accueil SAV</span>
+                </a>
+                <a href="ecr-14-01-registre-des-tickets-sav.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="ticket" class="w-5 h-5"></i>
+                    <span class="truncate">Registre des tickets</span>
+                </a>
+                <a href="ecr-14-04-suivi-d-intervention-sav-sur-ot.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="wrench" class="w-5 h-5"></i>
+                    <span class="truncate">Suivi d'intervention OT</span>
+                </a>
+                <a href="ecr-14-05-base-installee-et-garanties.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="server" class="w-5 h-5"></i>
+                    <span class="truncate">Base installée</span>
+                </a>
+                <a href="ecr-14-06-contrat-de-maintenance-et-sla.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500">
+                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                    <span class="truncate">Contrats & SLA</span>
+                </a>
+                <a href="ecr-14-07-portail-client-sav.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="globe" class="w-5 h-5"></i>
+                    <span class="truncate">Portail Client</span>
+                </a>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+        <!-- Top Navigation -->
+        <header class="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 z-10 shrink-0">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <div class="flex flex-col">
+                    <div class="text-xs text-gray-500 dark:text-gray-400 font-medium">Module 14 • SAV / Maintenance / Ticketing</div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-xl font-bold text-gray-900 dark:text-white">CT-2023-45 (Contrat Gold 24/7)</h1>
+                        <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-success-50 text-success-700 dark:bg-success-900/30 dark:text-success-500 border border-success-200 dark:border-success-800">Actif</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <button class="px-4 py-2 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                    Modifier
+                </button>
+                <button class="px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors">
+                    Suspendre
+                </button>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-6">
+            <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Main col -->
+                <div class="lg:col-span-2 space-y-6">
+                    
+                    <!-- Règles SLA -->
+                    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20 flex justify-between items-center">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                <i data-lucide="shield-check" class="w-5 h-5 text-gray-400"></i>
+                                Engagements de Service (SLA)
+                            </h3>
+                            <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Couverture: 24/7/365</span>
+                        </div>
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
+                            <thead class="bg-gray-50 dark:bg-gray-800/50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Priorité Incident</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Prise en charge (GTI)</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Temps de Résolution (GTR)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-error-50 text-error-700 dark:bg-error-900/30 dark:text-error-400 border border-error-200 dark:border-error-800">
+                                            P1 - Critique
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">1 Heure</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">4 Heures</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-warning-50 text-warning-700 dark:bg-warning-900/30 dark:text-warning-400 border border-warning-200 dark:border-warning-800">
+                                            P2 - Majeur
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">2 Heures</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">8 Heures</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-accent-50 text-accent-700 dark:bg-accent-900/30 dark:text-accent-400 border border-accent-200 dark:border-accent-800">
+                                            P3 - Standard
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">4 Heures</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">Jour Ouvré Suivant (J+1)</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+                                            P4 - Mineur
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">8 Heures</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">J+3</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-800 text-sm text-gray-600 dark:text-gray-400 bg-gray-50/50 dark:bg-gray-800/20">
+                            <strong>Conditions de pénalité :</strong> En cas de non-respect du GTR sur les incidents P1/P2, une pénalité de 5% du montant mensuel est appliquée par heure de retard entamée.
+                        </div>
+                    </div>
+
+                    <!-- Couverture Périmètre -->
+                    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/20">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                <i data-lucide="server" class="w-5 h-5 text-gray-400"></i>
+                                Base installée couverte (Périmètre)
+                            </h3>
+                            <button class="text-sm font-medium text-accent-600 dark:text-accent-500 hover:text-accent-700">Modifier périmètre</button>
+                        </div>
+                        <div class="p-4">
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Ce contrat couvre les équipements réseau (Routeurs, Switchs) sur les sites de Paris HQ et Lyon Branch.</p>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="border border-gray-200 dark:border-gray-800 rounded-lg p-3 hover:border-accent-500 dark:hover:border-accent-500 transition-colors cursor-pointer bg-gray-50/50 dark:bg-gray-800/30">
+                                    <div class="flex items-start justify-between">
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-900 dark:text-white">Paris HQ (Baie R1)</p>
+                                            <p class="text-xs text-gray-500 mt-1">12 Équipements actifs</p>
+                                        </div>
+                                        <i data-lucide="check-circle" class="w-5 h-5 text-success-500"></i>
+                                    </div>
+                                </div>
+                                <div class="border border-gray-200 dark:border-gray-800 rounded-lg p-3 hover:border-accent-500 dark:hover:border-accent-500 transition-colors cursor-pointer bg-gray-50/50 dark:bg-gray-800/30">
+                                    <div class="flex items-start justify-between">
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-900 dark:text-white">Lyon Branch (Local technique)</p>
+                                            <p class="text-xs text-gray-500 mt-1">4 Équipements actifs</p>
+                                        </div>
+                                        <i data-lucide="check-circle" class="w-5 h-5 text-success-500"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="px-6 py-3 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 text-right">
+                            <a href="ecr-14-05-base-installee-et-garanties.html" class="text-sm font-medium text-accent-600 dark:text-accent-500 hover:text-accent-700">Voir la base installée détaillée →</a>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Side col -->
+                <div class="space-y-6">
+                    <!-- Client & Dates -->
+                    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm p-6">
+                        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4 uppercase tracking-wider">Informations Générales</h3>
+                        <div class="space-y-4 text-sm">
+                            <div>
+                                <span class="text-gray-500 dark:text-gray-400 block mb-1">Client Titulaire</span>
+                                <a href="../01-referentiel/ecr-01-02-fiche-tiers.html" class="font-medium text-accent-600 dark:text-accent-500 hover:underline">TechInnovate SAS</a>
+                            </div>
+                            <div class="pt-2 border-t border-gray-100 dark:border-gray-800">
+                                <span class="text-gray-500 dark:text-gray-400 block mb-1">Date d'effet</span>
+                                <span class="font-medium text-gray-900 dark:text-white">01 Janvier 2024</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-500 dark:text-gray-400 block mb-1">Date d'échéance / Renouvellement</span>
+                                <span class="font-medium text-gray-900 dark:text-white">31 Décembre 2025</span>
+                            </div>
+                            <div class="pt-2 border-t border-gray-100 dark:border-gray-800">
+                                <span class="text-gray-500 dark:text-gray-400 block mb-1">Montant Annuel Facturé</span>
+                                <span class="font-medium text-gray-900 dark:text-white text-lg">12 500,00 € HT</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Inclusions / Exclusions -->
+                    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm p-6">
+                        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4 uppercase tracking-wider">Conditions Financières</h3>
+                        <ul class="space-y-2 text-sm">
+                            <li class="flex items-start gap-2 text-gray-700 dark:text-gray-300">
+                                <i data-lucide="check" class="w-4 h-4 text-success-500 mt-0.5 shrink-0"></i>
+                                <span>Main d'œuvre incluse (Diagnostic & Remplacement)</span>
+                            </li>
+                            <li class="flex items-start gap-2 text-gray-700 dark:text-gray-300">
+                                <i data-lucide="check" class="w-4 h-4 text-success-500 mt-0.5 shrink-0"></i>
+                                <span>Déplacement sur site (France métropolitaine)</span>
+                            </li>
+                            <li class="flex items-start gap-2 text-gray-700 dark:text-gray-300">
+                                <i data-lucide="check" class="w-4 h-4 text-success-500 mt-0.5 shrink-0"></i>
+                                <span>Pièces détachées standard incluses</span>
+                            </li>
+                            <li class="flex items-start gap-2 text-gray-500 dark:text-gray-500">
+                                <i data-lucide="x" class="w-4 h-4 text-error-500 mt-0.5 shrink-0"></i>
+                                <span>Remplacement complet équipement (Hors garantie constructeur)</span>
+                            </li>
+                            <li class="flex items-start gap-2 text-gray-500 dark:text-gray-500">
+                                <i data-lucide="x" class="w-4 h-4 text-error-500 mt-0.5 shrink-0"></i>
+                                <span>Casse ou vandalisme</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

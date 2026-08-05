@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit Administration - Administration ERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3' },
+                        error: { 500: '#f04438', 50: '#fef3f2' },
+                        warning: { 500: '#f79009', 50: '#fffaeb' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20 shrink-0">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Administration</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <span class="text-lg">🏠</span>
+                    <span class="truncate">Accueil Administration</span>
+                </a>
+                <a href="ecr-19-01-assistant-de-mise-en-place-initiale-erp.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <span class="text-lg">✨</span>
+                    <span class="truncate">Assistant Initial</span>
+                </a>
+                <a href="ecr-19-02-parametres-globaux-erp.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <span class="text-lg">⚙️</span>
+                    <span class="truncate">Paramètres Globaux</span>
+                </a>
+                <a href="ecr-19-03-connexion-erp.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <span class="text-lg">🔑</span>
+                    <span class="truncate">Connexion</span>
+                </a>
+                <a href="ecr-19-04-annuaire-des-utilisateurs.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <span class="text-lg">👥</span>
+                    <span class="truncate">Annuaire Utilisateurs</span>
+                </a>
+                <a href="ecr-19-05-fiche-utilisateur.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <span class="text-lg">👤</span>
+                    <span class="truncate">Fiche Utilisateur</span>
+                </a>
+                <a href="ecr-19-06-invitation-utilisateur.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <span class="text-lg">✉️</span>
+                    <span class="truncate">Invitation Utilisateur</span>
+                </a>
+                <a href="ecr-19-07-roles-et-permissions.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <span class="text-lg">🛡️</span>
+                    <span class="truncate">Rôles & Permissions</span>
+                </a>
+                <a href="ecr-19-08-perimetres-d-acces.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <span class="text-lg">🗺️</span>
+                    <span class="truncate">Périmètres d'Accès</span>
+                </a>
+                <a href="ecr-19-09-sessions-actives.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <span class="text-lg">⏱️</span>
+                    <span class="truncate">Sessions Actives</span>
+                </a>
+                <a href="ecr-19-10-audit-administration.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500">
+                    <span class="text-lg">📋</span>
+                    <span class="truncate">Audit Administration</span>
+                </a>
+                <a href="ecr-19-11-societes-fiscalite-et-numerotation.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <span class="text-lg">🏢</span>
+                    <span class="truncate">Sociétés & Fiscalité</span>
+                </a>
+                <a href="ecr-19-12-comptes-externes-et-invites.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <span class="text-lg">🤝</span>
+                    <span class="truncate">Comptes Externes</span>
+                </a>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+        <!-- Topbar Context -->
+        <div class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-8 py-4 sticky top-0 z-10">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-1">
+                        <span>Administration ERP</span>
+                        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        <span class="text-gray-900 dark:text-gray-100 font-medium">Surveillance</span>
+                    </div>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Journal d'Audit Administration</h1>
+                </div>
+                <div class="flex gap-3">
+                    <button class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-lg font-medium text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm flex items-center gap-2">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        Exporter CSV
+                    </button>
+                    <button class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-lg font-medium text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm flex items-center gap-2">
+                        <i data-lucide="filter" class="w-4 h-4"></i>
+                        Filtres avancés
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Page Content -->
+        <div class="flex-1 overflow-y-auto p-8 no-scrollbar flex flex-col items-center">
+            
+            <div class="w-full max-w-6xl space-y-6 pb-12">
+                
+                <div class="flex items-center gap-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-2 shadow-sm w-full md:w-auto overflow-hidden">
+                    <div class="relative w-full md:w-96">
+                        <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-gray-400"></i>
+                        <input type="text" placeholder="Rechercher par acteur, action ou objet..." class="w-full bg-transparent border-none pl-9 pr-4 py-1.5 text-sm focus:outline-none text-gray-900 dark:text-white placeholder-gray-400">
+                    </div>
+                    <div class="h-6 w-px bg-gray-200 dark:bg-gray-700 hidden md:block"></div>
+                    <select class="hidden md:block bg-transparent border-none text-sm text-gray-700 dark:text-gray-300 font-medium focus:outline-none cursor-pointer">
+                        <option>Toutes les actions</option>
+                        <option>Création</option>
+                        <option>Modification de Rôle</option>
+                        <option>Suspension</option>
+                        <option>Sécurité</option>
+                    </select>
+                </div>
+
+                <!-- Timeline / List of Logs -->
+                <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                    
+                    <div class="divide-y divide-gray-200 dark:divide-gray-800 text-sm">
+                        
+                        <!-- Log Item 1 -->
+                        <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition flex flex-col sm:flex-row gap-4 justify-between items-start">
+                            <div class="flex gap-4">
+                                <div class="w-10 h-10 rounded-full bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-400 flex items-center justify-center shrink-0">
+                                    <i data-lucide="shield-check" class="w-5 h-5"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                                        Modification du Rôle
+                                        <span class="inline-flex px-2 py-0.5 rounded bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 text-xs font-mono border border-gray-200 dark:border-gray-700">ACT-0842</span>
+                                    </p>
+                                    <p class="text-gray-600 dark:text-gray-400 mt-1">
+                                        L'utilisateur <span class="font-medium text-gray-900 dark:text-gray-200">Admin Sys</span> a modifié la matrice des permissions pour le rôle <span class="font-medium text-accent-600 dark:text-accent-500">Manager Finance</span>.
+                                    </p>
+                                    <div class="mt-2 text-xs text-gray-500 font-mono bg-gray-50 dark:bg-gray-800/50 p-2 rounded border border-gray-100 dark:border-gray-700 inline-block">
+                                        { "module": "Achats", "object": "Commandes", "action": "add_delete_permission" }
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-right whitespace-nowrap text-xs text-gray-500 shrink-0">
+                                <p class="font-medium text-gray-700 dark:text-gray-300">Aujourd'hui, 09:15</p>
+                                <p>IP: 192.168.1.42</p>
+                            </div>
+                        </div>
+
+                        <!-- Log Item 2 -->
+                        <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition flex flex-col sm:flex-row gap-4 justify-between items-start">
+                            <div class="flex gap-4">
+                                <div class="w-10 h-10 rounded-full bg-warning-50 text-warning-600 dark:bg-warning-900/30 dark:text-warning-400 flex items-center justify-center shrink-0">
+                                    <i data-lucide="user-plus" class="w-5 h-5"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                                        Invitation Utilisateur
+                                        <span class="inline-flex px-2 py-0.5 rounded bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 text-xs font-mono border border-gray-200 dark:border-gray-700">ACT-0841</span>
+                                    </p>
+                                    <p class="text-gray-600 dark:text-gray-400 mt-1">
+                                        L'utilisateur <span class="font-medium text-gray-900 dark:text-gray-200">Admin Sys</span> a invité un nouvel utilisateur <span class="font-medium text-gray-900 dark:text-gray-200">jean.dupont@masociete.com</span>.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="text-right whitespace-nowrap text-xs text-gray-500 shrink-0">
+                                <p class="font-medium text-gray-700 dark:text-gray-300">Aujourd'hui, 08:32</p>
+                                <p>IP: 192.168.1.42</p>
+                            </div>
+                        </div>
+
+                        <!-- Log Item 3 -->
+                        <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition flex flex-col sm:flex-row gap-4 justify-between items-start">
+                            <div class="flex gap-4">
+                                <div class="w-10 h-10 rounded-full bg-error-50 text-error-600 dark:bg-error-900/30 dark:text-error-400 flex items-center justify-center shrink-0">
+                                    <i data-lucide="ban" class="w-5 h-5"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                                        Suspension Compte
+                                        <span class="inline-flex px-2 py-0.5 rounded bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 text-xs font-mono border border-gray-200 dark:border-gray-700">ACT-0839</span>
+                                    </p>
+                                    <p class="text-gray-600 dark:text-gray-400 mt-1">
+                                        Le compte de <span class="font-medium text-gray-900 dark:text-gray-200">Sophie Martin</span> a été suspendu par <span class="font-medium text-gray-900 dark:text-gray-200">Admin Sys</span>.
+                                    </p>
+                                    <p class="mt-2 text-xs text-error-600 dark:text-error-400 font-medium italic">
+                                        Motif : "Sortie des effectifs - EMP-0012". (2 sessions actives révoquées associées).
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="text-right whitespace-nowrap text-xs text-gray-500 shrink-0">
+                                <p class="font-medium text-gray-700 dark:text-gray-300">Hier, 17:45</p>
+                                <p>IP: 192.168.1.42</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="flex justify-center">
+                    <button class="px-6 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 rounded-full font-medium text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition shadow-sm">
+                        Charger l'historique plus ancien
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

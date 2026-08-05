@@ -1,0 +1,79 @@
+﻿Analyse du fichier Excel de suivi stock
+
+Fichier source : SUIVI_MAJ_MAT_BUREAU_2026_PRO (1).xlsx
+
+Feuilles identifiees :
+
+1. Accueil
+- Tableau de bord global.
+- Articles total, valeur stock, articles critiques, ruptures, entrees/sorties du mois.
+- Plusieurs cellules ont des erreurs #REF!.
+- A reprendre : KPI, mais pas les formules telles quelles.
+
+2. Dashboard_Tracabilite
+- Tableau de bord materiel par projet.
+- Materiels affectes, maintenance, retards, perdus/voles, reformes.
+- A reprendre : logique de suivi par projet et alertes tracabilite.
+
+3. Base_Articles
+- Catalogue principal.
+- Colonnes utiles : Code Article, Famille, Designation, Unite, Fournisseur habituel, Emplacement, Stock Min, Stock Max, Stock Securite, Prix Unitaire, Stock Initial, Qte Commandee, Statut, Date Creation.
+- A reprendre en priorite.
+
+4. Entrees
+- Mouvements d'entree materiel.
+- Colonnes utiles : Date, N Bon, Code Article, Designation, Fournisseur, Projet, Magasin, Responsable, Quantite, Prix Unitaire, Montant, Observation, Code Projet.
+- A reprendre comme mouvements ENTREE.
+
+5. Sorties
+- Mouvements de sortie materiel.
+- Colonnes utiles : Date, N Bon Sortie, Code Article, Designation, Employe, Departement, Chantier, Responsable, Quantite, Destination, Motif, Observation, Code Projet.
+- A reprendre comme mouvements SORTIE.
+
+6. Stock_TempsReel
+- Stock calcule a partir du stock initial, entrees et sorties.
+- A reprendre comme vue calculee dans l'application.
+- Ne pas importer comme source definitive, car plusieurs cellules affichent #REF!.
+
+7. Equipements
+- Gestion des outils et materiels suivis individuellement.
+- Colonnes utiles : Code Inventaire, Designation, Quantite, Marque, Numero de serie, Etat, Employe affecte, Localisation, Date achat, Garantie, Observation, Dernier Mouvement, Projet Actuel, Statut Actuel.
+- A reprendre pour la tracabilite materiel.
+
+8. Projets
+- Liste projets / chantiers.
+- Colonnes utiles : Code Projet, Nom Projet, Client, Region, Ville, Chantier, Chef de Projet, Conducteur des Travaux, Responsable Logistique, Societe Sous-traitante, Budget Materiel, Date Debut, Date Fin Prevue, Statut Projet.
+- A reprendre au moins pour rattacher sorties et affectations.
+
+9. Affectations
+- Historique de mouvements materiel.
+- Chaque ligne correspond a une sortie, transfert ou retour.
+- A reprendre pour tracer l'affectation des equipements.
+
+10. Recherche_Materiel
+- Recherche instantanee par code materiel.
+- A reprendre comme ecran de recherche dans l'application.
+
+11. Alertes
+- Articles critiques et en rupture.
+- A reprendre comme vue d'alerte calculee.
+
+12. Alertes_Tracabilite
+- Retards de retour, doublons numero de serie, affectations suspectes, garanties proches, materiels sans mouvement.
+- A reprendre progressivement, pas forcement dans le premier lot.
+
+13. Historique_Import_2026
+- Mouvements historiques bruts importes.
+- Certaines lignes sont marquees A VERIFIER.
+- A garder comme archive ou source d'audit initial.
+
+14. Parametres
+- Listes de reference : familles, emplacements, fournisseurs, statuts, regions, clients.
+- A reprendre pour initialiser les listes.
+
+Conclusion :
+- Le fichier Excel couvre deja beaucoup plus qu'une simple gestion de quantite.
+- Il y a deux besoins principaux : stock articles et tracabilite equipements.
+- La mini app doit commencer par articles, entrees, sorties, stock actuel, equipements et mouvements.
+- Les formules Excel ne doivent pas etre reprises telles quelles.
+- Les calculs doivent etre faits par l'application.

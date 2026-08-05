@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coût d'Intervention - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3' },
+                        error: { 500: '#f04438', 50: '#fef3f2' },
+                        warning: { 500: '#f79009', 50: '#fffaeb' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Analytique & Marge</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                    <span class="truncate">Accueil Analytique</span>
+                </a>
+                <a href="ecr-10-01-fiche-cout-analytique-d-intervention.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500">
+                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                    <span class="truncate">Coût d'Intervention</span>
+                </a>
+                <a href="ecr-10-02-tableau-de-bord-analytique-consolide.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="pie-chart" class="w-5 h-5"></i>
+                    <span class="truncate">Analytique Consolidé</span>
+                </a>
+                <a href="ecr-10-03-tableau-de-bord-rentabilite-et-marge.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="trending-up" class="w-5 h-5"></i>
+                    <span class="truncate">Rentabilité & Marge</span>
+                </a>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+        <!-- Top Navigation -->
+        <header class="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 z-10">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <!-- Breadcrumbs -->
+                <nav class="flex text-sm text-gray-500 dark:text-gray-400 font-medium space-x-2">
+                    <a href="index.html" class="hover:text-gray-900 dark:hover:text-white transition-colors">Module 10</a>
+                    <span>/</span>
+                    <a href="#" class="hover:text-gray-900 dark:hover:text-white transition-colors">Interventions</a>
+                    <span>/</span>
+                    <span class="text-gray-900 dark:text-white">INT-2023-0142</span>
+                </nav>
+            </div>
+            <div class="flex items-center gap-4">
+                <button class="p-2 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 relative">
+                    <i data-lucide="bell" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Content scrollable area -->
+        <div class="flex-1 overflow-y-auto p-6 lg:p-8 bg-gray-50 dark:bg-gray-950">
+            <div class="max-w-7xl mx-auto space-y-6">
+                
+                <!-- Page Header -->
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <div class="flex items-center gap-3 mb-1">
+                            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Coût analytique : INT-2023-0142</h1>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success-50 text-success-500 border border-success-200 dark:bg-success-900/20 dark:border-success-800">
+                                Calcul à jour
+                            </span>
+                        </div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Intervention : Remplacement Compresseur CVC - Site Lyon Part-Dieu</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <button class="px-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-sm flex items-center gap-2">
+                            <i data-lucide="download" class="w-4 h-4"></i>
+                            Export
+                        </button>
+                        <button class="px-4 py-2 bg-accent-600 text-white rounded-lg text-sm font-medium hover:bg-accent-700 transition-colors shadow-sm flex items-center gap-2">
+                            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                            Recalculer le coût
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Warning Banner: Données partielles -->
+                <div class="bg-warning-50 dark:bg-warning-900/20 border border-warning-200 dark:border-warning-800 rounded-xl p-4 flex gap-3">
+                    <div class="text-warning-500 mt-0.5 shrink-0">
+                        <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-semibold text-warning-800 dark:text-warning-400">Avertissement : Coûts potentiellement partiels</h4>
+                        <p class="text-sm text-warning-700 dark:text-warning-500 mt-1">Des pointages liés à cette intervention sont encore en attente de validation (Technicien : M. Dubois). Le coût de main-d'œuvre affiché est provisoire.</p>
+                    </div>
+                </div>
+
+                <!-- Synthèse KPI -->
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    <!-- Total Cost -->
+                    <div class="bg-white dark:bg-gray-900 rounded-xl p-5 border border-gray-200 dark:border-gray-800 shadow-sm col-span-1 md:col-span-5 lg:col-span-1 flex flex-col justify-center">
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Coût Total Réel</p>
+                        <div class="flex items-end gap-2">
+                            <h3 class="text-3xl font-bold text-gray-900 dark:text-white">1 950,50 €</h3>
+                        </div>
+                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">Dernier calcul : Aujourd'hui à 10:45</p>
+                    </div>
+                    
+                    <!-- Breakdown KPIs -->
+                    <div class="bg-white dark:bg-gray-900 rounded-xl p-5 border border-gray-200 dark:border-gray-800 shadow-sm">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="w-8 h-8 rounded bg-blue-50 dark:bg-blue-900/20 text-blue-600 flex items-center justify-center">
+                                <i data-lucide="users" class="w-4 h-4"></i>
+                            </div>
+                            <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Main-d'œuvre</p>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">420,00 €</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">12h cumulées</p>
+                    </div>
+
+                    <div class="bg-white dark:bg-gray-900 rounded-xl p-5 border border-gray-200 dark:border-gray-800 shadow-sm">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="w-8 h-8 rounded bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 flex items-center justify-center">
+                                <i data-lucide="package" class="w-4 h-4"></i>
+                            </div>
+                            <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Matériel / Stock</p>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">850,50 €</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">4 articles sortis</p>
+                    </div>
+
+                    <div class="bg-white dark:bg-gray-900 rounded-xl p-5 border border-gray-200 dark:border-gray-800 shadow-sm">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="w-8 h-8 rounded bg-orange-50 dark:bg-orange-900/20 text-orange-600 flex items-center justify-center">
+                                <i data-lucide="briefcase" class="w-4 h-4"></i>
+                            </div>
+                            <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Sous-traitance</p>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">500,00 €</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">1 prestation</p>
+                    </div>
+
+                    <div class="bg-white dark:bg-gray-900 rounded-xl p-5 border border-gray-200 dark:border-gray-800 shadow-sm">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="w-8 h-8 rounded bg-purple-50 dark:bg-purple-900/20 text-purple-600 flex items-center justify-center">
+                                <i data-lucide="truck" class="w-4 h-4"></i>
+                            </div>
+                            <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Déplacement</p>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">180,00 €</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Frais + Véhicule</p>
+                    </div>
+                </div>
+
+                <!-- Tabs & Content -->
+                <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                    
+                    <!-- Tabs Header -->
+                    <div class="border-b border-gray-200 dark:border-gray-800 px-6">
+                        <nav class="flex gap-6 -mb-px text-sm font-medium">
+                            <a href="#" class="border-b-2 border-accent-600 text-accent-600 dark:border-accent-500 dark:text-accent-500 py-4 px-1">Détail des coûts</a>
+                            <a href="#" class="border-b-2 border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 py-4 px-1">Historique des calculs</a>
+                        </nav>
+                    </div>
+
+                    <!-- Tab Content : Detail -->
+                    <div class="p-0">
+                        <!-- Section: Main-d'oeuvre -->
+                        <div class="p-6 border-b border-gray-200 dark:border-gray-800">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <i data-lucide="users" class="w-4 h-4 text-gray-400"></i> Main-d'œuvre
+                                </h4>
+                                <span class="text-sm font-bold text-gray-900 dark:text-white">420,00 €</span>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm text-left">
+                                    <thead class="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 uppercase">
+                                        <tr>
+                                            <th class="px-4 py-3 rounded-l-lg font-medium">Ressource</th>
+                                            <th class="px-4 py-3 font-medium">Date</th>
+                                            <th class="px-4 py-3 font-medium">Heures validées</th>
+                                            <th class="px-4 py-3 font-medium text-right">Taux standard</th>
+                                            <th class="px-4 py-3 rounded-r-lg font-medium text-right">Coût imputé</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100 dark:divide-gray-800 text-gray-700 dark:text-gray-300">
+                                        <tr>
+                                            <td class="px-4 py-3">Jean Martin (Technicien Senior)</td>
+                                            <td class="px-4 py-3">12/10/2023</td>
+                                            <td class="px-4 py-3">8.00 h</td>
+                                            <td class="px-4 py-3 text-right">40.00 € /h</td>
+                                            <td class="px-4 py-3 text-right font-medium">320.00 €</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-3">Alice Renaud (Apprentie)</td>
+                                            <td class="px-4 py-3">12/10/2023</td>
+                                            <td class="px-4 py-3">4.00 h</td>
+                                            <td class="px-4 py-3 text-right">25.00 € /h</td>
+                                            <td class="px-4 py-3 text-right font-medium">100.00 €</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Section: Matériel -->
+                        <div class="p-6 border-b border-gray-200 dark:border-gray-800">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <i data-lucide="package" class="w-4 h-4 text-gray-400"></i> Matériel & Fournitures
+                                </h4>
+                                <span class="text-sm font-bold text-gray-900 dark:text-white">850,50 €</span>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm text-left">
+                                    <thead class="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 uppercase">
+                                        <tr>
+                                            <th class="px-4 py-3 rounded-l-lg font-medium">Article</th>
+                                            <th class="px-4 py-3 font-medium">Origine</th>
+                                            <th class="px-4 py-3 font-medium text-right">Qté consommée</th>
+                                            <th class="px-4 py-3 font-medium text-right">Coût unitaire (CUMP)</th>
+                                            <th class="px-4 py-3 rounded-r-lg font-medium text-right">Coût imputé</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100 dark:divide-gray-800 text-gray-700 dark:text-gray-300">
+                                        <tr>
+                                            <td class="px-4 py-3 font-medium">Compresseur Carrier 30RBM</td>
+                                            <td class="px-4 py-3">Sortie magasin (BS-23-451)</td>
+                                            <td class="px-4 py-3 text-right">1 Unité</td>
+                                            <td class="px-4 py-3 text-right">820.00 €</td>
+                                            <td class="px-4 py-3 text-right font-medium">820.00 €</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-3 font-medium">Gaz Réfrigérant R410A</td>
+                                            <td class="px-4 py-3">Sortie véhicule (Jean M.)</td>
+                                            <td class="px-4 py-3 text-right">1.5 kg</td>
+                                            <td class="px-4 py-3 text-right">20.33 € /kg</td>
+                                            <td class="px-4 py-3 text-right font-medium">30.50 €</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Section: Sous-traitance -->
+                        <div class="p-6 border-b border-gray-200 dark:border-gray-800">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <i data-lucide="briefcase" class="w-4 h-4 text-gray-400"></i> Sous-traitance
+                                </h4>
+                                <span class="text-sm font-bold text-gray-900 dark:text-white">500,00 €</span>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm text-left">
+                                    <thead class="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 uppercase">
+                                        <tr>
+                                            <th class="px-4 py-3 rounded-l-lg font-medium">Prestataire</th>
+                                            <th class="px-4 py-3 font-medium">Prestation</th>
+                                            <th class="px-4 py-3 font-medium text-right">Qté</th>
+                                            <th class="px-4 py-3 font-medium text-right">Coût unitaire</th>
+                                            <th class="px-4 py-3 rounded-r-lg font-medium text-right">Coût imputé</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100 dark:divide-gray-800 text-gray-700 dark:text-gray-300">
+                                        <tr>
+                                            <td class="px-4 py-3 font-medium">Levage Express</td>
+                                            <td class="px-4 py-3">Location Grue avec opérateur</td>
+                                            <td class="px-4 py-3 text-right">1 Forfait</td>
+                                            <td class="px-4 py-3 text-right">500.00 €</td>
+                                            <td class="px-4 py-3 text-right font-medium">500.00 €</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Section: Déplacements & Frais -->
+                        <div class="p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <i data-lucide="truck" class="w-4 h-4 text-gray-400"></i> Déplacements & Frais
+                                </h4>
+                                <span class="text-sm font-bold text-gray-900 dark:text-white">180,00 €</span>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm text-left">
+                                    <thead class="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 uppercase">
+                                        <tr>
+                                            <th class="px-4 py-3 rounded-l-lg font-medium">Nature</th>
+                                            <th class="px-4 py-3 font-medium">Détail</th>
+                                            <th class="px-4 py-3 font-medium text-right">Qté</th>
+                                            <th class="px-4 py-3 font-medium text-right">Forfait/Taux</th>
+                                            <th class="px-4 py-3 rounded-r-lg font-medium text-right">Coût imputé</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100 dark:divide-gray-800 text-gray-700 dark:text-gray-300">
+                                        <tr>
+                                            <td class="px-4 py-3 font-medium">Frais Kilométriques</td>
+                                            <td class="px-4 py-3">Aller-retour Lyon Centre - Part-Dieu</td>
+                                            <td class="px-4 py-3 text-right">12 km</td>
+                                            <td class="px-4 py-3 text-right">2.50 € /km</td>
+                                            <td class="px-4 py-3 text-right font-medium">30.00 €</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-3 font-medium">Forfait Déplacement Zone B</td>
+                                            <td class="px-4 py-3">Zone urbaine dense</td>
+                                            <td class="px-4 py-3 text-right">1 Forfait</td>
+                                            <td class="px-4 py-3 text-right">150.00 €</td>
+                                            <td class="px-4 py-3 text-right font-medium">150.00 €</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

@@ -1,0 +1,227 @@
+﻿Backlog construction - Stock Hub
+
+But :
+- Avoir une liste claire pour construire l'app.
+- Avancer sans melanger toutes les idees.
+- Cocher au fur et a mesure.
+
+
+0. Preparation projet
+
+- [ ] Initialiser le projet.
+- [ ] Ajouter pnpm.
+- [ ] Ajouter TypeScript.
+- [ ] Ajouter React + Vite pour le web.
+- [ ] Ajouter Fastify pour l'API.
+- [ ] Ajouter Prisma.
+- [ ] Ajouter PostgreSQL.
+- [ ] Ajouter scripts dev/build/test.
+- [ ] Ajouter .env.example.
+- [ ] Ajouter README de lancement local.
+
+
+1. Base de donnees
+
+- [ ] Creer schema Prisma.
+- [ ] Creer User.
+- [ ] Creer Article.
+- [ ] Creer Equipment.
+- [ ] Creer Location.
+- [ ] Creer Supplier.
+- [ ] Creer Project.
+- [ ] Creer StockMovement.
+- [ ] Creer EquipmentAssignment.
+- [ ] Creer AuditLog.
+- [ ] Creer ImportBatch.
+- [ ] Creer migration initiale.
+
+
+2. Import Excel
+
+- [ ] Lire le fichier Excel.
+- [ ] Lire Base_Articles.
+- [ ] Lire Equipements.
+- [ ] Lire Projets.
+- [ ] Lire Parametres.
+- [ ] Lire Entrees si utile.
+- [ ] Lire Sorties si utile.
+- [ ] Marquer les lignes a verifier.
+- [ ] Signaler les doublons.
+- [ ] Ignorer les valeurs #REF!.
+- [ ] Creer un rapport d'import.
+
+
+3. API Articles
+
+- [ ] Lister articles.
+- [ ] Rechercher articles.
+- [ ] Creer article.
+- [ ] Modifier article.
+- [ ] Desactiver article.
+- [ ] Calculer stock actuel article.
+- [ ] Calculer statut stock.
+- [ ] Calculer seuil critique.
+- [ ] Calculer quantite a reapprovisionner.
+- [ ] Afficher historique article.
+
+
+4. API Mouvements
+
+- [ ] Lister mouvements.
+- [ ] Creer entree stock.
+- [ ] Creer sortie stock.
+- [ ] Bloquer sortie si stock insuffisant.
+- [ ] Calculer montant mouvement.
+- [ ] Historiser mouvement.
+- [ ] Annuler mouvement si besoin plus tard.
+- [ ] Creer retour materiel.
+- [ ] Creer transfert entre emplacements.
+- [ ] Distinguer sortie definitive, retour et transfert.
+
+
+5. API Equipements
+
+- [ ] Lister equipements.
+- [ ] Rechercher par code inventaire.
+- [ ] Creer equipement.
+- [ ] Modifier equipement.
+- [ ] Affecter equipement.
+- [ ] Retourner equipement.
+- [ ] Changer etat equipement.
+- [ ] Bloquer double affectation.
+
+
+6. API Audit
+
+- [ ] Creer audit log sur creation article.
+- [ ] Creer audit log sur modification article.
+- [ ] Creer audit log sur entree.
+- [ ] Creer audit log sur sortie.
+- [ ] Creer audit log sur affectation.
+- [ ] Creer audit log sur retour.
+- [ ] Lister audit logs.
+- [ ] Filtrer audit par date, utilisateur, action, objet.
+
+
+7. Interface - Layout
+
+- [ ] Creer layout inspire des maquettes numerotees.
+- [ ] Sidebar propre.
+- [ ] Header avec recherche et actions rapides.
+- [ ] Cartes KPI.
+- [ ] Tableaux modernes.
+- [ ] Badges de statut.
+- [ ] Boutons avec icones.
+- [ ] Modals propres.
+- [ ] Etats vides.
+
+
+8. Interface - Accueil
+
+- [ ] Afficher articles total.
+- [ ] Afficher ruptures.
+- [ ] Afficher critiques.
+- [ ] Afficher equipements affectes.
+- [ ] Afficher mouvements recents.
+- [ ] Afficher alertes principales.
+
+
+9. Interface - Articles
+
+- [ ] Tableau articles.
+- [ ] Recherche.
+- [ ] Filtres famille/statut.
+- [ ] Bouton nouvel article.
+- [ ] Modal creation article.
+- [ ] Modal modification article.
+- [ ] Bouton import Excel.
+- [ ] Export articles.
+
+
+10. Interface - Mouvements
+
+- [ ] Tableau mouvements.
+- [ ] Filtres type/date/article.
+- [ ] Bouton nouvelle entree.
+- [ ] Modal entree.
+- [ ] Bouton nouvelle sortie.
+- [ ] Modal sortie.
+- [ ] Message stock insuffisant.
+
+
+11. Interface - Equipements
+
+- [ ] Tableau equipements.
+- [ ] Recherche code inventaire.
+- [ ] Filtres etat/localisation.
+- [ ] Fiche detail en modal.
+- [ ] Affecter equipement.
+- [ ] Retourner equipement.
+- [ ] Voir historique equipement.
+- [ ] Joindre photo ou PV sur equipement si besoin.
+
+
+12. Interface - Retours et transferts
+
+- [ ] Tableau retours materiel.
+- [ ] Modal retour materiel.
+- [ ] Etat au retour : bon, abime, perdu, maintenance.
+- [ ] Reintegrer le stock si retour reutilisable.
+- [ ] Tableau transferts entre magasins.
+- [ ] Modal transfert.
+- [ ] Historique transfert.
+
+
+13. Interface - Audit
+
+- [ ] Tableau audit.
+- [ ] Filtres date/utilisateur/action/objet.
+- [ ] Export audit.
+
+
+14. Pieces jointes
+
+- [ ] Joindre bon d'entree.
+- [ ] Joindre bon de sortie.
+- [ ] Joindre photo materiel.
+- [ ] Joindre PV inventaire.
+- [ ] Lister les pieces jointes sur une fiche article/equipement/mouvement.
+
+
+15. Exports
+
+- [ ] Export articles CSV.
+- [ ] Export articles Excel.
+- [ ] Export stock actuel CSV.
+- [ ] Export mouvements CSV.
+- [ ] Export equipements CSV.
+- [ ] Export audit CSV.
+- [ ] Export inventaire CSV.
+- [ ] Export reapprovisionnement CSV.
+
+
+16. Tests
+
+- [ ] Test import Excel.
+- [ ] Test calcul stock actuel.
+- [ ] Test entree stock.
+- [ ] Test sortie stock.
+- [ ] Test blocage stock insuffisant.
+- [ ] Test affectation equipement.
+- [ ] Test retour equipement.
+- [ ] Test audit log.
+- [ ] Test build web.
+- [ ] Test build API.
+
+
+17. Deploiement
+
+- [ ] Preparer Railway API.
+- [ ] Preparer Railway web.
+- [ ] Preparer PostgreSQL Railway.
+- [ ] Configurer variables d'environnement.
+- [ ] Lancer migration.
+- [ ] Creer compte admin.
+- [ ] Tester import Excel en staging.
+- [ ] Faire tester par stock/audit.
+

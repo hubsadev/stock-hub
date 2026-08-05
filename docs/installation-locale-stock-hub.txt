@@ -1,0 +1,28 @@
+Installation locale - Stock Hub
+
+1. Installer les dépendances
+- pnpm install
+
+2. Lancer PostgreSQL local
+- pnpm db:up
+
+3. Créer les tables
+- pnpm db:migrate:dev -- --name init
+
+4. Remplir les premières données
+- pnpm db:seed
+
+5. Lancer l'API
+- pnpm api:dev
+
+6. Lancer le web
+- pnpm web:dev
+
+Adresses locales
+- API : http://127.0.0.1:3200/health
+- Web : http://127.0.0.1:5174
+
+Notes
+- La base locale écoute sur le port 55433.
+- DATABASE_URL local : postgresql://stock_hub:stock_hub@localhost:55433/stock_hub_dev
+- Si Docker n'est pas ouvert, lancer Docker Desktop puis refaire pnpm db:up.

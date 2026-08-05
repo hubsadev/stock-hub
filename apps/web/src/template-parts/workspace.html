@@ -1,0 +1,578 @@
+<main class="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+    <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 shrink-0">
+      <div class="flex items-center gap-2 text-sm text-gray-600">
+        <span id="crumbModule">Stock Hub</span>
+        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+        <span id="crumbPage" class="text-gray-900 font-semibold">Accueil Module</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <button class="p-2 text-gray-500 hover:text-gray-900"><i data-lucide="moon" class="w-5 h-5"></i></button>
+        <div id="viewActions" class="flex items-center gap-3"></div>
+        <div class="w-9 h-9 rounded-full bg-accent-100 text-accent-600 flex items-center justify-center font-bold text-sm">JD</div>
+      </div>
+    </header>
+
+    <div class="flex-1 overflow-y-auto p-6">
+      <div class="max-w-7xl mx-auto space-y-6">
+        <section id="home" class="view active">
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+            <div>
+              <div class="text-xs text-gray-500 font-semibold">MVP Stock Hub</div>
+              <h1 class="text-3xl font-bold text-gray-900 mt-1">Pilotage stock et tracabilite materiel</h1>
+              <p class="text-sm text-gray-500 mt-2">Vue operationnelle issue du fichier Excel, avec mouvements traces et alertes visibles.</p>
+            </div>
+            <div class="flex gap-3">
+              <button class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold flex items-center gap-2"><i data-lucide="download" class="w-4 h-4"></i>Exporter</button>
+              <div class="flex flex-wrap gap-3"><button class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold flex items-center gap-2" data-action="openModal('directExitModal')"><i data-lucide="package-minus" class="w-4 h-4"></i>Nouvelle sortie</button><button class="px-4 py-2 bg-accent-600 text-white rounded-lg text-sm font-semibold flex items-center gap-2" data-action="openModal('exitModal')"><i data-lucide="plus" class="w-4 h-4"></i>Nouvelle demande</button></div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+              <div class="flex justify-between text-sm font-semibold text-gray-500"><span>Articles actifs</span><i data-lucide="package" class="w-5 h-5 text-accent-500"></i></div>
+              <div class="text-3xl font-bold mt-4">428</div>
+              <div class="text-xs text-gray-500 mt-1">Catalogue repris</div>
+              <button data-action="showView('referentiels')" class="mt-4 w-full h-9 rounded-lg bg-accent-50 text-accent-600 text-sm font-semibold">Voir les articles</button>
+            </div>
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+              <div class="flex justify-between text-sm font-semibold text-gray-500"><span>Ruptures</span><i data-lucide="triangle-alert" class="w-5 h-5 text-error-500"></i></div>
+              <div class="text-3xl font-bold mt-4">12</div>
+              <div class="text-xs text-error-700 mt-1">A traiter</div>
+              <button data-action="showView('reappro')" class="mt-4 w-full h-9 rounded-lg bg-error-50 text-error-700 text-sm font-semibold">Voir les ruptures</button>
+            </div>
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+              <div class="flex justify-between text-sm font-semibold text-gray-500"><span>Equipements affectes</span><i data-lucide="monitor-check" class="w-5 h-5 text-success-500"></i></div>
+              <div class="text-3xl font-bold mt-4">86</div>
+              <div class="text-xs text-gray-500 mt-1">Personnes et projets</div>
+              <button data-action="showView('equipements')" class="mt-4 w-full h-9 rounded-lg bg-success-50 text-success-700 text-sm font-semibold">Voir les equipements</button>
+            </div>
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+              <div class="flex justify-between text-sm font-semibold text-gray-500"><span>Mouvements du jour</span><i data-lucide="activity" class="w-5 h-5 text-accent-500"></i></div>
+              <div class="text-3xl font-bold mt-4">31</div>
+              <div class="text-xs text-gray-500 mt-1">Entrees, sorties, retours</div>
+              <button data-action="showView('historique')" class="mt-4 w-full h-9 rounded-lg bg-gray-100 text-gray-700 text-sm font-semibold">Voir les mouvements</button>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mt-6">
+            <div class="p-5 border-b border-gray-200 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+              <div>
+                <h2 class="text-lg font-bold">Acces par role</h2>
+                <p class="text-sm text-gray-500 mt-1">Les actions sensibles restent rattachees au bon profil.</p>
+              </div>
+              <span class="px-3 py-1 rounded-full bg-accent-50 text-accent-600 text-xs font-bold w-fit">Maquette permissions</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-gray-200">
+              <div class="p-5">
+                <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-accent-50 text-accent-600 flex items-center justify-center"><i data-lucide="shield" class="w-5 h-5"></i></div><div><div class="font-bold">Admin Stock</div><div class="text-xs text-gray-500">Parametrage et corrections</div></div></div>
+                <div class="mt-4 flex flex-wrap gap-2 text-xs font-semibold"><span class="px-2 py-1 rounded-full bg-gray-100">Referentiels</span><span class="px-2 py-1 rounded-full bg-gray-100">Import</span><span class="px-2 py-1 rounded-full bg-gray-100">Corrections</span></div>
+              </div>
+              <div class="p-5">
+                <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-success-50 text-success-700 flex items-center justify-center"><i data-lucide="warehouse" class="w-5 h-5"></i></div><div><div class="font-bold">Gestionnaire stock</div><div class="text-xs text-gray-500">Entrees, sorties et inventaire</div></div></div>
+                <div class="mt-4 flex flex-wrap gap-2 text-xs font-semibold"><span class="px-2 py-1 rounded-full bg-gray-100">Reception</span><span class="px-2 py-1 rounded-full bg-gray-100">Sortie</span><span class="px-2 py-1 rounded-full bg-gray-100">Comptage</span></div>
+              </div>
+              <div class="p-5">
+                <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-warning-50 text-warning-700 flex items-center justify-center"><i data-lucide="check-circle-2" class="w-5 h-5"></i></div><div><div class="font-bold">Responsable / Audit</div><div class="text-xs text-gray-500">Validation et controle</div></div></div>
+                <div class="mt-4 flex flex-wrap gap-2 text-xs font-semibold"><span class="px-2 py-1 rounded-full bg-gray-100">Valider sortie</span><span class="px-2 py-1 rounded-full bg-gray-100">Ecarts</span><span class="px-2 py-1 rounded-full bg-gray-100">Journal</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-6">
+            <div class="xl:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+              <div class="p-5 border-b border-gray-200 flex justify-between items-center"><h2 class="text-lg font-bold">Stock a surveiller</h2><div class="flex gap-2"><span class="px-3 py-1 rounded-full text-xs font-semibold bg-accent-50 text-accent-600">Tous</span><span class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600">Critique</span><span class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600">Rupture</span></div></div>
+              <div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Article</th><th class="px-5 py-3 text-left">Emplacement</th><th class="px-5 py-3 text-right">Stock</th><th class="px-5 py-3 text-right">Min</th><th class="px-5 py-3 text-left">Statut</th><th class="px-5 py-3 text-right">Action</th></tr></thead><tbody class="divide-y divide-gray-200">
+                <tr><td class="px-5 py-4"><div class="font-bold">Cable reseau Cat6</div><div class="text-xs text-gray-500">MAT-0018</div></td><td class="px-5 py-4">Magasin principal</td><td class="px-5 py-4 text-right font-bold">4</td><td class="px-5 py-4 text-right">20</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-error-50 text-error-700 text-xs font-bold">Rupture proche</span></td><td class="px-5 py-4 text-right"><div class="flex items-center justify-end gap-2"><button data-action="openModal('referentialDetailModal')" title="Voir la fiche article" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-accent-600 hover:bg-accent-50"><i data-lucide="eye" class="w-4 h-4"></i></button><button data-action="showView('historique')" title="Voir historique" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50"><i data-lucide="history" class="w-4 h-4"></i></button><button data-action="openModal('exitModal')" title="Demander une sortie" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50"><i data-lucide="arrow-up-right-square" class="w-4 h-4"></i></button><button data-action="showView('audit')" title="Signaler une alerte" class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-warning-50 text-warning-700 hover:bg-warning-100"><i data-lucide="triangle-alert" class="w-4 h-4"></i></button></div></td></tr>
+                <tr><td class="px-5 py-4"><div class="font-bold">Routeur 4G</div><div class="text-xs text-gray-500">MAT-0094</div></td><td class="px-5 py-4">Depot Yopougon</td><td class="px-5 py-4 text-right font-bold">2</td><td class="px-5 py-4 text-right">5</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-warning-50 text-warning-700 text-xs font-bold">Critique</span></td><td class="px-5 py-4 text-right"><div class="flex items-center justify-end gap-2"><button data-action="openModal('referentialDetailModal')" title="Voir la fiche article" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-accent-600 hover:bg-accent-50"><i data-lucide="eye" class="w-4 h-4"></i></button><button data-action="showView('historique')" title="Voir historique" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50"><i data-lucide="history" class="w-4 h-4"></i></button><button data-action="openModal('exitModal')" title="Demander une sortie" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50"><i data-lucide="arrow-up-right-square" class="w-4 h-4"></i></button><button data-action="showView('audit')" title="Signaler une alerte" class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-warning-50 text-warning-700 hover:bg-warning-100"><i data-lucide="triangle-alert" class="w-4 h-4"></i></button></div></td></tr>
+                <tr><td class="px-5 py-4"><div class="font-bold">Casque chantier</div><div class="text-xs text-gray-500">EPI-0102</div></td><td class="px-5 py-4">Magasin principal</td><td class="px-5 py-4 text-right font-bold">52</td><td class="px-5 py-4 text-right">25</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-success-50 text-success-700 text-xs font-bold">OK</span></td><td class="px-5 py-4 text-right"><div class="flex items-center justify-end gap-2"><button data-action="openModal('referentialDetailModal')" title="Voir la fiche article" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-accent-600 hover:bg-accent-50"><i data-lucide="eye" class="w-4 h-4"></i></button><button data-action="showView('historique')" title="Voir historique" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50"><i data-lucide="history" class="w-4 h-4"></i></button><button data-action="openModal('exitModal')" title="Demander une sortie" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50"><i data-lucide="arrow-up-right-square" class="w-4 h-4"></i></button><button data-action="showView('audit')" title="Signaler une alerte" class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-warning-50 text-warning-700 hover:bg-warning-100"><i data-lucide="triangle-alert" class="w-4 h-4"></i></button></div></td></tr>
+              </tbody></table></div>
+            </div>
+
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+              <div class="p-5 border-b border-gray-200"><h2 class="text-lg font-bold">Alertes audit</h2></div>
+              <div class="p-5 space-y-3">
+                <div class="p-4 rounded-xl bg-error-50 border border-error-100"><div class="font-bold text-error-700">Sortie bloquee</div><div class="text-sm text-gray-600 mt-1">MAT-0018 : quantite demandee superieure au disponible.</div></div>
+                <div class="p-4 rounded-xl bg-warning-50 border border-warning-100"><div class="font-bold text-warning-700">Retour en retard</div><div class="text-sm text-gray-600 mt-1">PC-INV-014 affecte depuis 18 jours.</div></div>
+                <div class="p-4 rounded-xl bg-accent-50 border border-accent-100"><div class="font-bold text-accent-600">Import a verifier</div><div class="text-sm text-gray-600 mt-1">27 lignes Excel demandent correction.</div></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="entrees" class="view">
+          <div class="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-4 mb-6">
+            <div>
+              <div class="text-xs font-semibold text-gray-500">Reception stock</div>
+              <h1 class="text-3xl font-bold mt-1">Entrees stock</h1>
+              <p class="text-sm text-gray-500 mt-2">Enregistrer uniquement le materiel physiquement recu et controle.</p>
+            </div>
+            <button class="px-4 py-2 bg-accent-600 text-white rounded-lg text-sm font-semibold flex items-center gap-2" data-action="openModal('entryModal')"><i data-lucide="plus" class="w-4 h-4"></i>Nouvelle entree</button>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-5">
+            <button class="bg-white rounded-xl border border-gray-200 p-4 text-left shadow-sm hover:border-accent-200 hover:shadow-md"><div class="text-sm font-semibold text-gray-500">Entrees du jour</div><div class="text-2xl font-bold mt-2">5</div><div class="text-xs text-gray-500 mt-1">Materiel recu</div></button>
+            <button class="bg-white rounded-xl border border-gray-200 p-4 text-left shadow-sm hover:border-accent-200 hover:shadow-md"><div class="text-sm font-semibold text-gray-500">Recues</div><div class="text-2xl font-bold mt-2">18</div><div class="text-xs text-gray-500 mt-1">Sans ecart</div></button>
+            <button class="bg-warning-50 rounded-xl border border-warning-100 p-4 text-left shadow-sm hover:shadow-md"><div class="text-sm font-semibold text-warning-700">Partielles</div><div class="text-2xl font-bold mt-2">2</div><div class="text-xs text-warning-700 mt-1">Quantite recue inferieure</div></button>
+            <button class="bg-error-50 rounded-xl border border-error-100 p-4 text-left shadow-sm hover:shadow-md"><div class="text-sm font-semibold text-error-700">Litiges</div><div class="text-2xl font-bold mt-2">1</div><div class="text-xs text-error-700 mt-1">A controler</div></button>
+          </div>
+          <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <div class="p-5 border-b border-gray-200 space-y-4">
+              <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
+                <div>
+                  <h2 class="text-lg font-bold">Registre entrees stock</h2>
+                  <p class="text-sm text-gray-500 mt-1">Le stock augmente avec la quantite recue, pas avec la quantite attendue.</p>
+                </div>
+                <div class="flex flex-wrap gap-2 text-xs font-semibold">
+                  <button class="px-3 py-2 rounded-lg bg-accent-50 text-accent-600">Toutes</button>
+                  <button class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Recues</button>
+                  <button class="px-3 py-2 rounded-lg bg-warning-50 text-warning-700">Partielles</button>
+                  <button class="px-3 py-2 rounded-lg bg-error-50 text-error-700">Litiges</button>
+                  <button class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Annulees</button>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 lg:grid-cols-[1fr_180px_180px] gap-3">
+                <div class="relative"><i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-3.5"></i><input class="w-full h-11 rounded-lg border border-gray-300 pl-10 pr-3" placeholder="Rechercher bon, article, fournisseur, origine, responsable"></div>
+                <select class="h-11 rounded-lg border border-gray-300 px-3"><option>Tous fournisseurs</option><option>Fournisseur A</option><option>Fournisseur B</option></select>
+                <select class="h-11 rounded-lg border border-gray-300 px-3"><option>Toutes dates</option><option>Aujourd'hui</option><option>Cette semaine</option></select>
+              </div>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm min-w-[1220px]">
+                <thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Bon</th><th class="px-5 py-3 text-left">Date</th><th class="px-5 py-3 text-left">Article</th><th class="px-5 py-3 text-left">Fournisseur</th><th class="px-5 py-3 text-left">Origine</th><th class="px-5 py-3 text-left">Destination stock</th><th class="px-5 py-3 text-right">Attendue</th><th class="px-5 py-3 text-right">Recue</th><th class="px-5 py-3 text-right">Ecart</th><th class="px-5 py-3 text-left">Responsable</th><th class="px-5 py-3 text-left">Statut</th><th class="px-5 py-3 text-right">Action</th></tr></thead>
+                <tbody class="divide-y divide-gray-200">
+                  <tr><td class="px-5 py-4 font-bold">BE-2026-001</td><td class="px-5 py-4">30/07/2026</td><td class="px-5 py-4"><div class="font-bold">Cable reseau Cat6</div><div class="text-xs text-gray-500">MAT-0018</div></td><td class="px-5 py-4">Fournisseur A</td><td class="px-5 py-4">Fournisseur A</td><td class="px-5 py-4">Magasin principal</td><td class="px-5 py-4 text-right">120</td><td class="px-5 py-4 text-right font-bold">120</td><td class="px-5 py-4 text-right">0</td><td class="px-5 py-4">Awa Stock</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-success-50 text-success-700 text-xs font-bold">Recue</span></td><td class="px-5 py-4 text-right"><button class="text-accent-600 font-semibold" data-action="openModal('entryModal')">Voir</button></td></tr>
+                  <tr><td class="px-5 py-4 font-bold">BE-2026-002</td><td class="px-5 py-4">30/07/2026</td><td class="px-5 py-4"><div class="font-bold">Disjoncteur 30mA</div><div class="text-xs text-gray-500">DIS-30MA-40A</div></td><td class="px-5 py-4">Fournisseur B</td><td class="px-5 py-4">Retour chantier</td><td class="px-5 py-4">Depot Cocody</td><td class="px-5 py-4 text-right">20</td><td class="px-5 py-4 text-right font-bold">15</td><td class="px-5 py-4 text-right text-warning-700 font-bold">-5</td><td class="px-5 py-4">Awa Stock</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-warning-50 text-warning-700 text-xs font-bold">Partielle</span></td><td class="px-5 py-4 text-right"><button class="text-accent-600 font-semibold" data-action="openModal('entryModal')">Voir</button></td></tr>
+                  <tr><td class="px-5 py-4 font-bold">BE-2026-003</td><td class="px-5 py-4">29/07/2026</td><td class="px-5 py-4"><div class="font-bold">Switch 24 ports</div><div class="text-xs text-gray-500">NET-0024</div></td><td class="px-5 py-4">Fournisseur A</td><td class="px-5 py-4">Correction inventaire</td><td class="px-5 py-4">Magasin principal</td><td class="px-5 py-4 text-right">3</td><td class="px-5 py-4 text-right font-bold">4</td><td class="px-5 py-4 text-right text-error-700 font-bold">+1</td><td class="px-5 py-4">Awa Stock</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-error-50 text-error-700 text-xs font-bold">Litige</span></td><td class="px-5 py-4 text-right"><button class="text-accent-600 font-semibold" data-action="openModal('entryModal')">Voir</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+                <section id="referentiels" class="view">
+          <div class="flex justify-between items-start gap-4 mb-6">
+            <div>
+              <h1 class="text-3xl font-bold">Referentiels Stock Hub</h1>
+              <p class="text-sm text-gray-500 mt-2">Base interne separee par type de donnee. Les fournisseurs, projets, sites, employes et emplacements ne sont pas melanges.</p>
+            </div>
+            <button data-action="openModal('referentialModal')" class="px-4 py-2 bg-accent-600 text-white rounded-lg text-sm font-semibold flex items-center gap-2"><i data-lucide="plus" class="w-4 h-4"></i>Nouvel element</button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-4 mb-6">
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Articles</div><div class="text-3xl font-bold mt-3">428</div><div class="text-xs text-gray-500 mt-1">Base stock</div></div><div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Fournisseurs</div><div class="text-3xl font-bold mt-3">18</div><div class="text-xs text-gray-500 mt-1">Entrees stock</div></div>
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Projets</div><div class="text-3xl font-bold mt-3">24</div><div class="text-xs text-gray-500 mt-1">Sorties et affectations</div></div>
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Sites / chantiers</div><div class="text-3xl font-bold mt-3">31</div><div class="text-xs text-gray-500 mt-1">Rattaches aux projets</div></div>
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Employes</div><div class="text-3xl font-bold mt-3">79</div><div class="text-xs text-gray-500 mt-1">Beneficiaires</div></div>
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Emplacements</div><div class="text-3xl font-bold mt-3">9</div><div class="text-xs text-gray-500 mt-1">Magasins et depots</div></div>
+          </div>
+
+                    <div class="bg-accent-50 border border-accent-100 rounded-xl p-4 mb-4">
+            <div class="font-bold text-accent-600">Regle de codification</div>
+            <p class="text-sm text-gray-600 mt-1">Un code article designe un type de materiel. Exemple : MAT-0018 = Cable reseau Cat6, avec une quantite en stock. Un code equipement designe une piece precise suivie comme materiel identifie. Exemple : PC-INV-014 avec numero de serie.</p>
+          </div>
+
+          <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <div class="p-5 border-b flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+              <div>
+                <h2 class="text-lg font-bold">Referentiels par type</h2>
+                <p class="text-sm text-gray-500 mt-1">Chaque onglet garde ses propres colonnes metier.</p>
+              </div>
+              <div class="flex gap-2 text-xs font-semibold flex-wrap">
+                <button data-action="showRef('articles', this)" class="ref-tab px-3 py-2 rounded-lg bg-accent-50 text-accent-600">Articles</button><button data-action="showRef('suppliers', this)" class="ref-tab px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Fournisseurs</button>
+                <button data-action="showRef('projects', this)" class="ref-tab px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Projets</button>
+                <button data-action="showRef('sites', this)" class="ref-tab px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Sites</button>
+                <button data-action="showRef('employees', this)" class="ref-tab px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Employes</button>
+                <button data-action="showRef('locations', this)" class="ref-tab px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Emplacements</button>
+              </div>
+            </div>
+
+            <div id="ref-articles" class="ref-view overflow-x-auto">
+              <table class="w-full text-sm min-w-[1000px]">
+                <thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Code</th><th class="px-5 py-3 text-left">Designation</th><th class="px-5 py-3 text-left">Famille</th><th class="px-5 py-3 text-left">Unite</th><th class="px-5 py-3 text-left">Suivi</th><th class="px-5 py-3 text-left">Fournisseur habituel</th><th class="px-5 py-3 text-right">Stock min</th><th class="px-5 py-3 text-right">Prix indicatif</th><th class="px-5 py-3 text-left">Statut</th><th class="px-5 py-3 text-right">Action</th></tr></thead>
+                <tbody class="divide-y divide-gray-200"><tr><td class="px-5 py-4 font-bold">MAT-0018</td><td class="px-5 py-4">Cable reseau Cat6</td><td class="px-5 py-4">Connectique</td><td class="px-5 py-4">Metre</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-bold">Article en quantite</span></td><td class="px-5 py-4">Fournisseur A</td><td class="px-5 py-4 text-right">20</td><td class="px-5 py-4 text-right">1 500</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-success-50 text-success-700 text-xs font-bold">Actif</span></td><td class="px-5 py-4 text-right"><button data-action="openModal('referentialDetailModal')" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-accent-600 hover:bg-accent-50" title="Voir la fiche"><i data-lucide="eye" class="w-4 h-4"></i></button></td></tr></tbody>
+              </table>
+            </div>
+            <div id="ref-suppliers" class="ref-view overflow-x-auto hidden">
+              <table class="w-full text-sm min-w-[900px]">
+                <thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Code</th><th class="px-5 py-3 text-left">Fournisseur</th><th class="px-5 py-3 text-left">Contact</th><th class="px-5 py-3 text-left">Telephone</th><th class="px-5 py-3 text-left">Email</th><th class="px-5 py-3 text-left">Famille habituelle</th><th class="px-5 py-3 text-left">Statut</th><th class="px-5 py-3 text-right">Action</th></tr></thead>
+                <tbody class="divide-y divide-gray-200"><tr><td class="px-5 py-4 font-bold">FRN-001</td><td class="px-5 py-4">Fournisseur A</td><td class="px-5 py-4">Kouassi Marc</td><td class="px-5 py-4">0101010101</td><td class="px-5 py-4">contact@fournisseur-a.com</td><td class="px-5 py-4">Materiel reseau</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-success-50 text-success-700 text-xs font-bold">Actif</span></td><td class="px-5 py-4 text-right"><button data-action="openModal('referentialDetailModal')" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-accent-600 hover:bg-accent-50" title="Voir la fiche"><i data-lucide="eye" class="w-4 h-4"></i></button></td></tr></tbody>
+              </table>
+            </div>
+
+            <div id="ref-projects" class="ref-view overflow-x-auto hidden">
+              <table class="w-full text-sm min-w-[1000px]">
+                <thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Code projet</th><th class="px-5 py-3 text-left">Nom projet</th><th class="px-5 py-3 text-left">Client</th><th class="px-5 py-3 text-left">Region</th><th class="px-5 py-3 text-left">Ville</th><th class="px-5 py-3 text-left">Chef projet</th><th class="px-5 py-3 text-left">Resp. logistique</th><th class="px-5 py-3 text-left">Statut</th><th class="px-5 py-3 text-right">Action</th></tr></thead>
+                <tbody class="divide-y divide-gray-200"><tr><td class="px-5 py-4 font-bold">PROJ-2026-014</td><td class="px-5 py-4">Projet Riviera</td><td class="px-5 py-4">Client A</td><td class="px-5 py-4">Abidjan</td><td class="px-5 py-4">Cocody</td><td class="px-5 py-4">Jean Dupont</td><td class="px-5 py-4">Awa Stock</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-success-50 text-success-700 text-xs font-bold">Actif</span></td><td class="px-5 py-4 text-right"><button class="text-accent-600 font-semibold">Voir sites</button></td></tr></tbody>
+              </table>
+            </div>
+
+            <div id="ref-sites" class="ref-view overflow-x-auto hidden">
+              <table class="w-full text-sm min-w-[960px]">
+                <thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Code site</th><th class="px-5 py-3 text-left">Projet rattache</th><th class="px-5 py-3 text-left">Site / chantier</th><th class="px-5 py-3 text-left">Region</th><th class="px-5 py-3 text-left">Ville</th><th class="px-5 py-3 text-left">Responsable terrain</th><th class="px-5 py-3 text-left">Statut</th><th class="px-5 py-3 text-right">Action</th></tr></thead>
+                <tbody class="divide-y divide-gray-200"><tr><td class="px-5 py-4 font-bold">SITE-014-A</td><td class="px-5 py-4">PROJ-2026-014</td><td class="px-5 py-4">Site Riviera</td><td class="px-5 py-4">Abidjan</td><td class="px-5 py-4">Cocody</td><td class="px-5 py-4">Chef chantier</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-success-50 text-success-700 text-xs font-bold">Ouvert</span></td><td class="px-5 py-4 text-right"><button data-action="openModal('referentialDetailModal')" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-accent-600 hover:bg-accent-50" title="Voir la fiche"><i data-lucide="eye" class="w-4 h-4"></i></button></td></tr></tbody>
+              </table>
+            </div>
+
+            <div id="ref-employees" class="ref-view overflow-x-auto hidden">
+              <table class="w-full text-sm min-w-[900px]">
+                <thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Matricule</th><th class="px-5 py-3 text-left">Nom</th><th class="px-5 py-3 text-left">Prenom</th><th class="px-5 py-3 text-left">Role</th><th class="px-5 py-3 text-left">Departement</th><th class="px-5 py-3 text-left">Statut</th><th class="px-5 py-3 text-right">Action</th></tr></thead>
+                <tbody class="divide-y divide-gray-200"><tr><td class="px-5 py-4 font-bold">20-186</td><td class="px-5 py-4">Dago</td><td class="px-5 py-4">Edgar Michael</td><td class="px-5 py-4">Personnel bureau</td><td class="px-5 py-4">Operations</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-success-50 text-success-700 text-xs font-bold">Actif</span></td><td class="px-5 py-4 text-right"><button data-action="openModal('referentialDetailModal')" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-accent-600 hover:bg-accent-50" title="Voir la fiche"><i data-lucide="eye" class="w-4 h-4"></i></button></td></tr></tbody>
+              </table>
+            </div>
+
+            <div id="ref-locations" class="ref-view overflow-x-auto hidden">
+              <table class="w-full text-sm min-w-[900px]">
+                <thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Code</th><th class="px-5 py-3 text-left">Emplacement</th><th class="px-5 py-3 text-left">Type</th><th class="px-5 py-3 text-left">Adresse / zone</th><th class="px-5 py-3 text-left">Responsable</th><th class="px-5 py-3 text-left">Statut</th><th class="px-5 py-3 text-right">Action</th></tr></thead>
+                <tbody class="divide-y divide-gray-200"><tr><td class="px-5 py-4 font-bold">MAG-001</td><td class="px-5 py-4">Magasin principal</td><td class="px-5 py-4">Magasin</td><td class="px-5 py-4">Zone centrale</td><td class="px-5 py-4">Awa Stock</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-success-50 text-success-700 text-xs font-bold">Actif</span></td><td class="px-5 py-4 text-right"><button class="text-accent-600 font-semibold">Voir stock</button></td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+<section id="stock" class="view">
+          <div class="flex justify-between items-start gap-4 mb-6"><div><h1 class="text-3xl font-bold">Vue Stock par emplacement</h1><p class="text-sm text-gray-500 mt-2">Consulter le stock disponible par magasin, depot, chantier ou vehicule.</p></div><button class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold flex items-center gap-2"><i data-lucide="download" class="w-4 h-4"></i>Exporter CSV</button></div>
+          <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm mb-6"><div class="grid grid-cols-1 md:grid-cols-4 gap-4"><select class="h-11 rounded-lg border border-gray-300 px-3"><option>Magasin principal</option><option>Depot Cocody</option></select><select class="h-11 rounded-lg border border-gray-300 px-3"><option>Toutes familles</option><option>Bureau</option><option>Reseau</option></select><input class="h-11 rounded-lg border border-gray-300 px-3" placeholder="Rechercher article"><button class="h-11 rounded-lg bg-accent-600 text-white font-semibold">Filtrer</button></div></div>
+          <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Article</th><th class="px-5 py-3 text-left">Famille</th><th class="px-5 py-3 text-left">Emplacement</th><th class="px-5 py-3 text-right">Initial</th><th class="px-5 py-3 text-right">Entrees</th><th class="px-5 py-3 text-right">Sorties</th><th class="px-5 py-3 text-right">Disponible</th><th class="px-5 py-3 text-left">Statut</th></tr></thead><tbody class="divide-y divide-gray-200"><tr><td class="px-5 py-4 font-bold">Cable reseau Cat6</td><td class="px-5 py-4">Connectique</td><td class="px-5 py-4">Magasin principal</td><td class="px-5 py-4 text-right">40</td><td class="px-5 py-4 text-right">120</td><td class="px-5 py-4 text-right">156</td><td class="px-5 py-4 text-right font-bold">4</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-error-50 text-error-700 text-xs font-bold">Rupture proche</span></td></tr></tbody></table></div></div>
+        </section>
+
+        <section id="sortie" class="view">
+          <div class="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-4 mb-6">
+            <div>
+              <div class="text-xs font-semibold text-gray-500">Mouvements stock</div>
+              <h1 class="text-3xl font-bold mt-1">Sorties stock</h1>
+              <p class="text-sm text-gray-500 mt-2">Registre complet des demandes, preparations, sorties reelles, blocages et annulations.</p>
+            </div>
+            <div class="flex flex-wrap gap-3"><button class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold flex items-center gap-2" data-action="openModal('directExitModal')"><i data-lucide="package-minus" class="w-4 h-4"></i>Nouvelle sortie</button><button class="px-4 py-2 bg-accent-600 text-white rounded-lg text-sm font-semibold flex items-center gap-2" data-action="openModal('exitModal')"><i data-lucide="plus" class="w-4 h-4"></i>Nouvelle demande</button></div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-5">
+            <button class="bg-white rounded-xl border border-gray-200 p-4 text-left shadow-sm hover:border-accent-200 hover:shadow-md">
+              <div class="text-sm font-semibold text-gray-500">Demandes</div>
+              <div class="text-2xl font-bold mt-2">8</div>
+              <div class="text-xs text-gray-500 mt-1">A preparer</div>
+            </button>
+            <button class="bg-white rounded-xl border border-gray-200 p-4 text-left shadow-sm hover:border-accent-200 hover:shadow-md">
+              <div class="text-sm font-semibold text-gray-500">Sorties reelles</div>
+              <div class="text-2xl font-bold mt-2">24</div>
+              <div class="text-xs text-gray-500 mt-1">Materiel remis</div>
+            </button>
+            <button class="bg-error-50 rounded-xl border border-error-100 p-4 text-left shadow-sm hover:shadow-md">
+              <div class="text-sm font-semibold text-error-700">Bloquees</div>
+              <div class="text-2xl font-bold mt-2">1</div>
+              <div class="text-xs text-error-700 mt-1">Stock insuffisant</div>
+            </button>
+            <button class="bg-white rounded-xl border border-gray-200 p-4 text-left shadow-sm hover:border-accent-200 hover:shadow-md">
+              <div class="text-sm font-semibold text-gray-500">Aujourd'hui</div>
+              <div class="text-2xl font-bold mt-2">6</div>
+              <div class="text-xs text-gray-500 mt-1">Demandes et sorties</div>
+            </button>
+          </div>
+
+          <div class="bg-error-50 border border-error-100 rounded-xl p-4 mb-4 flex items-start gap-3">
+            <div class="w-9 h-9 rounded-lg bg-white text-error-700 flex items-center justify-center shrink-0"><i data-lucide="triangle-alert" class="w-5 h-5"></i></div>
+            <div>
+              <div class="font-bold text-error-700">1 sortie bloquee pour stock insuffisant</div>
+              <p class="text-sm text-gray-600 mt-1">La ligne reste dans le registre avec son statut. La validation est impossible tant que le stock disponible ne couvre pas la quantite demandee.</p>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <div class="p-5 border-b border-gray-200 space-y-4">
+              <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
+                <div>
+                  <h2 class="text-lg font-bold">Registre sorties stock</h2>
+                  <p class="text-sm text-gray-500 mt-1">Toutes les demandes et sorties restent visibles avec leur statut.</p>
+                </div>
+                <div class="flex flex-wrap gap-2 text-xs font-semibold">
+                  <button class="px-3 py-2 rounded-lg bg-accent-50 text-accent-600">Toutes</button>
+                  <button class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Demandees</button>
+                  <button class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Preparees</button>
+                  <button class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Sorties</button>
+                  <button class="px-3 py-2 rounded-lg bg-error-50 text-error-700">Bloquees</button>
+                  <button class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Annulees</button>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 lg:grid-cols-[1fr_180px_180px] gap-3">
+                <div class="relative">
+                  <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-3.5"></i>
+                  <input class="w-full h-11 rounded-lg border border-gray-300 pl-10 pr-3" placeholder="Rechercher bon, article, projet, Edgar Dago, transporteur, remis a">
+                </div>
+                <select class="h-11 rounded-lg border border-gray-300 px-3"><option>Tous projets</option><option>Site Riviera</option><option>Yopougon</option></select>
+                <select class="h-11 rounded-lg border border-gray-300 px-3"><option>Toutes dates</option><option>Aujourd'hui</option><option>Cette semaine</option></select>
+              </div>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm min-w-[1380px]">
+                <thead class="bg-gray-50 text-xs uppercase text-gray-500">
+                  <tr>
+                    <th class="px-5 py-3 text-left">Bon</th>
+                    <th class="px-5 py-3 text-left">Date / heure</th>
+                    <th class="px-5 py-3 text-left">Article</th>
+                    <th class="px-5 py-3 text-right">Qte</th>
+                    <th class="px-5 py-3 text-right">Dispo</th>
+                    <th class="px-5 py-3 text-left">Projet / chantier</th>
+                    <th class="px-5 py-3 text-left">Beneficiaire</th>
+                    <th class="px-5 py-3 text-left">Sorti par</th>
+                    <th class="px-5 py-3 text-left">Transporte par</th>
+                    <th class="px-5 py-3 text-left">Remis a</th>
+                    <th class="px-5 py-3 text-left">Statut</th>
+                    <th class="px-5 py-3 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y">
+                  <tr>
+                    <td class="px-5 py-4 font-bold">BS-2026-014</td>
+                    <td class="px-5 py-4">30/07/2026 09:42</td>
+                    <td class="px-5 py-4"><div class="font-bold">Cable reseau Cat6</div><div class="text-xs text-gray-500">MAT-0018</div></td>
+                    <td class="px-5 py-4 text-right font-bold">80</td>
+                    <td class="px-5 py-4 text-right font-bold text-error-700">4</td>
+                    <td class="px-5 py-4">PROJ-2026-014 / Site Riviera</td>
+                    <td class="px-5 py-4">Edgar Dago</td>
+                    <td class="px-5 py-4">Awa Stock</td>
+                    <td class="px-5 py-4">Kouadio Marc</td>
+                    <td class="px-5 py-4">Edgar Dago</td>
+                    <td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-error-50 text-error-700 text-xs font-bold">Bloquee</span></td>
+                    <td class="px-5 py-4 text-right"><button class="text-accent-600 font-semibold" data-action="openModal('exitModal')">Voir</button></td>
+                  </tr>
+                  <tr>
+                    <td class="px-5 py-4 font-bold">BS-2026-013</td>
+                    <td class="px-5 py-4">30/07/2026 08:15</td>
+                    <td class="px-5 py-4"><div class="font-bold">Routeur 4G</div><div class="text-xs text-gray-500">MAT-0094</div></td>
+                    <td class="px-5 py-4 text-right font-bold">1</td>
+                    <td class="px-5 py-4 text-right font-bold">2</td>
+                    <td class="px-5 py-4">Yopougon / Installation client</td>
+                    <td class="px-5 py-4">Koffi Marc</td>
+                    <td class="px-5 py-4">Awa Stock</td>
+                    <td class="px-5 py-4">Yao Serge</td>
+                    <td class="px-5 py-4">Koffi Marc</td>
+                    <td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-success-50 text-success-700 text-xs font-bold">Sortie</span></td>
+                    <td class="px-5 py-4 text-right"><button class="text-accent-600 font-semibold" data-action="openModal('exitModal')">Voir</button></td>
+                  </tr>
+                  <tr>
+                    <td class="px-5 py-4 font-bold">BS-2026-012</td>
+                    <td class="px-5 py-4">29/07/2026 16:20</td>
+                    <td class="px-5 py-4"><div class="font-bold">Disjoncteur 30mA</div><div class="text-xs text-gray-500">DIS-30MA-40A</div></td>
+                    <td class="px-5 py-4 text-right font-bold">10</td>
+                    <td class="px-5 py-4 text-right font-bold">12</td>
+                    <td class="px-5 py-4">PROJ-2026-014 / Site Riviera</td>
+                    <td class="px-5 py-4">Equipe terrain</td>
+                    <td class="px-5 py-4">Awa Stock</td>
+                    <td class="px-5 py-4">-</td>
+                    <td class="px-5 py-4">Chef chantier</td>
+                    <td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-warning-50 text-warning-700 text-xs font-bold">Preparee</span></td>
+                    <td class="px-5 py-4 text-right"><button class="text-accent-600 font-semibold" data-action="openModal('exitModal')">Voir</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+        <section id="retours" class="view">
+          <div class="flex justify-between items-start gap-4 mb-6"><div><h1 class="text-3xl font-bold">Retours & transferts</h1><p class="text-sm text-gray-500 mt-2">Retourner du materiel sorti ou deplacer du stock entre magasins sans le consommer.</p></div><div class="flex gap-3"><button data-action="openModal('transferModal')" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold flex items-center gap-2"><i data-lucide="shuffle" class="w-4 h-4"></i>Nouveau transfert</button><button data-action="openModal('returnModal')" class="px-4 py-2 bg-accent-600 text-white rounded-lg text-sm font-semibold flex items-center gap-2"><i data-lucide="rotate-ccw" class="w-4 h-4"></i>Nouveau retour</button></div></div>
+          <div class="grid grid-cols-1 xl:grid-cols-3 gap-5 mb-6">
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Retours attendus</div><div class="text-3xl font-bold mt-3">7</div><div class="text-xs text-gray-500 mt-1">Materiel sorti non retourne</div></div>
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Transferts en cours</div><div class="text-3xl font-bold mt-3">2</div><div class="text-xs text-gray-500 mt-1">Entre magasins et sites</div></div>
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">A controler</div><div class="text-3xl font-bold mt-3">3</div><div class="text-xs text-warning-700 mt-1">Abime, perdu ou a reparer</div></div>
+          </div>
+          <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden"><div class="p-5 border-b border-gray-200"><h2 class="text-lg font-bold">Registre retours et transferts</h2></div><div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Reference</th><th class="px-5 py-3 text-left">Type</th><th class="px-5 py-3 text-left">Article / equipement</th><th class="px-5 py-3 text-left">Origine</th><th class="px-5 py-3 text-left">Destination</th><th class="px-5 py-3 text-left">Etat</th><th class="px-5 py-3 text-left">Statut</th></tr></thead><tbody class="divide-y"><tr><td class="px-5 py-4 font-bold">RET-2026-004</td><td class="px-5 py-4">Retour</td><td class="px-5 py-4">PC-INV-014</td><td class="px-5 py-4">Edgar Dago</td><td class="px-5 py-4">Magasin principal</td><td class="px-5 py-4">Bon</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-success-50 text-success-700 text-xs font-bold">Reintegre</span></td></tr><tr><td class="px-5 py-4 font-bold">TRF-2026-002</td><td class="px-5 py-4">Transfert</td><td class="px-5 py-4">Cable reseau Cat6</td><td class="px-5 py-4">Depot Cocody</td><td class="px-5 py-4">Chantier Riviera</td><td class="px-5 py-4">-</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-accent-50 text-accent-600 text-xs font-bold">En transit</span></td></tr></tbody></table></div></div>
+        </section>
+
+        <section id="reappro" class="view">
+          <div class="flex justify-between items-start gap-4 mb-6"><div><h1 class="text-3xl font-bold">Seuils et reapprovisionnement</h1><p class="text-sm text-gray-500 mt-2">Voir les articles sous seuil et preparer les quantites a recommander.</p></div><button class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold flex items-center gap-2"><i data-lucide="download" class="w-4 h-4"></i>Exporter liste</button></div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6"><div class="bg-error-50 border border-error-100 rounded-xl p-5"><div class="font-bold text-error-700">Rupture</div><div class="text-3xl font-bold mt-3">12</div><div class="text-sm text-gray-600 mt-1">A traiter rapidement</div></div><div class="bg-warning-50 border border-warning-100 rounded-xl p-5"><div class="font-bold text-warning-700">Sous stock securite</div><div class="text-3xl font-bold mt-3">18</div><div class="text-sm text-gray-600 mt-1">Risque a court terme</div></div><div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm"><div class="font-bold text-gray-600">Valeur a commander</div><div class="text-3xl font-bold mt-3">4 850 000</div><div class="text-sm text-gray-500 mt-1">Estimation prix indicatif</div></div></div>
+          <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden"><div class="p-5 border-b border-gray-200"><h2 class="text-lg font-bold">Articles a reapprovisionner</h2></div><div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Article</th><th class="px-5 py-3 text-left">Emplacement</th><th class="px-5 py-3 text-right">Disponible</th><th class="px-5 py-3 text-right">Stock min</th><th class="px-5 py-3 text-right">A recommander</th><th class="px-5 py-3 text-left">Fournisseur</th><th class="px-5 py-3 text-left">Action</th></tr></thead><tbody class="divide-y"><tr><td class="px-5 py-4 font-bold">Cable reseau Cat6</td><td class="px-5 py-4">Magasin principal</td><td class="px-5 py-4 text-right font-bold text-error-700">4</td><td class="px-5 py-4 text-right">20</td><td class="px-5 py-4 text-right font-bold">80</td><td class="px-5 py-4">Fournisseur A</td><td class="px-5 py-4"><button class="text-accent-600 font-semibold">Demander reappro</button></td></tr><tr><td class="px-5 py-4 font-bold">Routeur 4G</td><td class="px-5 py-4">Depot Yopougon</td><td class="px-5 py-4 text-right font-bold text-warning-700">2</td><td class="px-5 py-4 text-right">5</td><td class="px-5 py-4 text-right font-bold">10</td><td class="px-5 py-4">Fournisseur B</td><td class="px-5 py-4"><button class="text-accent-600 font-semibold">Demander reappro</button></td></tr></tbody></table></div></div>
+        </section>
+        <section id="inventaire" class="view">
+          <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-6">
+            <div>
+              <h1 class="text-3xl font-bold">Inventaire de stock</h1>
+              <p class="text-sm text-gray-500 mt-2">Comptage par emplacement, puis synthese globale des ecarts et validations.</p>
+            </div>
+            <div class="flex flex-wrap gap-3">
+              <div class="inline-flex rounded-xl bg-gray-100 p-1">
+                <button data-action="showInventoryMode('local')" id="inventoryLocalTab" class="inventory-tab px-4 py-2 rounded-lg bg-white shadow-sm text-sm font-bold">Par emplacement</button>
+                <button data-action="showInventoryMode('global')" id="inventoryGlobalTab" class="inventory-tab px-4 py-2 rounded-lg text-sm font-bold text-gray-500">Synthese globale</button>
+              </div>
+              <button class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold flex items-center gap-2"><i data-lucide="download" class="w-4 h-4"></i>Modele Excel</button>
+              <button class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold flex items-center gap-2"><i data-lucide="upload" class="w-4 h-4"></i>Importer XLS</button>
+            </div>
+          </div>
+
+          <div id="inventoryLocalPanel">
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm mb-6">
+              <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 items-end">
+                <label class="block lg:col-span-2"><span class="text-xs font-semibold text-gray-500">Emplacement inventorie</span><select class="mt-2 w-full h-11 rounded-lg border border-gray-300 px-3 font-semibold"><option>Depot Central - Zone A</option><option>Magasin principal</option><option>Depot Yopougon</option><option>Chantier Riviera</option><option>Bureau principal</option></select></label>
+                <div class="p-4 rounded-xl bg-gray-50 border"><div class="text-xs font-semibold text-gray-500">Date inventaire</div><div class="mt-1 font-bold">30/07/2026</div></div>
+                <div class="p-4 rounded-xl bg-gray-50 border"><div class="text-xs font-semibold text-gray-500">Responsable comptage</div><div class="mt-1 font-bold">Jean Dupont</div></div>
+                <div class="p-4 rounded-xl bg-accent-50 border border-accent-100"><div class="text-xs font-semibold text-accent-600">Articles de cet emplacement</div><div class="mt-1 font-bold">24 <span class="text-xs px-2 py-1 rounded-full bg-success-50 text-success-700">12 saisis</span></div></div>
+              </div>
+              <div class="mt-4 p-4 rounded-xl bg-warning-50 border border-warning-100 text-sm text-gray-700"><span class="font-bold text-warning-700">Important :</span> cet inventaire ne corrige que le stock du Depot Central - Zone A. Les autres magasins, chantiers ou bureaux doivent avoir leur propre inventaire.</div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-bold">1. Choisir l'emplacement</div><p class="text-sm text-gray-500 mt-2">Le comptage concerne un seul magasin, depot, chantier ou bureau.</p></div>
+              <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-bold">2. Compter sur place</div><p class="text-sm text-gray-500 mt-2">La quantite constatee est saisie a la main pour cet emplacement.</p></div>
+              <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-bold">3. Justifier l'ecart</div><p class="text-sm text-gray-500 mt-2">Une justification est demandee seulement si le compte differe du stock theorique.</p></div>
+            </div>
+
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+              <div class="p-4 border-b flex justify-between gap-4"><div class="relative w-80"><i data-lucide="search" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400"></i><input class="w-full h-10 rounded-lg border border-gray-300 pl-10 pr-3" placeholder="Rechercher un article ou un code"></div><label class="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox"> Masquer les lignes validees</label></div>
+              <div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Article</th><th class="px-5 py-3 text-right">Stock theorique emplacement</th><th class="px-5 py-3 text-right">Quantite constatee</th><th class="px-5 py-3 text-right">Bon etat</th><th class="px-5 py-3 text-right">A reparer</th><th class="px-5 py-3 text-right">Hors service</th><th class="px-5 py-3 text-center">Ecart</th><th class="px-5 py-3 text-left">Justification</th><th class="px-5 py-3 text-left">Controle</th><th class="px-5 py-3 text-right">Action</th></tr></thead><tbody class="divide-y"><tr><td class="px-5 py-4"><div class="font-bold">Cable cuivre 25mm2</div><div class="text-xs text-gray-500">CAB-CU-25-100</div></td><td class="px-5 py-4 text-right">45</td><td class="px-5 py-4 text-right font-bold">45</td><td class="px-5 py-4 text-right text-success-700 font-bold">40</td><td class="px-5 py-4 text-right text-warning-700 font-bold">3</td><td class="px-5 py-4 text-right text-error-700 font-bold">2</td><td class="px-5 py-4 text-center">-</td><td class="px-5 py-4 text-gray-600">Etat degrade a suivre</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-warning-50 text-warning-700 text-xs font-bold">A verifier</span></td><td class="px-5 py-4 text-right"><button data-action="openModal('countModal')" title="Saisir ou modifier le comptage" class="w-9 h-9 rounded-lg border border-gray-300 bg-white text-accent-600 inline-flex items-center justify-center"><i data-lucide="pencil" class="w-4 h-4"></i></button></td></tr><tr><td class="px-5 py-4"><div class="font-bold">Disjoncteur differentiel 30mA</div><div class="text-xs text-gray-500">DIS-30MA-40A</div></td><td class="px-5 py-4 text-right">12</td><td class="px-5 py-4 text-right font-bold">10</td><td class="px-5 py-4 text-right text-success-700 font-bold">8</td><td class="px-5 py-4 text-right text-warning-700 font-bold">1</td><td class="px-5 py-4 text-right text-error-700 font-bold">1</td><td class="px-5 py-4 text-center font-bold text-error-700">-2</td><td class="px-5 py-4">Perte / vol suppose</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-warning-50 text-warning-700 text-xs font-bold">A valider audit</span></td><td class="px-5 py-4 text-right"><button data-action="openModal('countModal')" title="Saisir ou modifier le comptage" class="w-9 h-9 rounded-lg border border-gray-300 bg-white text-accent-600 inline-flex items-center justify-center"><i data-lucide="pencil" class="w-4 h-4"></i></button></td></tr></tbody></table></div>
+              <div class="p-4 border-t bg-gray-50 text-sm text-gray-600">Apres saisie, les ecarts restent en attente de controle. La correction concerne seulement l'emplacement inventorie. Une synthese globale peut ensuite consolider plusieurs inventaires locaux.</div>
+            </div>
+          </div>
+
+          <div id="inventoryGlobalPanel" class="hidden space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Emplacements inventories</div><div class="text-3xl font-bold mt-3">5</div><div class="text-xs text-gray-500 mt-1">Magasins, depots, chantiers</div></div>
+              <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Articles comptes</div><div class="text-3xl font-bold mt-3">128</div><div class="text-xs text-gray-500 mt-1">Toutes zones consolidees</div></div>
+              <div class="bg-white rounded-xl border border-warning-100 p-5 shadow-sm"><div class="text-sm font-semibold text-warning-700">Ecarts ouverts</div><div class="text-3xl font-bold mt-3 text-warning-700">7</div><div class="text-xs text-gray-500 mt-1">A controler par audit</div></div>
+              <div class="bg-white rounded-xl border border-success-100 p-5 shadow-sm"><div class="text-sm font-semibold text-success-700">Inventaires valides</div><div class="text-3xl font-bold mt-3 text-success-700">3</div><div class="text-xs text-gray-500 mt-1">Sur 5 emplacements</div></div>
+            </div>
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+              <div class="xl:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <div class="p-5 border-b border-gray-200"><h2 class="text-lg font-bold">Synthese par emplacement</h2><p class="text-sm text-gray-500 mt-1">Chaque ligne vient d'un inventaire local.</p></div>
+                <div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Emplacement</th><th class="px-5 py-3 text-right">Articles</th><th class="px-5 py-3 text-right">Saisis</th><th class="px-5 py-3 text-right">Ecarts</th><th class="px-5 py-3 text-left">Statut</th><th class="px-5 py-3 text-right">Action</th></tr></thead><tbody class="divide-y"><tr><td class="px-5 py-4 font-bold">Depot Central - Zone A</td><td class="px-5 py-4 text-right">24</td><td class="px-5 py-4 text-right">12</td><td class="px-5 py-4 text-right text-warning-700 font-bold">2</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-accent-50 text-accent-600 text-xs font-bold">En cours</span></td><td class="px-5 py-4 text-right"><button data-action="showInventoryMode('local')" class="text-accent-600 font-semibold">Ouvrir</button></td></tr><tr><td class="px-5 py-4 font-bold">Magasin principal</td><td class="px-5 py-4 text-right">64</td><td class="px-5 py-4 text-right">64</td><td class="px-5 py-4 text-right">0</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-success-50 text-success-700 text-xs font-bold">Valide</span></td><td class="px-5 py-4 text-right"><button class="text-accent-600 font-semibold">Voir</button></td></tr><tr><td class="px-5 py-4 font-bold">Chantier Riviera</td><td class="px-5 py-4 text-right">18</td><td class="px-5 py-4 text-right">18</td><td class="px-5 py-4 text-right text-error-700 font-bold">5</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-warning-50 text-warning-700 text-xs font-bold">A controler</span></td><td class="px-5 py-4 text-right"><button class="text-accent-600 font-semibold">Voir</button></td></tr></tbody></table></div>
+              </div>
+              <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <div class="p-5 border-b border-gray-200"><h2 class="text-lg font-bold">Ecarts sensibles</h2></div>
+                <div class="p-5 space-y-3 text-sm"><div class="p-4 rounded-xl bg-warning-50 border border-warning-100"><div class="font-bold">Disjoncteur 30mA</div><div class="text-gray-600 mt-1">Depot Central - Zone A : -2</div></div><div class="p-4 rounded-xl bg-error-50 border border-error-100"><div class="font-bold">Routeur 4G</div><div class="text-gray-600 mt-1">Chantier Riviera : -3</div></div><div class="p-4 rounded-xl bg-gray-50 border"><div class="font-bold">Casque chantier</div><div class="text-gray-600 mt-1">Depot Yopougon : +4</div></div></div>
+              </div>
+            </div>
+          </div>
+        </section>        <section id="equipements" class="view"><div class="flex justify-between items-start gap-4 mb-6"><div><h1 class="text-3xl font-bold">Equipements et affectations</h1><p class="text-sm text-gray-500 mt-2">Chaque ligne represente une piece reelle rattachee a un article modele.</p></div><button class="px-4 py-2 bg-accent-600 text-white rounded-lg text-sm font-semibold" data-action="openModal('equipmentModal')">Affecter equipement</button></div><div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Code equipement</th><th class="px-5 py-3 text-left">Article modele</th><th class="px-5 py-3 text-left">Numero serie</th><th class="px-5 py-3 text-left">Etat</th><th class="px-5 py-3 text-left">Localisation</th><th class="px-5 py-3 text-left">Affecte a</th><th class="px-5 py-3 text-left">Statut</th><th class="px-5 py-3 text-right">Action</th></tr></thead><tbody class="divide-y"><tr><td class="px-5 py-4 font-bold">PC-INV-014</td><td class="px-5 py-4">INF-0001 - PC Dell Latitude</td><td class="px-5 py-4">SN-DL-90821</td><td class="px-5 py-4">Bon</td><td class="px-5 py-4">Terrain</td><td class="px-5 py-4">Edgar Dago</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-accent-50 text-accent-600 text-xs font-bold">Affecte</span></td><td class="px-5 py-4 text-right"><button data-action="openModal('equipmentDetailModal')" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-accent-600 hover:bg-accent-50" title="Voir la fiche"><i data-lucide="eye" class="w-4 h-4"></i></button></td></tr></tbody></table></div></div></section>
+        <section id="parcAuto" class="view">
+          <div class="flex justify-between items-start gap-4 mb-6">
+            <div>
+              <h1 class="text-3xl font-bold">Parc auto</h1>
+              <p class="text-sm text-gray-500 mt-2">Suivre les vehicules, leurs affectations, documents et alertes de maintenance.</p>
+            </div>
+            <button class="px-4 py-2 bg-accent-600 text-white rounded-lg text-sm font-semibold flex items-center gap-2" data-action="openModal('vehicleModal')"><i data-lucide="plus" class="w-4 h-4"></i>Nouveau vehicule</button>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Vehicules actifs</div><div class="text-3xl font-bold mt-3">14</div><div class="text-xs text-gray-500 mt-1">Voitures, motos, utilitaires</div></div>
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Affectes</div><div class="text-3xl font-bold mt-3">11</div><div class="text-xs text-gray-500 mt-1">Employes ou projets</div></div>
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Documents a suivre</div><div class="text-3xl font-bold mt-3 text-warning-700">3</div><div class="text-xs text-warning-700 mt-1">Assurance, visite, carte grise</div></div>
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Maintenance</div><div class="text-3xl font-bold mt-3 text-error-700">2</div><div class="text-xs text-error-700 mt-1">A planifier</div></div>
+          </div>
+          <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <div class="p-5 border-b border-gray-200 flex justify-between items-center"><h2 class="text-lg font-bold">Registre vehicules</h2><div class="flex gap-2"><span class="px-3 py-1 rounded-full text-xs font-semibold bg-accent-50 text-accent-600">Tous</span><span class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600">Disponibles</span><span class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600">Affectes</span><span class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600">Alertes</span></div></div>
+            <div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Vehicule</th><th class="px-5 py-3 text-left">Immatriculation</th><th class="px-5 py-3 text-left">Type</th><th class="px-5 py-3 text-left">Affectation</th><th class="px-5 py-3 text-left">Chauffeur</th><th class="px-5 py-3 text-left">Apprenti</th><th class="px-5 py-3 text-left">Statut</th><th class="px-5 py-3 text-right">Action</th></tr></thead><tbody class="divide-y"><tr><td class="px-5 py-4"><div class="font-bold">Toyota Hilux</div><div class="text-xs text-gray-500">VH-2026-004</div></td><td class="px-5 py-4">AB-245-CD</td><td class="px-5 py-4">Pick-up</td><td class="px-5 py-4">Projet Riviera</td><td class="px-5 py-4">Koffi Marc</td><td class="px-5 py-4">Yao Serge</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-warning-50 text-warning-700 text-xs font-bold">Assurance proche</span></td><td class="px-5 py-4 text-right"><button data-action="openModal('vehicleDetailModal')" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-accent-600 hover:bg-accent-50" title="Voir la fiche"><i data-lucide="eye" class="w-4 h-4"></i></button></td></tr><tr><td class="px-5 py-4"><div class="font-bold">Moto Yamaha</div><div class="text-xs text-gray-500">VH-2026-007</div></td><td class="px-5 py-4">MC-112-EF</td><td class="px-5 py-4">Moto</td><td class="px-5 py-4">Coursier bureau</td><td class="px-5 py-4">Edgar Dago</td><td class="px-5 py-4 text-gray-400">Non applicable</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-accent-50 text-accent-600 text-xs font-bold">Affecte</span></td><td class="px-5 py-4 text-right"><button data-action="openModal('vehicleDetailModal')" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-accent-600 hover:bg-accent-50" title="Voir la fiche"><i data-lucide="eye" class="w-4 h-4"></i></button></td></tr></tbody></table></div>
+          </div>
+        </section>
+                <section id="audit" class="view">
+          <div class="flex justify-between items-start gap-4 mb-6">
+            <div>
+              <h1 class="text-3xl font-bold">Audit & alertes</h1>
+              <p class="text-sm text-gray-500 mt-2">Alertes a traiter d'un cote, journal des actions de l'autre.</p>
+            </div>
+            <button class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold flex items-center gap-2"><i data-lucide="download" class="w-4 h-4"></i>Exporter audit</button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Alertes ouvertes</div><div class="text-3xl font-bold mt-3">7</div><div class="text-xs text-gray-500 mt-1">A traiter</div></div>
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Ruptures</div><div class="text-3xl font-bold mt-3 text-error-700">3</div><div class="text-xs text-gray-500 mt-1">Stock a zero ou trop bas</div></div>
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Ecarts inventaire</div><div class="text-3xl font-bold mt-3 text-warning-700">2</div><div class="text-xs text-gray-500 mt-1">A justifier</div></div>
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Actions tracees</div><div class="text-3xl font-bold mt-3">148</div><div class="text-xs text-gray-500 mt-1">Journal non supprimable</div></div>
+          </div>
+
+          <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <div class="p-5 border-b flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+              <div>
+                <h2 class="text-lg font-bold">Suivi audit</h2>
+                <p class="text-sm text-gray-500 mt-1">Une alerte se traite. Une trace audit se conserve.</p>
+              </div>
+              <div class="flex gap-2 text-xs font-semibold flex-wrap">
+                <button data-action="showAudit('alerts', this)" class="audit-tab px-3 py-2 rounded-lg bg-accent-50 text-accent-600">Alertes ouvertes</button>
+                <button data-action="showAudit('journal', this)" class="audit-tab px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Journal audit</button>
+              </div>
+            </div>
+
+            <div id="audit-alerts" class="audit-view">
+              <div class="p-4 border-b bg-gray-50 flex flex-col lg:flex-row gap-3 lg:items-center justify-between">
+                <div class="relative w-full lg:w-96"><i data-lucide="search" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400"></i><input class="w-full h-10 rounded-lg border border-gray-300 pl-10 pr-3" placeholder="Article, equipement, emplacement"></div>
+                <div class="flex gap-2 text-xs font-semibold flex-wrap"><span class="px-3 py-1 rounded-full bg-accent-50 text-accent-600">Toutes</span><span class="px-3 py-1 rounded-full bg-error-50 text-error-700">Critique</span><span class="px-3 py-1 rounded-full bg-warning-50 text-warning-700">A verifier</span><span class="px-3 py-1 rounded-full bg-gray-100 text-gray-600">Inventaire</span></div>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm min-w-[1100px]">
+                  <thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Alerte</th><th class="px-5 py-3 text-left">Objet</th><th class="px-5 py-3 text-left">Emplacement</th><th class="px-5 py-3 text-left">Gravite</th><th class="px-5 py-3 text-left">Date</th><th class="px-5 py-3 text-left">Action attendue</th><th class="px-5 py-3 text-left">Statut</th><th class="px-5 py-3 text-right">Action</th></tr></thead>
+                  <tbody class="divide-y divide-gray-200">
+                    <tr><td class="px-5 py-4 font-bold">Stock insuffisant</td><td class="px-5 py-4">Cable reseau Cat6</td><td class="px-5 py-4">Magasin principal</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-error-50 text-error-700 text-xs font-bold">Critique</span></td><td class="px-5 py-4">30/07/2026</td><td class="px-5 py-4">Reapprovisionner ou refuser sortie</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-warning-50 text-warning-700 text-xs font-bold">Ouverte</span></td><td class="px-5 py-4 text-right"><button class="text-accent-600 font-semibold">Traiter</button></td></tr>
+                    <tr><td class="px-5 py-4 font-bold">Retour en retard</td><td class="px-5 py-4">PC-INV-014 - PC Dell Latitude</td><td class="px-5 py-4">Terrain</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-warning-50 text-warning-700 text-xs font-bold">A verifier</span></td><td class="px-5 py-4">29/07/2026</td><td class="px-5 py-4">Contacter beneficiaire</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-warning-50 text-warning-700 text-xs font-bold">Ouverte</span></td><td class="px-5 py-4 text-right"><button data-action="openModal('equipmentDetailModal')" title="Voir le detail" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-accent-600 hover:bg-accent-50"><i data-lucide="eye" class="w-4 h-4"></i></button></td></tr>
+                    <tr><td class="px-5 py-4 font-bold">Ecart inventaire</td><td class="px-5 py-4">DIS-30MA-40A</td><td class="px-5 py-4">Depot Central - Zone A</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-warning-50 text-warning-700 text-xs font-bold">A justifier</span></td><td class="px-5 py-4">30/07/2026</td><td class="px-5 py-4">Justifier ecart -2</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-warning-50 text-warning-700 text-xs font-bold">Ouverte</span></td><td class="px-5 py-4 text-right"><button class="text-accent-600 font-semibold">Regulariser</button></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div id="audit-journal" class="audit-view hidden">
+              <div class="p-4 border-b bg-gray-50 grid grid-cols-1 lg:grid-cols-4 gap-3">
+                <input class="h-10 rounded-lg border border-gray-300 px-3" placeholder="Date">
+                <select class="h-10 rounded-lg border border-gray-300 px-3"><option>Tous utilisateurs</option><option>Awa Stock</option><option>Kone Audit</option></select>
+                <select class="h-10 rounded-lg border border-gray-300 px-3"><option>Toutes actions</option><option>Creation</option><option>Modification</option><option>Blocage</option></select>
+                <input class="h-10 rounded-lg border border-gray-300 px-3" placeholder="Objet concerne">
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm min-w-[1050px]">
+                  <thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Date</th><th class="px-5 py-3 text-left">Utilisateur</th><th class="px-5 py-3 text-left">Action</th><th class="px-5 py-3 text-left">Objet</th><th class="px-5 py-3 text-left">Avant</th><th class="px-5 py-3 text-left">Apres</th><th class="px-5 py-3 text-left">Resultat</th></tr></thead>
+                  <tbody class="divide-y divide-gray-200">
+                    <tr><td class="px-5 py-4">30/07/2026 10:42</td><td class="px-5 py-4">Awa Stock</td><td class="px-5 py-4">Creation entree</td><td class="px-5 py-4">MAT-0018</td><td class="px-5 py-4">Stock 4</td><td class="px-5 py-4">Stock 124</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-success-50 text-success-700 text-xs font-bold">Trace</span></td></tr>
+                    <tr><td class="px-5 py-4">30/07/2026 11:08</td><td class="px-5 py-4">Kone Audit</td><td class="px-5 py-4">Blocage sortie</td><td class="px-5 py-4">BS-2026-014</td><td class="px-5 py-4">Disponible 4</td><td class="px-5 py-4">Demande 80</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-error-50 text-error-700 text-xs font-bold">Controle</span></td></tr>
+                    <tr><td class="px-5 py-4">30/07/2026 11:27</td><td class="px-5 py-4">Awa Stock</td><td class="px-5 py-4">Affectation equipement</td><td class="px-5 py-4">PC-INV-014</td><td class="px-5 py-4">Magasin</td><td class="px-5 py-4">Edgar Dago</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-success-50 text-success-700 text-xs font-bold">Trace</span></td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="px-5 py-4 bg-gray-50 border-t text-sm text-gray-600">Les lignes du journal audit ne sont pas supprimables. Elles servent a comprendre l'historique des actions.</div>
+            </div>
+          </div>
+        </section>
+        <section id="users" class="view">
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+            <div>
+              <div class="text-xs text-gray-500 font-semibold">Administration Stock Hub</div>
+              <h1 class="text-3xl font-bold mt-1">Utilisateurs et roles</h1>
+              <p class="text-sm text-gray-500 mt-2">Gestion des profils qui accedent au stock, aux inventaires, aux demandes et aux controles.</p>
+            </div>
+            <button data-action="openModal('userModal')" class="px-4 py-2 bg-accent-600 text-white rounded-lg text-sm font-semibold flex items-center gap-2"><i data-lucide="user-plus" class="w-4 h-4"></i>Nouvel utilisateur</button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4 mb-6">
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Admin Stock</div><div class="text-3xl font-bold mt-3">1</div><div class="text-xs text-gray-500 mt-1">Tous droits</div></div>
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Gestionnaires</div><div class="text-3xl font-bold mt-3">3</div><div class="text-xs text-gray-500 mt-1">Entrees, sorties, retours</div></div>
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Audit</div><div class="text-3xl font-bold mt-3">2</div><div class="text-xs text-gray-500 mt-1">Controle sans saisie</div></div>
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Chefs projet</div><div class="text-3xl font-bold mt-3">6</div><div class="text-xs text-gray-500 mt-1">Demandes et suivi</div></div>
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Direction</div><div class="text-3xl font-bold mt-3">2</div><div class="text-xs text-gray-500 mt-1">Vue KPI controlee</div></div>
+          </div>
+
+          <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div class="xl:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+              <div class="p-5 border-b border-gray-200 flex items-center justify-between gap-3"><h2 class="text-lg font-bold">Registre utilisateurs</h2><input class="h-10 rounded-lg border border-gray-300 px-3 text-sm" placeholder="Rechercher utilisateur"></div>
+              <div class="overflow-x-auto">
+                <table class="w-full min-w-[850px] text-sm">
+                  <thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Utilisateur</th><th class="px-5 py-3 text-left">Email</th><th class="px-5 py-3 text-left">Role principal</th><th class="px-5 py-3 text-left">Acces</th><th class="px-5 py-3 text-left">Statut</th><th class="px-5 py-3 text-right">Action</th></tr></thead>
+                  <tbody class="divide-y divide-gray-200">
+                    <tr><td class="px-5 py-4"><div class="font-bold">Admin Stock</div><div class="text-xs text-gray-500">AS</div></td><td class="px-5 py-4">admin@stock.local</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-accent-50 text-accent-600 text-xs font-bold">Admin Stock</span></td><td class="px-5 py-4">Tous modules</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-success-50 text-success-700 text-xs font-bold">Actif</span></td><td class="px-5 py-4 text-right"><button data-action="openModal('userModal')" title="Voir utilisateur" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-accent-600"><i data-lucide="eye" class="w-4 h-4"></i></button></td></tr>
+                    <tr><td class="px-5 py-4"><div class="font-bold">Awa Stock</div><div class="text-xs text-gray-500">Gestion magasin</div></td><td class="px-5 py-4">gestionnaire@stock.local</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-success-50 text-success-700 text-xs font-bold">Gestionnaire</span></td><td class="px-5 py-4">Entrees, sorties, retours</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-success-50 text-success-700 text-xs font-bold">Actif</span></td><td class="px-5 py-4 text-right"><button data-action="openModal('userModal')" title="Voir utilisateur" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-accent-600"><i data-lucide="eye" class="w-4 h-4"></i></button></td></tr>
+                    <tr><td class="px-5 py-4"><div class="font-bold">Kone Audit</div><div class="text-xs text-gray-500">Controle interne</div></td><td class="px-5 py-4">audit@stock.local</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-warning-50 text-warning-700 text-xs font-bold">Audit</span></td><td class="px-5 py-4">Inventaire, alertes, exports</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-success-50 text-success-700 text-xs font-bold">Actif</span></td><td class="px-5 py-4 text-right"><button data-action="openModal('userModal')" title="Voir utilisateur" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-accent-600"><i data-lucide="eye" class="w-4 h-4"></i></button></td></tr>
+                    <tr><td class="px-5 py-4"><div class="font-bold">Chef Projet Riviera</div><div class="text-xs text-gray-500">Terrain</div></td><td class="px-5 py-4">pm@stock.local</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-bold">Chef projet</span></td><td class="px-5 py-4">Demandes, stock consulte</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-success-50 text-success-700 text-xs font-bold">Actif</span></td><td class="px-5 py-4 text-right"><button data-action="openModal('userModal')" title="Voir utilisateur" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-accent-600"><i data-lucide="eye" class="w-4 h-4"></i></button></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+              <div class="p-5 border-b border-gray-200"><h2 class="text-lg font-bold">Regles d'acces</h2><p class="text-sm text-gray-500 mt-1">La maquette garde les roles simples au depart.</p></div>
+              <div class="p-5 space-y-3 text-sm">
+                <div class="p-3 rounded-xl bg-accent-50 border border-accent-100"><div class="font-bold text-accent-700">Admin</div><div class="text-gray-600 mt-1">Parametrage, corrections, toutes actions.</div></div>
+                <div class="p-3 rounded-xl bg-success-50 border border-success-100"><div class="font-bold text-success-700">Gestionnaire stock</div><div class="text-gray-600 mt-1">Entrees, sorties, retours, transferts, inventaire.</div></div>
+                <div class="p-3 rounded-xl bg-warning-50 border border-warning-100"><div class="font-bold text-warning-700">Audit / Direction</div><div class="text-gray-600 mt-1">Controle, KPI, alertes, historique, exports.</div></div>
+                <div class="p-3 rounded-xl bg-gray-50 border border-gray-200"><div class="font-bold text-gray-700">Chef projet</div><div class="text-gray-600 mt-1">Demander du materiel et suivre les sorties de son projet.</div></div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section id="historique" class="view">
+          <div class="flex justify-between items-start gap-4 mb-6"><div><h1 class="text-3xl font-bold">Historique & exports</h1><p class="text-sm text-gray-500 mt-2">Retrouver les mouvements d'un article ou d'un equipement, avec les pieces jointes utiles.</p></div><div class="flex gap-3"><button class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold flex items-center gap-2"><i data-lucide="file-down" class="w-4 h-4"></i>Export complet</button><button class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold flex items-center gap-2"><i data-lucide="paperclip" class="w-4 h-4"></i>Pieces jointes</button></div></div>
+          <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm mb-6"><div class="grid grid-cols-1 md:grid-cols-4 gap-4"><input class="h-11 rounded-lg border border-gray-300 px-3" placeholder="Code article ou equipement"><select class="h-11 rounded-lg border border-gray-300 px-3"><option>Tous mouvements</option><option>Entrees</option><option>Sorties</option><option>Retours</option><option>Transferts</option></select><input class="h-11 rounded-lg border border-gray-300 px-3" placeholder="Periode"><button class="h-11 rounded-lg bg-accent-600 text-white font-semibold">Rechercher</button></div></div>
+          <div class="grid grid-cols-1 xl:grid-cols-3 gap-6"><div class="xl:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden"><div class="p-5 border-b border-gray-200"><h2 class="text-lg font-bold">Journal article</h2></div><div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Date</th><th class="px-5 py-3 text-left">Action</th><th class="px-5 py-3 text-left">Reference</th><th class="px-5 py-3 text-left">Quantite</th><th class="px-5 py-3 text-left">Utilisateur</th><th class="px-5 py-3 text-left">Preuve</th></tr></thead><tbody class="divide-y"><tr><td class="px-5 py-4">30/07/2026</td><td class="px-5 py-4">Entree</td><td class="px-5 py-4 font-bold">BE-2026-001</td><td class="px-5 py-4">+120</td><td class="px-5 py-4">Awa Stock</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-gray-100 text-gray-600 text-xs font-bold">Bon entree.pdf</span></td></tr><tr><td class="px-5 py-4">30/07/2026</td><td class="px-5 py-4">Sortie</td><td class="px-5 py-4 font-bold">BS-2026-014</td><td class="px-5 py-4">-80</td><td class="px-5 py-4">Admin Stock</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-gray-100 text-gray-600 text-xs font-bold">Bon signe.jpg</span></td></tr></tbody></table></div></div><div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden"><div class="p-5 border-b border-gray-200"><h2 class="text-lg font-bold">Exports disponibles</h2></div><div class="p-5 space-y-3 text-sm font-semibold"><button class="w-full h-11 rounded-lg border border-gray-300 flex items-center justify-between px-4"><span>Stock actuel</span><i data-lucide="download" class="w-4 h-4"></i></button><button class="w-full h-11 rounded-lg border border-gray-300 flex items-center justify-between px-4"><span>Mouvements</span><i data-lucide="download" class="w-4 h-4"></i></button><button class="w-full h-11 rounded-lg border border-gray-300 flex items-center justify-between px-4"><span>Inventaire</span><i data-lucide="download" class="w-4 h-4"></i></button><button class="w-full h-11 rounded-lg border border-gray-300 flex items-center justify-between px-4"><span>Audit</span><i data-lucide="download" class="w-4 h-4"></i></button></div></div></div>
+        </section>
+      </div>
+    </div>
+  </main>

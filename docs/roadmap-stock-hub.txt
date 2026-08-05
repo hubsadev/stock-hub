@@ -1,0 +1,96 @@
+﻿Roadmap - Stock Hub
+
+
+Lot 0 - Cadrage et reprise Excel
+- [ ] Lire le fichier Excel de suivi stock.
+- [ ] Identifier les feuilles utiles.
+- [ ] Identifier les colonnes a reprendre.
+- [ ] Identifier les donnees propres et les donnees a verifier.
+- [ ] Decider ce qui devient table de reference.
+- [ ] Decider ce qui devient mouvement.
+- [ ] Decider ce qui reste hors perimetre.
+
+
+Lot 1 - Referentiel stock
+- [ ] Articles.
+- [ ] Familles d'articles.
+- [ ] Fournisseurs.
+- [ ] Emplacements / magasins.
+- [ ] Projets / chantiers.
+- [ ] Equipements suivis individuellement.
+- [ ] Statuts article et equipement.
+- [ ] Import initial depuis Excel.
+
+
+Lot 2 - Entrees et sorties stock
+- [ ] Enregistrer une entree stock.
+- [ ] Enregistrer une sortie stock.
+- [ ] Bloquer une sortie si stock insuffisant.
+- [ ] Calculer stock actuel = stock initial + entrees - sorties.
+- [ ] Historiser chaque mouvement.
+- [ ] Associer une sortie a un employe, chantier ou projet.
+
+
+
+Lot 3 - Retours, equipements et affectations
+- [ ] Enregistrer un retour materiel simple.
+- [ ] Renseigner l'etat au retour : bon, abime, perdu, a reparer.
+- [ ] Reintegrer le stock si le retour est reutilisable.
+- [ ] Garder le lien avec la sortie d'origine.
+- [ ] Creer un equipement avec code inventaire.
+- [ ] Renseigner marque, numero de serie, etat, localisation.
+- [ ] Affecter un equipement a une personne ou un projet.
+- [ ] Marquer un equipement perdu, vole, defectueux ou en maintenance.
+- [ ] Rechercher un equipement par code.
+
+
+Lot 4 - Seuils, reapprovisionnement, alertes et audit
+- [ ] Stock critique.
+- [ ] Stock en rupture.
+- [ ] Articles sous stock minimum.
+- [ ] Articles sous stock securite.
+- [ ] Quantite proposee pour reapprovisionnement.
+- [ ] Equipements non retournes.
+- [ ] Retards de retour.
+- [ ] Doubles affectations suspectes.
+- [ ] Historique audit des actions.
+- [ ] Historique par article.
+- [ ] Historique par equipement.
+- [ ] Export Excel propre.
+
+
+Lot 5 - Transferts, pieces jointes et exports
+- [ ] Transferer du stock entre magasins, depots ou sites.
+- [ ] Distinguer transfert et sortie consommable.
+- [ ] Joindre un bon d'entree.
+- [ ] Joindre un bon de sortie signe.
+- [ ] Joindre une photo ou un PV si besoin.
+- [ ] Exporter stock actuel.
+- [ ] Exporter mouvements.
+- [ ] Exporter inventaire.
+- [ ] Exporter equipements.
+- [ ] Exporter audit.
+
+
+
+Lot 6 - Stabilisation terrain
+- [ ] Faire tester par les gestionnaires stock.
+- [ ] Corriger les libelles confus.
+- [ ] Corriger les parcours trop longs.
+- [ ] Verifier les chiffres avec l'ancien Excel.
+- [ ] Ajouter les filtres importants.
+- [ ] Ajouter les impressions ou exports demandes.
+
+
+
+Lot 7 - Preparation integration HubERP
+- [ ] Aligner les articles avec le catalogue HubERP.
+- [ ] Aligner les projets/chantiers avec HubERP.
+- [ ] Prevoir un export pour migration.
+- [ ] Prevoir les correspondances d'IDs.
+- [ ] Documenter les differences entre Stock Hub et HubERP.
+
+
+
+
+

@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registre des PV - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3', 900: '#054f31' },
+                        error: { 500: '#f04438', 50: '#fef3f2', 900: '#7a271d' },
+                        warning: { 500: '#f79009', 50: '#fffaeb', 900: '#7a4504' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20 shrink-0">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">PV & Preuves</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="home" class="w-5 h-5"></i>
+                    <span class="truncate">Accueil Module</span>
+                </a>
+                <a href="ecr-08-01-registre-des-pv.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500">
+                    <i data-lucide="list-checks" class="w-5 h-5"></i>
+                    <span class="truncate">Registre des PV</span>
+                </a>
+                <a href="ecr-08-02-fiche-pv.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="file-check-2" class="w-5 h-5"></i>
+                    <span class="truncate">Fiche PV (Exemple)</span>
+                </a>
+            </nav>
+
+            <div class="mt-8">
+                <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Modules liés</div>
+                <nav class="space-y-1">
+                    <a href="../07-execution-terrain-ordres-de-travail/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="clipboard-list" class="w-5 h-5"></i>
+                        <span class="truncate">Exécution Terrain (OT)</span>
+                    </a>
+                    <a href="../12-facturation/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="receipt" class="w-5 h-5"></i>
+                        <span class="truncate">Facturation</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+        
+        <div class="p-4 border-t border-gray-200 dark:border-gray-800">
+            <div class="flex items-center gap-3">
+                <img src="https://ui-avatars.com/api/?name=Admin+User&background=f2f7ff&color=465fff" alt="User" class="w-9 h-9 rounded-full">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">Responsable Admin.</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden bg-gray-50 dark:bg-gray-950">
+        <!-- Top Header -->
+        <header class="h-16 flex items-center justify-between px-6 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <div class="hidden sm:flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                    <a href="#" class="hover:text-gray-900 dark:hover:text-white transition-colors">HubERP</a>
+                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                    <a href="index.html" class="hover:text-gray-900 dark:hover:text-white transition-colors">PV & Preuves</a>
+                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                    <span class="text-gray-900 dark:text-white font-medium">Registre</span>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <div class="relative hidden sm:block">
+                    <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" placeholder="Rechercher un PV, OT..." class="pl-9 pr-4 py-2 bg-gray-100 dark:bg-gray-800 border-transparent rounded-lg text-sm focus:bg-white dark:focus:bg-gray-900 focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none transition-all w-64 text-gray-900 dark:text-white placeholder-gray-500">
+                </div>
+                <button class="relative p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
+                    <i data-lucide="bell" class="w-5 h-5"></i>
+                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-error-500 rounded-full border-2 border-white dark:border-gray-900"></span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <div class="flex-1 overflow-y-auto p-6 no-scrollbar">
+            
+            <!-- Page Header & Actions -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Registre des PV</h1>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Gérez et suivez l'avancement des Procès-Verbaux de réalisation et de réception.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button class="px-4 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-2 shadow-sm">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        <span>Exporter</span>
+                    </button>
+                    <button class="px-4 py-2 bg-accent-600 text-white rounded-lg text-sm font-medium hover:bg-accent-700 transition-colors flex items-center gap-2 shadow-sm">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        <span>Générer depuis OT</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4 mb-6 shadow-sm">
+                <div class="flex flex-wrap items-center gap-4">
+                    <div class="flex-1 min-w-[200px] relative">
+                        <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                        <input type="text" placeholder="Recherche par n° PV, n° OT, Client..." class="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:border-accent-500 focus:ring-1 focus:ring-accent-500 outline-none transition-all dark:text-white">
+                    </div>
+                    
+                    <div class="min-w-[150px]">
+                        <select class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:border-accent-500 focus:ring-1 focus:ring-accent-500 outline-none transition-all dark:text-white appearance-none">
+                            <option value="">Tous les statuts</option>
+                            <option value="draft">Brouillon</option>
+                            <option value="signed">Signé</option>
+                            <option value="validated">Validé</option>
+                            <option value="billable">Facturable</option>
+                        </select>
+                    </div>
+
+                    <div class="min-w-[150px]">
+                        <select class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:border-accent-500 focus:ring-1 focus:ring-accent-500 outline-none transition-all dark:text-white appearance-none">
+                            <option value="">Réserves : Tous</option>
+                            <option value="with">Avec réserves</option>
+                            <option value="without">Sans réserves</option>
+                        </select>
+                    </div>
+
+                    <div class="min-w-[150px]">
+                        <input type="date" class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:border-accent-500 focus:ring-1 focus:ring-accent-500 outline-none transition-all dark:text-white text-gray-500 dark:text-gray-400">
+                    </div>
+                    
+                    <button class="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center gap-2">
+                        <i data-lucide="filter-x" class="w-4 h-4"></i>
+                        <span>Réinitialiser</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- List / Table -->
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800 text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold">
+                                <th class="px-6 py-4 w-12 text-center">
+                                    <input type="checkbox" class="rounded border-gray-300 text-accent-600 focus:ring-accent-500 bg-white dark:bg-gray-800 dark:border-gray-600">
+                                </th>
+                                <th class="px-6 py-4">Référence PV</th>
+                                <th class="px-6 py-4">Origine (OT)</th>
+                                <th class="px-6 py-4">Client & Projet</th>
+                                <th class="px-6 py-4">Date de Création</th>
+                                <th class="px-6 py-4">Réserves</th>
+                                <th class="px-6 py-4">Statut</th>
+                                <th class="px-6 py-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
+                            <!-- Ligne 1 : Facturable -->
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
+                                <td class="px-6 py-4 text-center">
+                                    <input type="checkbox" class="rounded border-gray-300 text-accent-600 focus:ring-accent-500 bg-white dark:bg-gray-800 dark:border-gray-600">
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <i data-lucide="file-check-2" class="w-4 h-4 text-gray-400"></i>
+                                        <a href="ecr-08-02-fiche-pv.html" class="text-sm font-semibold text-gray-900 dark:text-white hover:text-accent-600 dark:hover:text-accent-500">PV-2023-10-045</a>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <a href="../07-execution-terrain-ordres-de-travail/ecr-07-03-fiche-ot-back-office.html" class="text-sm text-accent-600 dark:text-accent-500 hover:underline">OT-2023-1402</a>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm font-medium text-gray-900 dark:text-white">Acme Corp</div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400">PRJ-2023-089 - Dépannage TGBT</div>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
+                                    12 Oct 2023
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+                                        <i data-lucide="check" class="w-3.5 h-3.5"></i> Sans
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-success-50 text-success-900 dark:bg-success-900/30 dark:text-success-400 border border-success-200 dark:border-success-800/50">
+                                        Facturable
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <a href="ecr-08-02-fiche-pv.html" class="p-1.5 text-gray-500 hover:text-accent-600 dark:text-gray-400 dark:hover:text-accent-500 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="Consulter">
+                                            <i data-lucide="eye" class="w-4 h-4"></i>
+                                        </a>
+                                        <button class="p-1.5 text-gray-500 hover:text-accent-600 dark:text-gray-400 dark:hover:text-accent-500 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="Télécharger PDF">
+                                            <i data-lucide="download" class="w-4 h-4"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Ligne 2 : Signé avec réserves -->
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
+                                <td class="px-6 py-4 text-center">
+                                    <input type="checkbox" class="rounded border-gray-300 text-accent-600 focus:ring-accent-500 bg-white dark:bg-gray-800 dark:border-gray-600">
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <i data-lucide="file-check-2" class="w-4 h-4 text-gray-400"></i>
+                                        <a href="ecr-08-02-fiche-pv.html" class="text-sm font-semibold text-gray-900 dark:text-white hover:text-accent-600 dark:hover:text-accent-500">PV-2023-10-044</a>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <a href="#" class="text-sm text-accent-600 dark:text-accent-500 hover:underline">OT-2023-1398</a>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm font-medium text-gray-900 dark:text-white">TechVision</div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400">PRJ-2023-102 - Câblage Baie</div>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
+                                    11 Oct 2023
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-warning-50 text-warning-900 dark:bg-warning-900/30 dark:text-warning-500">
+                                        <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i> 2 mineures
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-accent-50 text-accent-900 dark:bg-accent-900/30 dark:text-accent-400 border border-accent-200 dark:border-accent-800/50">
+                                        Signé
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <a href="ecr-08-02-fiche-pv.html" class="p-1.5 text-gray-500 hover:text-accent-600 dark:text-gray-400 dark:hover:text-accent-500 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="Consulter">
+                                            <i data-lucide="eye" class="w-4 h-4"></i>
+                                        </a>
+                                        <button class="p-1.5 text-gray-500 hover:text-accent-600 dark:text-gray-400 dark:hover:text-accent-500 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="Télécharger PDF">
+                                            <i data-lucide="download" class="w-4 h-4"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Ligne 3 : Brouillon -->
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
+                                <td class="px-6 py-4 text-center">
+                                    <input type="checkbox" class="rounded border-gray-300 text-accent-600 focus:ring-accent-500 bg-white dark:bg-gray-800 dark:border-gray-600">
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <i data-lucide="file-edit" class="w-4 h-4 text-gray-400"></i>
+                                        <a href="ecr-08-02-fiche-pv.html" class="text-sm font-semibold text-gray-900 dark:text-white hover:text-accent-600 dark:hover:text-accent-500">PV-2023-10-046</a>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <a href="#" class="text-sm text-accent-600 dark:text-accent-500 hover:underline">OT-2023-1410</a>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm font-medium text-gray-900 dark:text-white">Hôpital Nord</div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400">Intervention Curative #12</div>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
+                                    13 Oct 2023
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-sm text-gray-400 dark:text-gray-500 italic">-</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+                                        Brouillon
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <a href="ecr-08-02-fiche-pv.html" class="p-1.5 text-gray-500 hover:text-accent-600 dark:text-gray-400 dark:hover:text-accent-500 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="Éditer">
+                                            <i data-lucide="edit-2" class="w-4 h-4"></i>
+                                        </a>
+                                        <button class="p-1.5 text-error-500 hover:text-error-600 dark:text-error-400 dark:hover:text-error-300 rounded hover:bg-error-50 dark:hover:bg-error-900/30 transition-colors" title="Supprimer">
+                                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Ligne 4 : Validé -->
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
+                                <td class="px-6 py-4 text-center">
+                                    <input type="checkbox" class="rounded border-gray-300 text-accent-600 focus:ring-accent-500 bg-white dark:bg-gray-800 dark:border-gray-600">
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <i data-lucide="file-check-2" class="w-4 h-4 text-gray-400"></i>
+                                        <a href="ecr-08-02-fiche-pv.html" class="text-sm font-semibold text-gray-900 dark:text-white hover:text-accent-600 dark:hover:text-accent-500">PV-2023-10-043</a>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <a href="#" class="text-sm text-accent-600 dark:text-accent-500 hover:underline">OT-2023-1385</a>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm font-medium text-gray-900 dark:text-white">Mairie de Lyon</div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400">Contrat Maintenance M1</div>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
+                                    10 Oct 2023
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+                                        <i data-lucide="check" class="w-3.5 h-3.5"></i> Sans
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-accent-100 text-accent-800 dark:bg-accent-900/50 dark:text-accent-300 border border-accent-200 dark:border-accent-800">
+                                        Validé
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button class="px-2.5 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-xs font-medium rounded hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                            Vers Facturation
+                                        </button>
+                                        <a href="ecr-08-02-fiche-pv.html" class="p-1.5 text-gray-500 hover:text-accent-600 dark:text-gray-400 dark:hover:text-accent-500 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="Consulter">
+                                            <i data-lucide="eye" class="w-4 h-4"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-800 flex items-center justify-between bg-gray-50 dark:bg-gray-900/50">
+                    <span class="text-sm text-gray-500 dark:text-gray-400">Affichage de 1 à 4 sur 28 PV</span>
+                    <div class="flex items-center gap-2">
+                        <button class="p-2 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors disabled:opacity-50" disabled>
+                            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                        </button>
+                        <button class="w-8 h-8 flex items-center justify-center rounded-lg bg-accent-600 text-white text-sm font-medium">1</button>
+                        <button class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 text-sm font-medium transition-colors">2</button>
+                        <button class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 text-sm font-medium transition-colors">3</button>
+                        <span class="text-gray-400 dark:text-gray-600">...</span>
+                        <button class="p-2 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

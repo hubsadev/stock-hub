@@ -1,0 +1,388 @@
+﻿Parcours utilisateur - Stock Hub
+
+Objectif du parcours
+- Garder l'application centree sur le stock reel.
+- Eviter d'ajouter des ecrans qui ne servent pas le suivi stock.
+- Savoir rapidement : ce qui existe, ou c'est stocke, qui l'a pris, quand c'est sorti, quand c'est revenu, et ce qui manque.
+- Ne pas refaire tout l'ERP dans Stock Hub.
+- Preparer une migration propre vers HubERP plus tard.
+
+Principe simple
+- Le referentiel sert a creer les bases.
+- Les entrees ajoutent du stock.
+- Les sorties retirent du stock.
+- Les retours remettent du stock si le materiel est reutilisable.
+- Les transferts deplacent le stock d'un emplacement a un autre.
+- L'inventaire compare le stock theorique avec le stock compte physiquement.
+- L'audit permet de retrouver qui a fait quoi.
+
+
+1. Demarrage et tableau de bord
+
+Parcours
+- Ouvrir Stock Hub.
+- Arriver sur le tableau de bord.
+- Voir les articles actifs.
+- Voir les ruptures.
+- Voir les equipements affectes.
+- Voir les mouvements du jour.
+- Cliquer sur les raccourcis KPI pour ouvrir la liste concernee.
+
+A observer
+- Le tableau de bord donne une vue rapide sans chercher dans Excel.
+- Les KPI ne sont pas juste des chiffres, ils menent aux listes utiles.
+- Les alertes importantes sont visibles sans scroller partout.
+
+A ne pas ajouter ici
+- Pas de formulaire lourd dans le dashboard.
+- Pas de gestion detaillee des articles directement depuis les KPI.
+
+
+2. Referentiels
+
+Parcours
+- Aller dans Referentiels.
+- Creer ou consulter les donnees de base.
+- Gerer les articles dans leur propre liste.
+- Gerer les fournisseurs dans leur propre liste.
+- Gerer les projets / chantiers dans leur propre liste.
+- Gerer les employes dans leur propre liste.
+- Gerer les emplacements / magasins dans leur propre liste.
+
+A observer
+- Les donnees ne sont pas melangees dans un seul tableau confus.
+- Un article a un code article pour la designation, pas pour chaque piece.
+- Un projet peut avoir un site rattache.
+- Un employe peut servir comme beneficiaire, transporteur, receptionnaire ou responsable selon le cas.
+- Les codes article, projet, entree, sortie, transfert sont generes par l'application.
+
+A ne pas ajouter ici
+- Pas de mouvement stock dans Referentiels.
+- Pas d'entree ou sortie directe depuis la fiche article, sauf raccourci clair plus tard.
+
+
+3. Creation d'un article
+
+Parcours
+- Aller dans Referentiels > Articles.
+- Cliquer sur Nouvel article.
+- Renseigner designation, famille, unite, mode de suivi, stock minimum, prix indicatif si utile.
+- Laisser l'application generer le code article.
+- Enregistrer.
+
+A observer
+- MAT-0018 Cable reseau Cat6 represente une designation d'article.
+- Il peut y avoir 100 pieces de MAT-0018 en stock.
+- On ne cree pas un code different pour chaque cable identique.
+- Si un materiel doit etre suivi individuellement, on le gere comme equipement avec code inventaire.
+
+A ne pas ajouter ici
+- Pas de quantite recue dans la creation article.
+- La quantite vient des entrees stock.
+
+
+4. Entree stock
+
+Parcours
+- Aller dans Entrees stock.
+- Cliquer sur Nouvelle entree.
+- Choisir un article existant.
+- Si l'article n'existe pas, utiliser le raccourci Creer article.
+- Choisir le fournisseur si disponible.
+- Choisir le projet / chantier si l'entree est deja rattachee.
+- Choisir le magasin.
+- Renseigner quantite recue et prix unitaire si connu.
+- Renseigner la tracabilite : responsable stock, livre par, receptionne par.
+- Ajouter une observation seulement si necessaire.
+- Enregistrer l'entree.
+
+A observer
+- Le numero de bon d'entree est genere par l'application.
+- Le code article est repris depuis le referentiel.
+- Le code projet est repris depuis le projet choisi.
+- Le stock augmente apres validation de l'entree.
+- Le mouvement apparait dans l'historique.
+
+A ne pas ajouter ici
+- Pas de saisie manuelle du stock apres.
+- Pas de melange avec une sortie ou un transfert dans le meme formulaire.
+
+
+5. Sortie stock
+
+Parcours
+- Aller dans Sorties stock.
+- Cliquer sur Nouvelle sortie.
+- Choisir l'article.
+- Choisir le projet, chantier, employe ou departement beneficiaire.
+- Renseigner la quantite demandee.
+- Verifier le stock disponible.
+- Renseigner la tracabilite : responsable stock, transporte par, remis a.
+- Ajouter une observation seulement si necessaire.
+- Enregistrer la sortie.
+
+A observer
+- Le numero de bon de sortie est genere par l'application.
+- La sortie est bloquee si le stock disponible est insuffisant.
+- Le stock diminue apres validation.
+- On sait qui a remis, qui a transporte, et qui a recu.
+- Le Chef de projet peut faire une demande de sortie, mais ne doit pas faire une sortie definitive si le role ne le permet pas.
+
+A ne pas ajouter ici
+- Pas d'entree stock dans le formulaire sortie.
+- Pas de type de mouvement qui permet de changer vers entree, retour ou transfert.
+
+
+6. Retour stock
+
+Parcours
+- Aller dans Retours et transferts.
+- Cliquer sur Nouveau retour.
+- Choisir la sortie d'origine ou l'article concerne.
+- Renseigner la quantite retournee.
+- Indiquer l'etat du materiel : reutilisable, defectueux, perdu, casse, autre.
+- Renseigner la tracabilite : responsable stock, ramene par, receptionne par.
+- Ajouter une observation si besoin.
+- Enregistrer le retour.
+
+A observer
+- Si le materiel est reutilisable, le stock augmente.
+- Si le materiel est defectueux ou perdu, le stock disponible ne doit pas augmenter normalement.
+- Le retour reste visible dans l'historique.
+
+A ne pas ajouter ici
+- Pas de correction silencieuse du stock.
+
+
+7. Transfert stock
+
+Parcours
+- Aller dans Retours et transferts.
+- Cliquer sur Nouveau transfert.
+- Choisir l'article.
+- Choisir l'emplacement source.
+- Choisir l'emplacement destination.
+- Renseigner la quantite.
+- Verifier le stock disponible source.
+- Renseigner la tracabilite : responsable stock, transporte par, receptionne par.
+- Ajouter une observation si besoin.
+- Enregistrer le transfert.
+
+A observer
+- Le numero de transfert est genere par l'application.
+- Le stock diminue dans l'emplacement source.
+- Le stock augmente dans l'emplacement destination.
+- Le stock total global ne change pas.
+- On sait qui a transporte et qui a receptionne.
+
+A ne pas ajouter ici
+- Pas de fournisseur.
+- Pas de paiement.
+- Pas de bon de commande.
+
+
+8. Vue Stock
+
+Parcours
+- Aller dans Vue Stock.
+- Rechercher un article.
+- Voir le stock par emplacement.
+- Voir le statut : OK, critique, rupture, surstock.
+- Ouvrir l'historique de l'article si besoin.
+
+A observer
+- Vue Stock montre l'etat actuel.
+- Vue Stock ne sert pas a compter physiquement le stock.
+- Le stock theorique vient des mouvements valides.
+
+A ne pas ajouter ici
+- Pas de saisie de quantite constatee.
+- Pas de modification directe du stock.
+
+
+9. Inventaire stock
+
+Parcours
+- Aller dans Inventaire de stock.
+- Choisir l'emplacement a compter.
+- Voir la liste des articles a compter.
+- Lire le stock theorique affiche par l'application.
+- Compter physiquement le stock sur place.
+- Cliquer sur l'icone de saisie de comptage.
+- Renseigner la quantite constatee.
+- Si ecart, choisir un motif.
+- Saisir une justification libre.
+- Enregistrer le comptage.
+
+A observer
+- Le stock theorique ne se saisit pas dans l'inventaire.
+- La quantite constatee est saisie manuellement apres comptage physique.
+- Une erreur de clic dans le tableau ne doit pas modifier la quantite.
+- La justification d'ecart reste libre pour expliquer le cas reel.
+- L'audit peut voir les ecarts et les corrections.
+
+A ne pas ajouter ici
+- Pas de scan obligatoire au MVP.
+- Pas de correction automatique sans trace.
+
+
+10. Equipements
+
+Parcours
+- Aller dans Equipements.
+- Creer ou consulter les materiels suivis individuellement.
+- Voir code inventaire, designation, numero de serie si disponible, etat, affectation, emplacement.
+- Affecter un equipement a une personne, un projet ou un chantier.
+- Enregistrer son retour quand il revient.
+
+A observer
+- Un equipement correspond a un materiel suivi piece par piece.
+- Un ordinateur, une imprimante, un routeur specifique ou un outil sensible peut etre un equipement.
+- Un equipement affecte n'est plus disponible.
+- L'historique indique ou il est alle et qui l'a recu.
+
+A ne pas ajouter ici
+- Pas de gestion vehicule dans Equipements.
+- Les vehicules vont dans Parc auto.
+
+
+11. Parc auto
+
+Parcours
+- Aller dans Parc auto.
+- Voir la liste des vehicules.
+- Voir type, immatriculation, affectation, chauffeur, apprenti si applicable, statut.
+- Ouvrir une fiche vehicule.
+- Mettre a jour les informations importantes.
+
+A observer
+- Un vehicule peut etre un camion, une voiture, une moto ou autre.
+- Le chauffeur est renseigne si connu.
+- L'apprenti est optionnel.
+- Tous les vehicules n'ont pas forcement un apprenti.
+
+A ne pas ajouter ici
+- Pas de gestion carburant avancee au debut.
+- Pas de maintenance avancee au debut sauf alerte simple.
+
+
+12. Reapprovisionnement
+
+Parcours
+- Aller dans Reapprovisionnement.
+- Voir les articles sous seuil.
+- Voir le stock actuel, le stock minimum et la quantite conseillee.
+- Preparer une demande d'achat plus tard si HubERP est connecte.
+
+A observer
+- Le reapprovisionnement sert a savoir quoi acheter.
+- Le bouton preparer achat ne doit pas promettre un workflow complet si l'achat n'est pas branche.
+- La priorite est de rendre les ruptures visibles.
+
+A ne pas ajouter ici
+- Pas de bon de commande complet dans Stock Hub MVP.
+
+
+13. Audit et alertes
+
+Parcours
+- Aller dans Audit et alertes.
+- Voir les sorties bloquees.
+- Voir les ecarts d'inventaire.
+- Voir les ruptures et seuils critiques.
+- Voir les mouvements sensibles.
+- Filtrer par date, article, utilisateur, type d'action.
+
+A observer
+- L'audit ne fait pas les entrees et sorties.
+- L'audit controle et retrouve les traces.
+- Les alertes menent vers les lignes concernees.
+
+A ne pas ajouter ici
+- Pas de correction cachee sans historique.
+
+
+14. Historique et exports
+
+Parcours
+- Aller dans Historique et exports.
+- Filtrer les mouvements.
+- Voir entree, sortie, retour, transfert, correction, inventaire.
+- Exporter si besoin.
+
+A observer
+- On peut retrouver un mouvement ancien.
+- L'export est lisible.
+- Les noms metier sont visibles, pas seulement des IDs.
+
+A ne pas ajouter ici
+- Pas d'export complique si le MVP n'en a pas besoin.
+
+
+15. Roles utilisateur
+
+Admin Stock
+- Acces a tout.
+- Gere les referentiels.
+- Corrige les erreurs avec trace.
+- Parametre les droits si l'ecran existe.
+
+Gestionnaire stock
+- Cree les entrees.
+- Valide les sorties.
+- Gere les retours.
+- Gere les transferts.
+- Lance ou complete les inventaires.
+
+Responsable / Audit
+- Consulte les stocks.
+- Consulte les inventaires.
+- Consulte l'audit.
+- Voit les alertes.
+- Ne cree pas d'entree ou sortie courante.
+
+RH
+- Consulte les affectations employees.
+- Consulte les equipements remis au personnel.
+- Ne modifie pas le stock.
+
+Direction
+- Consulte les KPI.
+- Consulte les alertes.
+- Consulte les exports.
+- Ne fait pas les mouvements quotidiens.
+
+Chef de projet
+- Consulte le stock disponible.
+- Fait une demande de sortie pour son projet ou chantier.
+- Suit les sorties rattachees a son projet.
+- Ne valide pas seul une sortie definitive si la regle ne le permet pas.
+
+
+16. Parcours minimum a ne pas perdre
+
+- Creer les bases dans Referentiels.
+- Entrer du stock.
+- Sortir du stock.
+- Retourner du stock.
+- Transferer du stock.
+- Compter le stock en inventaire.
+- Justifier les ecarts.
+- Suivre les equipements.
+- Suivre les vehicules separement.
+- Voir les alertes.
+- Retrouver l'historique.
+- Exporter les donnees utiles.
+
+
+17. Limites MVP
+
+- Pas de comptabilite dans Stock Hub.
+- Pas de facture fournisseur dans Stock Hub.
+- Pas de workflow achat complet dans Stock Hub.
+- Pas de scan obligatoire au debut.
+- Pas de mobile dedie au debut.
+- Pas de CUMP avance au debut.
+- Pas de suppression dure.
+- Pas de doublon entre article en quantite et equipement suivi individuellement.
+- Pas de melange entre stock, parc auto et ERP complet.

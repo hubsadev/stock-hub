@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avant-vente - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3' },
+                        error: { 500: '#f04438', 50: '#fef3f2' },
+                        warning: { 500: '#f79009', 50: '#fffaeb' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Avant-vente</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500">
+                    <i data-lucide="home" class="w-5 h-5"></i>
+                    <span class="truncate">Accueil Avant-vente</span>
+                </a>
+                <a href="ecr-02-01-pipeline-avant-vente.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="kanban" class="w-5 h-5"></i>
+                    <span class="truncate">Pipeline</span>
+                </a>
+                <a href="ecr-02-02-fiche-demande-de-cotation.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                    <span class="truncate">Demandes de cotation</span>
+                </a>
+                <a href="ecr-02-04-fiche-offre.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 flex-1 justify-between">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="briefcase" class="w-5 h-5"></i>
+                        <span class="truncate">Offres & Devis</span>
+                    </div>
+                    <span class="bg-warning-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-md">2</span>
+                </a>
+                <a href="ecr-02-03-atelier-d-etude-et-de-chiffrage.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="calculator" class="w-5 h-5"></i>
+                    <span class="truncate">Atelier de chiffrage</span>
+                </a>
+            </nav>
+            
+            <div class="mt-8">
+                <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Autres modules</div>
+                <nav class="space-y-1">
+                    <a href="../01-referentiel/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="database" class="w-5 h-5"></i>
+                        <span class="truncate">Référentiel</span>
+                    </a>
+                    <a href="../03-contrats-affaires-projets/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="folder-check" class="w-5 h-5"></i>
+                        <span class="truncate">Contrats & Affaires</span>
+                    </a>
+                    <a href="../16-gouvernance-validation-controle-interne/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="check-square" class="w-5 h-5"></i>
+                        <span class="truncate">Gouvernance</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+        
+        <div class="p-4 border-t border-gray-200 dark:border-gray-800">
+            <div class="flex items-center gap-3">
+                <img src="https://ui-avatars.com/api/?name=Marie+C&background=465fff&color=fff" alt="User" class="w-8 h-8 rounded-full">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">Marie C.</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate">Commerciale</p>
+                </div>
+                <button onclick="document.documentElement.classList.toggle('dark')" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+                    <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+        <!-- Header -->
+        <header class="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 shrink-0">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <div>
+                    <h1 class="text-xl font-semibold text-gray-900 dark:text-white">Module 02 - Avant-vente</h1>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 hidden sm:block">Demandes de cotation, étude, chiffrage et offres commerciales</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <button class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 relative">
+                    <i data-lucide="bell" class="w-5 h-5"></i>
+                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-error-500 rounded-full border border-white dark:border-gray-900"></span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Content scrollable -->
+        <div class="flex-1 overflow-y-auto p-6">
+            <div class="max-w-5xl mx-auto space-y-8">
+                
+                <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 shadow-sm">
+                    <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Index des maquettes</h2>
+                    <p class="text-gray-600 dark:text-gray-400 mb-6 text-sm">Ce module couvre le cycle de vie avant-vente complet, de l'expression du besoin client à la signature de l'offre commerciale.</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        
+                        <!-- ECR-02-01 -->
+                        <a href="ecr-02-01-pipeline-avant-vente.html" class="block p-5 rounded-lg border border-gray-200 dark:border-gray-800 hover:border-accent-500 hover:ring-1 hover:ring-accent-500 transition-all bg-gray-50 dark:bg-gray-900/50 group">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-lg bg-accent-100 dark:bg-accent-900/30 text-accent-600 dark:text-accent-500 flex items-center justify-center">
+                                        <i data-lucide="kanban" class="w-5 h-5"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-semibold text-gray-900 dark:text-white group-hover:text-accent-600 dark:group-hover:text-accent-500 transition-colors">Pipeline Avant-vente</h3>
+                                        <span class="text-xs text-gray-500 font-mono">ECR-02-01</span>
+                                    </div>
+                                </div>
+                                <i data-lucide="arrow-right" class="w-5 h-5 text-gray-400 group-hover:text-accent-500 transition-colors"></i>
+                            </div>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Vue d'entrée pour créer, suivre et qualifier les demandes de cotation et les offres en cours sous forme de pipeline.</p>
+                        </a>
+
+                        <!-- ECR-02-02 -->
+                        <a href="ecr-02-02-fiche-demande-de-cotation.html" class="block p-5 rounded-lg border border-gray-200 dark:border-gray-800 hover:border-accent-500 hover:ring-1 hover:ring-accent-500 transition-all bg-gray-50 dark:bg-gray-900/50 group">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-500 flex items-center justify-center">
+                                        <i data-lucide="file-text" class="w-5 h-5"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-semibold text-gray-900 dark:text-white group-hover:text-accent-600 dark:group-hover:text-accent-500 transition-colors">Fiche Demande de Cotation</h3>
+                                        <span class="text-xs text-gray-500 font-mono">ECR-02-02</span>
+                                    </div>
+                                </div>
+                                <i data-lucide="arrow-right" class="w-5 h-5 text-gray-400 group-hover:text-accent-500 transition-colors"></i>
+                            </div>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Qualification d'une demande avec client, date limite, contexte et informations d'appel d'offres.</p>
+                        </a>
+
+                        <!-- ECR-02-03 -->
+                        <a href="ecr-02-03-atelier-d-etude-et-de-chiffrage.html" class="block p-5 rounded-lg border border-gray-200 dark:border-gray-800 hover:border-accent-500 hover:ring-1 hover:ring-accent-500 transition-all bg-gray-50 dark:bg-gray-900/50 group">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-500 flex items-center justify-center">
+                                        <i data-lucide="calculator" class="w-5 h-5"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-semibold text-gray-900 dark:text-white group-hover:text-accent-600 dark:group-hover:text-accent-500 transition-colors">Atelier de Chiffrage</h3>
+                                        <span class="text-xs text-gray-500 font-mono">ECR-02-03</span>
+                                    </div>
+                                </div>
+                                <i data-lucide="arrow-right" class="w-5 h-5 text-gray-400 group-hover:text-accent-500 transition-colors"></i>
+                            </div>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Construction technique et économique de l'offre : étude, lots, chiffrage et calcul des marges.</p>
+                        </a>
+
+                        <!-- ECR-02-04 -->
+                        <a href="ecr-02-04-fiche-offre.html" class="block p-5 rounded-lg border border-gray-200 dark:border-gray-800 hover:border-accent-500 hover:ring-1 hover:ring-accent-500 transition-all bg-gray-50 dark:bg-gray-900/50 group">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-500 flex items-center justify-center">
+                                        <i data-lucide="briefcase" class="w-5 h-5"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-semibold text-gray-900 dark:text-white group-hover:text-accent-600 dark:group-hover:text-accent-500 transition-colors">Fiche Offre</h3>
+                                        <span class="text-xs text-gray-500 font-mono">ECR-02-04</span>
+                                    </div>
+                                </div>
+                                <i data-lucide="arrow-right" class="w-5 h-5 text-gray-400 group-hover:text-accent-500 transition-colors"></i>
+                            </div>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Validation, envoi au client, versioning des offres commerciales et enregistrement de la décision client.</p>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 shadow-sm">
+                        <h3 class="font-medium text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                            <i data-lucide="git-branch" class="w-5 h-5 text-gray-400"></i>
+                            Liens avec d'autres modules
+                        </h3>
+                        <ul class="space-y-3 text-sm">
+                            <li class="flex items-start gap-2">
+                                <i data-lucide="corner-down-right" class="w-4 h-4 text-gray-400 mt-0.5"></i>
+                                <div>
+                                    <span class="font-medium text-gray-700 dark:text-gray-300">01 - Référentiel</span>
+                                    <p class="text-gray-500 dark:text-gray-400 text-xs">Utilise les clients, prospects et catalogue articles/prestations.</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i data-lucide="corner-down-right" class="w-4 h-4 text-gray-400 mt-0.5"></i>
+                                <div>
+                                    <span class="font-medium text-gray-700 dark:text-gray-300">16 - Gouvernance</span>
+                                    <p class="text-gray-500 dark:text-gray-400 text-xs">Circuit de validation des offres commerciales avant envoi client.</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i data-lucide="corner-down-right" class="w-4 h-4 text-gray-400 mt-0.5"></i>
+                                <div>
+                                    <span class="font-medium text-gray-700 dark:text-gray-300">03 - Contrats & Affaires</span>
+                                    <p class="text-gray-500 dark:text-gray-400 text-xs">Transformation de l'offre gagnée en contrat et affaire.</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-accent-50 dark:bg-accent-900/20 rounded-xl border border-accent-100 dark:border-accent-900 p-6 shadow-sm">
+                        <h3 class="font-medium text-accent-900 dark:text-accent-100 mb-4 flex items-center gap-2">
+                            <i data-lucide="info" class="w-5 h-5 text-accent-500"></i>
+                            État métier du flux
+                        </h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-2">
+                                <div class="w-2.5 h-2.5 rounded-full bg-gray-400"></div>
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Brouillon / Qualification</span>
+                            </div>
+                            <div class="w-px h-4 bg-gray-300 dark:bg-gray-700 ml-1"></div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-2.5 h-2.5 rounded-full bg-blue-500"></div>
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">En étude / Chiffrage</span>
+                            </div>
+                            <div class="w-px h-4 bg-gray-300 dark:bg-gray-700 ml-1"></div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-2.5 h-2.5 rounded-full bg-warning-500"></div>
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Validation Interne</span>
+                            </div>
+                            <div class="w-px h-4 bg-gray-300 dark:bg-gray-700 ml-1"></div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-2.5 h-2.5 rounded-full bg-success-500"></div>
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Offre Retenue / Sans suite</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

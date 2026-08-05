@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planning des Ordres de Travail - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3', 900: '#054f31' },
+                        error: { 500: '#f04438', 50: '#fef3f2', 900: '#7a271d' },
+                        warning: { 500: '#f79009', 50: '#fffaeb', 900: '#7a4504' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .calendar-grid { display: grid; grid-template-columns: 80px repeat(7, minmax(0, 1fr)); }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20 shrink-0">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Exécution terrain</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="home" class="w-5 h-5"></i>
+                    <span class="truncate">Accueil Module</span>
+                </a>
+                <a href="ecr-07-01-liste-planning-des-ordres-de-travail.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500">
+                    <i data-lucide="calendar-days" class="w-5 h-5"></i>
+                    <span class="truncate">Planning des OT</span>
+                </a>
+                <a href="ecr-07-02-formulaire-creation-ot.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                    <span class="truncate">Nouveau OT</span>
+                </a>
+                <a href="ecr-07-03-fiche-ot-back-office.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                    <span class="truncate">Fiche OT (Back-office)</span>
+                </a>
+                <a href="ecr-07-04-fiche-ot-mobile-terrain.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="smartphone" class="w-5 h-5"></i>
+                    <span class="truncate">Vue Mobile Terrain</span>
+                </a>
+                <a href="ecr-07-05-validation-et-cloture-ot.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="check-circle" class="w-5 h-5"></i>
+                    <span class="truncate">Validation & Clôture</span>
+                </a>
+            </nav>
+
+            <div class="mt-8">
+                <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Autres modules</div>
+                <nav class="space-y-1">
+                    <a href="../01-referentiel/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="database" class="w-5 h-5"></i>
+                        <span class="truncate">Référentiel</span>
+                    </a>
+                    <a href="../06-stock-logistique-magasin/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="package" class="w-5 h-5"></i>
+                        <span class="truncate">Stock & Logistique</span>
+                    </a>
+                    <a href="../09-temps-ressources-pointage/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="clock" class="w-5 h-5"></i>
+                        <span class="truncate">Temps & Pointage</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+        
+        <div class="p-4 border-t border-gray-200 dark:border-gray-800">
+            <div class="flex items-center gap-3">
+                <img src="https://ui-avatars.com/api/?name=Admin+User&background=f2f7ff&color=465fff" alt="User" class="w-9 h-9 rounded-full">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">Admin Terrain</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden bg-gray-50 dark:bg-gray-950">
+        <!-- Header -->
+        <header class="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 shrink-0">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <h1 class="text-xl font-semibold text-gray-900 dark:text-white">Planning des Ordres de Travail</h1>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="relative">
+                    <i data-lucide="search" class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                    <input type="text" placeholder="Rechercher un OT..." class="pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 dark:bg-gray-800 dark:text-white w-64">
+                </div>
+                <a href="ecr-07-02-formulaire-creation-ot.html" class="flex items-center gap-2 bg-accent-600 hover:bg-accent-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    <span>Créer un OT</span>
+                </a>
+            </div>
+        </header>
+
+        <!-- Content Split View -->
+        <div class="flex-1 overflow-hidden flex flex-col md:flex-row">
+            
+            <!-- Left Panel: OT List to be planned -->
+            <div class="w-full md:w-80 lg:w-96 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col shrink-0">
+                <div class="p-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
+                    <h2 class="font-semibold text-gray-900 dark:text-white">À planifier</h2>
+                    <span class="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-xs font-bold px-2 py-1 rounded-full">3</span>
+                </div>
+                
+                <div class="p-2 border-b border-gray-200 dark:border-gray-800 flex gap-2 overflow-x-auto no-scrollbar">
+                    <button class="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg text-xs font-medium whitespace-nowrap">Tous</button>
+                    <button class="px-3 py-1.5 bg-accent-50 dark:bg-accent-900/30 text-accent-600 dark:text-accent-500 rounded-lg text-xs font-medium whitespace-nowrap">Urgents</button>
+                    <button class="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg text-xs font-medium whitespace-nowrap">Maintenance</button>
+                </div>
+
+                <div class="flex-1 overflow-y-auto p-4 space-y-3">
+                    <!-- OT Item 1 -->
+                    <a href="ecr-07-03-fiche-ot-back-office.html" class="block border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:border-accent-500 cursor-pointer bg-white dark:bg-gray-900 shadow-sm">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-xs font-semibold text-accent-600 dark:text-accent-400">OT-2023-0142</span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">Urgent</span>
+                        </div>
+                        <h3 class="text-sm font-medium text-gray-900 dark:text-white line-clamp-2 mb-2">Réparation fuite pompe hydraulique secteur B</h3>
+                        <div class="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+                            <div class="flex items-center gap-1">
+                                <i data-lucide="map-pin" class="w-3 h-3"></i>
+                                <span>Usine Nord</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <i data-lucide="clock" class="w-3 h-3"></i>
+                                <span>~4h</span>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- OT Item 2 -->
+                    <a href="ecr-07-03-fiche-ot-back-office.html" class="block border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:border-accent-500 cursor-pointer bg-white dark:bg-gray-900 shadow-sm">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-xs font-semibold text-accent-600 dark:text-accent-400">OT-2023-0145</span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300">Normal</span>
+                        </div>
+                        <h3 class="text-sm font-medium text-gray-900 dark:text-white line-clamp-2 mb-2">Maintenance préventive groupe froid</h3>
+                        <div class="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+                            <div class="flex items-center gap-1">
+                                <i data-lucide="map-pin" class="w-3 h-3"></i>
+                                <span>Entrepôt Logistique</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <i data-lucide="clock" class="w-3 h-3"></i>
+                                <span>~8h</span>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- OT Item 3 -->
+                    <a href="ecr-07-03-fiche-ot-back-office.html" class="block border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:border-accent-500 cursor-pointer bg-white dark:bg-gray-900 shadow-sm">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-xs font-semibold text-accent-600 dark:text-accent-400">OT-2023-0148</span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300">Normal</span>
+                        </div>
+                        <h3 class="text-sm font-medium text-gray-900 dark:text-white line-clamp-2 mb-2">Remplacement filtres CVC étage 2</h3>
+                        <div class="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+                            <div class="flex items-center gap-1">
+                                <i data-lucide="map-pin" class="w-3 h-3"></i>
+                                <span>Siège Social</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <i data-lucide="clock" class="w-3 h-3"></i>
+                                <span>~2h</span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Right Panel: Calendar/Planning View -->
+            <div class="flex-1 flex flex-col min-w-0 bg-white dark:bg-gray-900">
+                <!-- Planning Toolbar -->
+                <div class="h-16 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 shrink-0 bg-gray-50 dark:bg-gray-950/50">
+                    <div class="flex items-center gap-4">
+                        <h2 class="font-semibold text-gray-900 dark:text-white">Planning des équipes</h2>
+                        <div class="flex items-center bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-1">
+                            <button class="px-3 py-1 text-sm font-medium rounded-md bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm">Jour</button>
+                            <button class="px-3 py-1 text-sm font-medium rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">Semaine</button>
+                            <button class="px-3 py-1 text-sm font-medium rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">Mois</button>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button class="p-2 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400">
+                            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                        </button>
+                        <span class="text-sm font-medium text-gray-900 dark:text-white min-w-[120px] text-center">15 Nov 2023</span>
+                        <button class="p-2 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400">
+                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Calendar Grid (Team x Time) -->
+                <div class="flex-1 overflow-auto relative bg-gray-50 dark:bg-gray-950">
+                    <!-- Resource Rows -->
+                    <div class="min-w-[800px] border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 flex sticky top-0 z-10">
+                        <div class="w-48 p-3 border-r border-gray-200 dark:border-gray-800 font-semibold text-sm text-gray-900 dark:text-white shrink-0 bg-white dark:bg-gray-900">
+                            Équipes / Intervenants
+                        </div>
+                        <div class="flex-1 grid grid-cols-8 text-center divide-x divide-gray-200 dark:divide-gray-800">
+                            <div class="py-3 text-xs font-medium text-gray-500 dark:text-gray-400">08:00</div>
+                            <div class="py-3 text-xs font-medium text-gray-500 dark:text-gray-400">10:00</div>
+                            <div class="py-3 text-xs font-medium text-gray-500 dark:text-gray-400">12:00</div>
+                            <div class="py-3 text-xs font-medium text-gray-500 dark:text-gray-400">14:00</div>
+                            <div class="py-3 text-xs font-medium text-gray-500 dark:text-gray-400">16:00</div>
+                            <div class="py-3 text-xs font-medium text-gray-500 dark:text-gray-400">18:00</div>
+                        </div>
+                    </div>
+
+                    <div class="min-w-[800px] divide-y divide-gray-200 dark:divide-gray-800 bg-white dark:bg-gray-900">
+                        
+                        <!-- Row 1 -->
+                        <div class="flex h-20 group">
+                            <div class="w-48 p-3 border-r border-gray-200 dark:border-gray-800 flex items-center gap-3 shrink-0 bg-white dark:bg-gray-900 group-hover:bg-gray-50 dark:group-hover:bg-gray-800/50">
+                                <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs">Eq.A</div>
+                                <div>
+                                    <div class="text-sm font-medium text-gray-900 dark:text-white">Équipe Alpha</div>
+                                    <div class="text-xs text-gray-500">2 techniciens</div>
+                                </div>
+                            </div>
+                            <div class="flex-1 grid grid-cols-8 relative bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxwYXRoIGQ9Ik0wLDBWMTAwSDFWMEgwWiIgZmlsbD0iI2U1ZTdlYiIvPjwvc3ZnPg==')] dark:bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxwYXRoIGQ9Ik0wLDBWMTAwSDFWMEgwWiIgZmlsbD0iIzFmMjQzNyIvPjwvc3ZnPg==')] bg-[length:12.5%_100%] group-hover:bg-gray-50 dark:group-hover:bg-gray-800/50">
+                                <!-- Scheduled Event -->
+                                <a href="ecr-07-03-fiche-ot-back-office.html" class="absolute top-2 bottom-2 left-[12.5%] right-[50%] bg-accent-100 border border-accent-300 dark:bg-accent-900/50 dark:border-accent-700 rounded-lg p-2 overflow-hidden shadow-sm hover:shadow-md transition-shadow z-10 flex flex-col justify-center">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <span class="text-xs font-bold text-accent-800 dark:text-accent-300">OT-2023-0130</span>
+                                        <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                                    </div>
+                                    <span class="text-xs text-accent-700 dark:text-accent-400 truncate">Inspection ligne production</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Row 2 -->
+                        <div class="flex h-20 group">
+                            <div class="w-48 p-3 border-r border-gray-200 dark:border-gray-800 flex items-center gap-3 shrink-0 bg-white dark:bg-gray-900 group-hover:bg-gray-50 dark:group-hover:bg-gray-800/50">
+                                <div class="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center font-bold text-xs">Eq.B</div>
+                                <div>
+                                    <div class="text-sm font-medium text-gray-900 dark:text-white">Équipe Beta</div>
+                                    <div class="text-xs text-gray-500">3 techniciens</div>
+                                </div>
+                            </div>
+                            <div class="flex-1 grid grid-cols-8 relative bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxwYXRoIGQ9Ik0wLDBWMTAwSDFWMEgwWiIgZmlsbD0iI2U1ZTdlYiIvPjwvc3ZnPg==')] dark:bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxwYXRoIGQ9Ik0wLDBWMTAwSDFWMEgwWiIgZmlsbD0iIzFmMjQzNyIvPjwvc3ZnPg==')] bg-[length:12.5%_100%] group-hover:bg-gray-50 dark:group-hover:bg-gray-800/50">
+                                <!-- Scheduled Event -->
+                                <a href="ecr-07-03-fiche-ot-back-office.html" class="absolute top-2 bottom-2 left-[50%] right-[12.5%] bg-warning-50 border border-warning-200 dark:bg-warning-900/30 dark:border-warning-700/50 rounded-lg p-2 overflow-hidden shadow-sm hover:shadow-md transition-shadow z-10 flex flex-col justify-center">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <span class="text-xs font-bold text-warning-800 dark:text-warning-400">OT-2023-0131</span>
+                                        <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                                    </div>
+                                    <span class="text-xs text-warning-700 dark:text-warning-500 truncate">Remplacement moteur pont roulant</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Row 3 - Prestataire -->
+                        <div class="flex h-20 group">
+                            <div class="w-48 p-3 border-r border-gray-200 dark:border-gray-800 flex items-center gap-3 shrink-0 bg-white dark:bg-gray-900 group-hover:bg-gray-50 dark:group-hover:bg-gray-800/50">
+                                <div class="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-xs">
+                                    <i data-lucide="building-2" class="w-4 h-4"></i>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-medium text-gray-900 dark:text-white">Prestataire XYZ</div>
+                                    <div class="text-xs text-gray-500">Externe</div>
+                                </div>
+                            </div>
+                            <div class="flex-1 grid grid-cols-8 relative bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxwYXRoIGQ9Ik0wLDBWMTAwSDFWMEgwWiIgZmlsbD0iI2U1ZTdlYiIvPjwvc3ZnPg==')] dark:bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxwYXRoIGQ9Ik0wLDBWMTAwSDFWMEgwWiIgZmlsbD0iIzFmMjQzNyIvPjwvc3ZnPg==')] bg-[length:12.5%_100%] group-hover:bg-gray-50 dark:group-hover:bg-gray-800/50">
+                                
+                            </div>
+                        </div>
+
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

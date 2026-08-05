@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registre des Expressions de Besoin - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3', 900: '#054f31' },
+                        error: { 500: '#f04438', 50: '#fef3f2', 900: '#7a271d' },
+                        warning: { 500: '#f79009', 50: '#fffaeb', 900: '#7a4504' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Achats</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="home" class="w-5 h-5"></i>
+                    <span class="truncate">Accueil Module</span>
+                </a>
+                <a href="ecr-05-01-registre-des-expressions-de-besoin.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500">
+                    <i data-lucide="list" class="w-5 h-5"></i>
+                    <span class="truncate">Registre EB</span>
+                </a>
+                <a href="ecr-05-02-fiche-expression-de-besoin.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                    <span class="truncate">Fiche EB</span>
+                </a>
+                <a href="ecr-05-03-registre-des-demandes-d-achat.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="list-ordered" class="w-5 h-5"></i>
+                    <span class="truncate">Registre DA</span>
+                </a>
+                <a href="ecr-05-04-fiche-demande-d-achat.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="file-check" class="w-5 h-5"></i>
+                    <span class="truncate">Fiche DA</span>
+                </a>
+                <a href="ecr-05-05-comparatif-fournisseurs.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="git-compare" class="w-5 h-5"></i>
+                    <span class="truncate">Comparatif Fournisseurs</span>
+                </a>
+                <a href="ecr-05-06-commande-fournisseur.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+                    <span class="truncate">Commande Fournisseur</span>
+                </a>
+                <a href="ecr-05-07-facture-fournisseur-et-rapprochement.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="receipt" class="w-5 h-5"></i>
+                    <span class="truncate">Facture & Rapprochement</span>
+                </a>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col min-w-0 bg-gray-50 dark:bg-gray-950">
+        <!-- Header -->
+        <header class="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 shrink-0 z-10">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <div class="flex flex-col">
+                    <h1 class="text-lg font-semibold text-gray-900 dark:text-white">Registre des Expressions de Besoin</h1>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <button class="px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors shadow-sm">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    Saisir un besoin
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Scrollable Area -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="max-w-7xl mx-auto space-y-6">
+
+                <!-- Filters & Search -->
+                <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4 shadow-theme-xs">
+                    <div class="flex flex-col md:flex-row gap-4 justify-between items-center">
+                        <div class="relative w-full md:w-96">
+                            <i data-lucide="search" class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                            <input type="text" placeholder="Rechercher par référence, affaire, demandeur..." class="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-accent-500 outline-none text-gray-900 dark:text-white transition-colors">
+                        </div>
+                        <div class="flex items-center gap-3 w-full md:w-auto overflow-x-auto no-scrollbar pb-1 md:pb-0">
+                            <select class="px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-accent-500 min-w-[140px]">
+                                <option>Tous les statuts</option>
+                                <option>Brouillon</option>
+                                <option>Soumise</option>
+                                <option>Partiellement servi</option>
+                                <option>Servi sur stock</option>
+                                <option>DA Créée</option>
+                            </select>
+                            <select class="px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-accent-500 min-w-[140px]">
+                                <option>Toutes les affaires</option>
+                                <option>AFF-2023-089</option>
+                                <option>PROJ-2023-112</option>
+                                <option>Stock Central</option>
+                            </select>
+                            <button class="px-3 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shrink-0">
+                                <i data-lucide="filter" class="w-4 h-4"></i>
+                                Plus de filtres
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Table -->
+                <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-theme-xs overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800 text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                    <th class="px-6 py-4 font-semibold">Référence</th>
+                                    <th class="px-6 py-4 font-semibold">Date saisie</th>
+                                    <th class="px-6 py-4 font-semibold">Demandeur</th>
+                                    <th class="px-6 py-4 font-semibold">Rattachement</th>
+                                    <th class="px-6 py-4 font-semibold">Statut</th>
+                                    <th class="px-6 py-4 text-right font-semibold">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
+                                
+                                <!-- Ligne 1 -->
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="font-medium text-gray-900 dark:text-white">EB-2023-0142</div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">26 Oct 2023</td>
+                                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-white font-medium">Marc Dubois (Tech)</td>
+                                    <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                                        <div class="flex items-center gap-1.5">
+                                            <i data-lucide="briefcase" class="w-4 h-4 text-gray-400"></i>
+                                            AFF-2023-089
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                                            Soumise
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <a href="ecr-05-02-fiche-expression-de-besoin.html" class="inline-flex items-center justify-center p-2 text-gray-400 hover:text-accent-600 dark:hover:text-accent-500 hover:bg-accent-50 dark:hover:bg-accent-900/30 rounded-lg transition-colors">
+                                            <i data-lucide="chevron-right" class="w-5 h-5"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+
+                                <!-- Ligne 2 -->
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="font-medium text-gray-900 dark:text-white">EB-2023-0141</div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">25 Oct 2023</td>
+                                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-white font-medium">Sophie Martin (CP)</td>
+                                    <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                                        <div class="flex items-center gap-1.5">
+                                            <i data-lucide="folder" class="w-4 h-4 text-gray-400"></i>
+                                            PROJ-2023-112
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+                                            Brouillon
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <a href="ecr-05-02-fiche-expression-de-besoin.html" class="inline-flex items-center justify-center p-2 text-gray-400 hover:text-accent-600 dark:hover:text-accent-500 hover:bg-accent-50 dark:hover:bg-accent-900/30 rounded-lg transition-colors">
+                                            <i data-lucide="chevron-right" class="w-5 h-5"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+
+                                <!-- Ligne 3 -->
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="font-medium text-gray-900 dark:text-white">EB-2023-0139</div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">24 Oct 2023</td>
+                                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-white font-medium">Lucie Gomez (Atelier)</td>
+                                    <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                                        <div class="flex items-center gap-1.5">
+                                            <i data-lucide="package" class="w-4 h-4 text-gray-400"></i>
+                                            Stock Central
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-warning-50 text-warning-700 dark:bg-warning-900/30 dark:text-warning-500 border border-warning-200 dark:border-warning-800">
+                                            Partiellement servi
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <a href="ecr-05-02-fiche-expression-de-besoin.html" class="inline-flex items-center justify-center p-2 text-gray-400 hover:text-accent-600 dark:hover:text-accent-500 hover:bg-accent-50 dark:hover:bg-accent-900/30 rounded-lg transition-colors">
+                                            <i data-lucide="chevron-right" class="w-5 h-5"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+
+                                <!-- Ligne 4 -->
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="font-medium text-gray-900 dark:text-white">EB-2023-0135</div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">22 Oct 2023</td>
+                                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-white font-medium">Marc Dubois (Tech)</td>
+                                    <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                                        <div class="flex items-center gap-1.5">
+                                            <i data-lucide="briefcase" class="w-4 h-4 text-gray-400"></i>
+                                            AFF-2023-088
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border border-purple-200 dark:border-purple-800">
+                                            DA Créée
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <a href="ecr-05-02-fiche-expression-de-besoin.html" class="inline-flex items-center justify-center p-2 text-gray-400 hover:text-accent-600 dark:hover:text-accent-500 hover:bg-accent-50 dark:hover:bg-accent-900/30 rounded-lg transition-colors">
+                                            <i data-lucide="chevron-right" class="w-5 h-5"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Ligne 5 -->
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="font-medium text-gray-900 dark:text-white">EB-2023-0130</div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">20 Oct 2023</td>
+                                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-white font-medium">Paul Henry (Maint.)</td>
+                                    <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                                        <div class="flex items-center gap-1.5">
+                                            <i data-lucide="package" class="w-4 h-4 text-gray-400"></i>
+                                            Stock Central
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success-50 text-success-700 dark:bg-success-900/30 dark:text-success-400 border border-success-200 dark:border-success-800">
+                                            Servi sur stock
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <a href="ecr-05-02-fiche-expression-de-besoin.html" class="inline-flex items-center justify-center p-2 text-gray-400 hover:text-accent-600 dark:hover:text-accent-500 hover:bg-accent-50 dark:hover:bg-accent-900/30 rounded-lg transition-colors">
+                                            <i data-lucide="chevron-right" class="w-5 h-5"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <div class="bg-white dark:bg-gray-900 px-6 py-4 border-t border-gray-200 dark:border-gray-800 flex items-center justify-between">
+                        <span class="text-sm text-gray-500 dark:text-gray-400">Affichage de 1 à 5 sur 24 expressions de besoin</span>
+                        <div class="flex items-center gap-2">
+                            <button class="px-3 py-1.5 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-500 dark:text-gray-400 disabled:opacity-50" disabled>Précédent</button>
+                            <button class="px-3 py-1.5 bg-accent-50 dark:bg-accent-900/30 border border-accent-100 dark:border-accent-800 rounded-lg text-sm font-medium text-accent-600 dark:text-accent-500">1</button>
+                            <button class="px-3 py-1.5 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300">2</button>
+                            <button class="px-3 py-1.5 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300">3</button>
+                            <span class="text-gray-500">...</span>
+                            <button class="px-3 py-1.5 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300">Suivant</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

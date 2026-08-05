@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imputation & Ressources Pointées - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3', 900: '#054f31' },
+                        error: { 500: '#f04438', 50: '#fef3f2', 900: '#7a271d' },
+                        warning: { 500: '#f79009', 50: '#fffaeb', 900: '#7a4504' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20 shrink-0">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="clock" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Pointage & Temps</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="home" class="w-5 h-5"></i>
+                    <span class="truncate">Accueil Module</span>
+                </a>
+                <a href="ecr-09-01-pointage-quotidien-equipe.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="users" class="w-5 h-5"></i>
+                    <span class="truncate">Pointage Équipe</span>
+                </a>
+                <a href="ecr-09-02-imputation-et-ressources-pointees.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500">
+                    <i data-lucide="git-merge" class="w-5 h-5"></i>
+                    <span class="truncate">Imputation Détail</span>
+                </a>
+                <a href="ecr-09-03-validation-et-consultation-des-pointages.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="check-circle" class="w-5 h-5"></i>
+                    <span class="truncate">Validation</span>
+                </a>
+            </nav>
+            
+            <div class="mt-8">
+                <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Modules liés</div>
+                <nav class="space-y-1">
+                    <a href="../15-planning-coordination-operationnelle/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="calendar" class="w-5 h-5"></i>
+                        <span class="truncate">Planning & Coord.</span>
+                    </a>
+                    <a href="../07-execution-terrain-ordres-de-travail/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="hammer" class="w-5 h-5"></i>
+                        <span class="truncate">Exécution Terrain</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+        
+        <div class="p-4 border-t border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-3">
+                <img src="https://ui-avatars.com/api/?name=Jean+D&background=465fff&color=fff" alt="User" class="w-8 h-8 rounded-full">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">Jean Dupont</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate">Chef d'Équipe</p>
+                </div>
+                <button onclick="document.documentElement.classList.toggle('dark')" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <i data-lucide="moon" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full bg-gray-50 dark:bg-gray-950 relative min-w-0">
+        
+        <!-- Header -->
+        <header class="h-16 flex items-center justify-between px-6 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-4">
+                <a href="ecr-09-01-pointage-quotidien-equipe.html" class="text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+                    <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                </a>
+                <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                    <a href="#" class="hover:text-gray-900 dark:hover:text-white transition-colors">Pointage Équipe</a>
+                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                    <span class="font-medium text-gray-900 dark:text-white">Détail Imputations : Marc Bernard</span>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <a href="ecr-09-01-pointage-quotidien-equipe.html" class="flex items-center gap-2 px-4 py-1.5 text-sm font-medium text-white bg-accent-600 hover:bg-accent-700 dark:bg-accent-500 dark:hover:bg-accent-600 rounded-lg transition-colors shadow-sm">
+                    <i data-lucide="check" class="w-4 h-4"></i>
+                    Valider la ventilation
+                </a>
+            </div>
+        </header>
+
+        <!-- Content Area -->
+        <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
+            <div class="max-w-4xl mx-auto space-y-6">
+
+                <!-- Header Info -->
+                <div class="flex justify-between items-start">
+                    <div class="flex gap-4">
+                        <div class="w-14 h-14 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-lg font-bold text-gray-600 dark:text-gray-300">
+                            MB
+                        </div>
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Marc Bernard</h1>
+                            <p class="text-gray-500 dark:text-gray-400 text-sm">Maçon N2 • Équipe Maçons A</p>
+                            <p class="font-medium text-accent-600 dark:text-accent-500 mt-1 flex items-center gap-1.5 text-sm">
+                                <i data-lucide="calendar" class="w-4 h-4"></i> Mardi 24 Octobre 2023
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Recap Heures -->
+                    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 flex gap-6 text-sm">
+                        <div>
+                            <span class="text-gray-500 dark:text-gray-400 block mb-1 text-xs">Heures normales (déclarées)</span>
+                            <span class="font-bold text-gray-900 dark:text-white text-lg">7.0 h</span>
+                        </div>
+                        <div class="w-px bg-gray-200 dark:bg-gray-800"></div>
+                        <div>
+                            <span class="text-gray-500 dark:text-gray-400 block mb-1 text-xs">Heures suppl. (déclarées)</span>
+                            <span class="font-bold text-gray-900 dark:text-white text-lg">1.5 h</span>
+                        </div>
+                        <div class="w-px bg-gray-200 dark:bg-gray-800"></div>
+                        <div>
+                            <span class="text-gray-500 dark:text-gray-400 block mb-1 text-xs">Total à imputer</span>
+                            <span class="font-bold text-success-600 dark:text-success-500 text-lg">8.5 h</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section: Ventilation des heures -->
+                <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm overflow-hidden">
+                    <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="pie-chart" class="w-5 h-5 text-gray-500"></i>
+                            <h2 class="font-bold text-gray-900 dark:text-white">Ventilation analytique (Heures)</h2>
+                        </div>
+                        <!-- Indicateur de solde -->
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-success-50 text-success-700 dark:bg-success-900/30 dark:text-success-400 text-xs font-medium border border-success-200 dark:border-success-800">
+                            <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+                            Ventilation complète (0h restantes)
+                        </span>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400">
+                                <tr>
+                                    <th class="px-5 py-3 font-medium w-5/12">Affaire / Chantier / OT</th>
+                                    <th class="px-5 py-3 font-medium w-1/4">Tâche (Optionnel)</th>
+                                    <th class="px-5 py-3 font-medium w-24 text-center">H. Norm.</th>
+                                    <th class="px-5 py-3 font-medium w-24 text-center">H. Supp.</th>
+                                    <th class="px-5 py-3 font-medium w-16 text-center"></th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
+                                <!-- Ligne d'imputation 1 -->
+                                <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/20">
+                                    <td class="px-5 py-3">
+                                        <div class="flex items-center relative">
+                                            <select class="w-full appearance-none pl-3 pr-8 py-1.5 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-accent-500 focus:border-accent-500">
+                                                <option selected>[OT-23-401] Chantier Gare Sud - Gros œuvre</option>
+                                                <option>[OT-23-402] Chantier Lycée - Fondations</option>
+                                                <option>[SAV-23-019] Dépannage Urgence - Lycée</option>
+                                            </select>
+                                            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 absolute right-2 pointer-events-none"></i>
+                                        </div>
+                                    </td>
+                                    <td class="px-5 py-3">
+                                        <input type="text" placeholder="Ex: Coulage dalle" value="Coulage dalle (zone B)" class="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-accent-500 focus:border-accent-500">
+                                    </td>
+                                    <td class="px-5 py-3">
+                                        <input type="number" value="5.0" step="0.5" class="w-full text-center px-2 py-1.5 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-accent-500 focus:border-accent-500">
+                                    </td>
+                                    <td class="px-5 py-3">
+                                        <input type="number" value="1.5" step="0.5" class="w-full text-center px-2 py-1.5 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-accent-500 focus:border-accent-500">
+                                    </td>
+                                    <td class="px-5 py-3 text-center">
+                                        <button class="p-1.5 text-gray-400 hover:text-error-600 dark:hover:text-error-500 transition-colors">
+                                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Ligne d'imputation 2 -->
+                                <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/20">
+                                    <td class="px-5 py-3">
+                                        <div class="flex items-center relative">
+                                            <select class="w-full appearance-none pl-3 pr-8 py-1.5 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-accent-500 focus:border-accent-500">
+                                                <option>[OT-23-401] Chantier Gare Sud - Gros œuvre</option>
+                                                <option selected>[OT-23-402] Chantier Lycée - Fondations</option>
+                                                <option>[SAV-23-019] Dépannage Urgence - Lycée</option>
+                                            </select>
+                                            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 absolute right-2 pointer-events-none"></i>
+                                        </div>
+                                    </td>
+                                    <td class="px-5 py-3">
+                                        <input type="text" placeholder="Ex: Coulage dalle" class="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-accent-500 focus:border-accent-500">
+                                    </td>
+                                    <td class="px-5 py-3">
+                                        <input type="number" value="2.0" step="0.5" class="w-full text-center px-2 py-1.5 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-accent-500 focus:border-accent-500">
+                                    </td>
+                                    <td class="px-5 py-3">
+                                        <input type="number" value="0.0" step="0.5" class="w-full text-center px-2 py-1.5 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-accent-500 focus:border-accent-500">
+                                    </td>
+                                    <td class="px-5 py-3 text-center">
+                                        <button class="p-1.5 text-gray-400 hover:text-error-600 dark:hover:text-error-500 transition-colors">
+                                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot class="bg-gray-50 dark:bg-gray-800/80">
+                                <tr>
+                                    <td colspan="5" class="px-5 py-3 border-t border-gray-200 dark:border-gray-800 border-dashed">
+                                        <button class="inline-flex items-center gap-2 text-sm font-medium text-accent-600 hover:text-accent-700 dark:text-accent-400 dark:hover:text-accent-300 transition-colors">
+                                            <i data-lucide="plus" class="w-4 h-4"></i>
+                                            Ajouter une ligne de ventilation
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Section: Ressources Matérielles / Engins pointés -->
+                <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm overflow-hidden">
+                    <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center bg-orange-50/30 dark:bg-orange-900/10">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="truck" class="w-5 h-5 text-orange-600 dark:text-orange-500"></i>
+                            <h2 class="font-bold text-gray-900 dark:text-white">Déclaration des ressources (Engins / Véhicules)</h2>
+                        </div>
+                    </div>
+
+                    <div class="p-5">
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                            Imputez l'utilisation de matériels sur les chantiers pour remonter les coûts analytiques d'utilisation.
+                        </p>
+
+                        <div class="space-y-3">
+                            <!-- Ligne Ressource 1 -->
+                            <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-800">
+                                <div class="flex-1 grid grid-cols-12 gap-3 items-center">
+                                    <div class="col-span-5 relative">
+                                        <select class="w-full appearance-none pl-3 pr-8 py-1.5 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm">
+                                            <option selected>[TR-012] Tractopelle JCB</option>
+                                            <option>[VU-104] Fourgonnette Renault</option>
+                                            <option>[GE-05] Groupe électrogène 5kVA</option>
+                                        </select>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 absolute right-2 pointer-events-none top-2"></i>
+                                    </div>
+                                    <div class="col-span-5 relative">
+                                        <select class="w-full appearance-none pl-3 pr-8 py-1.5 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm">
+                                            <option selected>Imputé sur : [OT-23-401] Chantier Gare Sud</option>
+                                            <option>Imputé sur : [OT-23-402] Chantier Lycée</option>
+                                        </select>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 absolute right-2 pointer-events-none top-2"></i>
+                                    </div>
+                                    <div class="col-span-2 flex items-center gap-2">
+                                        <input type="number" value="3.5" step="0.5" class="w-full text-center px-2 py-1.5 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm">
+                                        <span class="text-xs text-gray-500">Heures</span>
+                                    </div>
+                                </div>
+                                <button class="p-1.5 text-gray-400 hover:text-error-600 transition-colors">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+
+                            <button class="inline-flex items-center gap-2 text-sm font-medium text-orange-600 hover:text-orange-700 dark:text-orange-500 dark:hover:text-orange-400 transition-colors mt-2">
+                                <i data-lucide="plus" class="w-4 h-4"></i>
+                                Déclarer un matériel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

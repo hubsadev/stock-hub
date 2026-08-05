@@ -1,0 +1,26 @@
+{
+  "name": "stock-hub",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "packageManager": "pnpm@10.28.0",
+  "scripts": {
+    "dev": "pnpm -r --parallel dev",
+    "web:dev": "pnpm --filter @stock-hub/web dev",
+    "api:dev": "pnpm --filter @stock-hub/api dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "db:generate": "pnpm --filter @stock-hub/database db:generate",
+    "db:migrate:dev": "pnpm --filter @stock-hub/database db:migrate:dev",
+    "db:studio": "pnpm --filter @stock-hub/database db:studio",
+    "db:seed": "pnpm --filter @stock-hub/database db:seed",
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down",
+    "maquette:sync": "node scripts/sync-maquette-template.cjs",
+    "text:check": "node scripts/check-text-encoding.cjs"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.8.0"
+  }
+}

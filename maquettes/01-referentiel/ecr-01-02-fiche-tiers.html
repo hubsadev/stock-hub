@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fiche Tiers - Référentiel - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3' },
+                        error: { 500: '#f04438', 50: '#fef3f2' },
+                        warning: { 500: '#f79009', 50: '#fffaeb' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Référentiel</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                    <span class="truncate">Accueil Référentiel</span>
+                </a>
+                <a href="ecr-01-01-catalogue-des-tiers.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500">
+                    <i data-lucide="users" class="w-5 h-5"></i>
+                    <span class="truncate">Catalogue des Tiers</span>
+                </a>
+                <a href="ecr-01-02-fiche-tiers.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-accent-600 bg-transparent dark:text-accent-400 pl-11">
+                    <span class="truncate font-semibold">↳ Fiche Tiers</span>
+                </a>
+                <a href="ecr-01-03-catalogue-articles-et-prestations.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="package" class="w-5 h-5"></i>
+                    <span class="truncate">Articles & Prestations</span>
+                </a>
+                <a href="ecr-01-05-referentiel-sites-et-depots.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="map-pin" class="w-5 h-5"></i>
+                    <span class="truncate">Sites & Dépôts</span>
+                </a>
+                <a href="ecr-01-06-referentiel-ressources-operationnelles.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="truck" class="w-5 h-5"></i>
+                    <span class="truncate">Ressources Opérat.</span>
+                </a>
+            </nav>
+        </div>
+        
+        <div class="p-4 border-t border-gray-200 dark:border-gray-800">
+            <div class="flex items-center gap-3">
+                <img src="https://ui-avatars.com/api/?name=Admin+Sys&background=465fff&color=fff" alt="Admin" class="w-8 h-8 rounded-full">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">Admin Sys</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate">admin@huberp.com</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+        <!-- Top Navigation -->
+        <header class="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 z-10 shrink-0">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                
+                <nav class="flex" aria-label="Breadcrumb">
+                    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                        <li class="inline-flex items-center">
+                            <a href="index.html" class="inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
+                                Référentiel
+                            </a>
+                        </li>
+                        <li>
+                            <div class="flex items-center">
+                                <i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i>
+                                <a href="ecr-01-01-catalogue-des-tiers.html" class="ml-1 text-sm font-medium text-gray-500 hover:text-gray-900 md:ml-2 dark:text-gray-400 dark:hover:text-white">Catalogue Tiers</a>
+                            </div>
+                        </li>
+                        <li aria-current="page">
+                            <div class="flex items-center">
+                                <i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i>
+                                <span class="ml-1 text-sm font-medium text-gray-900 md:ml-2 dark:text-gray-100">TechInnovate SAS</span>
+                            </div>
+                        </li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="flex items-center gap-4">
+                <button class="text-gray-400 hover:text-error-600 dark:hover:text-error-500 transition-colors" title="Désactiver ce tiers">
+                    <i data-lucide="power" class="w-5 h-5"></i>
+                </button>
+                <div class="h-6 w-px bg-gray-300 dark:bg-gray-700"></div>
+                
+                <div class="relative group">
+                    <button class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm">
+                        <span>Actions liées</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                    </button>
+                    <!-- Dropdown menu -->
+                    <div class="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 border border-gray-200 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-700 hidden group-hover:block z-50">
+                        <div class="py-1">
+                            <a href="../02-avant-vente/index.html" class="group flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-colors">
+                                <i data-lucide="file-text" class="mr-3 h-4 w-4 text-gray-400 group-hover:text-gray-500 dark:text-gray-400"></i>
+                                Nouvelle Cotation
+                            </a>
+                            <a href="../03-contrats-affaires-projets/index.html" class="group flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-colors">
+                                <i data-lucide="briefcase" class="mr-3 h-4 w-4 text-gray-400 group-hover:text-gray-500 dark:text-gray-400"></i>
+                                Créer une Affaire
+                            </a>
+                        </div>
+                        <div class="py-1">
+                            <a href="../05-achats/index.html" class="group flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-colors">
+                                <i data-lucide="shopping-cart" class="mr-3 h-4 w-4 text-gray-400 group-hover:text-gray-500 dark:text-gray-400"></i>
+                                Créer Commande Achat
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm">
+                    Annuler
+                </button>
+                <button class="px-4 py-2 bg-accent-600 text-white rounded-lg text-sm font-medium hover:bg-accent-700 transition-colors shadow-sm">
+                    Enregistrer
+                </button>
+            </div>
+        </header>
+
+        <!-- Content scrollable area -->
+        <div class="flex-1 overflow-y-auto p-6 bg-gray-50 dark:bg-gray-950">
+            
+            <div class="max-w-5xl mx-auto">
+                
+                <!-- Page Header (Tiers Info) -->
+                <div class="mb-6 flex items-start justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="h-16 w-16 rounded-xl bg-accent-100 text-accent-600 dark:bg-accent-900/50 dark:text-accent-400 flex items-center justify-center font-bold text-2xl uppercase shadow-sm border border-accent-200 dark:border-accent-800">
+                            TI
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-3 mb-1">
+                                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">TechInnovate SAS</h1>
+                                <span class="inline-flex items-center rounded-full bg-success-50 dark:bg-success-900/20 px-2.5 py-0.5 text-xs font-medium text-success-600 dark:text-success-400 uppercase border border-success-200 dark:border-success-800/30">
+                                    Actif
+                                </span>
+                            </div>
+                            <div class="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                                <span class="flex items-center gap-1"><i data-lucide="hash" class="w-4 h-4"></i> CLI-2023-001</span>
+                                <span class="flex items-center gap-1"><i data-lucide="building" class="w-4 h-4"></i> Client / Grand Compte</span>
+                                <span class="flex items-center gap-1"><i data-lucide="calendar" class="w-4 h-4"></i> Créé le 15/03/2023</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <div class="border-b border-gray-200 dark:border-gray-800 mb-6">
+                    <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                        <a href="#" class="border-accent-500 text-accent-600 dark:text-accent-500 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" aria-current="page">
+                            Informations Générales
+                        </a>
+                        <a href="#" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
+                            Contacts & Adresses
+                        </a>
+                        <a href="#" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
+                            Conditions Financières
+                        </a>
+                        <a href="#" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
+                            Historique
+                        </a>
+                    </nav>
+                </div>
+
+                <!-- Form Content -->
+                <div class="space-y-6">
+                    
+                    <!-- Section: Identité -->
+                    <div class="bg-white dark:bg-gray-900 shadow-sm rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20">
+                            <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">Identité du Tiers</h3>
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Informations légales et catégorisation.</p>
+                        </div>
+                        <div class="p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="type_tiers" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type de Tiers <span class="text-error-500">*</span></label>
+                                    <select id="type_tiers" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm focus:border-accent-500 focus:ring-accent-500 sm:text-sm px-3 py-2 border">
+                                        <option value="client" selected>Client</option>
+                                        <option value="fournisseur">Fournisseur</option>
+                                        <option value="mixte">Client & Fournisseur</option>
+                                        <option value="prospect">Prospect</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label for="categorie" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Catégorie</label>
+                                    <select id="categorie" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm focus:border-accent-500 focus:ring-accent-500 sm:text-sm px-3 py-2 border">
+                                        <option value="grand_compte" selected>Grand Compte</option>
+                                        <option value="pme">PME/TPE</option>
+                                        <option value="public">Secteur Public</option>
+                                        <option value="particulier">Particulier</option>
+                                    </select>
+                                </div>
+
+                                <div class="md:col-span-2">
+                                    <label for="raison_sociale" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Raison Sociale <span class="text-error-500">*</span></label>
+                                    <input type="text" id="raison_sociale" value="TechInnovate SAS" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm focus:border-accent-500 focus:ring-accent-500 sm:text-sm px-3 py-2 border">
+                                </div>
+
+                                <div>
+                                    <label for="forme_juridique" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Forme Juridique</label>
+                                    <select id="forme_juridique" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm focus:border-accent-500 focus:ring-accent-500 sm:text-sm px-3 py-2 border">
+                                        <option value="sas" selected>SAS</option>
+                                        <option value="sarl">SARL</option>
+                                        <option value="sa">SA</option>
+                                        <option value="auto">Auto-entrepreneur</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label for="siret" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">SIRET / Identifiant Fiscal</label>
+                                    <input type="text" id="siret" value="123 456 789 00012" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm focus:border-accent-500 focus:ring-accent-500 sm:text-sm px-3 py-2 border">
+                                </div>
+
+                                <div>
+                                    <label for="tva" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Numéro de TVA Intracommunautaire</label>
+                                    <input type="text" id="tva" value="FR 12 123456789" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm focus:border-accent-500 focus:ring-accent-500 sm:text-sm px-3 py-2 border">
+                                </div>
+                                
+                                <div>
+                                    <label for="code_naf" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Code NAF/APE</label>
+                                    <input type="text" id="code_naf" value="6202A" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm focus:border-accent-500 focus:ring-accent-500 sm:text-sm px-3 py-2 border">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section: Contact Principal Résumé -->
+                    <div class="bg-white dark:bg-gray-900 shadow-sm rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20 flex justify-between items-center">
+                            <div>
+                                <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">Contact Principal & Adresse de facturation</h3>
+                            </div>
+                            <button class="text-sm font-medium text-accent-600 dark:text-accent-500 hover:text-accent-700 transition-colors">
+                                Gérer les contacts
+                            </button>
+                        </div>
+                        <div class="p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <!-- Contact info summary -->
+                                <div class="flex items-start gap-4 p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+                                    <div class="h-10 w-10 rounded-full bg-accent-100 text-accent-600 dark:bg-accent-900/50 dark:text-accent-400 flex items-center justify-center font-bold">
+                                        SM
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="text-sm font-bold text-gray-900 dark:text-white">Sophie Martin</h4>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Directrice des Achats</p>
+                                        <div class="space-y-1">
+                                            <p class="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2">
+                                                <i data-lucide="mail" class="w-4 h-4 text-gray-400"></i>
+                                                smartin@techinnovate.fr
+                                            </p>
+                                            <p class="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2">
+                                                <i data-lucide="phone" class="w-4 h-4 text-gray-400"></i>
+                                                +33 1 45 67 89 00
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Address info summary -->
+                                <div class="flex items-start gap-4 p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+                                    <div class="h-10 w-10 rounded-full bg-orange-100 text-orange-600 dark:bg-orange-900/50 dark:text-orange-400 flex items-center justify-center">
+                                        <i data-lucide="map-pin" class="w-5 h-5"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="text-sm font-bold text-gray-900 dark:text-white">Siège Social (Facturation)</h4>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Adresse Principale</p>
+                                        <div class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                                            Tour Franklin, 100 Terrasse Boieldieu<br>
+                                            92042 Paris La Défense Cedex<br>
+                                            France
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section: Notes et Tags -->
+                    <div class="bg-white dark:bg-gray-900 shadow-sm rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20">
+                            <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">Informations Complémentaires</h3>
+                        </div>
+                        <div class="p-6">
+                            <div class="grid grid-cols-1 gap-6">
+                                <div>
+                                    <label for="tags" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tags / Mots clés</label>
+                                    <div class="flex flex-wrap gap-2 mb-2">
+                                        <span class="inline-flex items-center gap-1 rounded-full bg-blue-50 dark:bg-blue-900/20 px-3 py-1 text-sm font-medium text-blue-700 dark:text-blue-400">
+                                            VIP
+                                            <button class="hover:bg-blue-200 dark:hover:bg-blue-800 rounded-full p-0.5"><i data-lucide="x" class="w-3 h-3"></i></button>
+                                        </span>
+                                        <span class="inline-flex items-center gap-1 rounded-full bg-purple-50 dark:bg-purple-900/20 px-3 py-1 text-sm font-medium text-purple-700 dark:text-purple-400">
+                                            Secteur_IT
+                                            <button class="hover:bg-purple-200 dark:hover:bg-purple-800 rounded-full p-0.5"><i data-lucide="x" class="w-3 h-3"></i></button>
+                                        </span>
+                                        <button class="inline-flex items-center gap-1 rounded-full border border-dashed border-gray-300 dark:border-gray-600 px-3 py-1 text-sm font-medium text-gray-600 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500">
+                                            <i data-lucide="plus" class="w-3 h-3"></i> Ajouter un tag
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label for="notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes internes</label>
+                                    <textarea id="notes" rows="4" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm focus:border-accent-500 focus:ring-accent-500 sm:text-sm px-3 py-2 border" placeholder="Informations privées sur ce tiers..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            
+        </div>
+    </main>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

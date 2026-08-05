@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fiche Projet Consolidée - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3', 900: '#054f31' },
+                        error: { 500: '#f04438', 50: '#fef3f2', 900: '#7a271d' },
+                        warning: { 500: '#f79009', 50: '#fffaeb', 900: '#7a4504' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Contrats & Affaires</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="home" class="w-5 h-5"></i>
+                    <span class="truncate">Accueil Module</span>
+                </a>
+                <a href="ecr-03-01-registre-des-contrats.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="file-signature" class="w-5 h-5"></i>
+                    <span class="truncate">Registre des contrats</span>
+                </a>
+                <a href="ecr-03-02-fiche-contrat.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                    <span class="truncate">Fiche Contrat</span>
+                </a>
+                <a href="ecr-03-03-registre-des-affaires-et-projets.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="briefcase" class="w-5 h-5"></i>
+                    <span class="truncate">Affaires & Projets</span>
+                </a>
+                <a href="ecr-03-04-fiche-affaire-projet.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500">
+                    <i data-lucide="folder-open" class="w-5 h-5"></i>
+                    <span class="truncate">Fiche Affaire/Projet</span>
+                </a>
+                <a href="ecr-03-05-structure-projet.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="network" class="w-5 h-5"></i>
+                    <span class="truncate">Structure projet</span>
+                </a>
+                <a href="ecr-03-06-cycle-de-vie-du-contrat.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                    <span class="truncate">Cycle de vie contrat</span>
+                </a>
+                <a href="ecr-03-07-cloture-projet-et-bascule-maintenance.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="check-circle" class="w-5 h-5"></i>
+                    <span class="truncate">Clôture & Bascule</span>
+                </a>
+            </nav>
+            
+            <div class="mt-8">
+                <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Autres modules</div>
+                <nav class="space-y-1">
+                    <a href="../01-referentiel/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="database" class="w-5 h-5"></i>
+                        <span class="truncate">Référentiel</span>
+                    </a>
+                    <a href="../02-avant-vente/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="target" class="w-5 h-5"></i>
+                        <span class="truncate">Avant-vente</span>
+                    </a>
+                    <a href="../04-budget-pilotage-financier-projet/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="pie-chart" class="w-5 h-5"></i>
+                        <span class="truncate">Budget & Pilotage</span>
+                    </a>
+                    <a href="../16-gouvernance-validation-controle-interne/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="shield-check" class="w-5 h-5"></i>
+                        <span class="truncate">Gouvernance</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+        
+        <div class="p-4 border-t border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-3">
+                <img src="https://ui-avatars.com/api/?name=Thomas+D&background=465fff&color=fff" alt="User" class="w-8 h-8 rounded-full">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">Thomas D.</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate">Dir. de Projets</p>
+                </div>
+                <button onclick="document.documentElement.classList.toggle('dark')" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+                    <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+        <!-- Header -->
+        <header class="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 shrink-0 z-10">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <div>
+                    <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-0.5">
+                        <a href="ecr-03-03-registre-des-affaires-et-projets.html" class="hover:text-gray-900 dark:hover:text-white transition-colors">Affaires & Projets</a>
+                        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        <span class="text-gray-900 dark:text-gray-100 font-medium">PRJ-23-089</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800/30">
+                    En exécution
+                </span>
+                <div class="w-px h-6 bg-gray-200 dark:bg-gray-700"></div>
+                <button class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
+                    <i data-lucide="more-horizontal" class="w-5 h-5"></i>
+                </button>
+                <a href="ecr-03-05-structure-projet.html" class="flex items-center gap-2 px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm">
+                    <i data-lucide="network" class="w-4 h-4"></i>
+                    <span>Modifier la structure</span>
+                </a>
+            </div>
+        </header>
+
+        <!-- Content scrollable -->
+        <div class="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-950">
+            <!-- Project Title Section -->
+            <div class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+                <div class="max-w-7xl mx-auto px-6 py-8">
+                    <div class="flex flex-col md:flex-row justify-between gap-6">
+                        <div class="flex-1">
+                            <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Déploiement Fibre Section Sud (TGV)</h1>
+                            <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-600 dark:text-gray-400">
+                                <span class="flex items-center gap-1.5"><i data-lucide="building-2" class="w-4 h-4"></i> SNCF Réseau</span>
+                                <span class="flex items-center gap-1.5"><i data-lucide="file-signature" class="w-4 h-4"></i> <a href="ecr-03-02-fiche-contrat.html" class="text-accent-600 hover:underline">CTR-2023-0042</a></span>
+                                <span class="flex items-center gap-1.5"><i data-lucide="calendar" class="w-4 h-4"></i> 15 Oct 2023 - 14 Oct 2024</span>
+                                <span class="flex items-center gap-1.5"><i data-lucide="user" class="w-4 h-4"></i> CP: Thomas D.</span>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-end justify-center">
+                            <div class="text-sm text-gray-500 mb-1">Avancement global</div>
+                            <div class="flex items-center gap-3 w-48">
+                                <div class="flex-1 h-2.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                                    <div class="h-full bg-accent-500 rounded-full" style="width: 35%"></div>
+                                </div>
+                                <span class="text-xl font-bold text-gray-900 dark:text-white">35%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tab navigation -->
+                <div class="max-w-7xl mx-auto px-6">
+                    <nav class="flex gap-6 border-b border-transparent">
+                        <button class="py-4 text-sm font-medium text-accent-600 dark:text-accent-500 border-b-2 border-accent-600 dark:border-accent-500">
+                            Vue 360°
+                        </button>
+                        <button class="py-4 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 border-b-2 border-transparent">
+                            Planification
+                        </button>
+                        <button class="py-4 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 border-b-2 border-transparent flex items-center gap-2">
+                            Finances & Achats
+                            <span class="w-2 h-2 rounded-full bg-warning-500"></span>
+                        </button>
+                        <button class="py-4 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 border-b-2 border-transparent">
+                            Exécution terrain
+                        </button>
+                    </nav>
+                </div>
+            </div>
+
+            <div class="max-w-7xl mx-auto p-6 space-y-6">
+                <!-- KPI Row -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Budget -->
+                    <div class="bg-white dark:bg-gray-900 p-5 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col hover:border-accent-300 transition-colors cursor-pointer">
+                        <div class="flex items-center gap-2 mb-2 text-gray-500 dark:text-gray-400">
+                            <i data-lucide="pie-chart" class="w-4 h-4"></i>
+                            <h3 class="text-sm font-medium">Budget Consommé</h3>
+                        </div>
+                        <div class="flex items-baseline gap-2 mt-auto">
+                            <span class="text-2xl font-bold text-gray-900 dark:text-white">32.5k€</span>
+                            <span class="text-sm text-gray-500">/ 100k€</span>
+                        </div>
+                        <div class="mt-3 h-1.5 w-full bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                            <div class="h-full bg-blue-500" style="width: 32.5%"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Achats -->
+                    <div class="bg-white dark:bg-gray-900 p-5 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col hover:border-accent-300 transition-colors cursor-pointer">
+                        <div class="flex items-center gap-2 mb-2 text-gray-500 dark:text-gray-400">
+                            <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                            <h3 class="text-sm font-medium">Engagements Achats</h3>
+                        </div>
+                        <div class="flex items-baseline gap-2 mt-auto">
+                            <span class="text-2xl font-bold text-gray-900 dark:text-white">18.2k€</span>
+                        </div>
+                        <div class="mt-3 flex items-center gap-2 text-xs font-medium text-warning-600 dark:text-warning-500">
+                            <i data-lucide="clock" class="w-3 h-3"></i>
+                            <span>2 DA en validation</span>
+                        </div>
+                    </div>
+
+                    <!-- Facturation -->
+                    <div class="bg-white dark:bg-gray-900 p-5 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col hover:border-accent-300 transition-colors cursor-pointer">
+                        <div class="flex items-center gap-2 mb-2 text-gray-500 dark:text-gray-400">
+                            <i data-lucide="receipt" class="w-4 h-4"></i>
+                            <h3 class="text-sm font-medium">Facturation émise</h3>
+                        </div>
+                        <div class="flex items-baseline gap-2 mt-auto">
+                            <span class="text-2xl font-bold text-gray-900 dark:text-white">25k€</span>
+                            <span class="text-sm text-success-600 font-medium">Payé</span>
+                        </div>
+                        <div class="mt-3 flex items-center gap-2 text-xs font-medium text-gray-500">
+                            <span>Reste à facturer: 75k€</span>
+                        </div>
+                    </div>
+
+                    <!-- Tickets/OT -->
+                    <div class="bg-white dark:bg-gray-900 p-5 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col hover:border-accent-300 transition-colors cursor-pointer">
+                        <div class="flex items-center gap-2 mb-2 text-gray-500 dark:text-gray-400">
+                            <i data-lucide="clipboard-list" class="w-4 h-4"></i>
+                            <h3 class="text-sm font-medium">Ordres de Travail (OT)</h3>
+                        </div>
+                        <div class="flex items-baseline gap-2 mt-auto">
+                            <span class="text-2xl font-bold text-gray-900 dark:text-white">12</span>
+                            <span class="text-sm text-gray-500">actifs</span>
+                        </div>
+                        <div class="mt-3 flex gap-2">
+                            <span class="inline-flex px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">4 Clos</span>
+                            <span class="inline-flex px-1.5 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">8 En cours</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2 Columns Layout -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Col 1: Structure & Zones (takes 2 cols on lg) -->
+                    <div class="lg:col-span-2 space-y-6">
+                        
+                        <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
+                            <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
+                                <h3 class="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <i data-lucide="network" class="w-5 h-5 text-gray-400"></i>
+                                    Structure opérationnelle
+                                </h3>
+                                <a href="ecr-03-05-structure-projet.html" class="text-sm font-medium text-accent-600 hover:text-accent-700">Détails de la structure</a>
+                            </div>
+                            <div class="p-5">
+                                <ul class="space-y-4">
+                                    <!-- Zone 1 -->
+                                    <li>
+                                        <div class="flex items-center justify-between mb-2">
+                                            <div class="flex items-center gap-2 font-medium text-gray-900 dark:text-white">
+                                                <i data-lucide="map-pin" class="w-4 h-4 text-accent-500"></i>
+                                                Zone 1 - Répartiteurs Nord
+                                            </div>
+                                            <span class="text-xs font-medium px-2 py-0.5 rounded bg-success-50 text-success-700 border border-success-200 dark:bg-success-900/30 dark:text-success-400">100% (Terminé)</span>
+                                        </div>
+                                        <div class="pl-6 border-l-2 border-gray-100 dark:border-gray-800 space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                                            <div class="flex justify-between items-center">
+                                                <span><i data-lucide="corner-down-right" class="w-3 h-3 inline mr-1 text-gray-300"></i>Site A - Nœud optique 1</span>
+                                                <span class="text-success-600"><i data-lucide="check" class="w-4 h-4"></i></span>
+                                            </div>
+                                            <div class="flex justify-between items-center">
+                                                <span><i data-lucide="corner-down-right" class="w-3 h-3 inline mr-1 text-gray-300"></i>Site B - Nœud optique 2</span>
+                                                <span class="text-success-600"><i data-lucide="check" class="w-4 h-4"></i></span>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <!-- Zone 2 -->
+                                    <li>
+                                        <div class="flex items-center justify-between mb-2">
+                                            <div class="flex items-center gap-2 font-medium text-gray-900 dark:text-white">
+                                                <i data-lucide="map-pin" class="w-4 h-4 text-gray-400"></i>
+                                                Zone 2 - Répartiteurs Sud
+                                            </div>
+                                            <span class="text-xs font-medium px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400">15% (En cours)</span>
+                                        </div>
+                                        <div class="pl-6 border-l-2 border-gray-100 dark:border-gray-800 space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                                            <div class="flex justify-between items-center">
+                                                <span><i data-lucide="corner-down-right" class="w-3 h-3 inline mr-1 text-gray-300"></i>Site C - Jonction Ligne 4</span>
+                                                <span class="text-blue-600 font-medium">OT en cours</span>
+                                            </div>
+                                            <div class="flex justify-between items-center">
+                                                <span><i data-lucide="corner-down-right" class="w-3 h-3 inline mr-1 text-gray-300"></i>Site D - Terminal</span>
+                                                <span class="text-gray-400 italic">Non démarré</span>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Activity feed -->
+                        <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
+                            <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-800">
+                                <h3 class="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <i data-lucide="activity" class="w-5 h-5 text-gray-400"></i>
+                                    Activité récente du projet
+                                </h3>
+                            </div>
+                            <div class="p-5">
+                                <div class="relative border-l border-gray-200 dark:border-gray-800 ml-3 space-y-6">
+                                    <!-- Event 1 -->
+                                    <div class="relative pl-6">
+                                        <div class="absolute -left-1.5 top-1 w-3 h-3 rounded-full bg-success-500 border-2 border-white dark:border-gray-900"></div>
+                                        <div class="text-xs text-gray-500 mb-0.5">Aujourd'hui, 10:45</div>
+                                        <div class="text-sm font-medium text-gray-900 dark:text-white">Validation OT-023</div>
+                                        <div class="text-sm text-gray-600 dark:text-gray-400">L'ordre de travail "Tirage câble Site C" a été validé par Thomas D.</div>
+                                    </div>
+                                    <!-- Event 2 -->
+                                    <div class="relative pl-6">
+                                        <div class="absolute -left-1.5 top-1 w-3 h-3 rounded-full bg-warning-500 border-2 border-white dark:border-gray-900"></div>
+                                        <div class="text-xs text-gray-500 mb-0.5">Hier, 15:30</div>
+                                        <div class="text-sm font-medium text-gray-900 dark:text-white">Demande d'achat soumise</div>
+                                        <div class="text-sm text-gray-600 dark:text-gray-400">DA-1049 pour fourniture FO 144 brins (Valeur: 8.5k€) en attente validation Achat.</div>
+                                    </div>
+                                    <!-- Event 3 -->
+                                    <div class="relative pl-6">
+                                        <div class="absolute -left-1.5 top-1 w-3 h-3 rounded-full bg-blue-500 border-2 border-white dark:border-gray-900"></div>
+                                        <div class="text-xs text-gray-500 mb-0.5">10 Oct 2023</div>
+                                        <div class="text-sm font-medium text-gray-900 dark:text-white">Facture F-23-401 émise</div>
+                                        <div class="text-sm text-gray-600 dark:text-gray-400">Facture d'acompte (25%) émise au client.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Col 2: Side panel info -->
+                    <div class="space-y-6">
+                        
+                        <!-- Actions rapides -->
+                        <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm p-4">
+                            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Actions rapides</h3>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button class="flex flex-col items-center justify-center p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 transition-colors gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    <i data-lucide="shopping-bag" class="w-5 h-5 text-gray-500"></i>
+                                    Nouvelle DA
+                                </button>
+                                <button class="flex flex-col items-center justify-center p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 transition-colors gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    <i data-lucide="clipboard-plus" class="w-5 h-5 text-gray-500"></i>
+                                    Créer un OT
+                                </button>
+                                <button class="flex flex-col items-center justify-center p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 transition-colors gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    <i data-lucide="file-check" class="w-5 h-5 text-gray-500"></i>
+                                    Saisir un PV
+                                </button>
+                                <button class="flex flex-col items-center justify-center p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 transition-colors gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    <i data-lucide="receipt" class="w-5 h-5 text-gray-500"></i>
+                                    Facturer
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Équipe -->
+                        <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm p-5">
+                            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Équipe projet</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-center gap-3">
+                                    <img src="https://ui-avatars.com/api/?name=Thomas+D&background=465fff&color=fff" class="w-8 h-8 rounded-full">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900 dark:text-white">Thomas D.</p>
+                                        <p class="text-xs text-gray-500">Chef de Projet</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <img src="https://ui-avatars.com/api/?name=Sophie+L&background=f3f4f6&color=374151" class="w-8 h-8 rounded-full">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900 dark:text-white">Sophie L.</p>
+                                        <p class="text-xs text-gray-500">Conducteur de travaux</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-xs font-medium text-gray-600 dark:text-gray-300">
+                                        +3
+                                    </div>
+                                    <p class="text-sm font-medium text-accent-600 hover:underline cursor-pointer">Voir tous les intervenants</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Risques -->
+                        <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm p-5">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Risques & Points durs</h3>
+                                <button class="text-xs font-medium text-accent-600 hover:underline">Signaler</button>
+                            </div>
+                            <div class="p-3 border-l-4 border-warning-500 bg-warning-50 dark:bg-warning-900/10 rounded-r text-sm">
+                                <p class="font-medium text-gray-900 dark:text-white mb-1">Pénurie câble FO 144b</p>
+                                <p class="text-gray-600 dark:text-gray-400 text-xs">Fournisseur Nexans signale un retard de 2 semaines. Impact potentiel Zone 2.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

@@ -1,0 +1,69 @@
+﻿Decisions metier - Stock Hub
+
+1. Positionnement
+- Decision : Stock Hub est une mini app stock autonome temporaire.
+- Regle : elle doit repondre a l'urgence stock/audit sans devenir un ERP complet.
+- A garder : compatibilite future avec HubERP.
+
+2. Source de depart
+- Decision : le fichier Excel existant sert de base de depart.
+- Regle : on reprend les concepts et les donnees utiles, pas les formules fragiles.
+- Pourquoi : certaines feuilles ont deja des erreurs de reference.
+
+3. Articles et equipements
+- Decision : on distingue article stockable et equipement trace individuellement.
+- Article : gere en quantite.
+- Equipement : gere par code inventaire, numero de serie, etat, affectation et retour.
+
+4. Stock initial
+- Decision : le stock initial vient de la base Excel au moment de l'import.
+- Regle : apres import, le stock actuel doit etre calcule par mouvements.
+- Formule : stock actuel = stock initial + entrees - sorties.
+
+5. Entrees
+- Decision : chaque entree doit creer un mouvement.
+- Champs importants : date, bon, article, fournisseur, magasin, responsable, quantite, prix, observation.
+
+6. Sorties
+- Decision : chaque sortie doit creer un mouvement.
+- Champs importants : date, bon sortie, article, employe, departement, chantier, responsable, quantite, destination, motif, projet.
+- Regle : une sortie ne doit pas passer si le stock disponible est insuffisant.
+
+7. Affectations
+- Decision : une affectation est un mouvement de materiel vers une personne, un projet, un chantier ou un emplacement.
+- Regle : un equipement affecte ne doit pas apparaitre comme disponible.
+
+8. Retours
+- Decision : un retour remet le materiel disponible seulement si son etat le permet.
+- Etats possibles : disponible, defectueux, en maintenance, perdu, vole, reforme.
+
+9. Prix et valeur stock
+- Decision : prix unitaire stock = prix saisi/importe ou prix de l'entree.
+- Regle simple au depart : pas de CUMP avance.
+- A revoir plus tard si la compta demande une valorisation plus stricte.
+
+10. Audit
+- Decision : chaque action importante doit etre tracee.
+- Actions a tracer : creation, modification, entree, sortie, affectation, retour, changement d'etat, import, export.
+- Champs audit : date, utilisateur, action, objet, ancienne valeur si disponible, nouvelle valeur si disponible.
+
+11. Roles
+- Decision : les roles seront simples au depart.
+- Admin : tout faire.
+- Gestionnaire stock : gerer articles, entrees, sorties, affectations, retours.
+- Audit : consulter, filtrer, exporter, voir historique.
+- Consultation : voir stock et mouvements sans modifier.
+
+12. Lien avec HubERP
+- Decision : Stock Hub garde les memes notions que HubERP autant que possible.
+- Regle : article, fournisseur, projet, emplacement, mouvement doivent pouvoir etre exportes ou rapproches plus tard.
+
+13. Demande materiel et fiche de sortie
+- Decision : la demande et la remise ne sont pas saisies au meme moment.
+- Demandeur : renseigne le client/projet/service, le site, les articles demandes, les quantites demandees et son observation.
+- Demandeur : ne voit pas et ne modifie pas les quantites remises, les observations stock, la validation logistique ou la fiche finale de sortie.
+- Gestionnaire stock : traite la demande apres soumission, verifie le stock, renseigne les quantites remises et les observations stock.
+- Gestionnaire stock : genere et imprime la fiche PDF finale apres preparation.
+- Regle : la fiche finale doit representer ce qui est reellement remis, pas seulement ce qui a ete demande.
+- Signature : le demandeur signe au moment de la remise pour confirmer ce qu'il recoit.
+

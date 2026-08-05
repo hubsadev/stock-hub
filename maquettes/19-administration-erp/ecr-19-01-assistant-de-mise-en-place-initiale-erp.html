@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assistant de mise en place initiale - Administration ERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3' },
+                        error: { 500: '#f04438', 50: '#fef3f2' },
+                        warning: { 500: '#f79009', 50: '#fffaeb' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen flex items-center justify-center p-4 md:p-8">
+
+    <!-- Container for the Wizard -->
+    <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 w-full max-w-4xl flex flex-col md:flex-row overflow-hidden">
+        
+        <!-- Sidebar Tracker -->
+        <div class="w-full md:w-1/3 bg-gray-50 dark:bg-gray-950 p-8 border-r border-gray-200 dark:border-gray-800 flex flex-col justify-between hidden md:flex">
+            <div>
+                <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-2xl mb-8">
+                    <i data-lucide="layers" class="w-8 h-8"></i>
+                    <span>HubERP</span>
+                </div>
+                
+                <h2 class="text-xl font-semibold mb-6">Mise en place initiale</h2>
+                
+                <ol class="space-y-6">
+                    <li class="flex items-start gap-3">
+                        <div class="w-8 h-8 rounded-full bg-accent-600 text-white flex items-center justify-center font-semibold text-sm shrink-0 shadow-sm border-2 border-accent-100 dark:border-accent-900">1</div>
+                        <div>
+                            <p class="font-medium text-gray-900 dark:text-white">Instance & Société</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Identité de base de l'ERP</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-3 opacity-50 relative">
+                        <!-- connector line -->
+                        <div class="absolute w-px h-8 bg-gray-300 dark:bg-gray-700 left-4 -top-6"></div>
+                        <div class="w-8 h-8 rounded-full bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 flex items-center justify-center font-semibold text-sm shrink-0">2</div>
+                        <div>
+                            <p class="font-medium text-gray-900 dark:text-white">Administrateur racine</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Création du premier compte</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-3 opacity-50 relative">
+                        <div class="absolute w-px h-8 bg-gray-300 dark:bg-gray-700 left-4 -top-6"></div>
+                        <div class="w-8 h-8 rounded-full bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 flex items-center justify-center font-semibold text-sm shrink-0">3</div>
+                        <div>
+                            <p class="font-medium text-gray-900 dark:text-white">Paramètres globaux</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Sécurité et formats</p>
+                        </div>
+                    </li>
+                </ol>
+            </div>
+            
+            <div class="text-sm text-gray-400 dark:text-gray-500">
+                L'assistant ne s'exécute qu'une seule fois.
+            </div>
+        </div>
+
+        <!-- Wizard Content -->
+        <div class="w-full md:w-2/3 p-8 flex flex-col h-[600px]">
+            <!-- Content Header -->
+            <div class="mb-8">
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Informations de l'instance</h1>
+                <p class="text-gray-500 dark:text-gray-400 mt-2">Bienvenue sur HubERP. Commençons par configurer les paramètres fondamentaux de votre nouvel environnement de travail.</p>
+            </div>
+            
+            <!-- Form Area -->
+            <div class="flex-1 overflow-y-auto pr-2 space-y-6 no-scrollbar">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="col-span-1 md:col-span-2 space-y-2">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nom de l'instance ERP <span class="text-error-500">*</span></label>
+                        <input type="text" placeholder="Ex: HubERP Production" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500/50 focus:border-accent-500 transition-shadow">
+                    </div>
+
+                    <div class="col-span-1 md:col-span-2 space-y-2">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Société principale de référence <span class="text-error-500">*</span></label>
+                        <input type="text" placeholder="Ex: Ma Société SAS" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500/50 focus:border-accent-500 transition-shadow">
+                        <p class="text-xs text-gray-500 mt-1">Sert de base pour la création du référentiel.</p>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Devise de référence <span class="text-error-500">*</span></label>
+                        <select class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500/50 focus:border-accent-500 transition-shadow appearance-none">
+                            <option>EUR - Euro (€)</option>
+                            <option>USD - Dollar américain ($)</option>
+                            <option>CHF - Franc suisse (CHF)</option>
+                        </select>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Langue système <span class="text-error-500">*</span></label>
+                        <select class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500/50 focus:border-accent-500 transition-shadow appearance-none">
+                            <option>Français (FR)</option>
+                            <option>Anglais (EN)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-span-1 md:col-span-2 space-y-2">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Fuseau horaire de référence <span class="text-error-500">*</span></label>
+                        <select class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500/50 focus:border-accent-500 transition-shadow appearance-none">
+                            <option>Europe/Paris (UTC+01:00)</option>
+                            <option>Europe/London (UTC+00:00)</option>
+                        </select>
+                    </div>
+                </div>
+
+            </div>
+            
+            <!-- Footer Actions -->
+            <div class="pt-6 border-t border-gray-200 dark:border-gray-800 mt-auto flex items-center justify-between">
+                <button class="px-5 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors invisible">
+                    Retour
+                </button>
+                <a href="ecr-19-02-parametres-globaux-erp.html" class="px-5 py-2.5 bg-accent-600 hover:bg-accent-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors flex items-center gap-2">
+                    Continuer vers Administrateur
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </a>
+            </div>
+            
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

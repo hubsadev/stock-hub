@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registre des situations de travaux - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3', 900: '#054f31' },
+                        error: { 500: '#f04438', 50: '#fef3f2', 900: '#7a271d' },
+                        warning: { 500: '#f79009', 50: '#fffaeb', 900: '#7a4504' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20 shrink-0">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Avancement BTP</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="home" class="w-5 h-5"></i>
+                    <span class="truncate">Accueil Module</span>
+                </a>
+                <a href="ecr-11-01-saisie-d-avancement-chantier.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="activity" class="w-5 h-5"></i>
+                    <span class="truncate">Saisie Avancement</span>
+                </a>
+                <a href="ecr-11-02-gestion-des-attachements.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="paperclip" class="w-5 h-5"></i>
+                    <span class="truncate">Attachements</span>
+                </a>
+                <a href="ecr-11-03-registre-des-situations-de-travaux.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500">
+                    <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
+                    <span class="truncate">Situations de travaux</span>
+                </a>
+                <a href="ecr-11-04-historique-chantier-et-corrections.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="history" class="w-5 h-5"></i>
+                    <span class="truncate">Historique & Corrections</span>
+                </a>
+                <a href="ecr-11-05-validation-client-attachement.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="check-circle" class="w-5 h-5"></i>
+                    <span class="truncate">Validation Client</span>
+                </a>
+            </nav>
+            
+            <div class="mt-8">
+                <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Modules liés</div>
+                <nav class="space-y-1">
+                    <a href="../03-contrats-affaires-projets/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="briefcase" class="w-5 h-5"></i>
+                        <span class="truncate">Affaires & Projets</span>
+                    </a>
+                    <a href="../07-execution-terrain-ordres-de-travail/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="hammer" class="w-5 h-5"></i>
+                        <span class="truncate">Exécution Terrain</span>
+                    </a>
+                    <a href="../12-facturation/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="receipt" class="w-5 h-5"></i>
+                        <span class="truncate">Facturation</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+        
+        <div class="p-4 border-t border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-3">
+                <img src="https://ui-avatars.com/api/?name=Laura+M&background=465fff&color=fff" alt="User" class="w-8 h-8 rounded-full">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">Laura M.</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate">Assistante de Gestion</p>
+                </div>
+                <button onclick="document.documentElement.classList.toggle('dark')" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+                    <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+        <!-- Header -->
+        <header class="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 shrink-0 z-10">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <h2 class="text-lg font-bold text-gray-900 dark:text-white">Situations de travaux</h2>
+            </div>
+            <div class="flex items-center gap-3">
+                <button class="px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    Nouvelle Situation
+                </button>
+            </div>
+        </header>
+
+        <!-- Content scrollable -->
+        <div class="flex-1 overflow-y-auto p-6">
+            
+            <!-- Filters -->
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 mb-6 shadow-sm flex flex-col sm:flex-row gap-4">
+                <div class="relative flex-1">
+                    <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                    <input type="text" placeholder="Rechercher par n° situation, chantier, client..." class="w-full pl-9 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 dark:bg-gray-900 dark:text-white">
+                </div>
+                <div class="flex gap-2">
+                    <select class="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 dark:bg-gray-900 dark:text-white text-gray-700 dark:text-gray-200 min-w-[140px]">
+                        <option value="">Tous les statuts</option>
+                        <option value="draft">Brouillon</option>
+                        <option value="valid">Validée</option>
+                        <option value="sent">Envoyée client</option>
+                        <option value="paid">Payée</option>
+                    </select>
+                    <select class="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 dark:bg-gray-900 dark:text-white text-gray-700 dark:text-gray-200 min-w-[140px]">
+                        <option value="">Mois en cours</option>
+                        <option value="M-1">Mois précédent</option>
+                        <option value="YTD">Année en cours</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- List Table -->
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm overflow-hidden flex flex-col">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm whitespace-nowrap">
+                        <thead class="bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-800">
+                            <tr>
+                                <th class="px-6 py-3 font-medium">N° Situation</th>
+                                <th class="px-6 py-3 font-medium">Chantier / Affaire</th>
+                                <th class="px-6 py-3 font-medium">Client</th>
+                                <th class="px-6 py-3 font-medium">Période</th>
+                                <th class="px-6 py-3 font-medium text-right">Montant HT</th>
+                                <th class="px-6 py-3 font-medium">Statut</th>
+                                <th class="px-6 py-3 font-medium">N° Facture liée</th>
+                                <th class="px-6 py-3 font-medium text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
+                            
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer">
+                                <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">SIT-2023-11-042</td>
+                                <td class="px-6 py-4">
+                                    <p class="text-gray-900 dark:text-white font-medium">PRJ-2023-089</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Déploiement FTTH Zone Nord</p>
+                                </td>
+                                <td class="px-6 py-4 text-gray-600 dark:text-gray-300">Opérateur Telecom SA</td>
+                                <td class="px-6 py-4 text-gray-600 dark:text-gray-300">Novembre 2023</td>
+                                <td class="px-6 py-4 text-right font-medium text-gray-900 dark:text-white">28 450,00 €</td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-gray-500"></span>
+                                        Brouillon
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-gray-400 dark:text-gray-500">-</td>
+                                <td class="px-6 py-4 text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <button class="text-gray-400 hover:text-accent-600 dark:hover:text-accent-500 transition-colors" title="Modifier">
+                                            <i data-lucide="edit-2" class="w-4 h-4"></i>
+                                        </button>
+                                        <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" title="Options">
+                                            <i data-lucide="more-vertical" class="w-4 h-4"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer">
+                                <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">SIT-2023-10-038</td>
+                                <td class="px-6 py-4">
+                                    <p class="text-gray-900 dark:text-white font-medium">PRJ-2023-089</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Déploiement FTTH Zone Nord</p>
+                                </td>
+                                <td class="px-6 py-4 text-gray-600 dark:text-gray-300">Opérateur Telecom SA</td>
+                                <td class="px-6 py-4 text-gray-600 dark:text-gray-300">Octobre 2023</td>
+                                <td class="px-6 py-4 text-right font-medium text-gray-900 dark:text-white">45 890,50 €</td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800/50">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                                        Envoyée Client
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-gray-900 dark:text-white font-medium hover:text-accent-600 transition-colors">
+                                    <a href="#">F-2023-11-102</a>
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <button class="text-gray-400 hover:text-accent-600 dark:hover:text-accent-500 transition-colors" title="Voir">
+                                            <i data-lucide="eye" class="w-4 h-4"></i>
+                                        </button>
+                                        <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" title="Options">
+                                            <i data-lucide="more-vertical" class="w-4 h-4"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer">
+                                <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">SIT-2023-09-021</td>
+                                <td class="px-6 py-4">
+                                    <p class="text-gray-900 dark:text-white font-medium">PRJ-2023-045</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Rénovation Électrique Tertiaire</p>
+                                </td>
+                                <td class="px-6 py-4 text-gray-600 dark:text-gray-300">Immo Invest</td>
+                                <td class="px-6 py-4 text-gray-600 dark:text-gray-300">Septembre 2023</td>
+                                <td class="px-6 py-4 text-right font-medium text-gray-900 dark:text-white">12 300,00 €</td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-full text-xs font-medium bg-success-50 text-success-700 dark:bg-success-900/30 dark:text-success-400 border border-success-200 dark:border-success-800/50">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-success-500"></span>
+                                        Validée Client
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-gray-900 dark:text-white font-medium hover:text-accent-600 transition-colors">
+                                    <a href="#">F-2023-10-045</a>
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <button class="text-gray-400 hover:text-accent-600 dark:hover:text-accent-500 transition-colors" title="Voir">
+                                            <i data-lucide="eye" class="w-4 h-4"></i>
+                                        </button>
+                                        <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" title="Options">
+                                            <i data-lucide="more-vertical" class="w-4 h-4"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer bg-red-50/30 dark:bg-red-900/10">
+                                <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">SIT-2023-09-022</td>
+                                <td class="px-6 py-4">
+                                    <p class="text-gray-900 dark:text-white font-medium">PRJ-2023-012</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Construction Gymnase municipal</p>
+                                </td>
+                                <td class="px-6 py-4 text-gray-600 dark:text-gray-300">Mairie de Ville-sur-Mer</td>
+                                <td class="px-6 py-4 text-gray-600 dark:text-gray-300">Septembre 2023</td>
+                                <td class="px-6 py-4 text-right font-medium text-gray-900 dark:text-white">85 000,00 €</td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-full text-xs font-medium bg-error-50 text-error-700 dark:bg-error-900/30 dark:text-error-400 border border-error-200 dark:border-error-800/50">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-error-500"></span>
+                                        Refusée
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-gray-400 dark:text-gray-500">-</td>
+                                <td class="px-6 py-4 text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <button class="text-gray-400 hover:text-accent-600 dark:hover:text-accent-500 transition-colors" title="Voir le motif et corriger">
+                                            <i data-lucide="edit-3" class="w-4 h-4"></i>
+                                        </button>
+                                        <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" title="Options">
+                                            <i data-lucide="more-vertical" class="w-4 h-4"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="p-4 border-t border-gray-200 dark:border-gray-800 flex items-center justify-between">
+                    <span class="text-sm text-gray-500 dark:text-gray-400">Affichage de 1 à 4 sur 24 situations</span>
+                    <div class="flex gap-1">
+                        <button class="px-3 py-1 border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-400 cursor-not-allowed">Précédent</button>
+                        <button class="px-3 py-1 border border-gray-200 dark:border-gray-700 rounded bg-accent-50 text-accent-600 border-accent-200 font-medium dark:bg-accent-900/30 dark:text-accent-500 dark:border-accent-800/50">1</button>
+                        <button class="px-3 py-1 border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700">2</button>
+                        <button class="px-3 py-1 border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700">3</button>
+                        <button class="px-3 py-1 border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700">Suivant</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

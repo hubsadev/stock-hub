@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fiche PV - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3', 900: '#054f31' },
+                        error: { 500: '#f04438', 50: '#fef3f2', 900: '#7a271d' },
+                        warning: { 500: '#f79009', 50: '#fffaeb', 900: '#7a4504' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Signature canvas placeholder styling */
+        .signature-canvas {
+            background-image: radial-gradient(#e5e7eb 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .dark .signature-canvas {
+            background-image: radial-gradient(#374151 1px, transparent 1px);
+        }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20 shrink-0">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">PV & Preuves</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="home" class="w-5 h-5"></i>
+                    <span class="truncate">Accueil Module</span>
+                </a>
+                <a href="ecr-08-01-registre-des-pv.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="list-checks" class="w-5 h-5"></i>
+                    <span class="truncate">Registre des PV</span>
+                </a>
+                <a href="ecr-08-02-fiche-pv.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500">
+                    <i data-lucide="file-check-2" class="w-5 h-5"></i>
+                    <span class="truncate">Fiche PV (En cours)</span>
+                </a>
+            </nav>
+
+            <div class="mt-8">
+                <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Liens contextuels</div>
+                <nav class="space-y-1">
+                    <a href="../07-execution-terrain-ordres-de-travail/ecr-07-03-fiche-ot-back-office.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="clipboard-list" class="w-5 h-5"></i>
+                        <span class="truncate">OT d'origine</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+        
+        <div class="p-4 border-t border-gray-200 dark:border-gray-800">
+            <div class="flex items-center gap-3">
+                <img src="https://ui-avatars.com/api/?name=Admin+User&background=f2f7ff&color=465fff" alt="User" class="w-9 h-9 rounded-full">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">Responsable Admin.</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden bg-gray-50 dark:bg-gray-950">
+        <!-- Top Header -->
+        <header class="h-16 flex items-center justify-between px-6 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <div class="hidden sm:flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                    <a href="#" class="hover:text-gray-900 dark:hover:text-white transition-colors">HubERP</a>
+                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                    <a href="index.html" class="hover:text-gray-900 dark:hover:text-white transition-colors">PV & Preuves</a>
+                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                    <a href="ecr-08-01-registre-des-pv.html" class="hover:text-gray-900 dark:hover:text-white transition-colors">Registre</a>
+                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                    <span class="text-gray-900 dark:text-white font-medium">PV-2023-10-044</span>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <button class="relative p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
+                    <i data-lucide="bell" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <div class="flex-1 overflow-y-auto p-6 no-scrollbar">
+            
+            <!-- Context Header & Actions -->
+            <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6">
+                <div>
+                    <div class="flex items-center gap-3 mb-1">
+                        <h1 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                            <i data-lucide="file-check-2" class="w-6 h-6 text-gray-400"></i>
+                            PV-2023-10-044
+                        </h1>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-accent-50 text-accent-700 dark:bg-accent-900/30 dark:text-accent-400 border border-accent-200 dark:border-accent-800">
+                            Signé
+                        </span>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-warning-50 text-warning-700 dark:bg-warning-900/30 dark:text-warning-500 border border-warning-200 dark:border-warning-800">
+                            Avec Réserves
+                        </span>
+                    </div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                        Créé le 11 Oct 2023 par <span class="font-medium text-gray-700 dark:text-gray-300">Jean Martin (Tech)</span>
+                        <span class="mx-1">•</span>
+                        Client : <span class="font-medium text-gray-700 dark:text-gray-300">TechVision</span>
+                    </p>
+                </div>
+                <div class="flex flex-wrap items-center gap-3">
+                    <button class="px-4 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-2 shadow-sm">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        <span>PDF</span>
+                    </button>
+                    <!-- Valider is disabled if there are major unaccepted reserves, but active here as an example -->
+                    <button class="px-4 py-2 bg-accent-600 text-white rounded-lg text-sm font-medium hover:bg-accent-700 transition-colors flex items-center gap-2 shadow-sm">
+                        <i data-lucide="check-circle" class="w-4 h-4"></i>
+                        <span>Valider le PV</span>
+                    </button>
+                    <!-- Trigger options dropdown -->
+                    <button class="px-2 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-sm">
+                        <i data-lucide="more-vertical" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="border-b border-gray-200 dark:border-gray-800 mb-6">
+                <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                    <a href="#" class="border-accent-500 text-accent-600 dark:text-accent-400 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                        Synthèse & Travaux
+                    </a>
+                    <a href="#" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-700 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2">
+                        Réserves & Signature
+                        <span class="bg-warning-100 text-warning-700 dark:bg-warning-900/50 dark:text-warning-400 py-0.5 px-2 rounded-full text-xs">2</span>
+                    </a>
+                    <a href="#" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-700 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2">
+                        Éligibilité Facturation
+                        <i data-lucide="lock" class="w-3.5 h-3.5 text-gray-400"></i>
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Grid Layout for Synthèse -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Left Column (2/3): Informations d'exécution -->
+                <div class="lg:col-span-2 space-y-6">
+                    
+                    <!-- Travaux réalisés -->
+                    <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                        <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Travaux réalisés</h3>
+                            <!-- Verrouillé car signé -->
+                            <span class="text-xs font-medium text-gray-500 flex items-center gap-1">
+                                <i data-lucide="lock" class="w-3.5 h-3.5"></i> Verrouillé après signature
+                            </span>
+                        </div>
+                        <div class="p-5">
+                            <div class="prose dark:prose-invert text-sm text-gray-700 dark:text-gray-300 max-w-none">
+                                <p>Installation et raccordement de la nouvelle baie de brassage selon le schéma technique validé. Les opérations incluent :</p>
+                                <ul>
+                                    <li>Fixation de la baie 42U.</li>
+                                    <li>Passage des câbles et repérage (120 liens cuivre).</li>
+                                    <li>Tests de continuité et certification cat. 6A.</li>
+                                    <li>Nettoyage de la zone d'intervention.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Résultats de tests -->
+                    <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                        <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-800">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Résultats de tests / Conformité</h3>
+                        </div>
+                        <div class="p-5">
+                            <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-800">
+                                <table class="w-full text-left text-sm">
+                                    <thead class="bg-gray-50 dark:bg-gray-800/50">
+                                        <tr>
+                                            <th class="px-4 py-3 font-medium text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-800">Test requis</th>
+                                            <th class="px-4 py-3 font-medium text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-800">Résultat attendu</th>
+                                            <th class="px-4 py-3 font-medium text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-800">Mesure / Valeur</th>
+                                            <th class="px-4 py-3 font-medium text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-800 text-center">Conformité</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
+                                        <tr class="bg-white dark:bg-gray-900">
+                                            <td class="px-4 py-3 text-gray-900 dark:text-white">Continuité Cuivre</td>
+                                            <td class="px-4 py-3 text-gray-500 dark:text-gray-400">100% OK</td>
+                                            <td class="px-4 py-3 text-gray-900 dark:text-white">118/120 OK (2 défauts)</td>
+                                            <td class="px-4 py-3 text-center">
+                                                <i data-lucide="x-circle" class="w-5 h-5 text-error-500 inline-block"></i>
+                                            </td>
+                                        </tr>
+                                        <tr class="bg-white dark:bg-gray-900">
+                                            <td class="px-4 py-3 text-gray-900 dark:text-white">Tension d'alimentation</td>
+                                            <td class="px-4 py-3 text-gray-500 dark:text-gray-400">230V +/- 10%</td>
+                                            <td class="px-4 py-3 text-gray-900 dark:text-white">232V</td>
+                                            <td class="px-4 py-3 text-center">
+                                                <i data-lucide="check-circle" class="w-5 h-5 text-success-500 inline-block"></i>
+                                            </td>
+                                        </tr>
+                                        <tr class="bg-white dark:bg-gray-900">
+                                            <td class="px-4 py-3 text-gray-900 dark:text-white">Mise à la terre</td>
+                                            <td class="px-4 py-3 text-gray-500 dark:text-gray-400">< 50 Ohms</td>
+                                            <td class="px-4 py-3 text-gray-900 dark:text-white">12 Ohms</td>
+                                            <td class="px-4 py-3 text-center">
+                                                <i data-lucide="check-circle" class="w-5 h-5 text-success-500 inline-block"></i>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pièces jointes / Preuves -->
+                    <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                        <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-800">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Pièces jointes & Preuves</h3>
+                        </div>
+                        <div class="p-5">
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                                <!-- Photo 1 -->
+                                <div class="relative group aspect-square bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+                                    <div class="absolute inset-0 flex items-center justify-center text-gray-400">
+                                        <i data-lucide="image" class="w-8 h-8"></i>
+                                    </div>
+                                    <div class="absolute inset-x-0 bottom-0 bg-black/60 p-2 text-xs text-white truncate opacity-0 group-hover:opacity-100 transition-opacity">
+                                        baie_avant_brassage.jpg
+                                    </div>
+                                </div>
+                                <!-- Photo 2 -->
+                                <div class="relative group aspect-square bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+                                    <div class="absolute inset-0 flex items-center justify-center text-gray-400">
+                                        <i data-lucide="image" class="w-8 h-8"></i>
+                                    </div>
+                                    <div class="absolute inset-x-0 bottom-0 bg-black/60 p-2 text-xs text-white truncate opacity-0 group-hover:opacity-100 transition-opacity">
+                                        cablage_arriere.jpg
+                                    </div>
+                                </div>
+                                <!-- Doc PDF -->
+                                <div class="relative group aspect-square bg-gray-50 dark:bg-gray-800 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center gap-2">
+                                    <i data-lucide="file-text" class="w-8 h-8 text-accent-500"></i>
+                                    <span class="text-xs text-center text-gray-600 dark:text-gray-400 px-2 line-clamp-2">rapport_fluke.pdf</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Right Column (1/3): Contexte, Réserves & Signature Info (Summary) -->
+                <div class="space-y-6">
+                    
+                    <!-- Liaison OT -->
+                    <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                        <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
+                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider">Origine (Ordre de Travail)</h3>
+                        </div>
+                        <div class="p-5 space-y-4">
+                            <div>
+                                <label class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Référence OT</label>
+                                <div class="mt-1 flex items-center justify-between">
+                                    <a href="../07-execution-terrain-ordres-de-travail/ecr-07-03-fiche-ot-back-office.html" class="text-sm font-semibold text-accent-600 dark:text-accent-500 hover:underline flex items-center gap-1">
+                                        OT-2023-1398
+                                        <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                                    </a>
+                                    <span class="text-xs font-medium px-2 py-0.5 rounded bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 border border-gray-200 dark:border-gray-700">Clôturé</span>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Intervenant</label>
+                                    <div class="mt-1 text-sm text-gray-900 dark:text-white">Jean Martin</div>
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Durée passée</label>
+                                    <div class="mt-1 text-sm text-gray-900 dark:text-white">4h 30m</div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Site d'intervention</label>
+                                <div class="mt-1 text-sm text-gray-900 dark:text-white">TechVision - Bâtiment C<br>12 Rue de l'Innovation, Lyon</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Résumé Réserves -->
+                    <div class="bg-warning-50 dark:bg-warning-900/10 rounded-xl border border-warning-200 dark:border-warning-800/50 shadow-sm overflow-hidden">
+                        <div class="px-5 py-4 border-b border-warning-200 dark:border-warning-800/50 flex items-center justify-between">
+                            <h3 class="text-sm font-semibold text-warning-900 dark:text-warning-500 uppercase tracking-wider flex items-center gap-2">
+                                <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                                2 Réserves
+                            </h3>
+                            <a href="#" class="text-xs font-medium text-warning-700 hover:underline dark:text-warning-400">Voir détails</a>
+                        </div>
+                        <div class="p-5 space-y-3">
+                            <div class="p-3 bg-white dark:bg-gray-900 rounded-lg border border-warning-100 dark:border-warning-800/30">
+                                <div class="flex items-start justify-between">
+                                    <p class="text-sm text-gray-800 dark:text-gray-200 font-medium">Port 119 et 120 non fonctionnels (câble croqué).</p>
+                                    <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">Mineure</span>
+                                </div>
+                            </div>
+                            <div class="p-3 bg-white dark:bg-gray-900 rounded-lg border border-warning-100 dark:border-warning-800/30">
+                                <div class="flex items-start justify-between">
+                                    <p class="text-sm text-gray-800 dark:text-gray-200 font-medium">Onduleur non testé (attente EDF).</p>
+                                    <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">Mineure</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Signature Client -->
+                    <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                        <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-800">
+                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+                                <i data-lucide="pen-tool" class="w-4 h-4"></i>
+                                Signature Client
+                            </h3>
+                        </div>
+                        <div class="p-5">
+                            <div class="mb-4">
+                                <div class="text-sm font-medium text-gray-900 dark:text-white">Signé par : Marc Dupont</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">Directeur IT, TechVision</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Le 11/10/2023 à 14:30</div>
+                            </div>
+                            
+                            <div class="h-32 w-full border border-gray-300 dark:border-gray-700 rounded-lg signature-canvas flex items-center justify-center relative overflow-hidden bg-white dark:bg-gray-900">
+                                <!-- Mock Signature SVG -->
+                                <svg viewBox="0 0 200 60" class="w-3/4 h-auto stroke-accent-600 dark:stroke-accent-400" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20,30 Q40,10 60,30 T100,30 T140,20 Q160,40 180,20" />
+                                    <path d="M50,40 Q70,20 90,40" />
+                                    <path d="M120,40 Q130,50 150,30" />
+                                </svg>
+                                <!-- Validé overlay -->
+                                <div class="absolute bottom-2 right-2 flex items-center gap-1 text-[10px] font-bold text-success-600 dark:text-success-500 bg-success-50 dark:bg-success-900/30 px-1.5 py-0.5 rounded border border-success-200 dark:border-success-800/50">
+                                    <i data-lucide="shield-check" class="w-3 h-3"></i> Validé
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Éligibilité Facturation -->
+                    <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                        <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-800">
+                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+                                <i data-lucide="receipt" class="w-4 h-4"></i>
+                                Facturation
+                            </h3>
+                        </div>
+                        <div class="p-5">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                                    <i data-lucide="lock" class="w-5 h-5 text-gray-400"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-900 dark:text-white">Attente Validation</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Le PV doit être validé par un responsable.</p>
+                                </div>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-gray-500 dark:text-gray-400">Mode de contrat :</span>
+                                    <span class="font-medium text-gray-900 dark:text-white">Régie</span>
+                                </div>
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-gray-500 dark:text-gray-400">Réserves bloquantes :</span>
+                                    <span class="font-medium text-success-600 dark:text-success-500">Aucune</span>
+                                </div>
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+                                <button class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 rounded-lg text-sm font-medium transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center gap-2" disabled>
+                                    <i data-lucide="arrow-right-circle" class="w-4 h-4"></i>
+                                    Marquer Facturable
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

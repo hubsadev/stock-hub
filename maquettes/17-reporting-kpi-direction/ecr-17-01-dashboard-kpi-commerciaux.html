@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KPI Commerciaux - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3' },
+                        error: { 500: '#f04438', 50: '#fef3f2' },
+                        warning: { 500: '#f79009', 50: '#fffaeb' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .chart-bar { transition: height 0.5s ease-in-out; }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Reporting & KPI</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                    <span class="truncate">Accueil Reporting</span>
+                </a>
+                <a href="ecr-17-01-dashboard-kpi-commerciaux.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500">
+                    <i data-lucide="trending-up" class="w-5 h-5"></i>
+                    <span class="truncate">KPI Commerciaux</span>
+                </a>
+                <a href="ecr-17-02-dashboard-kpi-projet-finance.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="pie-chart" class="w-5 h-5"></i>
+                    <span class="truncate">KPI Projet & Finance</span>
+                </a>
+                <a href="ecr-17-03-dashboard-kpi-maintenance.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="activity" class="w-5 h-5"></i>
+                    <span class="truncate">KPI Maintenance</span>
+                </a>
+            </nav>
+            <div class="mt-8">
+                <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Navigation Globale</div>
+                <nav class="space-y-1">
+                    <a href="../index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                        <span class="truncate">Retour à l'accueil</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+        <!-- Top Navigation -->
+        <header class="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 z-10 shrink-0">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <div class="flex flex-col">
+                    <div class="flex items-center gap-2">
+                        <a href="index.html" class="text-xs text-gray-500 dark:text-gray-400 font-medium hover:text-accent-600 transition-colors">Direction</a>
+                        <i data-lucide="chevron-right" class="w-3 h-3 text-gray-400"></i>
+                        <div class="text-xs text-gray-500 dark:text-gray-400 font-medium">Dashboards</div>
+                    </div>
+                    <h1 class="text-xl font-bold text-gray-900 dark:text-white">KPI Commerciaux</h1>
+                </div>
+            </div>
+            
+            <!-- Global Filters in Header -->
+            <div class="flex items-center gap-3 hidden lg:flex">
+                <div class="relative">
+                    <select class="appearance-none bg-gray-50 border border-gray-200 text-gray-700 py-2 pl-3 pr-8 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300">
+                        <option>Cette Année</option>
+                        <option>Ce Trimestre</option>
+                        <option>Ce Mois</option>
+                    </select>
+                    <i data-lucide="calendar" class="w-4 h-4 text-gray-400 absolute right-2.5 top-2.5 pointer-events-none"></i>
+                </div>
+                <div class="relative">
+                    <select class="appearance-none bg-gray-50 border border-gray-200 text-gray-700 py-2 pl-3 pr-8 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300">
+                        <option>Toutes les Zones</option>
+                        <option>Zone Nord</option>
+                        <option>Zone Sud</option>
+                        <option>Export</option>
+                    </select>
+                    <i data-lucide="map" class="w-4 h-4 text-gray-400 absolute right-2.5 top-2.5 pointer-events-none"></i>
+                </div>
+                <button class="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors flex items-center gap-2">
+                    <i data-lucide="filter" class="w-4 h-4"></i> Plus de filtres
+                </button>
+            </div>
+        </header>
+
+        <!-- Content scrollable area -->
+        <div class="flex-1 overflow-y-auto p-6 lg:p-8">
+            <div class="max-w-7xl mx-auto space-y-6">
+                
+                <!-- KPIs Row -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Carnet de commandes -->
+                    <div class="bg-white dark:bg-gray-900 rounded-xl p-5 border border-gray-200 dark:border-gray-800 shadow-sm">
+                        <div class="flex justify-between items-start mb-2">
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Carnet de Commandes</p>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-success-50 text-success-600 dark:bg-success-900/20 dark:text-success-500">
+                                <i data-lucide="trending-up" class="w-3 h-3 mr-1"></i> +12%
+                            </span>
+                        </div>
+                        <h3 class="text-3xl font-bold text-gray-900 dark:text-white">4.2 M€</h3>
+                        <p class="text-xs text-gray-500 mt-1">Sur 34 contrats actifs</p>
+                    </div>
+                    
+                    <!-- Montant Pipeline -->
+                    <div class="bg-white dark:bg-gray-900 rounded-xl p-5 border border-gray-200 dark:border-gray-800 shadow-sm">
+                        <div class="flex justify-between items-start mb-2">
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Pipeline (Pondéré)</p>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+                                <i data-lucide="minus" class="w-3 h-3 mr-1"></i> 0%
+                            </span>
+                        </div>
+                        <h3 class="text-3xl font-bold text-gray-900 dark:text-white">1.8 M€</h3>
+                        <p class="text-xs text-gray-500 mt-1">Brut: 3.5 M€ (48 opportunités)</p>
+                    </div>
+
+                    <!-- Taux de transfo -->
+                    <div class="bg-white dark:bg-gray-900 rounded-xl p-5 border border-gray-200 dark:border-gray-800 shadow-sm">
+                        <div class="flex justify-between items-start mb-2">
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Taux de Transformation</p>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-success-50 text-success-600 dark:bg-success-900/20 dark:text-success-500">
+                                <i data-lucide="trending-up" class="w-3 h-3 mr-1"></i> +2.4 pts
+                            </span>
+                        </div>
+                        <h3 class="text-3xl font-bold text-gray-900 dark:text-white">34.5%</h3>
+                        <p class="text-xs text-gray-500 mt-1">En volume (Nb d'offres)</p>
+                    </div>
+
+                    <!-- Cycle de vente -->
+                    <div class="bg-white dark:bg-gray-900 rounded-xl p-5 border border-gray-200 dark:border-gray-800 shadow-sm">
+                        <div class="flex justify-between items-start mb-2">
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Cycle de Vente Moyen</p>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-warning-50 text-warning-600 dark:bg-warning-900/20 dark:text-warning-500">
+                                <i data-lucide="trending-up" class="w-3 h-3 mr-1"></i> +5j
+                            </span>
+                        </div>
+                        <h3 class="text-3xl font-bold text-gray-900 dark:text-white">45 Jours</h3>
+                        <p class="text-xs text-gray-500 mt-1">De la qualification à la signature</p>
+                    </div>
+                </div>
+
+                <!-- Charts & Lists -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    
+                    <!-- Funnel Pipeline Chart Simulation -->
+                    <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-lg font-bold text-gray-900 dark:text-white">Entonnoir Commercial (Pipeline)</h3>
+                            <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"><i data-lucide="more-horizontal" class="w-5 h-5"></i></button>
+                        </div>
+                        <div class="space-y-4">
+                            <!-- Qualif -->
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-gray-700 dark:text-gray-300 font-medium">Qualification (10-30%)</span>
+                                    <span class="font-bold text-gray-900 dark:text-white">1.5 M€ <span class="text-gray-400 font-normal ml-1">20 offres</span></span>
+                                </div>
+                                <div class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-3">
+                                    <div class="bg-blue-300 h-3 rounded-full" style="width: 100%"></div>
+                                </div>
+                            </div>
+                            <!-- Proposition -->
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-gray-700 dark:text-gray-300 font-medium">Proposition envoyée (50%)</span>
+                                    <span class="font-bold text-gray-900 dark:text-white">1.2 M€ <span class="text-gray-400 font-normal ml-1">15 offres</span></span>
+                                </div>
+                                <div class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-3">
+                                    <div class="bg-blue-400 h-3 rounded-full" style="width: 75%"></div>
+                                </div>
+                            </div>
+                            <!-- Nego -->
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-gray-700 dark:text-gray-300 font-medium">En négociation (80%)</span>
+                                    <span class="font-bold text-gray-900 dark:text-white">800 K€ <span class="text-gray-400 font-normal ml-1">8 offres</span></span>
+                                </div>
+                                <div class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-3">
+                                    <div class="bg-accent-500 h-3 rounded-full" style="width: 45%"></div>
+                                </div>
+                            </div>
+                            <!-- Gagné -->
+                            <div class="pt-4 mt-4 border-t border-gray-100 dark:border-gray-800">
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-success-600 dark:text-success-500 font-bold">Gagnées (Période)</span>
+                                    <span class="font-bold text-gray-900 dark:text-white">450 K€ <span class="text-gray-400 font-normal ml-1">5 offres</span></span>
+                                </div>
+                                <div class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-3">
+                                    <div class="bg-success-500 h-3 rounded-full" style="width: 25%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top Opportunities List -->
+                    <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col h-full">
+                        <div class="p-6 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
+                            <h3 class="text-lg font-bold text-gray-900 dark:text-white">Top Opportunités en cours</h3>
+                            <a href="../02-avant-vente/ecr-02-01-pipeline-opportunites.html" class="text-sm font-medium text-accent-600 hover:text-accent-700 dark:text-accent-500">Tout voir</a>
+                        </div>
+                        <div class="flex-1 overflow-x-auto">
+                            <table class="w-full text-left text-sm text-gray-600 dark:text-gray-400">
+                                <thead class="bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-800">
+                                    <tr>
+                                        <th class="px-6 py-3 font-medium">Offre / Client</th>
+                                        <th class="px-6 py-3 font-medium">Montant</th>
+                                        <th class="px-6 py-3 font-medium text-center">Prob.</th>
+                                        <th class="px-6 py-3 font-medium text-right">Date Clôture</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 dark:divide-gray-800 bg-white dark:bg-gray-900">
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer">
+                                        <td class="px-6 py-3">
+                                            <a href="../02-avant-vente/ecr-02-02-fiche-opportunite.html" class="font-medium text-accent-600 dark:text-accent-500 hover:text-accent-700 transition-colors font-bold">Déploiement Fibre Zone Est</a>
+                                            <div class="text-xs">Telecom Corp</div>
+                                        </td>
+                                        <td class="px-6 py-3 font-medium text-gray-900 dark:text-white">340 000 €</td>
+                                        <td class="px-6 py-3 text-center">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20">80%</span>
+                                        </td>
+                                        <td class="px-6 py-3 text-right">15/06/2024</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer">
+                                        <td class="px-6 py-3">
+                                            <a href="../02-avant-vente/ecr-02-02-fiche-opportunite.html" class="font-medium text-accent-600 dark:text-accent-500 hover:text-accent-700 transition-colors font-bold">Maintenance Parc Auto</a>
+                                            <div class="text-xs">Logistiq SA</div>
+                                        </td>
+                                        <td class="px-6 py-3 font-medium text-gray-900 dark:text-white">180 000 €</td>
+                                        <td class="px-6 py-3 text-center">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-600 dark:bg-blue-900/20">50%</span>
+                                        </td>
+                                        <td class="px-6 py-3 text-right">22/06/2024</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer">
+                                        <td class="px-6 py-3">
+                                            <a href="../02-avant-vente/ecr-02-02-fiche-opportunite.html" class="font-medium text-accent-600 dark:text-accent-500 hover:text-accent-700 transition-colors font-bold">Rénovation HVAC Siège</a>
+                                            <div class="text-xs">Immo Invest</div>
+                                        </td>
+                                        <td class="px-6 py-3 font-medium text-gray-900 dark:text-white">125 000 €</td>
+                                        <td class="px-6 py-3 text-center">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20">90%</span>
+                                        </td>
+                                        <td class="px-6 py-3 text-right text-error-500 font-medium">01/06/2024</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer">
+                                        <td class="px-6 py-3">
+                                            <a href="../02-avant-vente/ecr-02-02-fiche-opportunite.html" class="font-medium text-accent-600 dark:text-accent-500 hover:text-accent-700 transition-colors font-bold">Extension Dépôt Central</a>
+                                            <div class="text-xs">Industrie Plus</div>
+                                        </td>
+                                        <td class="px-6 py-3 font-medium text-gray-900 dark:text-white">85 000 €</td>
+                                        <td class="px-6 py-3 text-center">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-800">30%</span>
+                                        </td>
+                                        <td class="px-6 py-3 text-right">10/07/2024</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

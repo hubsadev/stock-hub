@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accueil Administration - Administration ERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3' },
+                        error: { 500: '#f04438', 50: '#fef3f2' },
+                        warning: { 500: '#f79009', 50: '#fffaeb' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Administration</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500">
+                    <span class="text-lg">🏠</span>
+                    <span class="truncate">Accueil Administration</span>
+                </a>
+                <a href="ecr-19-01-assistant-de-mise-en-place-initiale-erp.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <span class="text-lg">✨</span>
+                    <span class="truncate">Assistant Initial</span>
+                </a>
+                <a href="ecr-19-02-parametres-globaux-erp.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <span class="text-lg">⚙️</span>
+                    <span class="truncate">Paramètres Globaux</span>
+                </a>
+                <a href="ecr-19-03-connexion-erp.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <span class="text-lg">🔑</span>
+                    <span class="truncate">Connexion</span>
+                </a>
+                <a href="ecr-19-04-annuaire-des-utilisateurs.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <span class="text-lg">👥</span>
+                    <span class="truncate">Annuaire Utilisateurs</span>
+                </a>
+                <a href="ecr-19-05-fiche-utilisateur.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <span class="text-lg">👤</span>
+                    <span class="truncate">Fiche Utilisateur</span>
+                </a>
+                <a href="ecr-19-06-invitation-utilisateur.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <span class="text-lg">✉️</span>
+                    <span class="truncate">Invitation Utilisateur</span>
+                </a>
+                <a href="ecr-19-07-roles-et-permissions.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <span class="text-lg">🛡️</span>
+                    <span class="truncate">Rôles & Permissions</span>
+                </a>
+                <a href="ecr-19-08-perimetres-d-acces.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <span class="text-lg">🗺️</span>
+                    <span class="truncate">Périmètres d'Accès</span>
+                </a>
+                <a href="ecr-19-09-sessions-actives.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <span class="text-lg">⏱️</span>
+                    <span class="truncate">Sessions Actives</span>
+                </a>
+                <a href="ecr-19-10-audit-administration.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <span class="text-lg">📋</span>
+                    <span class="truncate">Audit Administration</span>
+                </a>
+                <a href="ecr-19-11-societes-fiscalite-et-numerotation.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <span class="text-lg">🏢</span>
+                    <span class="truncate">Sociétés & Fiscalité</span>
+                </a>
+                <a href="ecr-19-12-comptes-externes-et-invites.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <span class="text-lg">🤝</span>
+                    <span class="truncate">Comptes Externes</span>
+                </a>
+            </nav>
+        </div>
+        
+        <div class="p-4 border-t border-gray-200 dark:border-gray-800">
+            <div class="flex items-center gap-3">
+                <img src="https://ui-avatars.com/api/?name=Admin+Sys&background=465fff&color=fff" alt="Admin" class="w-8 h-8 rounded-full">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">Admin Sys</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate">admin@huberp.com</p>
+                </div>
+                <button onclick="document.documentElement.classList.toggle('dark')" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+                    <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+        <!-- Mobile Header -->
+        <header class="md:hidden h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-4 z-20">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+            <button class="p-2 text-gray-600 dark:text-gray-300">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+        </header>
+
+        <!-- Content Area -->
+        <div class="flex-1 overflow-y-auto">
+            
+            <!-- Topbar Context -->
+            <div class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-8 py-4 sticky top-0 z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Module 19 - Administration ERP</h1>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Catalogue des écrans du module d'administration</p>
+                </div>
+                <div class="flex gap-3">
+                    <a href="ecr-19-01-assistant-de-mise-en-place-initiale-erp.html" class="px-4 py-2 bg-accent-600 text-white rounded-lg font-medium text-sm hover:bg-accent-700 transition shadow-sm flex items-center gap-2">
+                        <i data-lucide="play" class="w-4 h-4"></i>
+                        Démarrer l'Assistant
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Page Content -->
+            <div class="p-8 max-w-7xl mx-auto space-y-8">
+                
+                <!-- Section Démarrage & Paramètres globaux -->
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 border-b border-gray-200 dark:border-gray-800 pb-2">Démarrage & Configuration Globale</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <a href="ecr-19-01-assistant-de-mise-en-place-initiale-erp.html" class="group bg-white dark:bg-gray-900 p-5 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md hover:border-accent-300 transition block">
+                            <div class="w-10 h-10 bg-accent-50 text-accent-600 dark:bg-accent-900/30 rounded-lg flex items-center justify-center mb-4 group-hover:bg-accent-100 transition">✨</div>
+                            <h3 class="font-semibold text-gray-900 dark:text-white text-lg">ECR-19-01</h3>
+                            <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Assistant Init ERP</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Démarrage de l'instance, socle d'administration, création premier admin.</p>
+                        </a>
+                        <a href="ecr-19-02-parametres-globaux-erp.html" class="group bg-white dark:bg-gray-900 p-5 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md hover:border-accent-300 transition block">
+                            <div class="w-10 h-10 bg-accent-50 text-accent-600 dark:bg-accent-900/30 rounded-lg flex items-center justify-center mb-4 group-hover:bg-accent-100 transition">⚙️</div>
+                            <h3 class="font-semibold text-gray-900 dark:text-white text-lg">ECR-19-02</h3>
+                            <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Paramètres globaux</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Langue, fuseau, société par défaut, politique simple de session.</p>
+                        </a>
+                        <a href="ecr-19-11-societes-fiscalite-et-numerotation.html" class="group bg-white dark:bg-gray-900 p-5 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md hover:border-accent-300 transition block">
+                            <div class="w-10 h-10 bg-accent-50 text-accent-600 dark:bg-accent-900/30 rounded-lg flex items-center justify-center mb-4 group-hover:bg-accent-100 transition">🏢</div>
+                            <h3 class="font-semibold text-gray-900 dark:text-white text-lg">ECR-19-11</h3>
+                            <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sociétés, Fiscalité</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Entités légales, devises, taxes, retenues, séquences.</p>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Section Utilisateurs -->
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 border-b border-gray-200 dark:border-gray-800 pb-2">Gestion des Utilisateurs</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <a href="ecr-19-04-annuaire-des-utilisateurs.html" class="group bg-white dark:bg-gray-900 p-5 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md hover:border-accent-300 transition block">
+                            <div class="w-10 h-10 bg-accent-50 text-accent-600 dark:bg-accent-900/30 rounded-lg flex items-center justify-center mb-4 group-hover:bg-accent-100 transition">👥</div>
+                            <h3 class="font-semibold text-gray-900 dark:text-white text-lg">ECR-19-04</h3>
+                            <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Annuaire des Utilisateurs</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Recherche, création, activation, suspension de comptes ERP.</p>
+                        </a>
+                        <a href="ecr-19-05-fiche-utilisateur.html" class="group bg-white dark:bg-gray-900 p-5 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md hover:border-accent-300 transition block">
+                            <div class="w-10 h-10 bg-accent-50 text-accent-600 dark:bg-accent-900/30 rounded-lg flex items-center justify-center mb-4 group-hover:bg-accent-100 transition">👤</div>
+                            <h3 class="font-semibold text-gray-900 dark:text-white text-lg">ECR-19-05</h3>
+                            <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fiche Utilisateur</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Gestion de profil, statut, rôles attribués, périmètres.</p>
+                        </a>
+                        <a href="ecr-19-06-invitation-utilisateur.html" class="group bg-white dark:bg-gray-900 p-5 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md hover:border-accent-300 transition block">
+                            <div class="w-10 h-10 bg-accent-50 text-accent-600 dark:bg-accent-900/30 rounded-lg flex items-center justify-center mb-4 group-hover:bg-accent-100 transition">✉️</div>
+                            <h3 class="font-semibold text-gray-900 dark:text-white text-lg">ECR-19-06</h3>
+                            <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Invitation Utilisateur</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Envoi d'invitation, activation de compte, relance.</p>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Section Accès et Gouvernance -->
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 border-b border-gray-200 dark:border-gray-800 pb-2">Accès, Rôles & Sécurité</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <a href="ecr-19-07-roles-et-permissions.html" class="group bg-white dark:bg-gray-900 p-5 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md hover:border-accent-300 transition block">
+                            <div class="w-10 h-10 bg-accent-50 text-accent-600 dark:bg-accent-900/30 rounded-lg flex items-center justify-center mb-4 group-hover:bg-accent-100 transition">🛡️</div>
+                            <h3 class="font-semibold text-gray-900 dark:text-white text-lg">ECR-19-07</h3>
+                            <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rôles et Permissions</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Définition des rôles ERP, profils standards, droits d'accès.</p>
+                        </a>
+                        <a href="ecr-19-08-perimetres-d-acces.html" class="group bg-white dark:bg-gray-900 p-5 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md hover:border-accent-300 transition block">
+                            <div class="w-10 h-10 bg-accent-50 text-accent-600 dark:bg-accent-900/30 rounded-lg flex items-center justify-center mb-4 group-hover:bg-accent-100 transition">🗺️</div>
+                            <h3 class="font-semibold text-gray-900 dark:text-white text-lg">ECR-19-08</h3>
+                            <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Périmètres d'Accès</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Gestion d'accès par société, agence, dépôt, projet...</p>
+                        </a>
+                        <a href="ecr-19-12-comptes-externes-et-invites.html" class="group bg-white dark:bg-gray-900 p-5 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md hover:border-accent-300 transition block">
+                            <div class="w-10 h-10 bg-accent-50 text-accent-600 dark:bg-accent-900/30 rounded-lg flex items-center justify-center mb-4 group-hover:bg-accent-100 transition">🤝</div>
+                            <h3 class="font-semibold text-gray-900 dark:text-white text-lg">ECR-19-12</h3>
+                            <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Comptes Externes et Invités</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Accès clients, auditeurs ou validateurs externes.</p>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Section Surveillance & Sessions -->
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 border-b border-gray-200 dark:border-gray-800 pb-2">Surveillance & Activité</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <a href="ecr-19-03-connexion-erp.html" class="group bg-white dark:bg-gray-900 p-5 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md hover:border-accent-300 transition block">
+                            <div class="w-10 h-10 bg-accent-50 text-accent-600 dark:bg-accent-900/30 rounded-lg flex items-center justify-center mb-4 group-hover:bg-accent-100 transition">🔑</div>
+                            <h3 class="font-semibold text-gray-900 dark:text-white text-lg">ECR-19-03</h3>
+                            <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Connexion ERP</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Authentification locale, login portal.</p>
+                        </a>
+                        <a href="ecr-19-09-sessions-actives.html" class="group bg-white dark:bg-gray-900 p-5 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md hover:border-accent-300 transition block">
+                            <div class="w-10 h-10 bg-accent-50 text-accent-600 dark:bg-accent-900/30 rounded-lg flex items-center justify-center mb-4 group-hover:bg-accent-100 transition">⏱️</div>
+                            <h3 class="font-semibold text-gray-900 dark:text-white text-lg">ECR-19-09</h3>
+                            <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sessions Actives</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Supervision, révocation des sessions et jetons actifs.</p>
+                        </a>
+                        <a href="ecr-19-10-audit-administration.html" class="group bg-white dark:bg-gray-900 p-5 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md hover:border-accent-300 transition block">
+                            <div class="w-10 h-10 bg-accent-50 text-accent-600 dark:bg-accent-900/30 rounded-lg flex items-center justify-center mb-4 group-hover:bg-accent-100 transition">📋</div>
+                            <h3 class="font-semibold text-gray-900 dark:text-white text-lg">ECR-19-10</h3>
+                            <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Audit Administration</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Traçabilité des changements de droits, comptes et configs.</p>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

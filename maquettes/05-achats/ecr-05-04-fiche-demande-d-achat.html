@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fiche Demande d'Achat - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3', 900: '#054f31' },
+                        error: { 500: '#f04438', 50: '#fef3f2', 900: '#7a271d' },
+                        warning: { 500: '#f79009', 50: '#fffaeb', 900: '#7a4504' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Achats</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="home" class="w-5 h-5"></i>
+                    <span class="truncate">Accueil Module</span>
+                </a>
+                <a href="ecr-05-01-registre-des-expressions-de-besoin.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="list" class="w-5 h-5"></i>
+                    <span class="truncate">Registre EB</span>
+                </a>
+                <a href="ecr-05-02-fiche-expression-de-besoin.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                    <span class="truncate">Fiche EB</span>
+                </a>
+                <a href="ecr-05-03-registre-des-demandes-d-achat.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="list-ordered" class="w-5 h-5"></i>
+                    <span class="truncate">Registre DA</span>
+                </a>
+                <a href="ecr-05-04-fiche-demande-d-achat.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500">
+                    <i data-lucide="file-check" class="w-5 h-5"></i>
+                    <span class="truncate">Fiche DA</span>
+                </a>
+                <a href="ecr-05-05-comparatif-fournisseurs.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="git-compare" class="w-5 h-5"></i>
+                    <span class="truncate">Comparatif Fournisseurs</span>
+                </a>
+                <a href="ecr-05-06-commande-fournisseur.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+                    <span class="truncate">Commande Fournisseur</span>
+                </a>
+                <a href="ecr-05-07-facture-fournisseur-et-rapprochement.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="receipt" class="w-5 h-5"></i>
+                    <span class="truncate">Facture & Rapprochement</span>
+                </a>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col min-w-0 bg-gray-50 dark:bg-gray-950">
+        
+        <!-- Header / Breadcrumb / Actions -->
+        <header class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shrink-0 z-10 sticky top-0">
+            <div class="flex items-center justify-between px-6 h-16">
+                <div class="flex items-center gap-4">
+                    <button class="md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                    
+                    <!-- Breadcrumbs -->
+                    <div class="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                        <a href="ecr-05-03-registre-des-demandes-d-achat.html" class="hover:text-gray-900 dark:hover:text-white transition-colors">Registre DA</a>
+                        <i data-lucide="chevron-right" class="w-4 h-4 mx-2"></i>
+                        <span class="text-gray-900 dark:text-white font-medium flex items-center gap-2">
+                            DA-2023-0301
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-success-50 text-success-700 dark:bg-success-900/30 dark:text-success-400 border border-success-200 dark:border-success-800">
+                                Validée
+                            </span>
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <button class="px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        Télécharger PDF
+                    </button>
+                    <a href="ecr-05-05-comparatif-fournisseurs.html" class="px-4 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-900 dark:text-white rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-sm">
+                        <i data-lucide="git-compare" class="w-4 h-4 text-gray-500"></i>
+                        Consulter Fournisseurs
+                    </a>
+                    <a href="ecr-05-06-commande-fournisseur.html" class="px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-sm">
+                        <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                        Créer Commande
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Scrollable Area -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="max-w-5xl mx-auto space-y-6">
+
+                <!-- Info Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    
+                    <!-- General info -->
+                    <div class="col-span-1 md:col-span-2 space-y-6">
+                        <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 shadow-theme-xs">
+                            <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-4">Informations de la demande d'achat</h3>
+                            <div class="grid grid-cols-2 gap-6">
+                                <div>
+                                    <div class="text-sm text-gray-500 dark:text-gray-400 mb-1">Acheteur / Demandeur</div>
+                                    <div class="font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                                        <div class="w-6 h-6 rounded-full bg-accent-100 text-accent-700 flex items-center justify-center text-xs font-bold">SM</div>
+                                        Sophie Martin (Achat)
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="text-sm text-gray-500 dark:text-gray-400 mb-1">Date limite de livraison souhaitée</div>
+                                    <div class="font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                                        <i data-lucide="calendar" class="w-4 h-4 text-gray-400"></i>
+                                        15 Nov 2023
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="text-sm text-gray-500 dark:text-gray-400 mb-1">Rattachement analytique</div>
+                                    <div class="font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                                        <i data-lucide="package" class="w-4 h-4 text-gray-400"></i>
+                                        Stock Central (Réassort)
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="text-sm text-gray-500 dark:text-gray-400 mb-1">Origine</div>
+                                    <div class="font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                                        <i data-lucide="refresh-cw" class="w-4 h-4 text-gray-400"></i>
+                                        Alerte seuil de sécurité
+                                    </div>
+                                </div>
+                                <div class="col-span-2">
+                                    <div class="text-sm text-gray-500 dark:text-gray-400 mb-1">Motif d'achat</div>
+                                    <div class="text-sm text-gray-900 dark:text-gray-300 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                        Réassort mensuel des consommables et équipements réseau pour maintien du stock de sécurité sur l'entrepôt principal.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Budget & Montant -->
+                        <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 shadow-theme-xs">
+                            <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-4">Montant & Couverture Budgétaire</h3>
+                            <div class="grid grid-cols-2 gap-6">
+                                <div>
+                                    <div class="text-sm text-gray-500 dark:text-gray-400 mb-1">Montant Estimé Total (HT)</div>
+                                    <div class="text-2xl font-bold text-gray-900 dark:text-white">
+                                        12 850,00 €
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="text-sm text-gray-500 dark:text-gray-400 mb-1">Enveloppe budgétaire liée</div>
+                                    <div class="font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                                        <i data-lucide="pie-chart" class="w-4 h-4 text-accent-500"></i>
+                                        <a href="../04-budget-pilotage-financier-projet/ecr-04-02-detail-budget-et-postes-de-cout.html" class="hover:text-accent-600 dark:hover:text-accent-400 underline decoration-gray-300 dark:decoration-gray-700 underline-offset-2">BUD-2023-Achats</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Workflow/Status -->
+                    <div class="col-span-1 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 shadow-theme-xs self-start">
+                        <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-4">Circuit de validation</h3>
+                        
+                        <div class="relative mt-2">
+                            <!-- Line -->
+                            <div class="absolute top-0 bottom-0 left-3 w-px bg-gray-200 dark:bg-gray-700"></div>
+                            
+                            <!-- Steps -->
+                            <div class="space-y-6 relative">
+                                <!-- Step 1 -->
+                                <div class="flex items-start gap-4">
+                                    <div class="w-6 h-6 rounded-full bg-success-500 flex items-center justify-center shrink-0 z-10 ring-4 ring-white dark:ring-gray-900">
+                                        <i data-lucide="check" class="w-3 h-3 text-white"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-900 dark:text-white">Création DA</div>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400">25 Oct 2023, 10:15</div>
+                                    </div>
+                                </div>
+                                <!-- Step 2 -->
+                                <div class="flex items-start gap-4">
+                                    <div class="w-6 h-6 rounded-full bg-success-500 flex items-center justify-center shrink-0 z-10 ring-4 ring-white dark:ring-gray-900">
+                                        <i data-lucide="check" class="w-3 h-3 text-white"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-900 dark:text-white">Approbation Manager</div>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400">25 Oct 2023, 11:30 par J. Dupont</div>
+                                    </div>
+                                </div>
+                                <!-- Step 3 -->
+                                <div class="flex items-start gap-4">
+                                    <div class="w-6 h-6 rounded-full bg-success-500 flex items-center justify-center shrink-0 z-10 ring-4 ring-white dark:ring-gray-900">
+                                        <i data-lucide="check" class="w-3 h-3 text-white"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-900 dark:text-white">Validation Direction</div>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400">26 Oct 2023, 09:00 par A. Leroy</div>
+                                    </div>
+                                </div>
+                                <!-- Step 4 -->
+                                <div class="flex items-start gap-4">
+                                    <div class="w-6 h-6 rounded-full bg-accent-500 flex items-center justify-center shrink-0 z-10 ring-4 ring-white dark:ring-gray-900">
+                                        <span class="w-2 h-2 rounded-full bg-white"></span>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-900 dark:text-white">En attente traitement (Commande)</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Articles Table -->
+                <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-theme-xs overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
+                        <h3 class="text-base font-semibold text-gray-900 dark:text-white">Lignes d'achat</h3>
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm font-medium text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-lg">3 lignes</span>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800 text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                    <th class="px-6 py-3 font-semibold">Référence & Description</th>
+                                    <th class="px-6 py-3 font-semibold text-right">Quantité</th>
+                                    <th class="px-6 py-3 font-semibold text-right">Prix U. Estimé</th>
+                                    <th class="px-6 py-3 font-semibold text-right">Total HT Estimé</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
+                                
+                                <!-- Ligne 1 -->
+                                <tr>
+                                    <td class="px-6 py-4">
+                                        <div class="flex flex-col">
+                                            <span class="font-medium text-gray-900 dark:text-white">ART-EQ-405</span>
+                                            <span class="text-sm text-gray-500 dark:text-gray-400">Switch Réseau 24 ports Gigabit PoE+</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <div class="font-medium text-gray-900 dark:text-white">10 Unité</div>
+                                    </td>
+                                    <td class="px-6 py-4 text-right text-gray-600 dark:text-gray-400">
+                                        450,00 €
+                                    </td>
+                                    <td class="px-6 py-4 text-right font-medium text-gray-900 dark:text-white">
+                                        4 500,00 €
+                                    </td>
+                                </tr>
+
+                                <!-- Ligne 2 -->
+                                <tr>
+                                    <td class="px-6 py-4">
+                                        <div class="flex flex-col">
+                                            <span class="font-medium text-gray-900 dark:text-white">ART-CB-702</span>
+                                            <span class="text-sm text-gray-500 dark:text-gray-400">Baie de Brassage 42U 800x800</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <div class="font-medium text-gray-900 dark:text-white">5 Unité</div>
+                                    </td>
+                                    <td class="px-6 py-4 text-right text-gray-600 dark:text-gray-400">
+                                        1 100,00 €
+                                    </td>
+                                    <td class="px-6 py-4 text-right font-medium text-gray-900 dark:text-white">
+                                        5 500,00 €
+                                    </td>
+                                </tr>
+
+                                <!-- Ligne 3 -->
+                                <tr>
+                                    <td class="px-6 py-4">
+                                        <div class="flex flex-col">
+                                            <span class="font-medium text-gray-900 dark:text-white">CBL-RJ45-100</span>
+                                            <span class="text-sm text-gray-500 dark:text-gray-400">Bobine Câble RJ45 Cat6A (100m)</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <div class="font-medium text-gray-900 dark:text-white">30 Unité</div>
+                                    </td>
+                                    <td class="px-6 py-4 text-right text-gray-600 dark:text-gray-400">
+                                        95,00 €
+                                    </td>
+                                    <td class="px-6 py-4 text-right font-medium text-gray-900 dark:text-white">
+                                        2 850,00 €
+                                    </td>
+                                </tr>
+                                
+                                <!-- Total Footer -->
+                                <tr class="bg-gray-50 dark:bg-gray-800/50 font-semibold text-gray-900 dark:text-white">
+                                    <td colspan="3" class="px-6 py-4 text-right">Total Estimé HT :</td>
+                                    <td class="px-6 py-4 text-right text-lg">12 850,00 €</td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

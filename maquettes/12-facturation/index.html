@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 12 - Facturation - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3', 900: '#054f31' },
+                        error: { 500: '#f04438', 50: '#fef3f2', 900: '#7a271d' },
+                        warning: { 500: '#f79009', 50: '#fffaeb', 900: '#7a4504' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen">
+    
+    <div class="max-w-5xl mx-auto py-12 px-6">
+        
+        <div class="mb-10">
+            <div class="flex items-center gap-3 text-accent-600 dark:text-accent-500 font-bold text-xl mb-6">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP - Maquettes</span>
+            </div>
+            <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">Module 12 : Facturation</h1>
+            <p class="text-lg text-gray-600 dark:text-gray-400 max-w-3xl">
+                Ce module centralise la création, l'émission, la consultation et la correction des factures.
+                Il permet de générer des factures à partir de différentes origines (PV de réalisation, situations de travaux, contrats) et de gérer le cycle de vie de la facturation (brouillon, émise, payée, annulée, en litige) ainsi que l'émission d'avoirs.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+            <a href="ecr-12-01-registre-des-factures.html" class="block bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 hover:shadow-lg transition-all hover:border-accent-500 dark:hover:border-accent-500 group">
+                <div class="w-12 h-12 rounded-lg bg-accent-50 dark:bg-accent-900/30 flex items-center justify-center text-accent-600 dark:text-accent-500 mb-4 group-hover:scale-110 transition-transform">
+                    <i data-lucide="file-text" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Registre des factures</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                    Recherche et filtrage de l'historique des factures selon origine, statut, client, affaire ou projet (ECR-12-01).
+                </p>
+                <div class="flex items-center gap-2 text-xs font-medium text-accent-600 dark:text-accent-500">
+                    <span>Voir la maquette</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </div>
+            </a>
+
+            <a href="ecr-12-02-assistant-nouvelle-facture.html" class="block bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 hover:shadow-lg transition-all hover:border-accent-500 dark:hover:border-accent-500 group">
+                <div class="w-12 h-12 rounded-lg bg-accent-50 dark:bg-accent-900/30 flex items-center justify-center text-accent-600 dark:text-accent-500 mb-4 group-hover:scale-110 transition-transform">
+                    <i data-lucide="plus-circle" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Assistant nouvelle facture</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                    Création d'une facture depuis un PV, une situation de travaux ou un mode contractuel spécifique (ECR-12-02).
+                </p>
+                <div class="flex items-center gap-2 text-xs font-medium text-accent-600 dark:text-accent-500">
+                    <span>Voir la maquette</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </div>
+            </a>
+
+            <a href="ecr-12-03-fiche-facture.html" class="block bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 hover:shadow-lg transition-all hover:border-accent-500 dark:hover:border-accent-500 group">
+                <div class="w-12 h-12 rounded-lg bg-accent-50 dark:bg-accent-900/30 flex items-center justify-center text-accent-600 dark:text-accent-500 mb-4 group-hover:scale-110 transition-transform">
+                    <i data-lucide="receipt" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Fiche facture</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                    Consultation, correction, annulation, traçabilité et gestion du cycle de vie d'une facture (ECR-12-03).
+                </p>
+                <div class="flex items-center gap-2 text-xs font-medium text-accent-600 dark:text-accent-500">
+                    <span>Voir la maquette</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </div>
+            </a>
+
+        </div>
+        
+        <div class="mt-12 flex justify-center">
+            <button onclick="document.documentElement.classList.toggle('dark')" class="flex items-center gap-2 px-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                <i data-lucide="moon" class="w-4 h-4 block dark:hidden"></i>
+                <i data-lucide="sun" class="w-4 h-4 hidden dark:block"></i>
+                <span class="block dark:hidden">Passer en mode sombre</span>
+                <span class="hidden dark:block">Passer en mode clair</span>
+            </button>
+        </div>
+        
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

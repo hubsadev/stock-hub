@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fiche Facture - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3', 900: '#054f31' },
+                        error: { 500: '#f04438', 50: '#fef3f2', 900: '#7a271d' },
+                        warning: { 500: '#f79009', 50: '#fffaeb', 900: '#7a4504' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .tab-active { border-bottom-width: 2px; border-color: #465fff; color: #465fff; }
+        .dark .tab-active { border-color: #465fff; color: #465fff; }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20 shrink-0">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Facturation</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="home" class="w-5 h-5"></i>
+                    <span class="truncate">Accueil Module</span>
+                </a>
+                <a href="ecr-12-01-registre-des-factures.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                    <span class="truncate">Registre des factures</span>
+                </a>
+                <a href="ecr-12-02-assistant-nouvelle-facture.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                    <span class="truncate">Nouvelle facture</span>
+                </a>
+                <a href="ecr-12-03-fiche-facture.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500">
+                    <i data-lucide="receipt" class="w-5 h-5"></i>
+                    <span class="truncate">Fiche facture</span>
+                </a>
+            </nav>
+            
+            <div class="mt-8">
+                <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Modules liés</div>
+                <nav class="space-y-1">
+                    <a href="../03-contrats-affaires-projets/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="briefcase" class="w-5 h-5"></i>
+                        <span class="truncate">Contrats & Projets</span>
+                    </a>
+                    <a href="../08-pv-preuves-de-realisation/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="file-check" class="w-5 h-5"></i>
+                        <span class="truncate">PV & Preuves</span>
+                    </a>
+                    <a href="../11-btp-avancement-attachements-situations/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="hard-hat" class="w-5 h-5"></i>
+                        <span class="truncate">Situations BTP</span>
+                    </a>
+                    <a href="../13-encaissement-recouvrement/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="credit-card" class="w-5 h-5"></i>
+                        <span class="truncate">Encaissement</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+        
+        <div class="p-4 border-t border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-3">
+                <img src="https://ui-avatars.com/api/?name=Admin&background=465fff&color=fff" alt="User" class="w-8 h-8 rounded-full">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">Admin User</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate">Comptabilité</p>
+                </div>
+                <button onclick="document.documentElement.classList.toggle('dark')" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+                    <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+        
+        <!-- Header -->
+        <header class="h-16 flex items-center justify-between px-6 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shrink-0 z-10">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <div class="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                    <a href="ecr-12-01-registre-des-factures.html" class="hover:text-gray-900 dark:hover:text-white transition-colors">Facturation</a>
+                    <i data-lucide="chevron-right" class="w-4 h-4 mx-1"></i>
+                    <a href="ecr-12-01-registre-des-factures.html" class="hover:text-gray-900 dark:hover:text-white transition-colors">Registre</a>
+                    <i data-lucide="chevron-right" class="w-4 h-4 mx-1"></i>
+                    <span class="text-gray-900 dark:text-white font-medium">FAC-2023-10-042</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Area -->
+        <div class="flex-1 overflow-auto bg-gray-50 dark:bg-gray-950 p-6 no-scrollbar">
+            
+            <div class="max-w-6xl mx-auto space-y-6">
+                
+                <!-- Invoice Header Card -->
+                <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm overflow-hidden">
+                    <div class="p-6">
+                        <div class="flex flex-col md:flex-row md:items-start justify-between gap-6">
+                            
+                            <!-- Identity & Status -->
+                            <div class="flex flex-col gap-3">
+                                <div class="flex items-center gap-3">
+                                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">FAC-2023-10-042</h1>
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-accent-50 text-accent-700 dark:bg-accent-900/30 dark:text-accent-500 border border-accent-200 dark:border-accent-800/50">
+                                        Émise
+                                    </span>
+                                </div>
+                                
+                                <div class="flex flex-wrap items-center gap-y-2 gap-x-6 text-sm text-gray-600 dark:text-gray-400">
+                                    <div class="flex items-center gap-2">
+                                        <i data-lucide="calendar" class="w-4 h-4"></i>
+                                        <span>Créée le 15/10/2023</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <i data-lucide="building-2" class="w-4 h-4"></i>
+                                        <span>Tech Solutions</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <i data-lucide="briefcase" class="w-4 h-4"></i>
+                                        <a href="#" class="text-accent-600 hover:underline">PRJ-2023-018</a>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <i data-lucide="file-check" class="w-4 h-4"></i>
+                                        <span>Origine: <a href="#" class="text-accent-600 hover:underline">PV-2023-089</a></span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Financial Summary (Header) -->
+                            <div class="flex flex-col sm:items-end text-left sm:text-right">
+                                <span class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Montant TTC</span>
+                                <span class="text-4xl font-bold text-gray-900 dark:text-white">15 000,00 €</span>
+                                <div class="mt-2 flex items-center sm:justify-end gap-2 text-sm">
+                                    <span class="text-error-600 dark:text-error-500 font-medium">Reste à payer: 15 000,00 €</span>
+                                    <span class="text-gray-400">|</span>
+                                    <span class="text-gray-500">Échéance : 30/11/2023</span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    
+                    <!-- Action Toolbar -->
+                    <div class="px-6 py-4 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-800 flex flex-wrap items-center gap-3">
+                        <button class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-sm">
+                            <i data-lucide="download" class="w-4 h-4"></i>
+                            <span>Télécharger PDF</span>
+                        </button>
+                        <button class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-sm">
+                            <i data-lucide="mail" class="w-4 h-4"></i>
+                            <span>Envoyer par email</span>
+                        </button>
+                        
+                        <div class="h-6 w-px bg-gray-300 dark:bg-gray-700 mx-2 hidden sm:block"></div>
+                        
+                        <button class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-sm">
+                            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                            <span>Émettre un avoir</span>
+                        </button>
+                        <button class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-medium text-error-600 dark:text-error-500 hover:bg-error-50 dark:hover:bg-error-900/20 transition-colors shadow-sm">
+                            <i data-lucide="x-circle" class="w-4 h-4"></i>
+                            <span>Annuler</span>
+                        </button>
+                        
+                        <div class="flex-1"></div>
+                        
+                        <button class="flex items-center gap-2 px-4 py-2 bg-success-600 hover:bg-success-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm">
+                            <i data-lucide="euro" class="w-4 h-4"></i>
+                            <span>Saisir un règlement</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <div class="border-b border-gray-200 dark:border-gray-800">
+                    <nav class="-mb-px flex space-x-8">
+                        <a href="#" class="tab-active whitespace-nowrap py-4 px-1 font-medium text-sm flex items-center gap-2">
+                            <i data-lucide="list" class="w-4 h-4"></i>
+                            Détails & Lignes
+                        </a>
+                        <a href="#" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-700 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2">
+                            <i data-lucide="history" class="w-4 h-4"></i>
+                            Historique & Traçabilité
+                        </a>
+                        <a href="#" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-700 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2">
+                            <i data-lucide="message-square" class="w-4 h-4"></i>
+                            Commentaires (2)
+                        </a>
+                    </nav>
+                </div>
+
+                <!-- Tab Content: Details & Lignes -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Left Column: Lines -->
+                    <div class="lg:col-span-2 space-y-6">
+                        
+                        <!-- Client & Conditions Info -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <!-- Info Client -->
+                            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 shadow-sm">
+                                <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-3">Facturé à</h3>
+                                <div class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
+                                    <p class="font-bold text-gray-900 dark:text-white text-base">Tech Solutions</p>
+                                    <p>124 Avenue des Champs</p>
+                                    <p>75008 Paris</p>
+                                    <p>France</p>
+                                    <p class="mt-2 text-gray-500">TVA Intracom: FR89 123456789</p>
+                                </div>
+                            </div>
+
+                            <!-- Conditions -->
+                            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 shadow-sm">
+                                <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-3">Conditions de paiement</h3>
+                                <div class="text-sm text-gray-700 dark:text-gray-300 space-y-3">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-500">Condition :</span>
+                                        <span class="font-medium">45 jours fin de mois</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-500">Mode :</span>
+                                        <span class="font-medium">Virement bancaire</span>
+                                    </div>
+                                    <div class="flex justify-between text-error-600 dark:text-error-500">
+                                        <span>Échéance :</span>
+                                        <span class="font-medium">30/11/2023</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Lines Table -->
+                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm overflow-hidden">
+                            <div class="p-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50 flex items-center justify-between">
+                                <h3 class="text-base font-bold text-gray-900 dark:text-white">Lignes de la facture</h3>
+                            </div>
+                            
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-sm whitespace-nowrap">
+                                    <thead class="bg-white dark:bg-gray-900 text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-800">
+                                        <tr>
+                                            <th class="px-6 py-3 font-medium">Description</th>
+                                            <th class="px-6 py-3 font-medium text-right">Qté</th>
+                                            <th class="px-6 py-3 font-medium text-right">Prix Unitaire</th>
+                                            <th class="px-6 py-3 font-medium text-right">TVA</th>
+                                            <th class="px-6 py-3 font-medium text-right">Total HT</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200 dark:divide-gray-800 text-gray-700 dark:text-gray-300">
+                                        <tr>
+                                            <td class="px-6 py-4">
+                                                <p class="font-medium text-gray-900 dark:text-white">Tirage de câbles optiques (ml)</p>
+                                                <p class="text-xs text-gray-500">Ref: CAB-OPT-01</p>
+                                            </td>
+                                            <td class="px-6 py-4 text-right">1200</td>
+                                            <td class="px-6 py-4 text-right">4,50 €</td>
+                                            <td class="px-6 py-4 text-right">20%</td>
+                                            <td class="px-6 py-4 text-right font-medium text-gray-900 dark:text-white">5 400,00 €</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4">
+                                                <p class="font-medium text-gray-900 dark:text-white">Installation baies de brassage (u)</p>
+                                                <p class="text-xs text-gray-500">Ref: INST-BAIE</p>
+                                            </td>
+                                            <td class="px-6 py-4 text-right">3</td>
+                                            <td class="px-6 py-4 text-right">850,00 €</td>
+                                            <td class="px-6 py-4 text-right">20%</td>
+                                            <td class="px-6 py-4 text-right font-medium text-gray-900 dark:text-white">2 550,00 €</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4">
+                                                <p class="font-medium text-gray-900 dark:text-white">Recette et certification (forfait)</p>
+                                                <p class="text-xs text-gray-500">Ref: RECETTE-01</p>
+                                            </td>
+                                            <td class="px-6 py-4 text-right">1</td>
+                                            <td class="px-6 py-4 text-right">4 550,00 €</td>
+                                            <td class="px-6 py-4 text-right">20%</td>
+                                            <td class="px-6 py-4 text-right font-medium text-gray-900 dark:text-white">4 550,00 €</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Right Column: Summary & Payment -->
+                    <div class="space-y-6">
+                        
+                        <!-- Recap Card -->
+                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 shadow-sm">
+                            <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 border-b border-gray-200 dark:border-gray-800 pb-2">Récapitulatif Financier</h3>
+                            
+                            <div class="space-y-3 text-sm">
+                                <div class="flex justify-between text-gray-600 dark:text-gray-400">
+                                    <span>Total HT</span>
+                                    <span>12 500,00 €</span>
+                                </div>
+                                <div class="flex justify-between text-gray-600 dark:text-gray-400">
+                                    <span>TVA 20%</span>
+                                    <span>2 500,00 €</span>
+                                </div>
+                                
+                                <div class="pt-3 border-t border-gray-200 dark:border-gray-800">
+                                    <div class="flex justify-between font-bold text-gray-900 dark:text-white text-lg">
+                                        <span>Total TTC</span>
+                                        <span>15 000,00 €</span>
+                                    </div>
+                                </div>
+
+                                <div class="pt-3 border-t border-gray-200 dark:border-gray-800 mt-3 space-y-2">
+                                    <div class="flex justify-between text-success-600 dark:text-success-500 font-medium">
+                                        <span>Déjà réglé</span>
+                                        <span>0,00 €</span>
+                                    </div>
+                                    <div class="flex justify-between text-error-600 dark:text-error-500 font-bold text-base">
+                                        <span>Reste à payer</span>
+                                        <span>15 000,00 €</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Info Card: Traçabilité Rapide -->
+                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 shadow-sm">
+                            <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Informations Clés</h3>
+                            
+                            <div class="space-y-4">
+                                <div class="flex gap-3 items-start">
+                                    <div class="w-8 h-8 rounded-full bg-accent-50 dark:bg-accent-900/30 flex items-center justify-center text-accent-600 dark:text-accent-500 shrink-0">
+                                        <i data-lucide="file-check" class="w-4 h-4"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900 dark:text-white">Basée sur un PV</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">La facture reflète fidèlement le <a href="#" class="text-accent-600 hover:underline">PV-2023-089</a> validé par le client le 12/10/2023.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex gap-3 items-start">
+                                    <div class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-400 shrink-0">
+                                        <i data-lucide="mail-check" class="w-4 h-4"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900 dark:text-white">Transmission Client</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Facture envoyée par email le 15/10/2023 à contact@techsolutions.fr.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button class="w-full mt-4 text-center text-sm font-medium text-accent-600 hover:text-accent-700 dark:text-accent-500 transition-colors">
+                                Voir tout l'historique
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

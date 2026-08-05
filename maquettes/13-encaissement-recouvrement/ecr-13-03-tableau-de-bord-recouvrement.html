@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de bord recouvrement - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3', 900: '#054f31' },
+                        error: { 500: '#f04438', 50: '#fef3f2', 900: '#7a271d' },
+                        warning: { 500: '#f79009', 50: '#fffaeb', 900: '#7a4504' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20 shrink-0">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="wallet" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Encaissement & Recouvrement</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="home" class="w-5 h-5"></i>
+                    <span class="truncate">Accueil Module</span>
+                </a>
+                <a href="ecr-13-01-formulaire-d-encaissement-client.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                    <span class="truncate">Saisir un encaissement</span>
+                </a>
+                <a href="ecr-13-02-fiche-encaissement.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
+                    <span class="truncate">Fiches encaissements</span>
+                </a>
+                <a href="ecr-13-03-tableau-de-bord-recouvrement.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500">
+                    <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+                    <span class="truncate">Tableau de bord</span>
+                </a>
+                <a href="ecr-13-04-dossier-relance-client.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="contact" class="w-5 h-5"></i>
+                    <span class="truncate">Dossiers de relance</span>
+                </a>
+                <a href="ecr-13-05-ecran-de-rapprochement-paiements-factures.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="arrow-left-right" class="w-5 h-5"></i>
+                    <span class="truncate">Rapprochement</span>
+                </a>
+                <a href="ecr-13-06-file-des-paiements-non-rapproches.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                    <span class="truncate">Paiements non rapprochés</span>
+                </a>
+            </nav>
+
+            <div class="mt-8">
+                <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Modules liés</div>
+                <nav class="space-y-1">
+                    <a href="../12-facturation/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="receipt" class="w-5 h-5"></i>
+                        <span class="truncate">Facturation</span>
+                    </a>
+                    <a href="../16-gouvernance-validation-controle-interne/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="shield-check" class="w-5 h-5"></i>
+                        <span class="truncate">Gouvernance</span>
+                    </a>
+                    <a href="../17-reporting-kpi-direction/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="pie-chart" class="w-5 h-5"></i>
+                        <span class="truncate">Reporting KPI</span>
+                    </a>
+                    <a href="../18-vue-transverse-affaire-projet/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="folder-kanban" class="w-5 h-5"></i>
+                        <span class="truncate">Vue Projet</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+        
+        <div class="p-4 border-t border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-3">
+                <img src="https://ui-avatars.com/api/?name=Admin&background=465fff&color=fff" alt="User" class="w-8 h-8 rounded-full">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">Admin User</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate">Comptabilité</p>
+                </div>
+                <button onclick="document.documentElement.classList.toggle('dark')" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+                    <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden bg-gray-50 dark:bg-gray-950">
+        
+        <!-- Topbar -->
+        <header class="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 shrink-0 z-10">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <nav class="flex text-sm text-gray-500 dark:text-gray-400" aria-label="Breadcrumb">
+                    <ol class="flex items-center space-x-2">
+                        <li><a href="index.html" class="hover:text-gray-900 dark:hover:text-white transition-colors">Encaissements</a></li>
+                        <li><i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i></li>
+                        <li class="text-gray-900 dark:text-white font-medium" aria-current="page">Tableau de bord recouvrement</li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="flex items-center gap-4">
+                <button class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 relative">
+                    <i data-lucide="bell" class="w-5 h-5"></i>
+                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-error-500 rounded-full border border-white dark:border-gray-900"></span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <div class="flex-1 overflow-auto bg-gray-50 dark:bg-gray-950 p-6 no-scrollbar">
+            
+            <div class="max-w-7xl mx-auto space-y-6">
+                
+                <!-- Page Title & Actions -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Tableau de bord recouvrement</h1>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Pilotez les échéances, suivez les retards et organisez vos relances clients.</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-theme-xs">
+                            <i data-lucide="download" class="w-4 h-4"></i>
+                            <span class="hidden sm:inline">Exporter</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- KPI Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 shadow-theme-xs">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500 dark:text-gray-400">
+                                <i data-lucide="clock" class="w-4 h-4"></i>
+                            </div>
+                            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Total En-cours</h3>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <span class="text-2xl font-bold text-gray-900 dark:text-white">245 800 €</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Factures émises non soldées</p>
+                    </div>
+                    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 shadow-theme-xs border-b-4 border-b-warning-500">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="w-8 h-8 rounded-lg bg-warning-50 dark:bg-warning-900/30 flex items-center justify-center text-warning-600 dark:text-warning-500">
+                                <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                            </div>
+                            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Retard (1-30j)</h3>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <span class="text-2xl font-bold text-gray-900 dark:text-white">42 150 €</span>
+                        </div>
+                        <p class="text-xs text-warning-600 dark:text-warning-500 font-medium mt-1">12 factures à relancer</p>
+                    </div>
+                    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 shadow-theme-xs border-b-4 border-b-error-500">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="w-8 h-8 rounded-lg bg-error-50 dark:bg-error-900/30 flex items-center justify-center text-error-600 dark:text-error-500">
+                                <i data-lucide="alert-octagon" class="w-4 h-4"></i>
+                            </div>
+                            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Retard critique (>30j)</h3>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <span class="text-2xl font-bold text-gray-900 dark:text-white">18 450 €</span>
+                        </div>
+                        <p class="text-xs text-error-600 dark:text-error-500 font-medium mt-1">3 factures en souffrance</p>
+                    </div>
+                    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 shadow-theme-xs border-b-4 border-b-gray-400">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500 dark:text-gray-400">
+                                <i data-lucide="scale" class="w-4 h-4"></i>
+                            </div>
+                            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Litiges</h3>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <span class="text-2xl font-bold text-gray-900 dark:text-white">8 500 €</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">2 dossiers en cours</p>
+                    </div>
+                </div>
+
+                <!-- Filters & Table -->
+                <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-theme-xs overflow-hidden flex flex-col">
+                    
+                    <!-- Filters Bar -->
+                    <div class="p-4 border-b border-gray-200 dark:border-gray-800 flex flex-wrap items-center justify-between gap-4 bg-gray-50/50 dark:bg-gray-900/50">
+                        <div class="flex flex-wrap items-center gap-3 flex-1">
+                            <div class="relative min-w-[200px] flex-1 sm:flex-none">
+                                <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                <input type="text" placeholder="Rechercher un client, une facture..." class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-950 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500 dark:focus:ring-accent-500/50">
+                            </div>
+                            
+                            <select class="px-3 py-2 text-sm border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-950 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-accent-500">
+                                <option value="">Tous les statuts</option>
+                                <option value="non_echu">Non échu</option>
+                                <option value="echu" selected>Échu (Retard)</option>
+                                <option value="en_relance">En relance</option>
+                                <option value="litige">En litige</option>
+                            </select>
+
+                            <select class="px-3 py-2 text-sm border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-950 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-accent-500">
+                                <option value="">Toutes les périodes</option>
+                                <option value="30j">Retard 1 à 30 jours</option>
+                                <option value="60j">Retard 31 à 60 jours</option>
+                                <option value="90j">Retard +60 jours</option>
+                            </select>
+                        </div>
+                        
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm text-gray-500">Trier par :</span>
+                            <select class="px-3 py-2 text-sm border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-950 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-accent-500">
+                                <option value="retard_desc">Retard décroissant</option>
+                                <option value="montant_desc">Montant décroissant</option>
+                                <option value="client_asc">Client (A-Z)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Table List -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm whitespace-nowrap">
+                            <thead class="bg-white dark:bg-gray-900 text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-800">
+                                <tr>
+                                    <th class="px-6 py-3 font-medium">Facture</th>
+                                    <th class="px-6 py-3 font-medium">Client</th>
+                                    <th class="px-6 py-3 font-medium">Échéance</th>
+                                    <th class="px-6 py-3 font-medium">Statut</th>
+                                    <th class="px-6 py-3 font-medium text-right">Reste à payer</th>
+                                    <th class="px-6 py-3 font-medium text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
+                                
+                                <!-- Facture Échue Critique -->
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 bg-error-50/30 dark:bg-error-900/10">
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <a href="../12-facturation/ecr-12-03-fiche-facture.html" class="font-medium text-gray-900 dark:text-white hover:text-accent-600 dark:hover:text-accent-500">FAC-2023-0185</a>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="font-medium text-gray-900 dark:text-white">GLOBAL CORP</div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="text-gray-900 dark:text-white">15/01/2024</div>
+                                        <div class="text-xs text-error-600 dark:text-error-500 font-medium mt-0.5">Retard: 60 jours</div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-error-100 text-error-800 dark:bg-error-900/30 dark:text-error-400">
+                                            Échue
+                                        </span>
+                                        <div class="text-[10px] text-gray-500 mt-1 flex items-center gap-1">
+                                            <i data-lucide="mail" class="w-3 h-3"></i>
+                                            Relancée le 01/03
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <div class="font-bold text-gray-900 dark:text-white">14 200,00 €</div>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <a href="ecr-13-04-dossier-relance-client.html" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-error-600 rounded-lg hover:bg-error-700 transition-colors shadow-theme-xs">
+                                            <i data-lucide="bell-ring" class="w-3.5 h-3.5"></i>
+                                            Relancer
+                                        </a>
+                                    </td>
+                                </tr>
+
+                                <!-- Facture Échue -->
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 bg-warning-50/30 dark:bg-warning-900/10">
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <a href="../12-facturation/ecr-12-03-fiche-facture.html" class="font-medium text-gray-900 dark:text-white hover:text-accent-600 dark:hover:text-accent-500">FAC-2024-0028</a>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="font-medium text-gray-900 dark:text-white">TECH-SOLUTIONS S.A</div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="text-gray-900 dark:text-white">10/02/2024</div>
+                                        <div class="text-xs text-warning-600 dark:text-warning-500 font-medium mt-0.5">Retard: 35 jours</div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-warning-100 text-warning-800 dark:bg-warning-900/30 dark:text-warning-400">
+                                            Échue
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <div class="font-bold text-gray-900 dark:text-white">12 000,00 €</div>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <a href="ecr-13-04-dossier-relance-client.html" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-theme-xs">
+                                            Voir dossier
+                                        </a>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Facture En relance -->
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <a href="../12-facturation/ecr-12-03-fiche-facture.html" class="font-medium text-gray-900 dark:text-white hover:text-accent-600 dark:hover:text-accent-500">FAC-2024-0015</a>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="font-medium text-gray-900 dark:text-white">INNOV SYSTEMS</div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="text-gray-900 dark:text-white">28/02/2024</div>
+                                        <div class="text-xs text-warning-600 dark:text-warning-500 font-medium mt-0.5">Retard: 16 jours</div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-accent-100 text-accent-800 dark:bg-accent-900/30 dark:text-accent-400">
+                                            En relance
+                                        </span>
+                                        <div class="text-[10px] text-gray-500 mt-1 flex items-center gap-1">
+                                            <i data-lucide="phone" class="w-3 h-3"></i>
+                                            Appel le 12/03
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <div class="font-bold text-gray-900 dark:text-white">4 500,00 €</div>
+                                        <div class="text-xs text-gray-500">Partiellement payée (500€)</div>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <a href="ecr-13-04-dossier-relance-client.html" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-theme-xs">
+                                            Voir dossier
+                                        </a>
+                                    </td>
+                                </tr>
+
+                                <!-- Facture Litige -->
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 opacity-80">
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <a href="../12-facturation/ecr-12-03-fiche-facture.html" class="font-medium text-gray-900 dark:text-white hover:text-accent-600 dark:hover:text-accent-500">FAC-2023-0140</a>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="font-medium text-gray-900 dark:text-white">BUILD & CO</div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="text-gray-900 dark:text-white">15/12/2023</div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300">
+                                            Litige
+                                        </span>
+                                        <div class="text-[10px] text-gray-500 mt-1 flex items-center gap-1">
+                                            Suspendue (Qualité)
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <div class="font-bold text-gray-900 dark:text-white">8 500,00 €</div>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <button class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-400 dark:text-gray-600 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg cursor-not-allowed shadow-theme-xs" disabled>
+                                            Non relançable
+                                        </button>
+                                    </td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 flex items-center justify-between">
+                        <span class="text-sm text-gray-500 dark:text-gray-400">Affichage de <span class="font-medium text-gray-900 dark:text-white">1</span> à <span class="font-medium text-gray-900 dark:text-white">4</span> sur <span class="font-medium text-gray-900 dark:text-white">15</span> factures</span>
+                        <div class="flex items-center gap-2">
+                            <button class="p-2 border border-gray-200 dark:border-gray-800 rounded-lg hover:bg-white dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 transition-colors disabled:opacity-50" disabled>
+                                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                            </button>
+                            <button class="p-2 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors">
+                                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+﻿Vision - Stock Hub
+
+Pourquoi on fait cette app :
+- Le suivi stock existe deja dans Excel.
+- Le fichier Excel contient beaucoup d'informations utiles, mais il reste fragile.
+- Certaines formules affichent deja des erreurs comme #REF!.
+- Les gestionnaires stock et audit ont besoin d'un outil rapidement utilisable.
+- Le module Stock complet de HubERP prendra plus de temps avant d'etre stable et adopte.
+
+But de Stock Hub :
+- Remplacer progressivement le fichier Excel par une mini app simple.
+- Garder une vision claire du stock reel.
+- Savoir ce qui est disponible, sorti, affecte, en retour, en retard, perdu ou defectueux.
+- Donner a l'audit un historique clair des mouvements.
+- Preparer le futur module Stock de HubERP.
+
+Utilisateurs cibles :
+- Gestionnaire de stock.
+- Responsable logistique.
+- Audit / controle interne.
+- Chef de projet ou responsable chantier en consultation.
+- Admin pour la configuration.
+
+Positionnement :
+- Stock Hub est une app stock urgente et autonome.
+- Elle ne remplace pas HubERP.
+- Elle doit rester compatible avec HubERP.
+- Les concepts doivent rester proches : article, equipement, emplacement, entree, sortie, mouvement, projet, fournisseur, audit log.
+
+Ce que Stock Hub doit permettre :
+- Importer ou reprendre les donnees du fichier Excel.
+- Consulter le stock actuel.
+- Enregistrer les entrees.
+- Enregistrer les sorties.
+- Affecter du materiel a un employe, chantier ou projet.
+- Enregistrer les retours.
+- Voir les ruptures et stocks critiques.
+- Rechercher un materiel par code.
+- Voir l'historique des mouvements.
+- Exporter les donnees propres.
+
+Ce que Stock Hub ne doit pas devenir tout de suite :
+- Un ERP complet.
+- Un module achat complet.
+- Une comptabilite.
+- Un outil de facturation.
+- Une copie lourde de HubERP.
+
+Phrase a garder :
+- On fait simple, fiable et utile pour le stock reel.
+- On ne construit pas un deuxieme ERP.

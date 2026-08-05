@@ -1,0 +1,193 @@
+﻿Pense-bete presentation - Stock Hub
+
+1. Ouverture
+- Presenter Stock Hub comme une reponse rapide a un besoin terrain.
+- Le besoin vient des equipes stock et audit.
+- Aujourd'hui, le suivi existe deja dans Excel.
+- Le fichier Excel aide, mais il devient fragile avec le volume, les erreurs de saisie et les formules cassees.
+- L'objectif n'est pas de refaire tout HubERP a cote.
+- L'objectif est de sortir rapidement un outil simple pour suivre le stock, puis garder une base compatible avec HubERP.
+
+Message a faire passer :
+- Stock Hub est une mini application operationnelle.
+- Elle repond a l'urgence stock.
+- Elle pourra etre reprise ou integree dans HubERP plus tard.
+
+
+2. Probleme actuel
+- Le stock est suivi dans plusieurs feuilles Excel.
+- Les entrees, sorties, equipements, affectations et alertes sont separes.
+- Les chiffres peuvent devenir difficiles a verifier.
+- Certaines formules peuvent casser.
+- Il peut y avoir des doublons ou des ecarts entre feuilles.
+- L'audit manque d'une trace claire des actions.
+
+Message a faire passer :
+- Le probleme n'est pas que le fichier Excel est inutile.
+- Le probleme est qu'il atteint ses limites pour un suivi fiable et partage.
+
+
+3. Ce que Stock Hub doit permettre
+- Voir les articles et les equipements disponibles.
+- Enregistrer les entrees de stock.
+- Enregistrer les sorties de stock.
+- Bloquer les sorties si le stock est insuffisant.
+- Savoir ou se trouve le materiel.
+- Savoir a qui un equipement est affecte.
+- Voir les retards de retour.
+- Voir les alertes de stock faible.
+- Garder un historique des mouvements.
+- Exporter des donnees propres pour controle.
+
+Message a faire passer :
+- On veut passer d'un suivi manuel a un suivi controle.
+- Chaque mouvement doit laisser une trace.
+
+
+4. Difference avec HubERP
+- HubERP reste l'ERP principal.
+- HubERP porte les projets, achats, budgets, factures et rentabilite.
+- Stock Hub se concentre seulement sur le stock et la tracabilite materiel.
+- Les deux doivent rester compatibles.
+- Les articles, projets, chantiers et mouvements devront pouvoir etre alignes plus tard.
+
+Message a faire passer :
+- Stock Hub n'est pas une application concurrente a HubERP.
+- C'est une brique temporaire et utile, construite dans la meme logique.
+
+
+5. Lot 0 - Cadrage et reprise Excel
+- Lire le fichier Excel existant.
+- Identifier les feuilles vraiment utiles.
+- Reprendre les colonnes importantes.
+- Distinguer les donnees propres des donnees a verifier.
+- Decider ce qui devient referentiel.
+- Decider ce qui devient mouvement.
+
+A expliquer simplement :
+- Avant de coder, il faut comprendre ce que le fichier contient vraiment.
+- On ne copie pas l'Excel tel quel.
+- On garde ce qui sert au metier.
+
+
+6. Lot 1 - Referentiel stock
+- Articles.
+- Familles d'articles.
+- Fournisseurs.
+- Emplacements ou magasins.
+- Projets ou chantiers.
+- Equipements suivis individuellement.
+- Statuts article et equipement.
+- Import initial depuis Excel.
+
+A expliquer simplement :
+- C'est la base propre de l'application.
+- Sans referentiel propre, les mouvements seront faux.
+- Ce lot sert a savoir ce qu'on gere et ou c'est range.
+
+
+7. Lot 2 - Entrees et sorties stock
+- Enregistrer une entree.
+- Enregistrer une sortie.
+- Calculer le stock actuel.
+- Bloquer une sortie trop grande.
+- Associer une sortie a un employe, un projet, un chantier ou une destination.
+- Garder l'historique du mouvement.
+
+A expliquer simplement :
+- C'est le coeur de l'outil.
+- Le stock ne doit plus etre modifie directement a la main.
+- Il doit bouger uniquement par entree ou sortie.
+
+
+8. Lot 3 - Equipements et affectations
+- Creer un equipement avec un code inventaire.
+- Suivre marque, numero de serie, etat et localisation.
+- Affecter un equipement a une personne ou un projet.
+- Enregistrer un retour.
+- Marquer un equipement perdu, defectueux, vole ou en maintenance.
+- Rechercher rapidement un equipement.
+
+A expliquer simplement :
+- Les articles consommables et les equipements ne se suivent pas pareil.
+- Un cable peut sortir du stock et etre consomme.
+- Un ordinateur ou un appareil doit rester identifiable et tracable.
+
+
+9. Lot 4 - Alertes et audit
+- Stock critique.
+- Rupture de stock.
+- Equipements non retournes.
+- Retards de retour.
+- Doubles affectations suspectes.
+- Historique des actions.
+- Export Excel propre.
+
+A expliquer simplement :
+- L'audit doit pouvoir comprendre ce qui s'est passe.
+- Qui a fait quoi.
+- Quand.
+- Sur quel article ou equipement.
+- Avec quelle quantite.
+
+
+10. Lot 5 - Stabilisation terrain
+- Faire tester avec les gestionnaires stock.
+- Comparer les chiffres avec l'ancien Excel.
+- Corriger les libelles confus.
+- Corriger les parcours trop longs.
+- Ajouter les filtres importants.
+- Ajouter les exports demandes.
+
+A expliquer simplement :
+- Le but n'est pas seulement de coder.
+- Le but est que les personnes qui gerent le stock puissent vraiment l'utiliser.
+
+
+11. Lot 6 - Preparation integration HubERP
+- Aligner les articles avec le catalogue HubERP.
+- Aligner les projets et chantiers avec HubERP.
+- Prevoir les correspondances d'identifiants.
+- Prevoir un export propre pour migration.
+- Documenter les ecarts entre Stock Hub et HubERP.
+
+A expliquer simplement :
+- Stock Hub doit rester recuperable.
+- On evite de creer un outil isole qu'il faudra jeter plus tard.
+
+
+12. Interface visee
+- Interface plus moderne que l'Excel.
+- Style inspire des maquettes numerotees.
+- Boutons clairs.
+- Tableaux propres.
+- Filtres utiles.
+- Modals pour les formulaires.
+- Badges de statut.
+- KPIs simples.
+- Pas besoin de reprendre toute la complexite des maquettes des le debut.
+
+Message a faire passer :
+- On reprend le style, pas toute la profondeur fonctionnelle d'un coup.
+
+
+13. Ce qu'il faut valider avec la Direction
+- Est-ce que l'approche mini app est acceptee ?
+- Est-ce que le fichier Excel est bien la base de depart ?
+- Quels champs sont obligatoires pour le stock ?
+- Quels mouvements doivent etre controles en priorite ?
+- Qui peut entrer du stock ?
+- Qui peut sortir du stock ?
+- Qui peut valider ou auditer ?
+- Quels exports sont indispensables ?
+- Quels equipements doivent etre suivis individuellement ?
+
+
+14. Phrase de conclusion
+- On sait que HubERP doit evoluer vers un ERP plus complet.
+- Le stock est un besoin urgent et concret.
+- Stock Hub permet d'avancer vite sans attendre tout le module ERP complet.
+- La logique reste compatible avec HubERP.
+- On construit petit, mais propre.
+- Chaque lot doit etre teste avec les utilisateurs avant de passer au suivant.
+

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accueil Coûts Analytiques & Rentabilité - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3' },
+                        error: { 500: '#f04438', 50: '#fef3f2' },
+                        warning: { 500: '#f79009', 50: '#fffaeb' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Analytique & Marge</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                    <span class="truncate">Accueil Analytique</span>
+                </a>
+                <a href="ecr-10-01-fiche-cout-analytique-d-intervention.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                    <span class="truncate">Coût d'Intervention</span>
+                </a>
+                <a href="ecr-10-02-tableau-de-bord-analytique-consolide.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="pie-chart" class="w-5 h-5"></i>
+                    <span class="truncate">Analytique Consolidé</span>
+                </a>
+                <a href="ecr-10-03-tableau-de-bord-rentabilite-et-marge.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="trending-up" class="w-5 h-5"></i>
+                    <span class="truncate">Rentabilité & Marge</span>
+                </a>
+            </nav>
+        </div>
+        
+        <div class="p-4 border-t border-gray-200 dark:border-gray-800">
+            <div class="flex items-center gap-3">
+                <img src="https://ui-avatars.com/api/?name=Contrôleur+Gest&background=465fff&color=fff" alt="User" class="w-8 h-8 rounded-full">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">Contrôleur Gest</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate">finance@huberp.com</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+        <!-- Top Navigation -->
+        <header class="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 z-10">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <div class="flex flex-col">
+                    <div class="text-xs text-gray-500 dark:text-gray-400 font-medium">Module 10</div>
+                    <h1 class="text-xl font-bold text-gray-900 dark:text-white">Coûts analytiques & Rentabilité</h1>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <button class="p-2 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 relative">
+                    <i data-lucide="bell" class="w-5 h-5"></i>
+                </button>
+                <button class="p-2 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+                    <i data-lucide="search" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Content scrollable area -->
+        <div class="flex-1 overflow-y-auto p-6 lg:p-8">
+            <div class="max-w-7xl mx-auto space-y-8">
+                
+                <!-- Welcome Banner -->
+                <div class="bg-white dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">Module Coûts Analytiques & Rentabilité</h2>
+                        <p class="text-gray-500 dark:text-gray-400">Consultez les coûts réels des interventions, consolidez vos dépenses par affaire, et suivez la rentabilité et les marges de vos projets.</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <a href="ecr-10-03-tableau-de-bord-rentabilite-et-marge.html" class="px-4 py-2 bg-accent-600 text-white rounded-lg text-sm font-medium hover:bg-accent-700 transition-colors shadow-sm">
+                            Voir la Marge Globale
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Navigation Cards -->
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white pt-2">Catalogue des écrans du module</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    
+                    <!-- ECR-10-01 -->
+                    <a href="ecr-10-01-fiche-cout-analytique-d-intervention.html" class="block bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow p-6 group">
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 flex items-center justify-center group-hover:bg-accent-50 group-hover:text-accent-600 dark:group-hover:bg-accent-900/30 dark:group-hover:text-accent-500 transition-colors shrink-0">
+                                <i data-lucide="file-text" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">ECR-10-01</span>
+                                </div>
+                                <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-1 group-hover:text-accent-600 dark:group-hover:text-accent-500 transition-colors">Fiche coût analytique d'intervention</h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Calcul et consultation du coût réel d'une intervention à partir des temps, achats, stock, moyens utilisés.</p>
+                            </div>
+                        </div>
+                    </a>
+                    
+                    <!-- ECR-10-02 -->
+                    <a href="ecr-10-02-tableau-de-bord-analytique-consolide.html" class="block bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow p-6 group">
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 flex items-center justify-center group-hover:bg-accent-50 group-hover:text-accent-600 dark:group-hover:bg-accent-900/30 dark:group-hover:text-accent-500 transition-colors shrink-0">
+                                <i data-lucide="pie-chart" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">ECR-10-02</span>
+                                </div>
+                                <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-1 group-hover:text-accent-600 dark:group-hover:text-accent-500 transition-colors">Tableau de bord analytique consolidé</h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Consolidation du coût complet par affaire, projet, OT, et comparaison budget vs réel.</p>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- ECR-10-03 -->
+                    <a href="ecr-10-03-tableau-de-bord-rentabilite-et-marge.html" class="block bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow p-6 group">
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 flex items-center justify-center group-hover:bg-accent-50 group-hover:text-accent-600 dark:group-hover:bg-accent-900/30 dark:group-hover:text-accent-500 transition-colors shrink-0">
+                                <i data-lucide="trending-up" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">ECR-10-03</span>
+                                </div>
+                                <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-1 group-hover:text-accent-600 dark:group-hover:text-accent-500 transition-colors">Tableau de bord rentabilité et marge</h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Calcul et consultation de la marge réelle, rentabilité par client/projet, lecture des dérives.</p>
+                            </div>
+                        </div>
+                    </a>
+
+                </div>
+
+            </div>
+        </div>
+    </main>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

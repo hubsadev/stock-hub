@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fiche encaissement - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3', 900: '#054f31' },
+                        error: { 500: '#f04438', 50: '#fef3f2', 900: '#7a271d' },
+                        warning: { 500: '#f79009', 50: '#fffaeb', 900: '#7a4504' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20 shrink-0">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="wallet" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Encaissement & Recouvrement</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="home" class="w-5 h-5"></i>
+                    <span class="truncate">Accueil Module</span>
+                </a>
+                <a href="ecr-13-01-formulaire-d-encaissement-client.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                    <span class="truncate">Saisir un encaissement</span>
+                </a>
+                <a href="ecr-13-02-fiche-encaissement.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500">
+                    <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
+                    <span class="truncate">Fiches encaissements</span>
+                </a>
+                <a href="ecr-13-03-tableau-de-bord-recouvrement.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+                    <span class="truncate">Tableau de bord</span>
+                </a>
+                <a href="ecr-13-04-dossier-relance-client.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="contact" class="w-5 h-5"></i>
+                    <span class="truncate">Dossiers de relance</span>
+                </a>
+                <a href="ecr-13-05-ecran-de-rapprochement-paiements-factures.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="arrow-left-right" class="w-5 h-5"></i>
+                    <span class="truncate">Rapprochement</span>
+                </a>
+                <a href="ecr-13-06-file-des-paiements-non-rapproches.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                    <span class="truncate">Paiements non rapprochés</span>
+                </a>
+            </nav>
+
+            <div class="mt-8">
+                <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Modules liés</div>
+                <nav class="space-y-1">
+                    <a href="../12-facturation/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="receipt" class="w-5 h-5"></i>
+                        <span class="truncate">Facturation</span>
+                    </a>
+                    <a href="../16-gouvernance-validation-controle-interne/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="shield-check" class="w-5 h-5"></i>
+                        <span class="truncate">Gouvernance</span>
+                    </a>
+                    <a href="../17-reporting-kpi-direction/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="pie-chart" class="w-5 h-5"></i>
+                        <span class="truncate">Reporting KPI</span>
+                    </a>
+                    <a href="../18-vue-transverse-affaire-projet/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="folder-kanban" class="w-5 h-5"></i>
+                        <span class="truncate">Vue Projet</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+        
+        <div class="p-4 border-t border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-3">
+                <img src="https://ui-avatars.com/api/?name=Admin&background=465fff&color=fff" alt="User" class="w-8 h-8 rounded-full">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">Admin User</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate">Comptabilité</p>
+                </div>
+                <button onclick="document.documentElement.classList.toggle('dark')" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+                    <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden bg-gray-50 dark:bg-gray-950">
+        
+        <!-- Topbar -->
+        <header class="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 shrink-0 z-10">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <nav class="flex text-sm text-gray-500 dark:text-gray-400" aria-label="Breadcrumb">
+                    <ol class="flex items-center space-x-2">
+                        <li><a href="index.html" class="hover:text-gray-900 dark:hover:text-white transition-colors">Encaissements</a></li>
+                        <li><i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i></li>
+                        <li class="text-gray-900 dark:text-white font-medium" aria-current="page">ENC-2024-0015</li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="flex items-center gap-4">
+                <button class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 relative">
+                    <i data-lucide="bell" class="w-5 h-5"></i>
+                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-error-500 rounded-full border border-white dark:border-gray-900"></span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
+            <div class="max-w-6xl mx-auto space-y-6">
+                
+                <!-- Encaissement Header Card -->
+                <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-theme-xs overflow-hidden">
+                    <div class="p-6">
+                        <div class="flex flex-col md:flex-row md:items-start justify-between gap-6">
+                            
+                            <!-- Identity & Status -->
+                            <div class="flex flex-col gap-3">
+                                <div class="flex items-center gap-3">
+                                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">ENC-2024-0015</h1>
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium uppercase tracking-wide bg-success-50 text-success-700 border border-success-200 dark:bg-success-900/30 dark:text-success-400 dark:border-success-800/50">
+                                        Affecté
+                                    </span>
+                                </div>
+                                <div class="text-gray-500 dark:text-gray-400 text-sm flex items-center gap-4 flex-wrap">
+                                    <span class="flex items-center gap-1.5">
+                                        <i data-lucide="calendar" class="w-4 h-4"></i>
+                                        Saisi le 15/03/2024
+                                    </span>
+                                    <span class="flex items-center gap-1.5">
+                                        <i data-lucide="user" class="w-4 h-4"></i>
+                                        Par Comptabilité
+                                    </span>
+                                    <span class="flex items-center gap-1.5">
+                                        <i data-lucide="tag" class="w-4 h-4"></i>
+                                        TECH-SOLUTIONS S.A
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <!-- Actions -->
+                            <div class="flex items-center gap-3 shrink-0">
+                                <button class="px-4 py-2 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-2">
+                                    <i data-lucide="printer" class="w-4 h-4"></i>
+                                    Imprimer Reçu
+                                </button>
+                                <button class="px-4 py-2 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-2">
+                                    <i data-lucide="pencil" class="w-4 h-4"></i>
+                                    Corriger
+                                </button>
+                                <button class="px-4 py-2 border border-error-300 dark:border-error-800/50 text-error-700 dark:text-error-400 bg-white dark:bg-gray-800 rounded-lg text-sm font-medium hover:bg-error-50 dark:hover:bg-error-900/10 transition-colors flex items-center gap-2">
+                                    <i data-lucide="x-circle" class="w-4 h-4"></i>
+                                    Annuler
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Left Column: Details -->
+                    <div class="lg:col-span-2 space-y-6">
+                        
+                        <!-- Client & Payment Info -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <!-- Info Client -->
+                            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 shadow-theme-xs">
+                                <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-3">Payeur</h3>
+                                <div class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
+                                    <p class="font-bold text-gray-900 dark:text-white text-base">TECH-SOLUTIONS S.A</p>
+                                    <p>124 Avenue des Champs</p>
+                                    <p>75008 Paris</p>
+                                    <p class="mt-2 text-gray-500">Code client: CLI-2023-089</p>
+                                    <a href="#" class="text-accent-600 dark:text-accent-500 hover:underline mt-2 inline-block">Voir la fiche client</a>
+                                </div>
+                            </div>
+
+                            <!-- Informations Paiement -->
+                            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 shadow-theme-xs">
+                                <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-3">Détails du paiement</h3>
+                                <div class="text-sm text-gray-700 dark:text-gray-300 space-y-3">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-500">Date de paiement :</span>
+                                        <span class="font-medium">15/03/2024</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-500">Mode :</span>
+                                        <span class="font-medium">Virement bancaire</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-500">Référence :</span>
+                                        <span class="font-medium">VIR-2024-03-15-TECHSOL</span>
+                                    </div>
+                                    <div class="flex justify-between text-gray-900 dark:text-white font-bold text-lg mt-2 pt-2 border-t border-gray-200 dark:border-gray-800">
+                                        <span>Montant total :</span>
+                                        <span>12 500,00 €</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Affectations (Factures) -->
+                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-theme-xs overflow-hidden">
+                            <div class="p-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50 flex items-center justify-between">
+                                <h3 class="text-base font-bold text-gray-900 dark:text-white">Affectations aux factures</h3>
+                                <button class="text-sm text-accent-600 dark:text-accent-500 font-medium hover:underline">Modifier les affectations</button>
+                            </div>
+                            
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-sm whitespace-nowrap">
+                                    <thead class="bg-white dark:bg-gray-900 text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-800">
+                                        <tr>
+                                            <th class="px-4 py-3 font-medium">Facture liée</th>
+                                            <th class="px-4 py-3 font-medium">Date d'émission</th>
+                                            <th class="px-4 py-3 font-medium text-right">Montant de la facture</th>
+                                            <th class="px-4 py-3 font-medium text-right text-gray-900 dark:text-white">Montant affecté</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
+                                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                            <td class="px-4 py-3">
+                                                <a href="../12-facturation/ecr-12-03-fiche-facture.html" class="font-medium text-accent-600 dark:text-accent-500 hover:underline">FAC-2024-0012</a>
+                                                <div class="text-xs text-gray-500 dark:text-gray-400">Ref. Commande CMD-2024-008</div>
+                                            </td>
+                                            <td class="px-4 py-3 text-gray-500 dark:text-gray-400">15/01/2024</td>
+                                            <td class="px-4 py-3 text-right">5 000,00 €</td>
+                                            <td class="px-4 py-3 text-right font-medium text-gray-900 dark:text-white">5 000,00 €</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                            <td class="px-4 py-3">
+                                                <a href="../12-facturation/ecr-12-03-fiche-facture.html" class="font-medium text-accent-600 dark:text-accent-500 hover:underline">FAC-2024-0028</a>
+                                                <div class="text-xs text-gray-500 dark:text-gray-400">Ref. Contrat CT-2024-01</div>
+                                            </td>
+                                            <td class="px-4 py-3 text-gray-500 dark:text-gray-400">10/02/2024</td>
+                                            <td class="px-4 py-3 text-right">12 000,00 €</td>
+                                            <td class="px-4 py-3 text-right font-medium text-gray-900 dark:text-white">7 500,00 €</td>
+                                        </tr>
+                                    </tbody>
+                                    <tfoot class="bg-gray-50 dark:bg-gray-800/50">
+                                        <tr>
+                                            <td colspan="3" class="px-4 py-3 text-right text-sm font-bold text-gray-900 dark:text-white">
+                                                Total affecté :
+                                            </td>
+                                            <td class="px-4 py-3 text-right text-sm font-bold text-success-600 dark:text-success-500">
+                                                12 500,00 €
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Traces & Historique -->
+                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 shadow-theme-xs">
+                            <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 border-b border-gray-200 dark:border-gray-800 pb-2">Journal d'activité</h3>
+                            
+                            <div class="space-y-6 relative before:absolute before:inset-0 before:ml-2 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-200 dark:before:via-gray-800 before:to-transparent">
+                                
+                                <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                                    <div class="flex items-center justify-center w-5 h-5 rounded-full border-2 border-white dark:border-gray-900 bg-accent-500 text-white shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow-theme-xs z-10"></div>
+                                    <div class="w-[calc(100%-2rem)] md:w-[calc(50%-1.5rem)] bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-theme-xs">
+                                        <div class="flex items-center justify-between mb-1">
+                                            <div class="font-bold text-sm text-gray-900 dark:text-white">Affectation finalisée</div>
+                                            <time class="font-medium text-xs text-gray-500">15/03/2024 à 10:45</time>
+                                        </div>
+                                        <div class="text-sm text-gray-600 dark:text-gray-400">Paiement lié aux factures FAC-2024-0012 et FAC-2024-0028 par <strong>J. Martin</strong>.</div>
+                                    </div>
+                                </div>
+
+                                <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
+                                    <div class="flex items-center justify-center w-5 h-5 rounded-full border-2 border-white dark:border-gray-900 bg-gray-400 dark:bg-gray-600 shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow-theme-xs z-10"></div>
+                                    <div class="w-[calc(100%-2rem)] md:w-[calc(50%-1.5rem)] bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-theme-xs">
+                                        <div class="flex items-center justify-between mb-1">
+                                            <div class="font-bold text-sm text-gray-900 dark:text-white">Création de l'encaissement</div>
+                                            <time class="font-medium text-xs text-gray-500">15/03/2024 à 10:42</time>
+                                        </div>
+                                        <div class="text-sm text-gray-600 dark:text-gray-400">Enregistrement manuel du virement bancaire de 12 500,00 €.</div>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Right Column: Summary & Payment -->
+                    <div class="space-y-6">
+                        
+                        <!-- Recap Card -->
+                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 shadow-theme-xs">
+                            <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 border-b border-gray-200 dark:border-gray-800 pb-2">Récapitulatif Financier</h3>
+                            
+                            <div class="space-y-3 text-sm">
+                                <div class="flex justify-between text-gray-600 dark:text-gray-400">
+                                    <span>Montant reçu</span>
+                                    <span>12 500,00 €</span>
+                                </div>
+                                <div class="flex justify-between text-gray-600 dark:text-gray-400">
+                                    <span>Montant affecté</span>
+                                    <span class="text-success-600 dark:text-success-500 font-medium">12 500,00 €</span>
+                                </div>
+                                
+                                <div class="pt-3 border-t border-gray-200 dark:border-gray-800">
+                                    <div class="flex justify-between font-bold text-gray-900 dark:text-white text-base">
+                                        <span>Reste à affecter</span>
+                                        <span>0,00 €</span>
+                                    </div>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Ce paiement est entièrement imputé sur le compte client.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Caisse / Compte cible -->
+                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 shadow-theme-xs">
+                            <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Destination des fonds</h3>
+                            
+                            <div class="space-y-4">
+                                <div class="flex gap-3 items-center">
+                                    <div class="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-400 shrink-0 border border-gray-200 dark:border-gray-700">
+                                        <i data-lucide="building-2" class="w-5 h-5"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-bold text-gray-900 dark:text-white">BNP Paribas</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Compte Principal (FR76...)</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2 mt-2 pt-3 border-t border-gray-200 dark:border-gray-800">
+                                    <i data-lucide="check-circle" class="w-4 h-4 text-success-500"></i>
+                                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300">Rapprochement bancaire OK (16/03/2024)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pièce Jointe -->
+                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 shadow-theme-xs">
+                            <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Pièces justificatives</h3>
+                            
+                            <a href="#" class="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-800 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded bg-error-50 dark:bg-error-900/30 text-error-600 dark:text-error-500 flex items-center justify-center">
+                                        <i data-lucide="file-text" class="w-4 h-4"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900 dark:text-white group-hover:text-accent-600 dark:group-hover:text-accent-500 transition-colors">Avis_opéré_BNP.pdf</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">245 KB</p>
+                                    </div>
+                                </div>
+                                <i data-lucide="download" class="w-4 h-4 text-gray-400 group-hover:text-accent-600 dark:group-hover:text-accent-500 transition-colors"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

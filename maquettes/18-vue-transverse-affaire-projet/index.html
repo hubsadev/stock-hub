@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 18 - Vue Transverse Affaire / Projet - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3', 900: '#054f31' },
+                        error: { 500: '#f04438', 50: '#fef3f2', 900: '#7a271d' },
+                        warning: { 500: '#f79009', 50: '#fffaeb', 900: '#7a4504' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 text-gray-900 min-h-screen">
+    <div class="max-w-5xl mx-auto px-4 py-12">
+        <div class="mb-8 flex items-center gap-3 text-accent-600 font-bold text-2xl">
+            <i data-lucide="layers" class="w-8 h-8"></i>
+            <span>HubERP</span>
+        </div>
+        
+        <header class="mb-12">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-100 text-accent-900 text-sm font-medium mb-4">
+                <i data-lucide="compass" class="w-4 h-4"></i>
+                Module 18
+            </div>
+            <h1 class="text-4xl font-bold tracking-tight mb-4 text-gray-900">Vue Transverse Affaire / Projet</h1>
+            <p class="text-xl text-gray-600 max-w-3xl">Catalogue des maquettes statiques du module de pilotage consolidé, offrant une vision à 360°, un cockpit des risques et un registre d'actions centralisé par projet.</p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- ECR-18-01 -->
+            <a href="ecr-18-01-vue-360-affaire-projet.html" class="group flex flex-col bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md hover:border-accent-500 transition-all duration-200">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="p-2 bg-blue-50 text-blue-600 rounded-lg group-hover:bg-blue-100 group-hover:scale-110 transition-all">
+                        <i data-lucide="pie-chart" class="w-6 h-6"></i>
+                    </div>
+                    <span class="text-xs font-bold px-2.5 py-1 bg-gray-100 text-gray-600 rounded-full border border-gray-200">ECR-18-01</span>
+                </div>
+                <h2 class="text-xl font-bold mb-2 text-gray-900 group-hover:text-accent-600 transition-colors">Vue 360 Affaire / Projet</h2>
+                <p class="text-gray-500 text-sm flex-1">Vue consolidée d'un projet regroupant la vente, l'exécution, les finances et la maintenance. Permet de naviguer vers tous les objets liés (offres, OT, PV, factures, tickets).</p>
+                <div class="mt-4 flex items-center text-sm font-medium text-accent-600">
+                    Ouvrir la maquette <i data-lucide="arrow-right" class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform"></i>
+                </div>
+            </a>
+
+            <!-- ECR-18-02 -->
+            <a href="ecr-18-02-cockpit-risques-et-arbitrages-projet.html" class="group flex flex-col bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md hover:border-accent-500 transition-all duration-200">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="p-2 bg-orange-50 text-orange-600 rounded-lg group-hover:bg-orange-100 group-hover:scale-110 transition-all">
+                        <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+                    </div>
+                    <span class="text-xs font-bold px-2.5 py-1 bg-gray-100 text-gray-600 rounded-full border border-gray-200">ECR-18-02</span>
+                </div>
+                <h2 class="text-xl font-bold mb-2 text-gray-900 group-hover:text-accent-600 transition-colors">Cockpit Risques & Arbitrages</h2>
+                <p class="text-gray-500 text-sm flex-1">Tableau de bord de pilotage des risques, dérives, alertes et blocages d'un projet. Permet de déclencher un état "Sous surveillance" et d'accéder aux actions correctives.</p>
+                <div class="mt-4 flex items-center text-sm font-medium text-accent-600">
+                    Ouvrir la maquette <i data-lucide="arrow-right" class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform"></i>
+                </div>
+            </a>
+
+            <!-- ECR-18-03 -->
+            <a href="ecr-18-03-registre-des-risques-projet.html" class="group flex flex-col bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md hover:border-accent-500 transition-all duration-200">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="p-2 bg-red-50 text-red-600 rounded-lg group-hover:bg-red-100 group-hover:scale-110 transition-all">
+                        <i data-lucide="list-checks" class="w-6 h-6"></i>
+                    </div>
+                    <span class="text-xs font-bold px-2.5 py-1 bg-gray-100 text-gray-600 rounded-full border border-gray-200">ECR-18-03</span>
+                </div>
+                <h2 class="text-xl font-bold mb-2 text-gray-900 group-hover:text-accent-600 transition-colors">Registre des Risques Projet</h2>
+                <p class="text-gray-500 text-sm flex-1">Liste détaillée des risques d'un projet avec leur cycle de vie : création, évaluation (impact/probabilité), assignation (owner), plan d'action (mitigation), escalade et clôture.</p>
+                <div class="mt-4 flex items-center text-sm font-medium text-accent-600">
+                    Ouvrir la maquette <i data-lucide="arrow-right" class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform"></i>
+                </div>
+            </a>
+        </div>
+        
+        <div class="mt-12 p-6 bg-gray-100 rounded-xl border border-gray-200">
+            <h3 class="text-lg font-bold mb-3 flex items-center gap-2">
+                <i data-lucide="link" class="w-5 h-5 text-gray-500"></i>
+                Interconnexions Transverses
+            </h3>
+            <p class="text-sm text-gray-600 mb-4">Ce module est intimement lié à l'ensemble du cycle de vie ERP :</p>
+            <ul class="text-sm text-gray-600 space-y-2">
+                <li class="flex items-start gap-2"><i data-lucide="check-circle-2" class="w-4 h-4 mt-0.5 text-accent-500 shrink-0"></i> <strong>Mod 03 (Affaires / Projets)</strong> : Navigation bidirectionnelle entre fiche projet métier et la vue consolidée 360°.</li>
+                <li class="flex items-start gap-2"><i data-lucide="check-circle-2" class="w-4 h-4 mt-0.5 text-accent-500 shrink-0"></i> <strong>Mod 04 & 10 (Finance)</strong> : Remontée des marges et dérives budgétaires directement dans le cockpit des risques.</li>
+                <li class="flex items-start gap-2"><i data-lucide="check-circle-2" class="w-4 h-4 mt-0.5 text-accent-500 shrink-0"></i> <strong>Mod 07 & 15 (Exécution & Planning)</strong> : Transparence de l'avancement OT et alertes sur les jalons.</li>
+                <li class="flex items-start gap-2"><i data-lucide="check-circle-2" class="w-4 h-4 mt-0.5 text-accent-500 shrink-0"></i> <strong>Mod 14 (SAV)</strong> : Intégration des tickets de maintenance à la fiche projet pour visibilité client post-livraison.</li>
+            </ul>
+        </div>
+    </div>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

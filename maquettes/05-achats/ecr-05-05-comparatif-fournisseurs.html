@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparatif Fournisseurs - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3', 900: '#054f31' },
+                        error: { 500: '#f04438', 50: '#fef3f2', 900: '#7a271d' },
+                        warning: { 500: '#f79009', 50: '#fffaeb', 900: '#7a4504' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Achats</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="home" class="w-5 h-5"></i>
+                    <span class="truncate">Accueil Module</span>
+                </a>
+                <a href="ecr-05-01-registre-des-expressions-de-besoin.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="list" class="w-5 h-5"></i>
+                    <span class="truncate">Registre EB</span>
+                </a>
+                <a href="ecr-05-02-fiche-expression-de-besoin.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                    <span class="truncate">Fiche EB</span>
+                </a>
+                <a href="ecr-05-03-registre-des-demandes-d-achat.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="list-ordered" class="w-5 h-5"></i>
+                    <span class="truncate">Registre DA</span>
+                </a>
+                <a href="ecr-05-04-fiche-demande-d-achat.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="file-check" class="w-5 h-5"></i>
+                    <span class="truncate">Fiche DA</span>
+                </a>
+                <a href="ecr-05-05-comparatif-fournisseurs.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500">
+                    <i data-lucide="git-compare" class="w-5 h-5"></i>
+                    <span class="truncate">Comparatif Fournisseurs</span>
+                </a>
+                <a href="ecr-05-06-commande-fournisseur.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+                    <span class="truncate">Commande Fournisseur</span>
+                </a>
+                <a href="ecr-05-07-facture-fournisseur-et-rapprochement.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="receipt" class="w-5 h-5"></i>
+                    <span class="truncate">Facture & Rapprochement</span>
+                </a>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col min-w-0 bg-gray-50 dark:bg-gray-950">
+        
+        <!-- Header / Breadcrumb / Actions -->
+        <header class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shrink-0 z-10 sticky top-0">
+            <div class="flex items-center justify-between px-6 h-16">
+                <div class="flex items-center gap-4">
+                    <button class="md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                    
+                    <!-- Breadcrumbs -->
+                    <div class="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                        <a href="ecr-05-03-registre-des-demandes-d-achat.html" class="hover:text-gray-900 dark:hover:text-white transition-colors">Registre DA</a>
+                        <i data-lucide="chevron-right" class="w-4 h-4 mx-2"></i>
+                        <a href="ecr-05-04-fiche-demande-d-achat.html" class="hover:text-gray-900 dark:hover:text-white transition-colors">DA-2023-0301</a>
+                        <i data-lucide="chevron-right" class="w-4 h-4 mx-2"></i>
+                        <span class="text-gray-900 dark:text-white font-medium">Comparatif des Offres</span>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <button class="px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        Exporter Excel
+                    </button>
+                    <a href="ecr-05-06-commande-fournisseur.html" class="px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-sm">
+                        <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                        Générer Commande(s)
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Scrollable Area -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="max-w-7xl mx-auto space-y-6">
+
+                <!-- Header Info -->
+                <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 shadow-theme-xs">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-1">Comparatif Fournisseurs : DA-2023-0301</h2>
+                            <p class="text-gray-500 dark:text-gray-400 text-sm">Consultation pour "Réassort mensuel Stock Central"</p>
+                        </div>
+                        <div class="flex gap-4 text-sm">
+                            <div class="flex flex-col items-end">
+                                <span class="text-gray-500 dark:text-gray-400">Budget initial estimé :</span>
+                                <span class="font-medium text-gray-900 dark:text-white">12 850,00 €</span>
+                            </div>
+                            <div class="flex flex-col items-end">
+                                <span class="text-gray-500 dark:text-gray-400">Meilleure offre globale :</span>
+                                <span class="font-bold text-success-600 dark:text-success-500">11 950,00 €</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comparatif Table -->
+                <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-theme-xs overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[1000px]">
+                            <thead>
+                                <tr>
+                                    <!-- Entêtes Articles -->
+                                    <th class="px-6 py-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 w-1/4">
+                                        <div class="font-semibold text-gray-900 dark:text-white">Articles consultés</div>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400 font-normal mt-1">Qté requise et réf.</div>
+                                    </th>
+                                    
+                                    <!-- Entête Fournisseur 1 -->
+                                    <th class="px-6 py-4 border-b border-l border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-center relative group">
+                                        <div class="absolute top-0 inset-x-0 h-1 bg-accent-500"></div>
+                                        <div class="flex justify-center mb-2">
+                                            <span class="px-2 py-0.5 bg-accent-100 text-accent-700 dark:bg-accent-900/30 dark:text-accent-400 text-xs font-bold rounded-full">Retenu</span>
+                                        </div>
+                                        <div class="font-bold text-gray-900 dark:text-white">TechDistri Pro</div>
+                                        <div class="text-sm text-gray-500 dark:text-gray-400 font-normal mt-1">Devis N° D-4592</div>
+                                    </th>
+                                    
+                                    <!-- Entête Fournisseur 2 -->
+                                    <th class="px-6 py-4 border-b border-l border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20 text-center">
+                                        <div class="flex justify-center mb-2">
+                                            <span class="px-2 py-0.5 text-transparent text-xs font-bold rounded-full select-none">-</span>
+                                        </div>
+                                        <div class="font-bold text-gray-900 dark:text-white">Réseau-Plus SA</div>
+                                        <div class="text-sm text-gray-500 dark:text-gray-400 font-normal mt-1">Devis N° 2023-11A</div>
+                                    </th>
+
+                                    <!-- Entête Fournisseur 3 -->
+                                    <th class="px-6 py-4 border-b border-l border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20 text-center">
+                                        <div class="flex justify-center mb-2">
+                                            <span class="px-2 py-0.5 text-transparent text-xs font-bold rounded-full select-none">-</span>
+                                        </div>
+                                        <div class="font-bold text-gray-900 dark:text-white">Global Infra IT</div>
+                                        <div class="text-sm text-gray-500 dark:text-gray-400 font-normal mt-1">Devis N° OFF-900</div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
+                                
+                                <!-- Ligne 1 -->
+                                <tr>
+                                    <!-- Article -->
+                                    <td class="px-6 py-4 align-top">
+                                        <div class="flex flex-col">
+                                            <span class="font-medium text-gray-900 dark:text-white">Switch Réseau 24 ports PoE+</span>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400 mb-2">ART-EQ-405</span>
+                                            <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">Qté : 10 Unité</span>
+                                            <span class="text-xs text-gray-400 mt-1">Budget unitaire : 450,00 €</span>
+                                        </div>
+                                    </td>
+                                    
+                                    <!-- F1 -->
+                                    <td class="px-6 py-4 align-top border-l border-gray-200 dark:border-gray-800 bg-accent-50/30 dark:bg-accent-900/10">
+                                        <label class="flex items-start gap-3 cursor-pointer group">
+                                            <input type="radio" name="art1" class="mt-1 text-accent-600 focus:ring-accent-500" checked>
+                                            <div class="flex-1">
+                                                <div class="flex justify-between items-end mb-1">
+                                                    <span class="text-sm font-medium text-success-600 dark:text-success-500">420,00 € <span class="text-xs font-normal">/u</span></span>
+                                                    <span class="text-sm font-bold text-gray-900 dark:text-white">4 200,00 €</span>
+                                                </div>
+                                                <div class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                                    <i data-lucide="truck" class="w-3 h-3"></i> En stock (48h)
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </td>
+                                    
+                                    <!-- F2 -->
+                                    <td class="px-6 py-4 align-top border-l border-gray-200 dark:border-gray-800">
+                                        <label class="flex items-start gap-3 cursor-pointer group">
+                                            <input type="radio" name="art1" class="mt-1 text-accent-600 focus:ring-accent-500">
+                                            <div class="flex-1">
+                                                <div class="flex justify-between items-end mb-1">
+                                                    <span class="text-sm font-medium text-gray-900 dark:text-white">460,00 € <span class="text-xs font-normal">/u</span></span>
+                                                    <span class="text-sm font-bold text-gray-900 dark:text-white">4 600,00 €</span>
+                                                </div>
+                                                <div class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                                    <i data-lucide="truck" class="w-3 h-3"></i> Dispo J+5
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </td>
+
+                                    <!-- F3 -->
+                                    <td class="px-6 py-4 align-top border-l border-gray-200 dark:border-gray-800">
+                                        <div class="flex items-start gap-3 opacity-50">
+                                            <input type="radio" name="art1" class="mt-1 text-accent-600 focus:ring-accent-500" disabled>
+                                            <div class="flex-1">
+                                                <div class="text-sm font-medium text-gray-500 dark:text-gray-400">Non chiffré</div>
+                                                <div class="text-xs text-error-600 dark:text-error-500 flex items-center gap-1 mt-1">
+                                                    Rupture de stock
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Ligne 2 -->
+                                <tr>
+                                    <!-- Article -->
+                                    <td class="px-6 py-4 align-top">
+                                        <div class="flex flex-col">
+                                            <span class="font-medium text-gray-900 dark:text-white">Baie de Brassage 42U 800x800</span>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400 mb-2">ART-CB-702</span>
+                                            <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">Qté : 5 Unité</span>
+                                            <span class="text-xs text-gray-400 mt-1">Budget unitaire : 1 100,00 €</span>
+                                        </div>
+                                    </td>
+                                    
+                                    <!-- F1 -->
+                                    <td class="px-6 py-4 align-top border-l border-gray-200 dark:border-gray-800 bg-accent-50/30 dark:bg-accent-900/10">
+                                        <label class="flex items-start gap-3 cursor-pointer group">
+                                            <input type="radio" name="art2" class="mt-1 text-accent-600 focus:ring-accent-500" checked>
+                                            <div class="flex-1">
+                                                <div class="flex justify-between items-end mb-1">
+                                                    <span class="text-sm font-medium text-success-600 dark:text-success-500">1 020,00 € <span class="text-xs font-normal">/u</span></span>
+                                                    <span class="text-sm font-bold text-gray-900 dark:text-white">5 100,00 €</span>
+                                                </div>
+                                                <div class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                                    <i data-lucide="truck" class="w-3 h-3"></i> Expédié usine (J+10)
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </td>
+                                    
+                                    <!-- F2 -->
+                                    <td class="px-6 py-4 align-top border-l border-gray-200 dark:border-gray-800">
+                                        <label class="flex items-start gap-3 cursor-pointer group">
+                                            <input type="radio" name="art2" class="mt-1 text-accent-600 focus:ring-accent-500">
+                                            <div class="flex-1">
+                                                <div class="flex justify-between items-end mb-1">
+                                                    <span class="text-sm font-medium text-gray-900 dark:text-white">1 050,00 € <span class="text-xs font-normal">/u</span></span>
+                                                    <span class="text-sm font-bold text-gray-900 dark:text-white">5 250,00 €</span>
+                                                </div>
+                                                <div class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                                    <i data-lucide="truck" class="w-3 h-3"></i> Dispo (72h)
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </td>
+
+                                    <!-- F3 -->
+                                    <td class="px-6 py-4 align-top border-l border-gray-200 dark:border-gray-800">
+                                        <label class="flex items-start gap-3 cursor-pointer group">
+                                            <input type="radio" name="art2" class="mt-1 text-accent-600 focus:ring-accent-500">
+                                            <div class="flex-1">
+                                                <div class="flex justify-between items-end mb-1">
+                                                    <span class="text-sm font-medium text-gray-900 dark:text-white">1 150,00 € <span class="text-xs font-normal">/u</span></span>
+                                                    <span class="text-sm font-bold text-gray-900 dark:text-white">5 750,00 €</span>
+                                                </div>
+                                                <div class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                                    <i data-lucide="truck" class="w-3 h-3"></i> En stock
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </td>
+                                </tr>
+
+                                <!-- Ligne 3 -->
+                                <tr>
+                                    <!-- Article -->
+                                    <td class="px-6 py-4 align-top">
+                                        <div class="flex flex-col">
+                                            <span class="font-medium text-gray-900 dark:text-white">Bobine Câble RJ45 Cat6A</span>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400 mb-2">CBL-RJ45-100</span>
+                                            <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">Qté : 30 Unité</span>
+                                            <span class="text-xs text-gray-400 mt-1">Budget unitaire : 95,00 €</span>
+                                        </div>
+                                    </td>
+                                    
+                                    <!-- F1 -->
+                                    <td class="px-6 py-4 align-top border-l border-gray-200 dark:border-gray-800 bg-accent-50/30 dark:bg-accent-900/10">
+                                        <label class="flex items-start gap-3 cursor-pointer group">
+                                            <input type="radio" name="art3" class="mt-1 text-accent-600 focus:ring-accent-500">
+                                            <div class="flex-1">
+                                                <div class="flex justify-between items-end mb-1">
+                                                    <span class="text-sm font-medium text-gray-900 dark:text-white">92,00 € <span class="text-xs font-normal">/u</span></span>
+                                                    <span class="text-sm font-bold text-gray-900 dark:text-white">2 760,00 €</span>
+                                                </div>
+                                                <div class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                                    <i data-lucide="truck" class="w-3 h-3"></i> En stock
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </td>
+                                    
+                                    <!-- F2 -->
+                                    <td class="px-6 py-4 align-top border-l border-gray-200 dark:border-gray-800">
+                                        <label class="flex items-start gap-3 cursor-pointer group">
+                                            <input type="radio" name="art3" class="mt-1 text-accent-600 focus:ring-accent-500" checked>
+                                            <div class="flex-1">
+                                                <div class="flex justify-between items-end mb-1">
+                                                    <span class="text-sm font-medium text-success-600 dark:text-success-500">85,00 € <span class="text-xs font-normal">/u</span></span>
+                                                    <span class="text-sm font-bold text-gray-900 dark:text-white">2 550,00 €</span>
+                                                </div>
+                                                <div class="text-xs text-warning-600 dark:text-warning-500 flex items-center gap-1">
+                                                    <i data-lucide="alert-triangle" class="w-3 h-3"></i> Reliquat (Dispo : 20)
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </td>
+
+                                    <!-- F3 -->
+                                    <td class="px-6 py-4 align-top border-l border-gray-200 dark:border-gray-800">
+                                        <label class="flex items-start gap-3 cursor-pointer group">
+                                            <input type="radio" name="art3" class="mt-1 text-accent-600 focus:ring-accent-500">
+                                            <div class="flex-1">
+                                                <div class="flex justify-between items-end mb-1">
+                                                    <span class="text-sm font-medium text-gray-900 dark:text-white">90,00 € <span class="text-xs font-normal">/u</span></span>
+                                                    <span class="text-sm font-bold text-gray-900 dark:text-white">2 700,00 €</span>
+                                                </div>
+                                                <div class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                                    <i data-lucide="truck" class="w-3 h-3"></i> En stock
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </td>
+                                </tr>
+
+                                <!-- Totals -->
+                                <tr class="bg-gray-50 dark:bg-gray-800/50">
+                                    <td class="px-6 py-4 text-right font-medium text-gray-700 dark:text-gray-300">
+                                        Total Sélectionné (HT) :
+                                    </td>
+                                    <td class="px-6 py-4 text-center border-l border-gray-200 dark:border-gray-800 font-bold text-gray-900 dark:text-white text-lg bg-accent-50/50 dark:bg-accent-900/10">
+                                        9 300,00 €
+                                        <div class="text-xs font-normal text-gray-500 mt-1">2 lignes retenues</div>
+                                    </td>
+                                    <td class="px-6 py-4 text-center border-l border-gray-200 dark:border-gray-800 font-bold text-gray-900 dark:text-white text-lg bg-accent-50/50 dark:bg-accent-900/10">
+                                        2 550,00 €
+                                        <div class="text-xs font-normal text-gray-500 mt-1">1 ligne retenue</div>
+                                    </td>
+                                    <td class="px-6 py-4 text-center border-l border-gray-200 dark:border-gray-800 font-bold text-gray-400 text-lg">
+                                        0,00 €
+                                        <div class="text-xs font-normal mt-1">0 ligne retenue</div>
+                                    </td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Footer Summary -->
+                <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 flex gap-4 items-center justify-between">
+                    <div>
+                        <h4 class="text-base font-semibold text-blue-900 dark:text-blue-100">Total panier optimisé : 11 850,00 € HT</h4>
+                        <p class="text-sm text-blue-700 dark:text-blue-300">Génération de 2 bons de commandes distincts pour TechDistri Pro et Réseau-Plus SA.</p>
+                    </div>
+                    <a href="ecr-05-06-commande-fournisseur.html" class="px-6 py-2.5 bg-accent-600 hover:bg-accent-700 text-white rounded-lg text-sm font-semibold flex items-center gap-2 transition-colors shadow-sm shrink-0">
+                        <i data-lucide="check-circle" class="w-5 h-5"></i>
+                        Valider l'arbitrage
+                    </a>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

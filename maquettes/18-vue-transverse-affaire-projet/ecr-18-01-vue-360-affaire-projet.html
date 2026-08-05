@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vue 360 Affaire / Projet - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3', 900: '#054f31' },
+                        error: { 500: '#f04438', 50: '#fef3f2', 900: '#7a271d' },
+                        warning: { 500: '#f79009', 50: '#fffaeb', 900: '#7a4504' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20 shrink-0">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Vue Transverse</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="home" class="w-5 h-5"></i>
+                    <span class="truncate">Accueil Module</span>
+                </a>
+                <a href="ecr-18-01-vue-360-affaire-projet.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/50 dark:text-accent-400">
+                    <i data-lucide="pie-chart" class="w-5 h-5"></i>
+                    <span class="truncate">Vue 360 Projet</span>
+                </a>
+                <a href="ecr-18-02-cockpit-risques-et-arbitrages-projet.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+                    <span class="truncate">Cockpit Risques</span>
+                </a>
+                <a href="ecr-18-03-registre-des-risques-projet.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="list-checks" class="w-5 h-5"></i>
+                    <span class="truncate">Registre Risques</span>
+                </a>
+            </nav>
+            
+            <div class="mt-8">
+                <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Liens Projets</div>
+                <nav class="space-y-1">
+                    <a href="../03-contrats-affaires-projets/ecr-03-04-fiche-affaire-projet.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="folder-kanban" class="w-5 h-5"></i>
+                        <span class="truncate">Fiche Projet Métier</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+        
+        <div class="p-4 border-t border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-3">
+                <img src="https://ui-avatars.com/api/?name=Jean+Dupont&background=e1edff&color=1e26af" alt="User" class="w-9 h-9 rounded-full">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">Jean Dupont</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate">Dir. Projets</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col min-w-0 bg-gray-50 dark:bg-gray-950 overflow-hidden">
+        
+        <!-- Header -->
+        <header class="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 shrink-0">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                    <a href="../03-contrats-affaires-projets/ecr-03-03-registre-des-affaires-et-projets.html" class="hover:text-accent-600 transition-colors">Projets</a>
+                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                    <a href="../03-contrats-affaires-projets/ecr-03-04-fiche-affaire-projet.html" class="hover:text-accent-600 transition-colors">PRJ-2023-089</a>
+                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                    <span class="font-medium text-gray-900 dark:text-white">Vue 360</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <button class="p-2 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 relative">
+                    <i data-lucide="bell" class="w-5 h-5"></i>
+                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-error-500 rounded-full border-2 border-white dark:border-gray-900"></span>
+                </button>
+                <div class="h-8 w-px bg-gray-200 dark:bg-gray-700"></div>
+                <button class="flex items-center gap-2 text-sm font-medium text-white bg-accent-600 hover:bg-accent-700 px-4 py-2 rounded-lg transition-colors">
+                    <i data-lucide="printer" class="w-4 h-4"></i>
+                    <span>Export Synthèse</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Content scrollable area -->
+        <div class="flex-1 overflow-y-auto p-6">
+            <div class="max-w-7xl mx-auto space-y-6">
+                
+                <!-- Project Banner / Summary -->
+                <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+                    <div class="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-6">
+                        <div>
+                            <div class="flex items-center gap-3 mb-2">
+                                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Extension Usine B - Ligne 4</h1>
+                                <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-success-50 text-success-700 border border-success-200 dark:bg-success-900/30 dark:border-success-800/50 dark:text-success-400">
+                                    En exécution
+                                </span>
+                                <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/30 dark:border-blue-800/50 dark:text-blue-400">
+                                    BTP & Indus
+                                </span>
+                            </div>
+                            <div class="text-gray-500 dark:text-gray-400 text-sm flex items-center gap-4">
+                                <span class="flex items-center gap-1.5"><i data-lucide="hash" class="w-4 h-4"></i> PRJ-2023-089</span>
+                                <span class="flex items-center gap-1.5"><i data-lucide="building-2" class="w-4 h-4"></i> Client : <strong>Industries Corp</strong></span>
+                                <span class="flex items-center gap-1.5"><i data-lucide="user" class="w-4 h-4"></i> CDP : <strong>Marc L.</strong></span>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-2 min-w-[200px]">
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-gray-500 dark:text-gray-400">Avancement Global</span>
+                                <span class="font-bold text-gray-900 dark:text-white">65%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                                <div class="bg-accent-600 h-2.5 rounded-full" style="width: 65%"></div>
+                            </div>
+                            <div class="flex justify-between items-center text-xs mt-1">
+                                <span class="text-gray-500">Début : 01/09/2023</span>
+                                <span class="text-error-500 font-medium">Fin prévue : 15/06/2024 (Retard)</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- KPI Cards Row -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pt-6 border-t border-gray-100 dark:border-gray-800">
+                        <div class="flex items-start gap-4">
+                            <div class="p-2.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg shrink-0">
+                                <i data-lucide="banknote" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">CA Signé</p>
+                                <p class="text-lg font-bold text-gray-900 dark:text-white">1 250 000 €</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div class="p-2.5 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded-lg shrink-0">
+                                <i data-lucide="pie-chart" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Marge Atterrissage</p>
+                                <p class="text-lg font-bold text-gray-900 dark:text-white">18.5% <span class="text-xs text-error-500 font-medium ml-1">(-2 pts)</span></p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div class="p-2.5 bg-success-50 dark:bg-success-900/20 text-success-600 dark:text-success-400 rounded-lg shrink-0">
+                                <i data-lucide="receipt" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Facturé à date</p>
+                                <p class="text-lg font-bold text-gray-900 dark:text-white">850 000 €</p>
+                                <p class="text-xs text-gray-500">68% du CA</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div class="p-2.5 bg-error-50 dark:bg-error-900/20 text-error-600 dark:text-error-400 rounded-lg shrink-0">
+                                <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Risques Majeurs</p>
+                                <p class="text-lg font-bold text-error-600 dark:text-error-500">2 Actifs</p>
+                                <a href="ecr-18-02-cockpit-risques-et-arbitrages-projet.html" class="text-xs text-accent-600 hover:underline">Voir le cockpit</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 360 Grid Layout -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    
+                    <!-- Volet 1 : Cycle Commercial & Contrats -->
+                    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden flex flex-col">
+                        <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between bg-gray-50/50 dark:bg-gray-800/20">
+                            <h2 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                <i data-lucide="file-signature" class="w-5 h-5 text-gray-400"></i> Vente & Contrats
+                            </h2>
+                            <a href="../03-contrats-affaires-projets/ecr-03-01-registre-des-contrats.html" class="text-sm text-accent-600 hover:text-accent-700 font-medium">Tout voir</a>
+                        </div>
+                        <div class="p-0 flex-1">
+                            <ul class="divide-y divide-gray-100 dark:divide-gray-800">
+                                <li class="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors flex items-center justify-between group cursor-pointer">
+                                    <div class="flex items-start gap-3">
+                                        <div class="p-2 bg-gray-100 dark:bg-gray-800 rounded text-gray-500">
+                                            <i data-lucide="file-text" class="w-4 h-4"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-900 dark:text-white group-hover:text-accent-600">Offre Initiale V1</p>
+                                            <p class="text-xs text-gray-500">DEV-2023-401 • 1 200 000 €</p>
+                                        </div>
+                                    </div>
+                                    <span class="px-2 py-1 text-xs font-medium rounded-md bg-success-50 text-success-700 border border-success-100">Gagnée</span>
+                                </li>
+                                <li class="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors flex items-center justify-between group cursor-pointer">
+                                    <div class="flex items-start gap-3">
+                                        <div class="p-2 bg-gray-100 dark:bg-gray-800 rounded text-gray-500">
+                                            <i data-lucide="file-plus" class="w-4 h-4"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-900 dark:text-white group-hover:text-accent-600">Avenant #1 - Ajout Automate</p>
+                                            <p class="text-xs text-gray-500">AVN-2024-012 • 50 000 €</p>
+                                        </div>
+                                    </div>
+                                    <span class="px-2 py-1 text-xs font-medium rounded-md bg-success-50 text-success-700 border border-success-100">Signé</span>
+                                </li>
+                                <li class="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors flex items-center justify-between group cursor-pointer">
+                                    <div class="flex items-start gap-3">
+                                        <div class="p-2 bg-gray-100 dark:bg-gray-800 rounded text-gray-500">
+                                            <i data-lucide="file-clock" class="w-4 h-4"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-900 dark:text-white group-hover:text-accent-600">Avenant #2 - Modification Tracé</p>
+                                            <p class="text-xs text-gray-500">AVN-2024-045 • 25 000 €</p>
+                                        </div>
+                                    </div>
+                                    <span class="px-2 py-1 text-xs font-medium rounded-md bg-warning-50 text-warning-700 border border-warning-100">En négo</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Volet 2 : Achats & Sous-traitance -->
+                    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden flex flex-col">
+                        <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between bg-gray-50/50 dark:bg-gray-800/20">
+                            <h2 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                <i data-lucide="shopping-cart" class="w-5 h-5 text-gray-400"></i> Achats & Sous-traitance
+                            </h2>
+                            <a href="../05-achats/index.html" class="text-sm text-accent-600 hover:text-accent-700 font-medium">Tout voir</a>
+                        </div>
+                        <div class="p-4 border-b border-gray-100 dark:border-gray-800">
+                            <div class="flex justify-between items-end">
+                                <div>
+                                    <p class="text-xs text-gray-500">Budget Achat Engagé</p>
+                                    <p class="text-lg font-bold text-gray-900">420 K€ <span class="text-sm text-gray-500 font-normal">/ 450 K€ prévus</span></p>
+                                </div>
+                                <div class="w-32 bg-gray-200 rounded-full h-1.5 mb-2">
+                                    <div class="bg-blue-500 h-1.5 rounded-full" style="width: 93%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-0 flex-1">
+                            <ul class="divide-y divide-gray-100 dark:divide-gray-800">
+                                <li class="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors flex items-center justify-between group cursor-pointer">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-2 h-2 rounded-full bg-success-500"></div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-900 dark:text-white group-hover:text-accent-600">CMD-2023-1002 • Armoires Elec.</p>
+                                            <p class="text-xs text-gray-500">Fournisseur: ElecPro • 120 000 €</p>
+                                        </div>
+                                    </div>
+                                    <span class="text-xs text-gray-500">Livré</span>
+                                </li>
+                                <li class="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors flex items-center justify-between group cursor-pointer">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-2 h-2 rounded-full bg-warning-500"></div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-900 dark:text-white group-hover:text-accent-600">CMD-2024-0045 • Câblage Specifique</p>
+                                            <p class="text-xs text-gray-500">Fournisseur: CableTech • 45 000 €</p>
+                                        </div>
+                                    </div>
+                                    <span class="text-xs text-warning-600 font-medium">En transit (Retard)</span>
+                                </li>
+                                <li class="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors flex items-center justify-between group cursor-pointer">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-900 dark:text-white group-hover:text-accent-600">CNT-ST-2024-01 • Tirage de câbles</p>
+                                            <p class="text-xs text-gray-500">Sous-traitant: BTP Reseaux • 85 000 €</p>
+                                        </div>
+                                    </div>
+                                    <span class="text-xs text-gray-500">En cours</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Volet 3 : Exécution (Ordres de Travail & PV) -->
+                    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden flex flex-col">
+                        <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between bg-gray-50/50 dark:bg-gray-800/20">
+                            <h2 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                <i data-lucide="hard-hat" class="w-5 h-5 text-gray-400"></i> Exécution (OT & PV)
+                            </h2>
+                            <div class="flex items-center gap-3">
+                                <span class="text-xs font-medium px-2 py-0.5 bg-gray-100 rounded text-gray-600">12 OT Ouverts</span>
+                                <a href="../07-execution-terrain-ordres-de-travail/index.html" class="text-sm text-accent-600 hover:text-accent-700 font-medium">Tout voir</a>
+                            </div>
+                        </div>
+                        <div class="p-0 flex-1">
+                            <ul class="divide-y divide-gray-100 dark:divide-gray-800">
+                                <li class="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors flex items-center justify-between group cursor-pointer">
+                                    <div class="flex items-start gap-3">
+                                        <div class="p-2 bg-success-50 text-success-600 rounded">
+                                            <i data-lucide="check-circle" class="w-4 h-4"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-900 dark:text-white group-hover:text-accent-600">OT-001: Tranchées Zone A</p>
+                                            <p class="text-xs text-gray-500">Terminé le 12/11/2023 • PV Signé (PV-001)</p>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors flex items-center justify-between group cursor-pointer">
+                                    <div class="flex items-start gap-3">
+                                        <div class="p-2 bg-blue-50 text-blue-600 rounded">
+                                            <i data-lucide="play" class="w-4 h-4"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-900 dark:text-white group-hover:text-accent-600">OT-005: Pose Armoires</p>
+                                            <p class="text-xs text-gray-500">En cours • Équipe: Elec 1 • Avancement: 80%</p>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors flex items-center justify-between group cursor-pointer">
+                                    <div class="flex items-start gap-3">
+                                        <div class="p-2 bg-error-50 text-error-600 rounded">
+                                            <i data-lucide="pause" class="w-4 h-4"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-900 dark:text-white group-hover:text-accent-600">OT-006: Tirage Câbles Zone B</p>
+                                            <p class="text-xs text-gray-500">Bloqué • Cause: Attente matériel CMD-2024-0045</p>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Volet 4 : Facturation & Finance -->
+                    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden flex flex-col">
+                        <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between bg-gray-50/50 dark:bg-gray-800/20">
+                            <h2 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                <i data-lucide="receipt" class="w-5 h-5 text-gray-400"></i> Factures & Situations
+                            </h2>
+                            <a href="../12-facturation/index.html" class="text-sm text-accent-600 hover:text-accent-700 font-medium">Tout voir</a>
+                        </div>
+                        <div class="p-0 flex-1">
+                            <ul class="divide-y divide-gray-100 dark:divide-gray-800">
+                                <li class="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors flex items-center justify-between group cursor-pointer">
+                                    <div class="flex items-start gap-3">
+                                        <div class="p-2 bg-gray-100 text-gray-500 rounded">
+                                            <i data-lucide="file-check-2" class="w-4 h-4"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-900 dark:text-white group-hover:text-accent-600">FAC-A-2023-112 • Acompte 30%</p>
+                                            <p class="text-xs text-gray-500">Emise le 15/09/2023 • 375 000 €</p>
+                                        </div>
+                                    </div>
+                                    <span class="px-2 py-1 text-xs font-medium rounded-md bg-success-50 text-success-700 border border-success-100">Encaissée</span>
+                                </li>
+                                <li class="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors flex items-center justify-between group cursor-pointer">
+                                    <div class="flex items-start gap-3">
+                                        <div class="p-2 bg-gray-100 text-gray-500 rounded">
+                                            <i data-lucide="file-check-2" class="w-4 h-4"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-900 dark:text-white group-hover:text-accent-600">FAC-S-2024-015 • Situation #1</p>
+                                            <p class="text-xs text-gray-500">Emise le 10/01/2024 • 475 000 €</p>
+                                        </div>
+                                    </div>
+                                    <span class="px-2 py-1 text-xs font-medium rounded-md bg-success-50 text-success-700 border border-success-100">Encaissée</span>
+                                </li>
+                                <li class="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors flex items-center justify-between group cursor-pointer">
+                                    <div class="flex items-start gap-3">
+                                        <div class="p-2 bg-gray-100 text-gray-500 rounded">
+                                            <i data-lucide="file-clock" class="w-4 h-4"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-900 dark:text-white group-hover:text-accent-600">SIT-PROJ-002 • Situation #2 (Brouillon)</p>
+                                            <p class="text-xs text-gray-500">À facturer • ~ 250 000 € estimé</p>
+                                        </div>
+                                    </div>
+                                    <span class="px-2 py-1 text-xs font-medium rounded-md bg-gray-100 text-gray-600 border border-gray-200">En préparation</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Volet 5 : Maintenance & SAV -->
+                    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden flex flex-col lg:col-span-2">
+                        <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between bg-gray-50/50 dark:bg-gray-800/20">
+                            <h2 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                <i data-lucide="wrench" class="w-5 h-5 text-gray-400"></i> Maintenance, Garanties & SAV (Post-livraison)
+                            </h2>
+                            <div class="flex items-center gap-3">
+                                <span class="text-xs font-medium px-2 py-0.5 bg-gray-100 rounded text-gray-600">0 ticket actif</span>
+                                <a href="../14-sav-maintenance-ticketing/index.html" class="text-sm text-accent-600 hover:text-accent-700 font-medium">Voir le module SAV</a>
+                            </div>
+                        </div>
+                        <div class="p-8 text-center flex flex-col items-center justify-center bg-gray-50/50 dark:bg-gray-900/50 min-h-[150px]">
+                            <div class="p-3 bg-gray-100 dark:bg-gray-800 rounded-full text-gray-400 mb-3">
+                                <i data-lucide="shield-check" class="w-6 h-6"></i>
+                            </div>
+                            <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-1">Le projet n'est pas encore en phase de garantie</h3>
+                            <p class="text-xs text-gray-500 max-w-sm">La bascule vers la maintenance s'effectuera lors de la réception globale du projet. Les tickets SAV apparaîtront ici.</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

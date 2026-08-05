@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rentabilité & Marge - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3' },
+                        error: { 500: '#f04438', 50: '#fef3f2' },
+                        warning: { 500: '#f79009', 50: '#fffaeb' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Analytique & Marge</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                    <span class="truncate">Accueil Analytique</span>
+                </a>
+                <a href="ecr-10-01-fiche-cout-analytique-d-intervention.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                    <span class="truncate">Coût d'Intervention</span>
+                </a>
+                <a href="ecr-10-02-tableau-de-bord-analytique-consolide.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="pie-chart" class="w-5 h-5"></i>
+                    <span class="truncate">Analytique Consolidé</span>
+                </a>
+                <a href="ecr-10-03-tableau-de-bord-rentabilite-et-marge.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500">
+                    <i data-lucide="trending-up" class="w-5 h-5"></i>
+                    <span class="truncate">Rentabilité & Marge</span>
+                </a>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+        <!-- Top Navigation -->
+        <header class="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 z-10">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <nav class="flex text-sm text-gray-500 dark:text-gray-400 font-medium space-x-2">
+                    <a href="index.html" class="hover:text-gray-900 dark:hover:text-white transition-colors">Module 10</a>
+                    <span>/</span>
+                    <span class="text-gray-900 dark:text-white">Rentabilité & Marge</span>
+                </nav>
+            </div>
+            <div class="flex items-center gap-4">
+                <button class="p-2 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 relative">
+                    <i data-lucide="bell" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Content scrollable area -->
+        <div class="flex-1 overflow-y-auto p-6 lg:p-8 bg-gray-50 dark:bg-gray-950">
+            <div class="max-w-7xl mx-auto space-y-6">
+                
+                <!-- Page Header -->
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <div class="flex items-center gap-3 mb-1">
+                            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Tableau de Bord Rentabilité et Marge</h1>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300">
+                                Calcul V1.2 - 24/10/2023
+                            </span>
+                        </div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Analyse de la rentabilité réelle par Client, Affaire ou Projet.</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <button class="px-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-sm flex items-center gap-2">
+                            <i data-lucide="download" class="w-4 h-4"></i>
+                            Export Excel
+                        </button>
+                        <button class="px-4 py-2 bg-accent-600 text-white rounded-lg text-sm font-medium hover:bg-accent-700 transition-colors shadow-sm flex items-center gap-2">
+                            <i data-lucide="calculator" class="w-4 h-4"></i>
+                            Calculer la marge réelle
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filters Bar -->
+                <div class="bg-white dark:bg-gray-900 rounded-xl p-4 border border-gray-200 dark:border-gray-800 shadow-sm flex flex-wrap gap-4 items-end">
+                    <div class="w-full md:w-64">
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Axe d'analyse</label>
+                        <select class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-accent-500 focus:border-accent-500 block p-2.5">
+                            <option>Par Projet / Affaire</option>
+                            <option selected>Par Client</option>
+                            <option>Par Site</option>
+                        </select>
+                    </div>
+                    <div class="w-full md:w-48">
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Filtre (Optionnel)</label>
+                        <select class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-accent-500 focus:border-accent-500 block p-2.5">
+                            <option>Tous les clients</option>
+                            <option>Top 10 Clients</option>
+                            <option>Clients à risque (Marge < 5%)</option>
+                        </select>
+                    </div>
+                    <div class="w-full md:w-64">
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Période (Facturation / Coûts)</label>
+                        <div class="flex items-center gap-2">
+                            <input type="month" value="2023-01" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-accent-500 focus:border-accent-500 p-2.5">
+                            <span class="text-gray-500">-</span>
+                            <input type="month" value="2023-12" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-accent-500 focus:border-accent-500 p-2.5">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPI Cards - Rentabilité Globale -->
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white pt-2">Synthèse Globale (Période sélectionnée)</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-white dark:bg-gray-900 rounded-xl p-5 border border-gray-200 dark:border-gray-800 shadow-sm">
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Chiffre d'Affaires Facturé</p>
+                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white">1 245 000 €</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Issu des factures validées</p>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-gray-900 rounded-xl p-5 border border-gray-200 dark:border-gray-800 shadow-sm">
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Coûts Réels Consolidés</p>
+                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white">980 000 €</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Dépenses totales (MO, Achat, SST)</p>
+                    </div>
+
+                    <div class="bg-success-50 dark:bg-success-900/10 rounded-xl p-5 border border-success-200 dark:border-success-800/30 shadow-sm relative overflow-hidden">
+                        <p class="text-sm font-medium text-success-800 dark:text-success-400 mb-1 relative z-10">Marge Brute Globale</p>
+                        <h3 class="text-2xl font-bold text-success-700 dark:text-success-500 relative z-10">265 000 €</h3>
+                        <p class="text-xs text-success-600 dark:text-success-500 mt-2 relative z-10">+12% vs période N-1</p>
+                        <div class="absolute right-0 bottom-0 text-success-200 dark:text-success-900/20 translate-y-4 translate-x-4">
+                            <i data-lucide="trending-up" class="w-24 h-24"></i>
+                        </div>
+                    </div>
+
+                    <div class="bg-white dark:bg-gray-900 rounded-xl p-5 border border-gray-200 dark:border-gray-800 shadow-sm relative">
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Taux de Marge (%)</p>
+                        <div class="flex items-end gap-2">
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white">21.2 %</h3>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-success-50 text-success-600 mb-1">
+                                Objectif: 20%
+                            </span>
+                        </div>
+                        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mt-4">
+                            <div class="bg-success-500 h-1.5 rounded-full" style="width: 85%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alert Marge Négative -->
+                <div class="bg-error-50 dark:bg-error-900/20 border border-error-200 dark:border-error-800 rounded-xl p-4 flex gap-3">
+                    <div class="text-error-500 mt-0.5 shrink-0">
+                        <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-sm font-semibold text-error-800 dark:text-error-400">Attention : Marge négative détectée sur 1 client</h4>
+                        <p class="text-sm text-error-700 dark:text-error-500 mt-1">Le client <strong>Logistique Sud Est</strong> présente une marge négative de -14% due à des surcoûts importants de sous-traitance non refacturés.</p>
+                    </div>
+                    <button class="text-sm text-error-700 font-medium hover:underline self-center whitespace-nowrap">Filtrer</button>
+                </div>
+
+                <!-- Table Rentabilité par Axe -->
+                <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
+                    <div class="p-5 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
+                        <h2 class="text-lg font-bold text-gray-900 dark:text-white">Détail de Rentabilité par Client</h2>
+                        <div class="flex items-center gap-2">
+                            <div class="relative">
+                                <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                <input type="text" placeholder="Rechercher..." class="pl-9 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-accent-500 focus:border-accent-500 w-64">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left">
+                            <thead class="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 uppercase">
+                                <tr>
+                                    <th class="px-6 py-4 font-medium">Client</th>
+                                    <th class="px-6 py-4 font-medium text-right">CA Facturé</th>
+                                    <th class="px-6 py-4 font-medium text-right">Coûts Réels</th>
+                                    <th class="px-6 py-4 font-medium text-right">Marge Brute (€)</th>
+                                    <th class="px-6 py-4 font-medium text-right">Taux de Marge</th>
+                                    <th class="px-6 py-4 font-medium text-center">Dérive (Tendance)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 dark:divide-gray-800 text-gray-700 dark:text-gray-300">
+                                
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                    <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">Immobilière Dupond (CLI-001)</td>
+                                    <td class="px-6 py-4 text-right">450 000 €</td>
+                                    <td class="px-6 py-4 text-right">320 000 €</td>
+                                    <td class="px-6 py-4 text-right font-medium text-success-600 dark:text-success-400">130 000 €</td>
+                                    <td class="px-6 py-4 text-right font-bold text-gray-900 dark:text-white">
+                                        <span class="inline-flex items-center px-2 py-1 rounded bg-success-50 text-success-700 dark:bg-success-900/30 dark:text-success-400">28.8%</span>
+                                    </td>
+                                    <td class="px-6 py-4 text-center">
+                                        <i data-lucide="trending-up" class="w-4 h-4 text-success-500 inline"></i>
+                                    </td>
+                                </tr>
+
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                    <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">Retail Plus France (CLI-042)</td>
+                                    <td class="px-6 py-4 text-right">380 000 €</td>
+                                    <td class="px-6 py-4 text-right">300 000 €</td>
+                                    <td class="px-6 py-4 text-right font-medium text-success-600 dark:text-success-400">80 000 €</td>
+                                    <td class="px-6 py-4 text-right font-bold text-gray-900 dark:text-white">
+                                        <span class="inline-flex items-center px-2 py-1 rounded bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">21.0%</span>
+                                    </td>
+                                    <td class="px-6 py-4 text-center">
+                                        <i data-lucide="minus" class="w-4 h-4 text-gray-400 inline"></i>
+                                    </td>
+                                </tr>
+
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                    <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">Hopital La Croix (CLI-102)</td>
+                                    <td class="px-6 py-4 text-right">290 000 €</td>
+                                    <td class="px-6 py-4 text-right text-warning-600 dark:text-warning-500">260 000 €</td>
+                                    <td class="px-6 py-4 text-right font-medium text-warning-600 dark:text-warning-500">30 000 €</td>
+                                    <td class="px-6 py-4 text-right font-bold text-gray-900 dark:text-white">
+                                        <span class="inline-flex items-center px-2 py-1 rounded bg-warning-50 text-warning-700 dark:bg-warning-900/30 dark:text-warning-400">10.3%</span>
+                                    </td>
+                                    <td class="px-6 py-4 text-center">
+                                        <i data-lucide="trending-down" class="w-4 h-4 text-warning-500 inline"></i>
+                                    </td>
+                                </tr>
+
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 bg-error-50/30 dark:bg-error-900/10">
+                                    <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">Logistique Sud Est (CLI-204)</td>
+                                    <td class="px-6 py-4 text-right">125 000 €</td>
+                                    <td class="px-6 py-4 text-right text-error-600 dark:text-error-500">142 500 €</td>
+                                    <td class="px-6 py-4 text-right font-medium text-error-600 dark:text-error-500">-17 500 €</td>
+                                    <td class="px-6 py-4 text-right font-bold text-gray-900 dark:text-white">
+                                        <span class="inline-flex items-center px-2 py-1 rounded bg-error-100 text-error-700 dark:bg-error-900/50 dark:text-error-400">-14.0%</span>
+                                    </td>
+                                    <td class="px-6 py-4 text-center">
+                                        <i data-lucide="alert-circle" class="w-4 h-4 text-error-500 inline"></i>
+                                    </td>
+                                </tr>
+                                
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

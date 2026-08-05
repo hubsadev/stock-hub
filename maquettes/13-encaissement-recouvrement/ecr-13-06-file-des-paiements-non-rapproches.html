@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paiements non rapprochés - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3', 900: '#054f31' },
+                        error: { 500: '#f04438', 50: '#fef3f2', 900: '#7a271d' },
+                        warning: { 500: '#f79009', 50: '#fffaeb', 900: '#7a4504' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20 shrink-0">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="wallet" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Encaissement & Recouvrement</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="home" class="w-5 h-5"></i>
+                    <span class="truncate">Accueil Module</span>
+                </a>
+                <a href="ecr-13-01-formulaire-d-encaissement-client.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                    <span class="truncate">Saisir un encaissement</span>
+                </a>
+                <a href="ecr-13-02-fiche-encaissement.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
+                    <span class="truncate">Fiches encaissements</span>
+                </a>
+                <a href="ecr-13-03-tableau-de-bord-recouvrement.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+                    <span class="truncate">Tableau de bord</span>
+                </a>
+                <a href="ecr-13-04-dossier-relance-client.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="contact" class="w-5 h-5"></i>
+                    <span class="truncate">Dossiers de relance</span>
+                </a>
+                <a href="ecr-13-05-ecran-de-rapprochement-paiements-factures.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="arrow-left-right" class="w-5 h-5"></i>
+                    <span class="truncate">Rapprochement</span>
+                </a>
+                <a href="ecr-13-06-file-des-paiements-non-rapproches.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500">
+                    <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                    <span class="truncate">Paiements non rapprochés</span>
+                </a>
+            </nav>
+
+            <div class="mt-8">
+                <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Modules liés</div>
+                <nav class="space-y-1">
+                    <a href="../12-facturation/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="receipt" class="w-5 h-5"></i>
+                        <span class="truncate">Facturation</span>
+                    </a>
+                    <a href="../16-gouvernance-validation-controle-interne/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="shield-check" class="w-5 h-5"></i>
+                        <span class="truncate">Gouvernance</span>
+                    </a>
+                    <a href="../17-reporting-kpi-direction/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="pie-chart" class="w-5 h-5"></i>
+                        <span class="truncate">Reporting KPI</span>
+                    </a>
+                    <a href="../18-vue-transverse-affaire-projet/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="folder-kanban" class="w-5 h-5"></i>
+                        <span class="truncate">Vue Projet</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+        
+        <div class="p-4 border-t border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-3">
+                <img src="https://ui-avatars.com/api/?name=Admin&background=465fff&color=fff" alt="User" class="w-8 h-8 rounded-full">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">Admin User</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate">Comptabilité</p>
+                </div>
+                <button onclick="document.documentElement.classList.toggle('dark')" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+                    <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden bg-gray-50 dark:bg-gray-950">
+        
+        <!-- Topbar -->
+        <header class="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 shrink-0 z-10">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <nav class="flex text-sm text-gray-500 dark:text-gray-400" aria-label="Breadcrumb">
+                    <ol class="flex items-center space-x-2">
+                        <li><a href="index.html" class="hover:text-gray-900 dark:hover:text-white transition-colors">Encaissements</a></li>
+                        <li><i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i></li>
+                        <li class="text-gray-900 dark:text-white font-medium" aria-current="page">File d'attente : Non rapprochés</li>
+                    </ol>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <div class="flex-1 overflow-auto bg-gray-50 dark:bg-gray-950 p-6 no-scrollbar">
+            
+            <div class="max-w-7xl mx-auto space-y-6">
+                
+                <!-- Page Title & Actions -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                            Paiements non identifiés
+                            <span class="inline-flex items-center justify-center px-2 py-0.5 ml-2 text-xs font-bold rounded-full bg-error-100 text-error-800 dark:bg-error-900/30 dark:text-error-400">
+                                4 en attente
+                            </span>
+                        </h1>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Gérez les virements entrants sans référence claire ou avec un écart non résolu.</p>
+                    </div>
+                </div>
+
+                <!-- Filters & Table -->
+                <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-theme-xs overflow-hidden flex flex-col">
+                    
+                    <!-- Filters Bar -->
+                    <div class="p-4 border-b border-gray-200 dark:border-gray-800 flex flex-wrap items-center gap-3 bg-gray-50/50 dark:bg-gray-900/50">
+                        <div class="relative min-w-[250px] flex-1 sm:flex-none">
+                            <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                            <input type="text" placeholder="Recherche par montant, libellé..." class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-950 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500">
+                        </div>
+                        
+                        <select class="px-3 py-2 text-sm border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-950 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-accent-500">
+                            <option value="">Tous les âges</option>
+                            <option value="new">Moins de 7 jours</option>
+                            <option value="old">Plus de 7 jours</option>
+                        </select>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm whitespace-nowrap">
+                            <thead class="bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-800">
+                                <tr>
+                                    <th class="px-6 py-3 font-medium">Date du relevé</th>
+                                    <th class="px-6 py-3 font-medium">Libellé bancaire d'origine</th>
+                                    <th class="px-6 py-3 font-medium text-right">Montant reçu</th>
+                                    <th class="px-6 py-3 font-medium">Motif du blocage</th>
+                                    <th class="px-6 py-3 font-medium text-right">Actions rapides</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-800 bg-white dark:bg-gray-900">
+                                
+                                <!-- Ligne 1: Inconnu total -->
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                    <td class="px-6 py-4">
+                                        <div class="text-gray-900 dark:text-white font-medium">16/03/2024</div>
+                                        <div class="text-xs text-gray-500 mt-0.5">Il y a 2 jours</div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="font-mono text-xs text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800 p-1.5 rounded inline-block mb-1 border border-gray-200 dark:border-gray-700">
+                                            VIR SEPA MR JEAN MARC T
+                                        </div>
+                                        <div class="text-xs text-gray-500">Motif: "Pour la facture"</div>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <div class="font-bold text-success-600 dark:text-success-500">+ 450,00 €</div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-1.5 text-error-600 dark:text-error-500">
+                                            <i data-lucide="help-circle" class="w-4 h-4"></i>
+                                            <span class="font-medium text-xs">Aucune correspondance</span>
+                                        </div>
+                                        <div class="text-[10px] text-gray-500 mt-0.5">Client introuvable par le nom.</div>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <div class="flex items-center justify-end gap-2">
+                                            <button class="p-1.5 text-gray-500 hover:text-accent-600 hover:bg-accent-50 dark:hover:bg-accent-900/30 rounded" title="Associer à un client">
+                                                <i data-lucide="user-plus" class="w-4 h-4"></i>
+                                            </button>
+                                            <button class="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 rounded" title="Créer une demande de clarification">
+                                                <i data-lucide="mail-question" class="w-4 h-4"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Ligne 2: Ecart de montant -->
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                    <td class="px-6 py-4">
+                                        <div class="text-gray-900 dark:text-white font-medium">15/03/2024</div>
+                                        <div class="text-xs text-gray-500 mt-0.5">Il y a 3 jours</div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="font-mono text-xs text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800 p-1.5 rounded inline-block mb-1 border border-gray-200 dark:border-gray-700">
+                                            VIR. SARL BATIMENT
+                                        </div>
+                                        <div class="text-xs text-gray-500">Motif: F2024-0018</div>
+                                        <div class="mt-1 text-xs text-accent-600 dark:text-accent-500 flex items-center gap-1">
+                                            <i data-lucide="link" class="w-3 h-3"></i> Client suggéré: BATIMENT PRO
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <div class="font-bold text-success-600 dark:text-success-500">+ 1 950,00 €</div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-1.5 text-warning-600 dark:text-warning-500">
+                                            <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                                            <span class="font-medium text-xs">Écart de montant</span>
+                                        </div>
+                                        <div class="text-[10px] text-gray-500 mt-0.5">Facture liée est de 2000,00 € (Manque 50€).</div>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <div class="flex items-center justify-end gap-2">
+                                            <button class="px-3 py-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-xs font-medium text-gray-700 dark:text-gray-300 rounded hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                                Forcer l'affectation
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Ligne 3: Plusieurs factures possibles -->
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                    <td class="px-6 py-4">
+                                        <div class="text-gray-900 dark:text-white font-medium">10/03/2024</div>
+                                        <div class="text-xs text-error-600 dark:text-error-500 font-medium mt-0.5">Il y a 8 jours</div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="font-mono text-xs text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800 p-1.5 rounded inline-block mb-1 border border-gray-200 dark:border-gray-700">
+                                            VIR. MARTIN LOGISTICS
+                                        </div>
+                                        <div class="text-xs text-gray-500">Motif: "Solde compte"</div>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <div class="font-bold text-success-600 dark:text-success-500">+ 3 400,00 €</div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-1.5 text-accent-600 dark:text-accent-500">
+                                            <i data-lucide="split" class="w-4 h-4"></i>
+                                            <span class="font-medium text-xs">Ambiguité (Plusieurs factures)</span>
+                                        </div>
+                                        <div class="text-[10px] text-gray-500 mt-0.5">3 factures ouvertes pour un total de 3 800€.</div>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <div class="flex items-center justify-end gap-2">
+                                            <button class="px-3 py-1 bg-accent-50 dark:bg-accent-900/30 text-accent-700 dark:text-accent-400 border border-accent-200 dark:border-accent-800/50 text-xs font-medium rounded hover:bg-accent-100 dark:hover:bg-accent-900/50 transition-colors">
+                                                Répartir manuellement
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Ligne 4: Acompte sans facture -->
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                    <td class="px-6 py-4">
+                                        <div class="text-gray-900 dark:text-white font-medium">08/03/2024</div>
+                                        <div class="text-xs text-error-600 dark:text-error-500 font-medium mt-0.5">Il y a 10 jours</div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="font-mono text-xs text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800 p-1.5 rounded inline-block mb-1 border border-gray-200 dark:border-gray-700">
+                                            VIR. STARTUP XYZ
+                                        </div>
+                                        <div class="text-xs text-gray-500">Motif: "Acompte Projet Alpha"</div>
+                                        <div class="mt-1 text-xs text-accent-600 dark:text-accent-500 flex items-center gap-1">
+                                            <i data-lucide="link" class="w-3 h-3"></i> Client suggéré: STARTUP XYZ
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <div class="font-bold text-success-600 dark:text-success-500">+ 10 000,00 €</div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-1.5 text-gray-700 dark:text-gray-300">
+                                            <i data-lucide="file-minus" class="w-4 h-4"></i>
+                                            <span class="font-medium text-xs">Aucune facture ouverte</span>
+                                        </div>
+                                        <div class="text-[10px] text-gray-500 mt-0.5">Probablement un acompte en avance.</div>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <div class="flex items-center justify-end gap-2">
+                                            <button class="px-3 py-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-xs font-medium text-gray-700 dark:text-gray-300 rounded hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                                Convertir en acompte
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

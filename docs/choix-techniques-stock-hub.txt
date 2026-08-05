@@ -1,0 +1,150 @@
+﻿Choix techniques - Stock Hub
+
+
+1. Stack 
+
+Frontend :
+- React
+- TypeScript
+- Vite
+
+Backend :
+- Node.js
+- Fastify
+- TypeScript
+
+Base de donnees :
+- PostgreSQL
+
+ORM / migrations :
+- Prisma
+
+Package manager :
+- pnpm
+
+Deploiement :
+- Railway
+
+Imports / exports :
+- Excel
+- CSV
+
+
+2. Structure projet 
+
+stock-hub/
+- apps/
+  - web/
+  - api/
+- packages/
+  - database/
+  - domain/
+- docs/
+
+Lecture :
+- apps/web : interface.
+- apps/api : API.
+- packages/database : Prisma, schema, migrations, acces base.
+- packages/domain : regles metier stock.
+- docs : cadrage, roadmap, decisions, tests.
+
+3. Tables principales prevues
+
+- users
+- articles
+- equipment
+- locations
+- suppliers
+- projects
+- stock_movements
+- stock_levels
+- equipment_assignments
+- audit_logs
+- imports
+
+Lecture metier :
+- articles : stock gere en quantite.
+- equipment : materiel suivi individuellement.
+- locations : magasins, depots, chantiers, vehicules, techniciens.
+- stock_movements : entrees, sorties, transferts, retours, ajustements.
+- stock_levels : stock disponible calcule.
+- equipment_assignments : affectations et retours du materiel trace.
+- audit_logs : historique des actions.
+- imports : historique des imports Excel.
+
+
+4. Ordre de construction
+
+- Modele de donnees.
+- Import Excel.
+- API de base.
+- Interface simple.
+- Calcul du stock actuel.
+- Entrees et sorties.
+- Equipements et affectations.
+- Audit log.
+- Exports.
+- Deploiement Railway.
+
+
+5. Style interface
+
+- Interface inspiree des maquettes numerotees.
+- Style proche du futur HubERP cible.
+- Fonctionnalites plus simples que les maquettes.
+- Reprise du style, pas reprise de toute la complexite.
+
+Elements a reprendre :
+- Layout moderne.
+- Sidebar propre.
+- Header avec titre, recherche et actions rapides.
+- Cartes KPI bien visibles.
+- Tableaux lisibles.
+- Boutons avec icones.
+- Badges de statut.
+- Modals propres.
+- Panneaux detail si besoin.
+- Etats vides propres.
+- Alertes visuelles.
+
+
+
+6. Ecrans MVP attendus
+
+Accueil stock :
+- KPI articles.
+- KPI ruptures.
+- KPI critiques.
+- KPI equipements affectes.
+- Alertes principales.
+- Mouvements recents.
+
+Articles :
+- tableau central.
+- recherche.
+- filtres simples.
+- nouvel article.
+- import Excel.
+
+Mouvements :
+- entrees.
+- sorties.
+- retours.
+- historique.
+- formulaires en modal.
+
+Equipements :
+- tableau des equipements.
+- statut.
+- recherche par code.
+- fiche detail en modal.
+- affecter.
+- retourner.
+
+Audit :
+- registre des actions.
+- filtres date, utilisateur, action, objet.
+- export.
+
+
+

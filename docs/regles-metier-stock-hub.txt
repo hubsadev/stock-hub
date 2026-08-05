@@ -1,0 +1,152 @@
+﻿Regles metier - Stock Hub
+
+
+1. Stock actuel
+
+- Stock actuel = stock initial + entrees - sorties.
+- Le stock actuel ne se saisit pas directement apres import.
+- Le stock actuel vient des mouvements.
+- Une correction manuelle doit passer par un ajustement trace.
+
+
+2. Entrees stock
+
+- Une entree augmente le stock.
+- Une entree doit avoir une date.
+- Une entree doit avoir un article.
+- Une entree doit avoir une quantite positive.
+- Une entree peut avoir un fournisseur.
+- Une entree peut avoir un bon.
+- Une entree peut avoir un prix unitaire.
+- Une entree cree toujours un mouvement.
+
+
+3. Sorties stock
+
+- Une sortie diminue le stock.
+- Une sortie doit avoir une date.
+- Une sortie doit avoir un article.
+- Une sortie doit avoir une quantite positive.
+- Une sortie doit avoir une destination ou un motif.
+- Une sortie peut etre rattachee a un employe, chantier ou projet.
+- Une sortie cree toujours un mouvement.
+- Une sortie est bloquee si le stock disponible est insuffisant.
+
+
+4. Articles
+
+- Un article a un code unique.
+- Un article a une designation.
+- Un article peut avoir une famille.
+- Un article peut avoir une unite.
+- Un article peut avoir un stock minimum.
+- Un article peut avoir un stock maximum.
+- Un article peut etre actif ou inactif.
+- Un article inactif reste visible dans l'historique.
+- Un article inactif ne doit plus etre selectionnable pour un nouveau mouvement.
+
+
+5. Statut stock
+
+- Stock actuel = 0 : rupture.
+- Stock actuel > 0 et stock actuel <= stock min : critique.
+- Stock actuel > stock min : OK.
+- Stock actuel > stock max : surstock.
+- Si stock min ou max absent, pas d'alerte correspondante.
+
+
+6. Equipements
+
+- Un equipement a un code inventaire unique.
+- Un equipement peut avoir un numero de serie.
+- Un equipement a un etat.
+- Un equipement disponible peut etre affecte.
+- Un equipement affecte n'est plus disponible.
+- Un equipement en maintenance n'est pas disponible.
+- Un equipement defectueux n'est pas disponible.
+- Un equipement perdu ou vole n'est pas disponible.
+- Un equipement reforme n'est pas disponible.
+
+
+7. Affectations equipements
+
+- Une affectation doit identifier le materiel.
+- Une affectation doit identifier la personne, le projet ou le chantier beneficiaire.
+- Une affectation doit avoir une date de sortie.
+- Une affectation peut avoir une date retour prevue.
+- Une affectation cree un mouvement.
+- Un equipement deja affecte ne peut pas etre affecte une deuxieme fois sans retour.
+
+
+8. Retours equipements
+
+- Un retour doit etre rattache a une affectation.
+- Un retour doit avoir une date.
+- Un retour doit preciser l'etat du materiel.
+- Si l'etat est disponible, le materiel redevient disponible.
+- Si l'etat est defectueux, maintenance, perdu, vole ou reforme, le materiel reste indisponible.
+- Un retour cree un mouvement.
+
+
+9. Import Excel
+
+- L'import Excel sert a initialiser les donnees.
+- L'import ne doit pas ecraser sans confirmation.
+- Les lignes incompletes doivent etre signalees.
+- Les lignes ambigues doivent etre marquees a verifier.
+- Les doublons de code article doivent etre signales.
+- Les doublons de code inventaire doivent etre signales.
+- Les erreurs Excel comme #REF! ne doivent pas etre reprises comme valeur metier.
+
+
+10. Audit
+
+- Chaque creation importante doit etre tracee.
+- Chaque modification importante doit etre tracee.
+- Chaque entree doit etre tracee.
+- Chaque sortie doit etre tracee.
+- Chaque affectation doit etre tracee.
+- Chaque retour doit etre trace.
+- Chaque import doit etre trace.
+- Chaque export peut etre trace si besoin.
+
+
+11. Suppression
+
+- Pas de suppression dure dans le MVP.
+- Preferer actif / inactif.
+- Preferer annulation tracee pour un mouvement incorrect.
+- L'historique ne doit pas disparaitre.
+
+
+12. Donnees obligatoires minimum
+
+Article :
+- code.
+- designation.
+
+Entree :
+- date.
+- article.
+- quantite.
+
+Sortie :
+- date.
+- article.
+- quantite.
+- destination ou motif.
+
+Equipement :
+- code inventaire.
+- designation.
+- etat.
+
+Affectation :
+- equipement.
+- beneficiaire ou destination.
+- date sortie.
+
+Retour :
+- affectation.
+- date retour.
+- etat retour.

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historique des validations - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3' },
+                        error: { 500: '#f04438', 50: '#fef3f2' },
+                        warning: { 500: '#f79009', 50: '#fffaeb' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20 shrink-0">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Gouvernance & Validation</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="home" class="w-5 h-5"></i>
+                    <span class="truncate">Accueil Gouvernance</span>
+                </a>
+                <a href="ecr-16-01-parametrage-des-validations.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="settings" class="w-5 h-5"></i>
+                    <span class="truncate">Paramétrage des circuits</span>
+                </a>
+                <a href="ecr-16-02-boite-de-validation.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 flex-1 justify-between">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="inbox" class="w-5 h-5"></i>
+                        <span class="truncate">Boîte de validation</span>
+                    </div>
+                    <span class="bg-error-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-md">3</span>
+                </a>
+                <a href="ecr-16-03-historique-des-validations.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500">
+                    <i data-lucide="history" class="w-5 h-5"></i>
+                    <span class="truncate">Historique des décisions</span>
+                </a>
+                <a href="ecr-16-04-controle-de-blocage-sur-fiche-objet.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="shield-alert" class="w-5 h-5"></i>
+                    <span class="truncate">Contrôles & Blocages</span>
+                </a>
+            </nav>
+        </div>
+        
+        <div class="p-4 border-t border-gray-200 dark:border-gray-800">
+            <div class="flex items-center gap-3">
+                <img src="https://ui-avatars.com/api/?name=Admin+Sys&background=465fff&color=fff" alt="Admin" class="w-8 h-8 rounded-full">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">Admin Sys</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate">admin@huberp.com</p>
+                </div>
+                <button onclick="document.documentElement.classList.toggle('dark')" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+                    <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+        <!-- Topbar Context -->
+        <div class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-8 py-4 sticky top-0 z-10">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-1">
+                        <a href="index.html" class="hover:text-gray-700 dark:hover:text-gray-300">Gouvernance & Validation</a>
+                        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        <span class="text-gray-900 dark:text-gray-100 font-medium">Historique</span>
+                    </div>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Historique des décisions</h1>
+                </div>
+                <div class="flex gap-3">
+                    <button class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-lg font-medium text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm flex items-center gap-2">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        Exporter CSV
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Page Content -->
+        <div class="flex-1 overflow-y-auto p-8 no-scrollbar">
+            
+            <div class="max-w-7xl mx-auto space-y-6">
+                <!-- Filters -->
+                <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm p-4">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm">
+                            <i data-lucide="search" class="w-4 h-4 text-gray-400"></i>
+                            <input type="text" placeholder="Référence objet..." class="bg-transparent border-none focus:outline-none w-full text-gray-900 dark:text-white placeholder-gray-400">
+                        </div>
+                        
+                        <div class="flex flex-col relative">
+                            <select class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500 appearance-none">
+                                <option value="">Tous les types d'objets</option>
+                                <option value="da">Demande d'Achat</option>
+                                <option value="offre">Offre Commerciale</option>
+                                <option value="budget">Budget</option>
+                            </select>
+                            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                        </div>
+
+                        <div class="flex flex-col relative">
+                            <select class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500 appearance-none">
+                                <option value="">Toutes décisions</option>
+                                <option value="approuve">Approuvé</option>
+                                <option value="rejete">Rejeté</option>
+                            </select>
+                            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                        </div>
+
+                        <div class="flex flex-col relative">
+                            <select class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500 appearance-none">
+                                <option value="">Les 30 derniers jours</option>
+                                <option value="7">Les 7 derniers jours</option>
+                                <option value="90">Les 3 derniers mois</option>
+                            </select>
+                            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- History Table -->
+                <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800 text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold">
+                                <th class="px-6 py-3">Date</th>
+                                <th class="px-6 py-3">Objet</th>
+                                <th class="px-6 py-3">Étape</th>
+                                <th class="px-6 py-3">Décision</th>
+                                <th class="px-6 py-3">Auteur / Valideur</th>
+                                <th class="px-6 py-3">Commentaire</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-800 text-sm">
+                            
+                            <!-- Row 1: Approved -->
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">
+                                    <div class="font-medium text-gray-900 dark:text-white">12/04/2024</div>
+                                    <div class="text-xs">14:30</div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <a href="ecr-16-04-controle-de-blocage-sur-fiche-objet.html" class="font-medium text-accent-600 dark:text-accent-500 hover:underline">DA-2024-041</a>
+                                    <div class="text-xs text-gray-500">Demande d'Achat</div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-gray-900 dark:text-white font-medium">Niveau 1</span>
+                                    <div class="text-xs text-gray-500">Manager Direct</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-success-50 text-success-700 border border-success-200 dark:bg-success-500/10 dark:text-success-400 dark:border-success-500/20">
+                                        <i data-lucide="check" class="w-3 h-3"></i> Approuvé
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs font-bold text-gray-600 dark:text-gray-300">SM</div>
+                                        <span class="text-gray-900 dark:text-white font-medium">Sophie Martin</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-start gap-2 text-gray-600 dark:text-gray-300">
+                                        <i data-lucide="message-square" class="w-4 h-4 text-gray-400 mt-0.5 shrink-0"></i>
+                                        <span class="line-clamp-2 text-xs italic">"Ok pour moi, effectifs validés au CODIR."</span>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Row 2: Rejected -->
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors bg-error-50/30 dark:bg-error-900/10">
+                                <td class="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">
+                                    <div class="font-medium text-gray-900 dark:text-white">11/04/2024</div>
+                                    <div class="text-xs">09:15</div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <a href="#" class="font-medium text-accent-600 dark:text-accent-500 hover:underline">OFFRE-2024-089</a>
+                                    <div class="text-xs text-gray-500">Offre Commerciale</div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-gray-900 dark:text-white font-medium">Niveau 2</span>
+                                    <div class="text-xs text-gray-500">Direction Commerciale</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-error-50 text-error-700 border border-error-200 dark:bg-error-500/10 dark:text-error-400 dark:border-error-500/20">
+                                        <i data-lucide="x" class="w-3 h-3"></i> Rejeté
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs font-bold text-gray-600 dark:text-gray-300">AL</div>
+                                        <span class="text-gray-900 dark:text-white font-medium">Alain Leblanc</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-start gap-2 text-error-700 dark:text-error-400">
+                                        <i data-lucide="message-square" class="w-4 h-4 mt-0.5 shrink-0"></i>
+                                        <span class="line-clamp-2 text-xs font-medium italic">"Marge insuffisante sur la prestation de service (inférieure à 15%). À revoir avec le Delivery."</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            
+                            <!-- Row 3: Approved -->
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">
+                                    <div class="font-medium text-gray-900 dark:text-white">10/04/2024</div>
+                                    <div class="text-xs">16:45</div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <a href="#" class="font-medium text-accent-600 dark:text-accent-500 hover:underline">BUDGET-PROJ-Y</a>
+                                    <div class="text-xs text-gray-500">Budget Projet</div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-gray-900 dark:text-white font-medium">Niveau 1</span>
+                                    <div class="text-xs text-gray-500">Contrôle de gestion</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-success-50 text-success-700 border border-success-200 dark:bg-success-500/10 dark:text-success-400 dark:border-success-500/20">
+                                        <i data-lucide="check" class="w-3 h-3"></i> Approuvé
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs font-bold text-gray-600 dark:text-gray-300">MR</div>
+                                        <span class="text-gray-900 dark:text-white font-medium">Marc Renault</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <span class="text-gray-400 dark:text-gray-500 text-xs italic">-</span>
+                                </td>
+                            </tr>
+
+                            <!-- Row 4: Resubmitted info -->
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">
+                                    <div class="font-medium text-gray-900 dark:text-white">09/04/2024</div>
+                                    <div class="text-xs">11:20</div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <a href="#" class="font-medium text-accent-600 dark:text-accent-500 hover:underline">OFFRE-2024-089</a>
+                                    <div class="text-xs text-gray-500">Offre Commerciale</div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-gray-900 dark:text-white font-medium">Niveau 1</span>
+                                    <div class="text-xs text-gray-500">Manager Direct</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-success-50 text-success-700 border border-success-200 dark:bg-success-500/10 dark:text-success-400 dark:border-success-500/20">
+                                        <i data-lucide="check" class="w-3 h-3"></i> Approuvé
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs font-bold text-gray-600 dark:text-gray-300">CD</div>
+                                        <span class="text-gray-900 dark:text-white font-medium">Céline Dumas</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <span class="text-gray-400 dark:text-gray-500 text-xs italic">-</span>
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                    
+                    <!-- Pagination -->
+                    <div class="border-t border-gray-200 dark:border-gray-800 px-6 py-4 flex items-center justify-between">
+                        <span class="text-sm text-gray-500 dark:text-gray-400">Affichage de 1 à 4 sur 245 décisions</span>
+                        <div class="flex gap-1">
+                            <button class="px-3 py-1 border border-gray-200 dark:border-gray-700 rounded-md text-sm text-gray-500 bg-gray-50 dark:bg-gray-800" disabled>Précédent</button>
+                            <button class="px-3 py-1 border border-gray-200 dark:border-gray-700 rounded-md text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition bg-gray-100 dark:bg-gray-800">1</button>
+                            <button class="px-3 py-1 border border-gray-200 dark:border-gray-700 rounded-md text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition">2</button>
+                            <span class="px-3 py-1 text-sm text-gray-500">...</span>
+                            <button class="px-3 py-1 border border-gray-200 dark:border-gray-700 rounded-md text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition">25</button>
+                            <button class="px-3 py-1 border border-gray-200 dark:border-gray-700 rounded-md text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition">Suivant</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

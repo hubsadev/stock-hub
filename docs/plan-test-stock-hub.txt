@@ -1,0 +1,74 @@
+﻿Plan de test - Stock Hub
+
+1. Import Excel
+- Importer le fichier Excel source.
+- Verifier que les articles apparaissent.
+- Verifier que les equipements apparaissent.
+- Verifier que les emplacements apparaissent.
+- Verifier que les projets/chantiers apparaissent.
+- Verifier que les lignes A VERIFIER sont signalees.
+
+2. Calcul stock actuel
+- Choisir un article avec stock initial.
+- Ajouter une entree.
+- Verifier que le stock augmente.
+- Ajouter une sortie.
+- Verifier que le stock diminue.
+- Verifier la formule : stock actuel = stock initial + entrees - sorties.
+
+3. Blocage sortie
+- Choisir un article avec stock faible.
+- Essayer de sortir plus que le stock disponible.
+- Verifier que l'action est bloquee.
+- Verifier que le stock ne change pas.
+
+4. Stock critique et rupture
+- Mettre un stock actuel sous le seuil min.
+- Verifier statut CRITIQUE.
+- Mettre stock actuel a 0.
+- Verifier statut RUPTURE.
+
+5. Entree stock
+- Creer une entree avec fournisseur, magasin, responsable, quantite, prix.
+- Verifier mouvement cree.
+- Verifier montant calcule.
+- Verifier historique.
+
+6. Sortie stock
+- Creer une sortie vers chantier ou employe.
+- Verifier mouvement cree.
+- Verifier destination.
+- Verifier responsable.
+- Verifier baisse stock.
+
+7. Equipement
+- Creer un equipement.
+- Verifier qu'il est disponible.
+- L'affecter a un employe ou projet.
+- Verifier qu'il devient affecte.
+- Enregistrer retour.
+- Verifier qu'il redevient disponible si l'etat est correct.
+
+8. Equipement defectueux
+- Retourner un equipement avec etat defectueux.
+- Verifier qu'il ne redevient pas disponible.
+- Verifier qu'il apparait dans les alertes ou filtres maintenance/defectueux.
+
+9. Recherche materiel
+- Rechercher par code inventaire.
+- Verifier fiche materiel.
+- Verifier localisation actuelle.
+- Verifier historique mouvements.
+
+10. Audit
+- Faire une entree.
+- Faire une sortie.
+- Modifier un article.
+- Verifier que les actions sont dans l'audit log.
+
+11. Export
+- Exporter articles.
+- Exporter mouvements.
+- Exporter stock actuel.
+- Verifier que les fichiers sont lisibles.
+- Verifier qu'il n'y a pas de #REF! ni d'IDs inutiles.

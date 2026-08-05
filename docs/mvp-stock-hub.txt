@@ -1,0 +1,154 @@
+﻿MVP - Stock Hub
+
+Objectif :
+- Livrer une premiere version utile rapidement.
+- Remplacer les parties les plus fragiles du fichier Excel.
+- Donner au stock et a l'audit une base exploitable.
+- Garder la compatibilite avec HubERP.
+
+
+1. Ce que le MVP doit couvrir
+
+- Import initial du fichier Excel.
+- Catalogue articles.
+- Stock actuel calcule.
+- Entrees stock.
+- Sorties stock.
+- Equipements suivis individuellement.
+- Affectations equipements.
+- Retours equipements.
+- Retours materiel simple.
+- Alertes rupture / critique.
+- Seuils de reapprovisionnement simples.
+- Historique des mouvements.
+- Historique par article et equipement.
+- Audit simple.
+- Export simple.
+
+
+2. Ce que le MVP ne couvre pas encore
+
+- Pas de comptabilite.
+- Pas de factures fournisseur.
+- Pas de workflow achat complet.
+- Pas de CUMP avance.
+- Pas de gestion multi-societe.
+- Pas de validation multi-niveaux.
+- Pas de stock par numero de lot avance.
+- Pas de transfert avance multi-etapes au debut.
+- Pas de lecture code-barres au debut.
+- Pas de application mobile dediee au debut.
+- Pas de connexion directe avec HubERP au debut.
+
+
+3. Donnees reprises de l'Excel
+
+- Articles.
+- Familles.
+- Stock initial.
+- Stock min / max / securite.
+- Prix unitaire si present.
+- Emplacements.
+- Fournisseurs.
+- Equipements.
+- Projets / chantiers.
+- Parametres de base.
+- Historique import si utile.
+
+
+4. Premier tableau de bord
+
+- Articles total.
+- Articles en rupture.
+- Articles critiques.
+- Valeur stock si prix disponible.
+- Entrees recentes.
+- Sorties recentes.
+- Equipements affectes.
+- Equipements defectueux / maintenance.
+
+
+5. Articles
+
+- Liste articles.
+- Recherche par code ou designation.
+- Filtre famille.
+- Filtre statut.
+- Voir stock actuel.
+- Voir stock min.
+- Voir statut : OK, critique, rupture, surstock.
+- Creer article.
+- Modifier article.
+
+
+6. Mouvements stock
+
+- Creer entree.
+- Creer sortie.
+- Voir historique.
+- Filtrer par article.
+- Filtrer par date.
+- Filtrer par type mouvement.
+- Bloquer sortie si stock insuffisant.
+
+
+7. Equipements
+
+- Liste equipements.
+- Recherche par code inventaire.
+- Voir etat.
+- Voir localisation.
+- Voir employe affecte.
+- Voir projet actuel.
+- Affecter equipement.
+- Retourner equipement.
+- Changer etat : disponible, maintenance, defectueux, perdu, vole, reforme.
+
+
+8. Audit
+
+- Voir les actions importantes.
+- Voir date action.
+- Voir utilisateur.
+- Voir objet concerne.
+- Voir type action.
+- Exporter si besoin.
+
+
+9. Retours, seuils et historique
+
+- Enregistrer un retour lie a une sortie.
+- Indiquer l'etat du materiel au retour.
+- Reintegrer le stock si le materiel est reutilisable.
+- Voir l'historique complet d'un article.
+- Voir l'historique complet d'un equipement.
+- Voir les articles sous seuil minimum.
+- Voir une quantite conseillee de reapprovisionnement.
+
+
+10. Exports MVP
+
+- Export articles.
+- Export stock actuel.
+- Export mouvements.
+- Export equipements.
+- Export audit.
+
+
+11. Critere de validation MVP
+
+- L'Excel peut etre importe.
+- Les articles sont visibles.
+- Le stock actuel est calcule correctement.
+- Une entree augmente le stock.
+- Une sortie diminue le stock.
+- Une sortie impossible est bloquee.
+- Un equipement peut etre affecte.
+- Un equipement peut etre retourne.
+- Un retour materiel simple peut etre trace.
+- Les alertes rupture / critique sont visibles.
+- Les articles a reapprovisionner sont visibles.
+- Les mouvements sont traces.
+- L'audit voit les actions principales.
+
+

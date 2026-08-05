@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock & Logistique - HubERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        accent: { 50: '#f2f7ff', 100: '#e1edff', 500: '#465fff', 600: '#3246ff', 900: '#1e26af', 950: '#161950' },
+                        success: { 500: '#12b76a', 50: '#ecfdf3', 900: '#054f31' },
+                        error: { 500: '#f04438', 50: '#fef3f2', 900: '#7a271d' },
+                        warning: { 500: '#f79009', 50: '#fffaeb', 900: '#7a4504' },
+                        gray: { 25: '#fcfcfd', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#0c111d', dark: '#1a2231' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col hidden md:flex z-20 shrink-0">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-2 text-accent-600 dark:text-accent-500 font-bold text-xl">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+                <span>HubERP</span>
+            </div>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+            <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Stock & Logistique</div>
+            <nav class="space-y-1">
+                <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-500">
+                    <i data-lucide="home" class="w-5 h-5"></i>
+                    <span class="truncate">Accueil Module</span>
+                </a>
+                <a href="ecr-06-01-centre-de-reception-fournisseur.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="inbox" class="w-5 h-5"></i>
+                    <span class="truncate">Centre de réception</span>
+                </a>
+                <a href="ecr-06-02-fiche-reception.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="file-check-2" class="w-5 h-5"></i>
+                    <span class="truncate">Fiche réception</span>
+                </a>
+                <a href="ecr-06-03-reservation-et-sortie-de-stock.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="arrow-up-right-square" class="w-5 h-5"></i>
+                    <span class="truncate">Réservation & Sortie</span>
+                </a>
+                <a href="ecr-06-04-transfert-et-retour-de-stock.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="arrow-left-right" class="w-5 h-5"></i>
+                    <span class="truncate">Transfert & Retour</span>
+                </a>
+                <a href="ecr-06-05-vue-stock-par-emplacement.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="package-search" class="w-5 h-5"></i>
+                    <span class="truncate">Vue Stock (Emplacement)</span>
+                </a>
+                <a href="ecr-06-06-inventaire-de-stock.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="clipboard-list" class="w-5 h-5"></i>
+                    <span class="truncate">Inventaire de stock</span>
+                </a>
+                <a href="ecr-06-07-litige-et-retour-fournisseur.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+                    <span class="truncate">Litige & Retour Fourn.</span>
+                </a>
+            </nav>
+            
+                        <div class="mt-8">
+                <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Autres modules</div>
+                <nav class="space-y-1">
+                    <a href="../01-referentiel/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="database" class="w-5 h-5"></i>
+                        <span class="truncate">Référentiel</span>
+                    </a>
+                    <a href="../03-contrats-affaires-projets/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="briefcase" class="w-5 h-5"></i>
+                        <span class="truncate">Contrats & Affaires</span>
+                    </a>
+                    <a href="../05-achats/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+                        <span class="truncate">Achats</span>
+                    </a>
+                    <a href="../07-execution-terrain-ordres-de-travail/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="wrench" class="w-5 h-5"></i>
+                        <span class="truncate">Exécution Terrain</span>
+                    </a>
+                    <a href="../14-sav-maintenance-ticketing/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="life-buoy" class="w-5 h-5"></i>
+                        <span class="truncate">SAV & Maintenance</span>
+                    </a>
+                    <a href="../15-planning-coordination-operationnelle/index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i data-lucide="calendar" class="w-5 h-5"></i>
+                        <span class="truncate">Planning & Coord.</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col min-w-0 bg-gray-50 dark:bg-gray-950">
+        <!-- Header -->
+        <header class="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 shrink-0">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <h1 class="text-lg font-semibold text-gray-900 dark:text-white">Stock & Logistique</h1>
+            </div>
+            <div class="flex items-center gap-4">
+                <button class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <i data-lucide="bell" class="w-5 h-5"></i>
+                </button>
+                <button onclick="document.documentElement.classList.toggle('dark')" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <i data-lucide="moon" class="w-5 h-5"></i>
+                </button>
+                <div class="w-8 h-8 rounded-full bg-accent-100 dark:bg-accent-900 flex items-center justify-center text-accent-600 dark:text-accent-500 font-bold text-sm">
+                    JD
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Scrollable Area -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="max-w-5xl mx-auto space-y-6">
+                <!-- Header Section -->
+                <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 shadow-theme-xs">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Module Stock & Logistique</h2>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        Ce module couvre les réceptions fournisseurs, les affectations et réservations, les transferts et retours, le traitement des litiges fournisseur, et le pilotage global des niveaux de stock par magasin ou chantier.
+                    </p>
+                </div>
+
+                <!-- Catalogue des écrans -->
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mt-8 mb-4">Catalogue des écrans</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    
+                    <!-- ECR-06-01 -->
+                    <a href="ecr-06-01-centre-de-reception-fournisseur.html" class="block bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 hover:shadow-md transition-shadow dark:hover:border-gray-700 group">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="p-2 bg-blue-50 dark:bg-blue-900/30 text-accent-600 dark:text-accent-500 rounded-lg group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 transition-colors">
+                                    <i data-lucide="inbox" class="w-5 h-5"></i>
+                                </div>
+                                <h4 class="font-semibold text-gray-900 dark:text-white">ECR-06-01</h4>
+                            </div>
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">Opération</span>
+                        </div>
+                        <h5 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Centre de réception fournisseur</h5>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">Prépare et enregistre les réceptions à partir des commandes fournisseur.</p>
+                    </a>
+
+                    <!-- ECR-06-02 -->
+                    <a href="ecr-06-02-fiche-reception.html" class="block bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 hover:shadow-md transition-shadow dark:hover:border-gray-700 group">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="p-2 bg-blue-50 dark:bg-blue-900/30 text-accent-600 dark:text-accent-500 rounded-lg group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 transition-colors">
+                                    <i data-lucide="file-check-2" class="w-5 h-5"></i>
+                                </div>
+                                <h4 class="font-semibold text-gray-900 dark:text-white">ECR-06-02</h4>
+                            </div>
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">Fiche</span>
+                        </div>
+                        <h5 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Fiche réception</h5>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">Contrôle des quantités reçues, statuts de réception et écarts de livraison.</p>
+                    </a>
+
+                    <!-- ECR-06-03 -->
+                    <a href="ecr-06-03-reservation-et-sortie-de-stock.html" class="block bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 hover:shadow-md transition-shadow dark:hover:border-gray-700 group">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="p-2 bg-blue-50 dark:bg-blue-900/30 text-accent-600 dark:text-accent-500 rounded-lg group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 transition-colors">
+                                    <i data-lucide="arrow-up-right-square" class="w-5 h-5"></i>
+                                </div>
+                                <h4 class="font-semibold text-gray-900 dark:text-white">ECR-06-03</h4>
+                            </div>
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">Opération</span>
+                        </div>
+                        <h5 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Réservation et sortie de stock</h5>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">Réserve les articles et exécute les sorties pour projets, OT ou SAV.</p>
+                    </a>
+
+                    <!-- ECR-06-04 -->
+                    <a href="ecr-06-04-transfert-et-retour-de-stock.html" class="block bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 hover:shadow-md transition-shadow dark:hover:border-gray-700 group">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="p-2 bg-blue-50 dark:bg-blue-900/30 text-accent-600 dark:text-accent-500 rounded-lg group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 transition-colors">
+                                    <i data-lucide="arrow-left-right" class="w-5 h-5"></i>
+                                </div>
+                                <h4 class="font-semibold text-gray-900 dark:text-white">ECR-06-04</h4>
+                            </div>
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">Opération</span>
+                        </div>
+                        <h5 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Transfert et retour de stock</h5>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">Déplace ou restitue les articles entre dépôts, chantiers et stocks centraux.</p>
+                    </a>
+
+                    <!-- ECR-06-05 -->
+                    <a href="ecr-06-05-vue-stock-par-emplacement.html" class="block bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 hover:shadow-md transition-shadow dark:hover:border-gray-700 group">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="p-2 bg-blue-50 dark:bg-blue-900/30 text-accent-600 dark:text-accent-500 rounded-lg group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 transition-colors">
+                                    <i data-lucide="package-search" class="w-5 h-5"></i>
+                                </div>
+                                <h4 class="font-semibold text-gray-900 dark:text-white">ECR-06-05</h4>
+                            </div>
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">Vue</span>
+                        </div>
+                        <h5 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Vue stock par emplacement</h5>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">Lecture des niveaux de stock par dépôt, site ou emplacement.</p>
+                    </a>
+
+                    <!-- ECR-06-06 -->
+                    <a href="ecr-06-06-inventaire-de-stock.html" class="block bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 hover:shadow-md transition-shadow dark:hover:border-gray-700 group">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="p-2 bg-blue-50 dark:bg-blue-900/30 text-accent-600 dark:text-accent-500 rounded-lg group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 transition-colors">
+                                    <i data-lucide="clipboard-list" class="w-5 h-5"></i>
+                                </div>
+                                <h4 class="font-semibold text-gray-900 dark:text-white">ECR-06-06</h4>
+                            </div>
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">Opération</span>
+                        </div>
+                        <h5 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Inventaire de stock</h5>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">Comptage, correction et justification des écarts d'inventaire.</p>
+                    </a>
+
+                    <!-- ECR-06-07 -->
+                    <a href="ecr-06-07-litige-et-retour-fournisseur.html" class="block bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 hover:shadow-md transition-shadow dark:hover:border-gray-700 group">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="p-2 bg-red-50 dark:bg-red-900/30 text-error-600 dark:text-error-500 rounded-lg group-hover:bg-red-100 dark:group-hover:bg-red-900/50 transition-colors">
+                                    <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+                                </div>
+                                <h4 class="font-semibold text-gray-900 dark:text-white">ECR-06-07</h4>
+                            </div>
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">Dossier</span>
+                        </div>
+                        <h5 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Litige et retour fournisseur</h5>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">Quarantaine, retour, remplacement ou régularisation du matériel.</p>
+                    </a>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

@@ -1,0 +1,185 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+
+}
+
+enum UserRole {
+  ADMIN_STOCK
+  GESTIONNAIRE_STOCK
+  AUDIT
+  RH
+  DIRECTION
+  CHEF_PROJET
+}
+
+enum TrackingMode {
+  QUANTITY
+  INDIVIDUAL
+}
+
+enum MovementType {
+  ENTRY
+  EXIT_REQUEST
+  EXIT
+  RETURN
+  TRANSFER
+  ADJUSTMENT
+}
+
+enum MovementStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  PREPARED
+  COMPLETED
+  REJECTED
+  CANCELLED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  firstName String
+  lastName  String
+  roles     UserRole[]
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Supplier {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  name      String
+  contact   String?
+  phone     String?
+  email     String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Project {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  name      String
+  client    String?
+  site      String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Location {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  name      String
+  type      String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  stockLevels StockLevel[]
+}
+
+model Article {
+  id           String       @id @default(cuid())
+  code         String       @unique
+  designation  String
+  category     String
+  unit         String
+  trackingMode TrackingMode @default(QUANTITY)
+  minimumStock Int          @default(0)
+  referencePrice Decimal?   @db.Decimal(18, 2)
+  active       Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  stockLevels StockLevel[]
+  equipment   Equipment[]
+  movements   StockMovementLine[]
+}
+
+model Equipment {
+  id           String   @id @default(cuid())
+  code         String   @unique
+  serialNumber String?
+  articleId    String
+  article      Article  @relation(fields: [articleId], references: [id])
+  state        String   @default("GOOD")
+  status       String   @default("AVAILABLE")
+  assignedTo   String?
+  locationId   String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model StockLevel {
+  id         String   @id @default(cuid())
+  articleId  String
+  article    Article  @relation(fields: [articleId], references: [id])
+  locationId String
+  location   Location @relation(fields: [locationId], references: [id])
+  quantity   Int      @default(0)
+  updatedAt  DateTime @updatedAt
+
+  @@unique([articleId, locationId])
+}
+
+model StockMovement {
+  id          String         @id @default(cuid())
+  reference   String         @unique
+  type        MovementType
+  status      MovementStatus @default(DRAFT)
+  date        DateTime
+  supplierId  String?
+  projectId   String?
+  fromLocationId String?
+  toLocationId   String?
+  requestedBy String?
+  handledBy   String?
+  receivedBy  String?
+  deliveredBy String?
+  notes       String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  lines StockMovementLine[]
+}
+
+model StockMovementLine {
+  id                  String        @id @default(cuid())
+  movementId          String
+  movement            StockMovement @relation(fields: [movementId], references: [id])
+  articleId           String
+  article             Article       @relation(fields: [articleId], references: [id])
+  requestedQuantity   Int?
+  expectedQuantity    Int?
+  completedQuantity   Int?
+  unitPrice           Decimal?      @db.Decimal(18, 2)
+  observation          String?
+  createdAt            DateTime      @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  entity    String
+  entityId  String?
+  before    Json?
+  after     Json?
+  createdAt DateTime @default(now())
+}
+
+model ImportBatch {
+  id        String   @id @default(cuid())
+  fileName  String
+  status    String
+  summary   Json?
+  createdAt DateTime @default(now())
+}

@@ -1,0 +1,277 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock Hub - Roadmap</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0c1a29;
+    --panel:#122237;
+    --panel-2:#0f1e30;
+    --panel-3:#172b44;
+    --line:rgba(148,189,217,.16);
+    --line-strong:rgba(148,189,217,.34);
+    --paper:#eef5fb;
+    --muted:#9bb0c2;
+    --cyan:#72bcdd;
+    --cyan-dim:rgba(114,188,221,.13);
+    --green:#58d68d;
+    --green-dim:rgba(88,214,141,.13);
+    --amber:#e3a35f;
+    --amber-dim:rgba(227,163,95,.15);
+    --red:#f97066;
+    --red-dim:rgba(249,112,102,.13);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:
+      linear-gradient(var(--line) 1px, transparent 1px) 0 0/40px 40px,
+      linear-gradient(90deg, var(--line) 1px, transparent 1px) 0 0/40px 40px,
+      var(--ink);
+    color:var(--paper);
+    font-family:'IBM Plex Sans', sans-serif;
+    line-height:1.55;
+  }
+  .wrap{max-width:980px;margin:0 auto;padding:54px 24px 96px;}
+  .titleblock{
+    position:relative;
+    border:1px solid var(--line-strong);
+    background:linear-gradient(135deg,var(--panel),#10243c);
+    padding:30px 30px 24px;
+    margin-bottom:34px;
+  }
+  .titleblock::before,.titleblock::after{content:"";position:absolute;width:18px;height:18px;border-color:var(--cyan);opacity:.8;}
+  .titleblock::before{left:-1px;top:-1px;border-left:1px solid;border-top:1px solid;}
+  .titleblock::after{right:-1px;bottom:-1px;border-right:1px solid;border-bottom:1px solid;}
+  .title-top{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:18px;}
+  h1{font-family:'IBM Plex Mono', monospace;font-size:clamp(25px,4vw,36px);line-height:1.08;margin:0 0 8px;font-weight:600;}
+  .sub{color:var(--muted);max-width:64ch;font-size:15px;}
+  .stamp{font-family:'IBM Plex Mono', monospace;text-transform:uppercase;font-size:11px;letter-spacing:.08em;color:var(--cyan);border:1px solid var(--cyan-dim);background:var(--cyan-dim);padding:6px 10px;white-space:nowrap;}
+  .fields{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+  .field{border:1px solid var(--line);background:var(--panel-2);padding:10px 12px;}
+  .field span{display:block;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;}
+  .field b{font-size:14px;font-weight:600;}
+  @media(max-width:760px){.fields{grid-template-columns:1fr 1fr;}.wrap{padding:28px 16px 72px;}}
+  @media(max-width:480px){.fields{grid-template-columns:1fr;}}
+
+  .panel{border:1px solid var(--line);background:var(--panel);padding:26px 28px;margin-bottom:24px;}
+  .panel-head{display:flex;gap:14px;align-items:center;margin-bottom:18px;}
+  .num{width:40px;height:40px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line-strong);color:var(--cyan);font-family:'IBM Plex Mono',monospace;font-weight:600;background:var(--panel-2);}
+  h2{margin:0;font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;}
+  .panel-title{margin:2px 0 0;font-size:21px;font-weight:700;color:var(--paper);}
+  p{margin:0 0 12px;}
+  .muted{color:var(--muted);}
+
+  .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:18px 0;}
+  .chip{font-family:'IBM Plex Mono',monospace;font-size:12px;border:1px solid var(--line-strong);background:var(--panel-2);padding:7px 10px;white-space:nowrap;}
+  .arrow{color:var(--muted);}
+
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px;}
+  .kpi{border:1px solid var(--line);background:var(--panel-2);padding:14px;min-height:92px;}
+  .kpi span{display:block;color:var(--muted);font-size:13px;margin-bottom:8px;}
+  .kpi b{font-size:28px;line-height:1;color:var(--paper);}
+  .kpi small{display:block;color:var(--muted);margin-top:8px;}
+  @media(max-width:780px){.kpis{grid-template-columns:1fr 1fr;}}
+  @media(max-width:460px){.kpis{grid-template-columns:1fr;}}
+
+  .lot-grid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:16px;}
+  .lot{border:1px solid var(--line);background:var(--panel-2);padding:16px;display:grid;grid-template-columns:140px 1fr;gap:16px;}
+  .lot-label{font-family:'IBM Plex Mono',monospace;color:var(--cyan);font-size:12px;text-transform:uppercase;letter-spacing:.08em;}
+  .lot h3{margin:2px 0 8px;font-size:18px;}
+  .lot p{color:var(--muted);font-size:14px;margin-bottom:12px;}
+  .tasks{display:grid;grid-template-columns:repeat(2,1fr);gap:7px 12px;margin:0;padding:0;list-style:none;}
+  .tasks li{position:relative;padding-left:18px;color:var(--paper);font-size:14px;}
+  .tasks li::before{content:"";position:absolute;left:0;top:.55em;width:8px;height:8px;border:1px solid var(--cyan);background:var(--cyan-dim);}
+  @media(max-width:760px){.lot{grid-template-columns:1fr;}.tasks{grid-template-columns:1fr;}}
+
+  .columns{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px;}
+  .box{border:1px solid var(--line);background:var(--panel-2);padding:16px;}
+  .box h3{font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.08em;font-size:11px;color:var(--muted);margin:0 0 10px;}
+  .box ul{margin:0;padding-left:18px;}
+  .box li{margin-bottom:6px;}
+  .box li::marker{color:var(--cyan);}
+  @media(max-width:720px){.columns{grid-template-columns:1fr;}}
+
+  .decision-list{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:16px;}
+  .decision{border:1px solid var(--line);background:var(--panel-2);padding:13px 14px;}
+  .decision b{display:block;color:var(--paper);margin-bottom:4px;}
+  .decision span{color:var(--muted);font-size:14px;}
+  @media(max-width:720px){.decision-list{grid-template-columns:1fr;}}
+
+  .badge{display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:5px 9px;border:1px solid var(--line-strong);color:var(--muted);margin:3px 4px 3px 0;}
+  .badge.green{color:var(--green);background:var(--green-dim);border-color:var(--green-dim);}
+  .badge.amber{color:var(--amber);background:var(--amber-dim);border-color:var(--amber-dim);}
+  .badge.red{color:var(--red);background:var(--red-dim);border-color:var(--red-dim);}
+
+  .foot{margin-top:30px;color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:18px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="titleblock">
+    <div class="title-top">
+      <div>
+        <h1>Stock Hub<br>Roadmap mini app stock</h1>
+        <p class="sub">Mini application pour remplacer progressivement le suivi Excel stock/audit, garder une base fiable, puis rester compatible avec le futur module Stock de HubERP.</p>
+      </div>
+      <div class="stamp">Document de cadrage</div>
+    </div>
+    <div class="fields">
+      <div class="field"><span>Projet</span><b>Stock Hub</b></div>
+      <div class="field"><span>Source</span><b>Excel stock 2026</b></div>
+      <div class="field"><span>Cible</span><b>Stock + audit</b></div>
+      <div class="field"><span>Integration</span><b>HubERP plus tard</b></div>
+    </div>
+  </header>
+
+  <section class="panel">
+    <div class="panel-head"><div class="num">01</div><div><h2>Vision</h2><p class="panel-title">Simple, utile, pas jetable</p></div></div>
+    <p>Stock Hub sert a donner rapidement aux gestionnaires stock et audit un outil plus fiable que le fichier Excel actuel.</p>
+    <p class="muted">La mini app reste autonome pour aller vite, mais garde les memes notions que HubERP : articles, equipements, emplacements, mouvements, projets, fournisseurs et audit log.</p>
+    <div class="flow">
+      <span class="chip">Excel stock</span><span class="arrow">-></span>
+      <span class="chip">Import</span><span class="arrow">-></span>
+      <span class="chip">Referentiel</span><span class="arrow">-></span>
+      <span class="chip">Mouvements</span><span class="arrow">-></span>
+      <span class="chip">Stock actuel</span><span class="arrow">-></span>
+      <span class="chip">Audit</span>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><div class="num">02</div><div><h2>MVP</h2><p class="panel-title">Premiere version utilisable</p></div></div>
+    <div class="kpis">
+      <div class="kpi"><span>Base</span><b>Excel</b><small>import initial</small></div>
+      <div class="kpi"><span>Stock</span><b>+/-</b><small>entrees et sorties</small></div>
+      <div class="kpi"><span>Materiel</span><b>Trace</b><small>affectations et retours</small></div>
+      <div class="kpi"><span>Controle</span><b>Audit</b><small>historique actions</small></div>
+    </div>
+    <div class="columns">
+      <div class="box">
+        <h3>Dans le MVP</h3>
+        <ul>
+          <li>Import Excel.</li>
+          <li>Catalogue articles.</li>
+          <li>Stock actuel calcule.</li>
+          <li>Entrees et sorties.</li>
+          <li>Equipements suivis.</li>
+          <li>Affectations et retours.</li>
+          <li>Alertes rupture / critique.</li>
+          <li>Audit simple.</li>
+        </ul>
+      </div>
+      <div class="box">
+        <h3>Hors MVP</h3>
+        <ul>
+          <li>Pas de comptabilite.</li>
+          <li>Pas de factures fournisseur.</li>
+          <li>Pas de workflow achat complet.</li>
+          <li>Pas de CUMP avance.</li>
+          <li>Pas de mobile dedie au debut.</li>
+          <li>Pas de connexion directe HubERP au debut.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><div class="num">03</div><div><h2>Roadmap</h2><p class="panel-title">Lots de construction</p></div></div>
+    <div class="lot-grid">
+      <article class="lot">
+        <div><div class="lot-label">Lot 0</div><h3>Cadrage et reprise Excel</h3><p>Comprendre le fichier actuel avant de coder.</p></div>
+        <ul class="tasks"><li>Lire les feuilles utiles.</li><li>Identifier les colonnes.</li><li>Reperer les donnees a verifier.</li><li>Separer references et mouvements.</li></ul>
+      </article>
+      <article class="lot">
+        <div><div class="lot-label">Lot 1</div><h3>Referentiel stock</h3><p>Base propre pour saisir les mouvements.</p></div>
+        <ul class="tasks"><li>Articles.</li><li>Familles.</li><li>Fournisseurs.</li><li>Emplacements.</li><li>Projets / chantiers.</li><li>Equipements.</li></ul>
+      </article>
+      <article class="lot">
+        <div><div class="lot-label">Lot 2</div><h3>Entrees et sorties</h3><p>Remplacer Entrees, Sorties et Stock_TempsReel.</p></div>
+        <ul class="tasks"><li>Entree stock.</li><li>Sortie stock.</li><li>Blocage si stock insuffisant.</li><li>Historique mouvements.</li><li>Stock actuel calcule.</li><li>Sortie vers employe, chantier ou projet.</li></ul>
+      </article>
+      <article class="lot">
+        <div><div class="lot-label">Lot 3</div><h3>Equipements et affectations</h3><p>Suivre le materiel individuellement.</p></div>
+        <ul class="tasks"><li>Code inventaire.</li><li>Etat materiel.</li><li>Affectation.</li><li>Retour.</li><li>Perdu / vole / maintenance.</li><li>Recherche par code.</li></ul>
+      </article>
+      <article class="lot">
+        <div><div class="lot-label">Lot 4</div><h3>Alertes et audit</h3><p>Vue fiable pour stock et audit.</p></div>
+        <ul class="tasks"><li>Rupture.</li><li>Critique.</li><li>Retards de retour.</li><li>Doubles affectations suspectes.</li><li>Audit log.</li><li>Export propre.</li></ul>
+      </article>
+      <article class="lot">
+        <div><div class="lot-label">Lot 5</div><h3>Stabilisation terrain</h3><p>Faire tester avec les gestionnaires.</p></div>
+        <ul class="tasks"><li>Retours terrain.</li><li>Libelles.</li><li>Parcours.</li><li>Filtres.</li><li>Exports demandes.</li><li>Comparaison Excel.</li></ul>
+      </article>
+      <article class="lot">
+        <div><div class="lot-label">Lot 6</div><h3>Preparation HubERP</h3><p>Eviter une app isolee.</p></div>
+        <ul class="tasks"><li>Aligner articles.</li><li>Aligner projets.</li><li>Exporter pour migration.</li><li>Correspondances IDs.</li><li>Documenter les ecarts.</li></ul>
+      </article>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><div class="num">04</div><div><h2>Decisions</h2><p class="panel-title">Regles deja posees</p></div></div>
+    <div class="decision-list">
+      <div class="decision"><b>Excel = source de depart</b><span>Pas une base de donnees finale.</span></div>
+      <div class="decision"><b>Stock actuel calcule</b><span>Stock initial + entrees - sorties.</span></div>
+      <div class="decision"><b>Article vs equipement</b><span>Article en quantite, equipement trace individuellement.</span></div>
+      <div class="decision"><b>Sortie bloquee</b><span>Impossible si stock insuffisant.</span></div>
+      <div class="decision"><b>Audit obligatoire</b><span>Chaque mouvement important doit etre trace.</span></div>
+      <div class="decision"><b>Compatible HubERP</b><span>Concepts proches, integration plus tard.</span></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><div class="num">05</div><div><h2>Interface</h2><p class="panel-title">Style cible, fonctions simples</p></div></div>
+    <p>Interface inspiree des maquettes numerotees, sans reprendre toute leur complexite.</p>
+    <div>
+      <span class="badge green">Sidebar propre</span>
+      <span class="badge green">Header + recherche</span>
+      <span class="badge green">KPI visibles</span>
+      <span class="badge green">Tableaux centraux</span>
+      <span class="badge green">Modals propres</span>
+      <span class="badge amber">Pas tous les onglets</span>
+      <span class="badge amber">Pas workflows avances</span>
+      <span class="badge red">Pas formulaires inline</span>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><div class="num">06</div><div><h2>Validation</h2><p class="panel-title">Quand dire que le MVP est bon</p></div></div>
+    <div class="columns">
+      <div class="box">
+        <h3>A tester</h3>
+        <ul>
+          <li>Importer l'Excel.</li>
+          <li>Verifier quelques articles.</li>
+          <li>Creer une entree.</li>
+          <li>Creer une sortie.</li>
+          <li>Bloquer une sortie trop grande.</li>
+          <li>Affecter un equipement.</li>
+          <li>Retourner un equipement.</li>
+        </ul>
+      </div>
+      <div class="box">
+        <h3>A observer</h3>
+        <ul>
+          <li>Le stock se calcule correctement.</li>
+          <li>Les alertes sont visibles.</li>
+          <li>Le materiel affecte n'est plus disponible.</li>
+          <li>L'audit garde les actions.</li>
+          <li>Les exports sont lisibles.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <div class="foot">
+    Stock Hub avance en mini lots. Chaque lot doit etre teste avec des donnees reelles avant d'empiler la suite.
+  </div>
+</div>
+</body>
+</html>
