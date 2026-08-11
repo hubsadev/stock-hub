@@ -7,7 +7,8 @@
     "dev": "vite --host 127.0.0.1 --port 5174",
     "build": "tsc -p tsconfig.json && vite build",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "preview": "vite preview --host 127.0.0.1 --port 4174"
+    "preview": "vite preview --host 127.0.0.1 --port 4174",
+    "start": "vite preview --host 0.0.0.0 --port 8080"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^5.0.0",
