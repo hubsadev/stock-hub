@@ -771,6 +771,17 @@ export function buildApp() {
       for (const line of lines) {
         const articleId = String(line.articleId ?? "");
         const quantity = toNumber(line.completedQuantity) ?? 0;
+        const requestedQuantity = toNumber(line.requestedQuantity) ?? 0;
+        const observation = asString(line.observation);
+        if (quantity <= 0) {
+          throw new Error("INVALID_EXIT_QUANTITY|" + articleId);
+        }
+        if (requestedQuantity > 0 && quantity > requestedQuantity) {
+          throw new Error("EXIT_EXCEEDS_REQUEST|" + articleId + "|" + requestedQuantity + "|" + quantity);
+        }
+        if (requestedQuantity > 0 && quantity < requestedQuantity && !observation) {
+          throw new Error("PARTIAL_EXIT_NEEDS_OBSERVATION|" + articleId + "|" + requestedQuantity + "|" + quantity);
+        }
         const level = await tx.stockLevel.findUnique({
           where: { articleId_locationId: { articleId, locationId: fromLocationId } },
           include: { article: true }
@@ -830,6 +841,16 @@ export function buildApp() {
       if (error instanceof Error && error.message.startsWith("STOCK_INSUFFICIENT|")) {
         const [, label, available, quantity] = error.message.split("|");
         return reply.code(409).send({ message: "Stock insuffisant pour " + label + ". Disponible " + available + ", demande " + quantity + "." });
+      }
+      if (error instanceof Error && error.message.startsWith("EXIT_EXCEEDS_REQUEST|")) {
+        const [, , requested, quantity] = error.message.split("|");
+        return reply.code(400).send({ message: "Quantite remise superieure a la quantite demandee. Demandee " + requested + ", remise " + quantity + "." });
+      }
+      if (error instanceof Error && error.message.startsWith("PARTIAL_EXIT_NEEDS_OBSERVATION|")) {
+        return reply.code(400).send({ message: "Remise partielle : ajoute une observation avant validation." });
+      }
+      if (error instanceof Error && error.message.startsWith("INVALID_EXIT_QUANTITY|")) {
+        return reply.code(400).send({ message: "La quantite remise doit etre superieure a 0." });
       }
       throw error;
     });

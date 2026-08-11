@@ -54,6 +54,16 @@ function hasRole(role: string) {
   return Boolean(currentUser?.roles.includes(role));
 }
 
+function canPrepareMaterialRequests() {
+  return hasRole("ADMIN_STOCK") || hasRole("GESTIONNAIRE_STOCK");
+}
+
+function stockAvailableFor(articleId: string, locationId?: string | null) {
+  return latestStockLevels
+    .filter((level) => level.article.id === articleId && (!locationId || level.location.id === locationId))
+    .reduce((sum, level) => sum + Number(level.quantity ?? 0), 0);
+}
+
 function canAccessView(view: string) {
   if (!currentUser) return false;
   if (hasRole("ADMIN_STOCK")) return true;
@@ -804,7 +814,7 @@ function renderExitRequestDetail(root: HTMLElement, movement: StockMovement) {
   if (title) title.textContent = movement.reference;
   if (subtitle) subtitle.textContent = movement.type === "EXIT_REQUEST" ? "Demande de materiel a preparer ou a suivre." : "Sortie stock deja enregistree.";
   if (prepareButton) {
-    prepareButton.classList.toggle("hidden", movement.type !== "EXIT_REQUEST");
+    prepareButton.classList.toggle("hidden", movement.type !== "EXIT_REQUEST" || !canPrepareMaterialRequests());
     prepareButton.dataset.action = `prepareExitFromRequest('${movement.id}')`;
   }
   body.innerHTML = `
@@ -819,6 +829,7 @@ function renderExitRequestDetail(root: HTMLElement, movement: StockMovement) {
       <div class="rounded-xl border p-4"><div class="text-xs font-semibold text-gray-500">Demandeur / beneficiaire</div><div class="font-bold mt-1">${escapeHtml(movement.requestedBy ?? movement.receivedBy ?? "-")}</div></div>
       <div class="rounded-xl border p-4"><div class="text-xs font-semibold text-gray-500">Magasin source</div><div class="font-bold mt-1">${escapeHtml(movement.fromLocation?.name ?? "-")}</div></div>
     </div>
+    ${movement.type === "EXIT_REQUEST" && movement.status === "SUBMITTED" ? `<div class="rounded-xl border border-accent-100 bg-accent-50 p-4 text-sm text-gray-700"><div class="font-bold text-accent-700 mb-1">Demande transmise au stock</div>En attente de preparation par le gestionnaire stock.</div>` : ""}
     <div class="border border-gray-200 rounded-xl overflow-hidden">
       <div class="px-5 py-4 bg-gray-50 border-b"><h3 class="font-bold">Articles demandes</h3><p class="text-sm text-gray-500 mt-1">Le stock disponible est calcule sur le magasin source de la demande.</p></div>
       <div class="overflow-x-auto"><table class="w-full min-w-[820px] text-sm"><thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">N</th><th class="px-5 py-3 text-left">Article</th><th class="px-5 py-3 text-right">Demandee</th><th class="px-5 py-3 text-right">Dispo</th><th class="px-5 py-3 text-right">Remise</th><th class="px-5 py-3 text-left">Observation</th></tr></thead><tbody class="divide-y">${rows || emptyRow(6, "Aucune ligne sur cette demande.")}</tbody></table></div>
@@ -843,18 +854,14 @@ async function prepareExitFromRequest(root: HTMLElement, id: string) {
     showToast(root, "Impossible de preparer cette demande.", "error");
     return;
   }
+  if (!canPrepareMaterialRequests()) {
+    renderExitRequestDetail(root, movement);
+    openModal(root, "exitRequestDetailModal");
+    showToast(root, "Demande transmise au stock. En attente de preparation.");
+    return;
+  }
   closeModal(root, "exitRequestDetailModal");
-  openModal(root, "directExitModal");
-  await populateExitModals(root, "directExitModal").catch(() => undefined);
-  const modal = root.querySelector<HTMLElement>("#directExitModal");
-  if (!modal) return;
-  const selects = Array.from(modal.querySelectorAll<HTMLSelectElement>("select"));
-  const inputs = Array.from(modal.querySelectorAll<HTMLInputElement>("input"));
-  if (selects[0]) selects[0].value = first.articleId;
-  if (selects[1] && movement.projectId) selects[1].value = movement.projectId;
-  if (inputs[2]) inputs[2].value = String(first.requestedQuantity ?? "");
-  if (inputs[3]) inputs[3].value = first.observation ?? "";
-  showToast(root, "Demande chargee dans la sortie. Complete les infos de remise avant validation.");
+  await openMaterialRequestPreparation(root, id);
 }
 function exitMovementRow(movement: StockMovement) {
   const first = movement.lines[0];
@@ -1302,6 +1309,7 @@ function setMaterialRequestMode(root: HTMLElement, mode: "create" | "prepare", m
   }
   setDemandInfoLocked(modal, mode === "prepare");
   setMaterialRequestPrepEnabled(modal, canPrepare);
+  syncMaterialPreparationState(root);
 }
 
 function fillMaterialRequestRows(root: HTMLElement, movement: StockMovement, articleChoices: string) {
@@ -1309,26 +1317,106 @@ function fillMaterialRequestRows(root: HTMLElement, movement: StockMovement, art
   if (!body) return;
   body.innerHTML = movement.lines.map((line, index) => {
     const requested = Number(line.requestedQuantity ?? 0);
-    const completed = Number(line.completedQuantity ?? requested);
-    return `<tr>
+    const completed = Number(line.completedQuantity ?? 0);
+    const available = stockAvailableFor(line.articleId, movement.fromLocationId);
+    return `<tr data-requested="${requested}" data-available="${available}">
       <td class="px-5 py-4 font-bold text-gray-400 material-line-number">${index + 1}</td>
       <td class="px-5 py-4"><select class="w-full h-10 border rounded-lg px-3" disabled>${articleChoices}</select></td>
       <td class="px-5 py-4"><input class="w-20 h-10 border rounded-lg px-3 bg-gray-50 text-gray-500" value="${escapeHtml(line.article?.unit ?? "U")}" disabled></td>
       <td class="px-5 py-4 text-right"><input class="w-24 h-10 border rounded-lg px-3 text-right bg-gray-50 text-gray-500" value="${formatNumber(requested)}" disabled></td>
-      <td class="px-5 py-4 text-right"><input class="material-delivered-quantity w-24 h-10 border rounded-lg px-3 text-right" value="${completed}"></td>
-      <td class="px-5 py-4"><input class="w-full h-10 border rounded-lg px-3" value="${escapeHtml(line.observation ?? "")}" placeholder="Observation remise"></td>
+      <td class="px-5 py-4 text-right"><div class="font-bold">${formatNumber(available)}</div><div class="text-xs text-gray-500">stock</div></td>
+      <td class="px-5 py-4 text-right"><input class="material-delivered-quantity w-24 h-10 border rounded-lg px-3 text-right" value="${completed > 0 ? completed : ""}" placeholder="0"><div class="material-line-feedback mt-1 text-xs font-semibold text-gray-400">A renseigner</div></td>
+      <td class="px-5 py-4"><input class="material-remise-observation w-full h-10 border rounded-lg px-3" value="${escapeHtml(line.observation ?? "")}" placeholder="Observation remise"></td>
       <td class="px-5 py-4 text-right"><button title="Ligne issue de la demande" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-gray-400 cursor-not-allowed"><i data-lucide="lock" class="w-4 h-4"></i></button></td>
     </tr>`;
   }).join("");
   body.querySelectorAll<HTMLSelectElement>("select").forEach((select, index) => {
     select.value = movement.lines[index]?.articleId ?? "";
   });
+  syncMaterialPreparationState(root);
+}
+
+function syncMaterialPreparationState(root: HTMLElement) {
+  const modal = root.querySelector<HTMLElement>("#exitModal");
+  if (!modal || modal.dataset.mode !== "prepare") return;
+  const rows = Array.from(modal.querySelectorAll<HTMLTableRowElement>("#materialRequestLines tr"));
+  const submit = root.querySelector<HTMLButtonElement>("#materialSubmitButton");
+  let hasInvalidLine = false;
+  let hasAnyQuantity = false;
+
+  rows.forEach((row) => {
+    const deliveredInput = row.querySelector<HTMLInputElement>(".material-delivered-quantity");
+    const observationInput = row.querySelector<HTMLInputElement>(".material-remise-observation");
+    const feedback = row.querySelector<HTMLElement>(".material-line-feedback");
+    const requested = Number(row.dataset.requested ?? 0);
+    const available = Number(row.dataset.available ?? 0);
+    const raw = deliveredInput?.value.trim() ?? "";
+    const delivered = raw ? toNumber(raw) : 0;
+    const observation = observationInput?.value.trim() ?? "";
+
+    deliveredInput?.classList.remove("border-success-300", "bg-success-50", "text-success-700", "border-warning-300", "bg-warning-50", "text-warning-700", "border-error-300", "bg-error-50", "text-error-700");
+    if (feedback) feedback.className = "material-line-feedback mt-1 text-xs font-semibold text-gray-400";
+
+    if (!raw) {
+      hasInvalidLine = true;
+      if (feedback) feedback.textContent = "A renseigner";
+      return;
+    }
+
+    hasAnyQuantity = true;
+    if (delivered > available) {
+      hasInvalidLine = true;
+      deliveredInput?.classList.add("border-error-300", "bg-error-50", "text-error-700");
+      if (feedback) {
+        feedback.className = "material-line-feedback mt-1 text-xs font-semibold text-error-700";
+        feedback.textContent = "Stock insuffisant";
+      }
+      return;
+    }
+
+    if (delivered > requested) {
+      hasInvalidLine = true;
+      deliveredInput?.classList.add("border-warning-300", "bg-warning-50", "text-warning-700");
+      if (feedback) {
+        feedback.className = "material-line-feedback mt-1 text-xs font-semibold text-warning-700";
+        feedback.textContent = "Superieur a la demande";
+      }
+      return;
+    }
+
+    if (delivered < requested && !observation) {
+      hasInvalidLine = true;
+      deliveredInput?.classList.add("border-warning-300", "bg-warning-50", "text-warning-700");
+      if (feedback) {
+        feedback.className = "material-line-feedback mt-1 text-xs font-semibold text-warning-700";
+        feedback.textContent = "Remise partielle : ajoute une observation";
+      }
+      return;
+    }
+
+    deliveredInput?.classList.add("border-success-300", "bg-success-50", "text-success-700");
+    if (feedback) {
+      feedback.className = "material-line-feedback mt-1 text-xs font-semibold text-success-700";
+      feedback.textContent = delivered < requested ? "Remise partielle" : "Disponible";
+    }
+  });
+
+  if (submit && modal.dataset.mode === "prepare") {
+    submit.disabled = hasInvalidLine || !hasAnyQuantity || !canPrepareMaterialRequests();
+    submit.classList.toggle("opacity-50", submit.disabled);
+    submit.classList.toggle("cursor-not-allowed", submit.disabled);
+  }
 }
 
 async function openMaterialRequestPreparation(root: HTMLElement, id: string) {
   const movement = latestMovements.find((item) => item.id === id);
   if (!movement) {
     showToast(root, "Demande introuvable dans le registre charge.", "error");
+    return;
+  }
+  if (movement.type === "EXIT_REQUEST" && movement.status === "SUBMITTED" && !canPrepareMaterialRequests()) {
+    renderExitRequestDetail(root, movement);
+    openModal(root, "exitRequestDetailModal");
     return;
   }
   openModal(root, "exitModal");
@@ -1354,6 +1442,12 @@ async function submitMaterialRequestPreparation(root: HTMLElement) {
   const modal = root.querySelector<HTMLElement>("#exitModal");
   const movement = selectedExitRequestId ? latestMovements.find((item) => item.id === selectedExitRequestId) : null;
   if (!modal || !movement) return;
+  syncMaterialPreparationState(root);
+  const submit = root.querySelector<HTMLButtonElement>("#materialSubmitButton");
+  if (submit?.disabled) {
+    showToast(root, "Corrige les quantites remises avant validation.", "error");
+    return;
+  }
   const rows = Array.from(modal.querySelectorAll<HTMLTableRowElement>("#materialRequestLines tr"));
   const lines = rows.map((row, index) => {
     const inputs = Array.from(row.querySelectorAll<HTMLInputElement>("input"));
@@ -2922,12 +3016,23 @@ function StockHubTemplate() {
       if (target.id === "inventoryLocationSelect") {
         renderInventory(root);
       }
+      if (target.closest("#materialRequestLines")) {
+        syncMaterialPreparationState(root);
+      }
+    };
+    const onInput = (event: Event) => {
+      const target = event.target as HTMLElement;
+      if (target.closest("#materialRequestLines")) {
+        syncMaterialPreparationState(root);
+      }
     };
     root.addEventListener("click", onClick);
     root.addEventListener("change", onChange);
+    root.addEventListener("input", onInput);
     return () => {
       root.removeEventListener("click", onClick);
       root.removeEventListener("change", onChange);
+      root.removeEventListener("input", onInput);
     };
   }, []);
 
