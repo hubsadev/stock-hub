@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import ReactDOM from "react-dom/client";
 import { StockHubShell } from "./components/StockHubShell";
 import { createArticle, createClient, createEmployee, createExitRequest, createInventoryAdjustment, createLocation, createProject, createStockEntry, createStockExit, createStockReturn, createStockTransfer, createSupplier, createTeamService, createUser, getArticles, getAuditAlerts, getAuditLogs, getClients, getDashboardSummary, getEmployees, getEquipments, getLocations, getProjects, getStockLevels, getStockMovements, getSuppliers, getTeamServices, getUsers, getVehicles, loginUser, prepareExitRequest, uploadExitRequestProof, createVehicle, updateArticle, updateClient, updateEmployee, updateEquipment, updateLocation, updateProject, updateSupplier, updateTeamService, updateUser, type Article, type AuditAlert, type AuditLog, type Client, type Employee, type Equipment, type StockLevel, type StockLocation, type StockMovement, type StockProject, type StockUser, type Supplier, type TeamService, type Vehicle } from "./api";
@@ -11,6 +11,7 @@ declare global {
 }
 
 let latestMovements: StockMovement[] = [];
+let currentExitFilter = "ALL";
 let latestStockLevels: StockLevel[] = [];
 let latestAuditLogs: AuditLog[] = [];
 let latestEquipments: Equipment[] = [];
@@ -811,10 +812,62 @@ function materialPdfLinkedExit(movement: StockMovement) {
   return movement.type === "EXIT" ? movement : linkedExitForRequest(movement);
 }
 
-function visibleExitMovements(movements: StockMovement[]) {
-  return movements.filter((movement) => movement.type === "EXIT_REQUEST" || (movement.type === "EXIT" && !movement.sourceRequestId));
+function proofRequestForMovement(movement: StockMovement) {
+  return movement.type === "EXIT_REQUEST" ? movement : requestForExit(movement);
 }
 
+function canUploadSignedProofFor(movement: StockMovement) {
+  const proofSource = proofRequestForMovement(movement);
+  return Boolean(
+    proofSource?.type === "EXIT_REQUEST"
+    && proofSource.status !== "SUBMITTED"
+    && proofSource.status !== "REJECTED"
+    && proofSource.status !== "CANCELLED"
+    && !proofSource.proofFileName
+  );
+}
+
+function visibleExitMovements(movements: StockMovement[]) {
+  return movements.filter((movement) => {
+    if (movement.type === "EXIT") return true;
+    if (movement.type !== "EXIT_REQUEST") return false;
+    return !linkedExitForRequest(movement);
+  });
+}
+
+function exitFilterMatches(movement: StockMovement) {
+  const linkedExit = linkedExitForRequest(movement);
+  if (currentExitFilter === "ALL") return !(movement.type === "EXIT_REQUEST" && linkedExit);
+  if (currentExitFilter === "REQUESTED") return movement.type === "EXIT_REQUEST" && movement.status === "SUBMITTED" && !linkedExit;
+  if (currentExitFilter === "PREPARED") {
+    const proofSource = proofRequestForMovement(movement);
+    return Boolean((movement.type === "EXIT" || movement.status === "PREPARED") && proofSource && !proofSource.proofFileName);
+  }
+  if (currentExitFilter === "EXIT") return movement.type === "EXIT";
+  if (currentExitFilter === "BLOCKED") return movement.status === "REJECTED" || movement.status === "CANCELLED";
+  if (currentExitFilter === "CANCELLED") return movement.status === "CANCELLED";
+  return true;
+}
+
+function renderExitRegistry(root: HTMLElement) {
+  const exitsBody = root.querySelector<HTMLElement>("#sortie tbody");
+  const visible = visibleExitMovements(latestMovements).filter(exitFilterMatches);
+  if (exitsBody) {
+    exitsBody.innerHTML = visible.length ? visible.map(exitMovementRow).join("") : emptyRow(12, "Aucune demande ou sortie stock pour ce filtre.");
+  }
+  root.querySelectorAll<HTMLElement>("[data-exit-filter]").forEach((button) => {
+    const active = button.dataset.exitFilter === currentExitFilter;
+    button.classList.toggle("bg-accent-50", active);
+    button.classList.toggle("text-accent-600", active);
+    button.classList.toggle("bg-gray-100", !active && button.dataset.exitFilter !== "BLOCKED");
+    button.classList.toggle("text-gray-600", !active && button.dataset.exitFilter !== "BLOCKED");
+    if (button.dataset.exitFilter === "BLOCKED") {
+      button.classList.toggle("bg-error-50", !active);
+      button.classList.toggle("text-error-700", !active);
+    }
+  });
+  window.lucide?.createIcons();
+}
 function renderExitRequestDetail(root: HTMLElement, movement: StockMovement) {
   const body = root.querySelector<HTMLElement>("#exitRequestDetailBody");
   const title = root.querySelector<HTMLElement>("#exitRequestDetailTitle");
@@ -823,7 +876,10 @@ function renderExitRequestDetail(root: HTMLElement, movement: StockMovement) {
   const downloadButton = root.querySelector<HTMLElement>("#exitRequestDownloadButton");
   if (!body) return;
   const linkedExit = linkedExitForRequest(movement);
-  const totalRequested = movement.lines.reduce((sum, line) => sum + Number(line.requestedQuantity ?? 0), 0);
+  const sourceRequest = requestForExit(movement);
+  const proofSource = proofRequestForMovement(movement);
+  const displayedRequest = movement.type === "EXIT" ? proofSource ?? movement : movement;
+  const totalRequested = displayedRequest.lines.reduce((sum, line) => sum + Number(line.requestedQuantity ?? 0), 0);
   const totalCompleted = movement.lines.reduce((sum, line) => sum + Number(line.completedQuantity ?? 0), 0);
   const rows = movement.lines.map((line, index) => {
     const available = latestStockLevels
@@ -842,14 +898,15 @@ function renderExitRequestDetail(root: HTMLElement, movement: StockMovement) {
   }).join("");
   const canPrepareNow = movement.type === "EXIT_REQUEST" && movement.status === "SUBMITTED" && canPrepareMaterialRequests();
   if (title) title.textContent = movement.reference;
-  if (subtitle) subtitle.textContent = movement.type === "EXIT_REQUEST" ? "Demande de materiel a preparer ou a suivre." : "Sortie stock deja enregistree.";
+  if (subtitle) subtitle.textContent = movement.type === "EXIT_REQUEST"
+    ? "Demande de materiel a preparer ou a suivre."
+    : "Sortie stock deja enregistree" + (sourceRequest ? " depuis la demande " + sourceRequest.reference + "." : ".");
   if (prepareButton) {
     prepareButton.classList.toggle("hidden", !canPrepareNow);
     prepareButton.dataset.action = `prepareExitFromRequest('${movement.id}')`;
   }
-  const proofSource = movement.type === "EXIT" ? requestForExit(movement) : movement;
   const canDownloadPdf = movement.type === "EXIT" || (movement.type === "EXIT_REQUEST" && movement.status !== "SUBMITTED");
-  const canUploadProof = proofSource?.type === "EXIT_REQUEST" && proofSource.status === "PREPARED";
+  const canUploadProof = canUploadSignedProofFor(movement);
   const hasProof = Boolean(proofSource?.proofFileName);
   if (downloadButton) {
     downloadButton.classList.toggle("hidden", !canDownloadPdf);
@@ -878,13 +935,16 @@ function renderExitRequestDetail(root: HTMLElement, movement: StockMovement) {
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
       <div class="rounded-xl border bg-gray-50 p-4"><div class="text-xs font-semibold text-gray-500">Statut</div><div class="font-bold text-lg mt-1">${escapeHtml(movementStatusLabel(movement))}</div></div>
       <div class="rounded-xl border bg-gray-50 p-4"><div class="text-xs font-semibold text-gray-500">Date</div><div class="font-bold text-lg mt-1">${formatDate(movement.date)}</div></div>
-      <div class="rounded-xl border bg-gray-50 p-4"><div class="text-xs font-semibold text-gray-500">Demandee</div><div class="font-bold text-lg mt-1">${formatNumber(totalRequested)}</div></div>
-      <div class="rounded-xl border bg-gray-50 p-4"><div class="text-xs font-semibold text-gray-500">Remise</div><div class="font-bold text-lg mt-1">${formatNumber(totalCompleted)}</div></div>
+      <div class="rounded-xl border bg-gray-50 p-4"><div class="text-xs font-semibold text-gray-500">Demande source</div><div class="font-bold text-lg mt-1">${escapeHtml(sourceRequest?.reference ?? (movement.type === "EXIT_REQUEST" ? movement.reference : "-"))}</div></div>
+      <div class="rounded-xl border ${hasProof ? "border-success-100 bg-success-50" : canDownloadPdf ? "border-warning-100 bg-warning-50" : "bg-gray-50"} p-4"><div class="text-xs font-semibold text-gray-500">Fiche signee</div><div class="font-bold text-lg mt-1">${hasProof ? "Uploadée" : canDownloadPdf ? "À signer" : "En attente"}</div></div>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div class="rounded-xl border p-4"><div class="text-xs font-semibold text-gray-500">Projet / chantier</div><div class="font-bold mt-1">${escapeHtml(movement.project?.name ?? movement.toLocation?.name ?? "-")}</div></div>
-      <div class="rounded-xl border p-4"><div class="text-xs font-semibold text-gray-500">Demandeur / beneficiaire</div><div class="font-bold mt-1">${escapeHtml(movement.requestedBy ?? movement.receivedBy ?? "-")}</div></div>
-      <div class="rounded-xl border p-4"><div class="text-xs font-semibold text-gray-500">Magasin source</div><div class="font-bold mt-1">${escapeHtml(movement.fromLocation?.name ?? "-")}</div></div>
+      <div class="rounded-xl border p-4"><div class="text-xs font-semibold text-gray-500">Projet / chantier</div><div class="font-bold mt-1">${escapeHtml(displayedRequest.project?.name ?? movement.project?.name ?? movement.toLocation?.name ?? "-")}</div></div>
+      <div class="rounded-xl border p-4"><div class="text-xs font-semibold text-gray-500">Demandeur / beneficiaire</div><div class="font-bold mt-1">${escapeHtml(displayedRequest.requestedBy ?? movement.receivedBy ?? "-")}</div></div>
+      <div class="rounded-xl border p-4"><div class="text-xs font-semibold text-gray-500">Magasin source</div><div class="font-bold mt-1">${escapeHtml(movement.fromLocation?.name ?? displayedRequest.fromLocation?.name ?? "-")}</div></div>
+      <div class="rounded-xl border p-4"><div class="text-xs font-semibold text-gray-500">Sorti par</div><div class="font-bold mt-1">${escapeHtml(movement.handledBy ?? "-")}</div></div>
+      <div class="rounded-xl border p-4"><div class="text-xs font-semibold text-gray-500">Transporte par</div><div class="font-bold mt-1">${escapeHtml(movement.deliveredBy ?? "-")}</div></div>
+      <div class="rounded-xl border p-4"><div class="text-xs font-semibold text-gray-500">Remis a</div><div class="font-bold mt-1">${escapeHtml(movement.receivedBy ?? displayedRequest.receivedBy ?? displayedRequest.requestedBy ?? "-")}</div></div>
     </div>
     ${movement.type === "EXIT_REQUEST" && movement.status === "SUBMITTED" ? `<div class="rounded-xl border border-accent-100 bg-accent-50 p-4 text-sm text-gray-700"><div class="font-bold text-accent-700 mb-1">Demande transmise au stock</div>En attente de preparation par le gestionnaire stock.</div>` : ""}
     ${preparedPanel}
@@ -936,7 +996,7 @@ function exitMenuItem(icon: string, label: string, action: string) {
 
 function exitActionsMenu(movement: StockMovement) {
   const actions: string[] = [];
-  const proofSource = movement.type === "EXIT" ? requestForExit(movement) : movement;
+  const proofSource = proofRequestForMovement(movement);
   actions.push(exitMenuItem("eye", "Voir", `openExitRequestDetail('${movement.id}')`));
   if (movement.type === "EXIT_REQUEST" && movement.status === "SUBMITTED" && canPrepareMaterialRequests()) {
     actions.push(exitMenuItem("package-check", "Preparer", `prepareExitFromRequest('${movement.id}')`));
@@ -944,7 +1004,7 @@ function exitActionsMenu(movement: StockMovement) {
   if (movement.type === "EXIT" || (movement.type === "EXIT_REQUEST" && movement.status !== "SUBMITTED")) {
     actions.push(exitMenuItem("download", "Telecharger fiche", `downloadPreparedMaterialPdf('${movement.id}')`));
   }
-  if (proofSource?.type === "EXIT_REQUEST" && proofSource.status === "PREPARED") {
+  if (canUploadSignedProofFor(movement)) {
     actions.push(exitMenuItem("upload", "Uploader fiche signee", `openExitRequestDetail('${movement.id}')`));
   }
   if (proofSource?.proofFileName) {
@@ -967,7 +1027,8 @@ function exitMovementRow(movement: StockMovement) {
     .filter((level) => level.article.id === first.articleId && (!movement.fromLocationId || level.location.id === movement.fromLocationId))
     .reduce((sum, level) => sum + Number(level.quantity ?? 0), 0) : null;
   const linkedExit = linkedExitForRequest(movement);
-  const typeLabel = movement.type === "EXIT_REQUEST" ? (linkedExit ? "Demande preparee" : "Demande") : "Sortie";
+  const sourceRequest = requestForExit(movement);
+  const typeLabel = movement.type === "EXIT_REQUEST" ? (linkedExit ? "Demande preparee" : "Demande") : "Sortie reelle";
   const project = movement.project?.name ?? movement.toLocation?.name ?? "-";
   const beneficiary = movement.requestedBy ?? movement.receivedBy ?? "-";
   const handledBy = movement.handledBy ?? movement.fromLocation?.name ?? "-";
@@ -975,7 +1036,9 @@ function exitMovementRow(movement: StockMovement) {
   const deliveredTo = movement.receivedBy ?? movement.requestedBy ?? "-";
   const availableText = available === null ? "-" : formatNumber(available);
   const availableClass = available !== null && movement.status === "SUBMITTED" && quantity > available ? " text-error-700" : "";
-  const linkedInfo = linkedExit ? `<div class="text-xs text-success-700 font-normal">Sortie : ${escapeHtml(linkedExit.reference)}</div>` : "";
+  const linkedInfo = linkedExit
+    ? `<div class="text-xs text-success-700 font-normal">Sortie : ${escapeHtml(linkedExit.reference)}</div>`
+    : sourceRequest ? `<div class="text-xs text-primary-700 font-normal">Demande source : ${escapeHtml(sourceRequest.reference)}</div>` : "";
   return '<tr>'
     + '<td class="px-5 py-4 font-bold">' + escapeHtml(movement.reference) + '<div class="text-xs text-gray-500 font-normal">' + typeLabel + '</div>' + linkedInfo + '</td>'
     + '<td class="px-5 py-4">' + formatDate(movement.date) + '</td>'
@@ -2179,6 +2242,7 @@ function updateApiBackedViews(root: HTMLElement) {
       setText(root, "#entriesPartialCount", entries.filter((movement) => movement.status === "PREPARED").length);
       setText(root, "#entriesIssueCount", entries.filter((movement) => movement.status === "REJECTED").length);
       const exitsBody = root.querySelector<HTMLElement>('#sortie tbody');
+      latestMovements = movements;
       const exits = visibleExitMovements(movements);
       const pendingExits = exits.filter((movement) => movement.type === "EXIT_REQUEST" && movement.status === "SUBMITTED");
       const pendingAlert = root.querySelector<HTMLElement>("#exitPendingAlert");
@@ -2187,7 +2251,7 @@ function updateApiBackedViews(root: HTMLElement) {
       if (pendingAlert) pendingAlert.classList.toggle("hidden", pendingExits.length === 0);
       if (pendingCount) pendingCount.textContent = String(pendingExits.length);
       if (dashboardPendingCount) dashboardPendingCount.textContent = String(pendingExits.length);
-      if (exitsBody) exitsBody.innerHTML = exits.length ? exits.map(exitMovementRow).join("") : emptyRow(12, "Aucune demande ou sortie stock en base pour le moment.");
+      renderExitRegistry(root);
       setText(root, "#exitRequestsCount", pendingExits.length);
       setText(root, "#exitCompletedCount", exits.filter((movement) => movement.type === "EXIT" && movement.status === "COMPLETED").length);
       setText(root, "#exitBlockedCount", exits.filter((movement) => movement.status === "REJECTED" || movement.status === "CANCELLED").length);
@@ -2198,7 +2262,6 @@ function updateApiBackedViews(root: HTMLElement) {
       setText(root, "#returnsExpectedCount", returns.filter((movement) => movement.type === "RETURN" && movement.status !== "COMPLETED").length);
       setText(root, "#transfersOpenCount", returns.filter((movement) => movement.type === "TRANSFER" && movement.status !== "COMPLETED").length);
       setText(root, "#returnsReviewCount", returns.filter((movement) => movement.status === "SUBMITTED" || movement.status === "PREPARED").length);
-      latestMovements = movements;
       renderHistory(root);
       window.lucide?.createIcons();
     })
@@ -3066,6 +3129,8 @@ function parseAction(action: string) {
   if (exportMatch) return { type: "export", kind: exportMatch[1] } as const;
   const inventoryModeMatch = action.match(/^showInventoryMode\('([^']+)'\)/);
   if (inventoryModeMatch) return { type: "inventory-mode", mode: inventoryModeMatch[1] } as const;
+  const exitFilterMatch = action.match(/^setExitFilter\('([^']+)'\)/);
+  if (exitFilterMatch) return { type: "exit-filter", filter: exitFilterMatch[1] } as const;
   if (action === "refreshHistory") return { type: "refresh-history" } as const;
   if (action.includes("toggleLoginPassword")) return { type: "toggle-password" } as const;
   if (action.includes("toggleUserPassword")) return { type: "toggle-user-password" } as const;
@@ -3178,6 +3243,10 @@ function StockHubTemplate() {
       if (parsed.type === "view-signed-material-proof") viewSignedMaterialProof(root, parsed.id);
       if (parsed.type === "vehicle-detail") openVehicleDetail(root, parsed.id);
       if (parsed.type === "toggle-vehicle-history") toggleVehicleHistory(root);
+      if (parsed.type === "exit-filter") {
+        currentExitFilter = parsed.filter;
+        renderExitRegistry(root);
+      }
       if (parsed.type === "refresh-history") renderHistory(root);
       if (parsed.type === "export") exportData(root, parsed.kind);
       if (parsed.type === "inventory-mode") showInventoryMode(root, parsed.mode);
@@ -3218,6 +3287,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <StockHubTemplate />
   </React.StrictMode>
 );
+
+
+
 
 
 

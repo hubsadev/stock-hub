@@ -96,11 +96,11 @@
                   <p class="text-sm text-gray-500 mt-1">Le stock augmente avec la quantite recue, pas avec la quantite attendue.</p>
                 </div>
                 <div class="flex flex-wrap gap-2 text-xs font-semibold">
-                  <button class="px-3 py-2 rounded-lg bg-accent-50 text-accent-600">Toutes</button>
+                  <button data-exit-filter="ALL" data-action="setExitFilter('ALL')" class="px-3 py-2 rounded-lg bg-accent-50 text-accent-600">Toutes</button>
                   <button class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Recues</button>
                   <button class="px-3 py-2 rounded-lg bg-warning-50 text-warning-700">Partielles</button>
                   <button class="px-3 py-2 rounded-lg bg-error-50 text-error-700">Litiges</button>
-                  <button class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Annulees</button>
+                  <button data-exit-filter="CANCELLED" data-action="setExitFilter('CANCELLED')" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Annulees</button>
                 </div>
               </div>
               <div class="grid grid-cols-1 lg:grid-cols-[1fr_180px_180px] gap-3">
@@ -256,8 +256,6 @@
             </div>
           </div>
 
-          <div id="exitPendingAlert" class="hidden bg-warning-50 border border-warning-100 rounded-xl p-4 mb-4 flex items-start gap-3"><div class="w-9 h-9 rounded-lg bg-white text-warning-700 flex items-center justify-center shrink-0"><i data-lucide="inbox" class="w-5 h-5"></i></div><div><div class="font-bold text-warning-700"><span id="exitPendingCount">0</span> demande de sortie en attente</div><p class="text-sm text-gray-600 mt-1">Les gestionnaires doivent preparer ou traiter les demandes soumises.</p></div></div>
-
           <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
             <div class="p-5 border-b border-gray-200 space-y-4">
               <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
@@ -266,12 +264,12 @@
                   <p class="text-sm text-gray-500 mt-1">Toutes les demandes et sorties restent visibles avec leur statut.</p>
                 </div>
                 <div class="flex flex-wrap gap-2 text-xs font-semibold">
-                  <button class="px-3 py-2 rounded-lg bg-accent-50 text-accent-600">Toutes</button>
-                  <button class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Demandees</button>
-                  <button class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Preparees</button>
-                  <button class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Sorties</button>
-                  <button class="px-3 py-2 rounded-lg bg-error-50 text-error-700">Bloquees</button>
-                  <button class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Annulees</button>
+                  <button data-exit-filter="ALL" data-action="setExitFilter('ALL')" class="px-3 py-2 rounded-lg bg-accent-50 text-accent-600">Toutes</button>
+                  <button data-exit-filter="REQUESTED" data-action="setExitFilter('REQUESTED')" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Demandees</button>
+                  <button data-exit-filter="PREPARED" data-action="setExitFilter('PREPARED')" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Preparees</button>
+                  <button data-exit-filter="EXIT" data-action="setExitFilter('EXIT')" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Sorties</button>
+                  <button data-exit-filter="BLOCKED" data-action="setExitFilter('BLOCKED')" class="px-3 py-2 rounded-lg bg-error-50 text-error-700">Bloquees</button>
+                  <button data-exit-filter="CANCELLED" data-action="setExitFilter('CANCELLED')" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Annulees</button>
                 </div>
               </div>
               <div class="grid grid-cols-1 lg:grid-cols-[1fr_180px_180px] gap-3">
