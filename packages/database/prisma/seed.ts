@@ -1,38 +1,50 @@
+﻿import { scryptSync } from "node:crypto";
 import { prisma } from "../src/client.js";
 
+function hashPassword(password: string) {
+  const salt = "stock-hub-dev";
+  const hash = scryptSync(password, salt, 64).toString("hex");
+  return `scrypt:${salt}:${hash}`;
+}
+
 async function main() {
+  const initialPasswordHash = hashPassword("12345678");
+
   await prisma.user.upsert({
     where: { email: "admin@stock.local" },
-    update: {},
+    update: { passwordHash: initialPasswordHash, active: true, roles: ["ADMIN_STOCK"] },
     create: {
       email: "admin@stock.local",
       firstName: "Admin",
       lastName: "Stock",
       roles: ["ADMIN_STOCK"],
+      passwordHash: initialPasswordHash,
       active: true
     }
   });
 
   await prisma.user.upsert({
     where: { email: "gestionnaire@stock.local" },
-    update: {},
+    update: { passwordHash: initialPasswordHash },
     create: {
       email: "gestionnaire@stock.local",
       firstName: "Awa",
       lastName: "Stock",
       roles: ["GESTIONNAIRE_STOCK"],
+      passwordHash: initialPasswordHash,
       active: true
     }
   });
 
   await prisma.user.upsert({
     where: { email: "audit@stock.local" },
-    update: {},
+    update: { passwordHash: initialPasswordHash },
     create: {
       email: "audit@stock.local",
       firstName: "Jean",
       lastName: "Audit",
       roles: ["AUDIT"],
+      passwordHash: initialPasswordHash,
       active: true
     }
   });
@@ -61,12 +73,12 @@ async function main() {
   });
 
   const cable = await prisma.article.upsert({
-    where: { code: "MAT-0018" },
+    where: { code: "FO-0001" },
     update: {},
     create: {
-      code: "MAT-0018",
+      code: "FO-0001",
       designation: "Cable reseau Cat6",
-      category: "MATERIEL_RESEAU",
+      category: "FO",
       unit: "U",
       trackingMode: "QUANTITY",
       minimumStock: 10,
@@ -75,12 +87,12 @@ async function main() {
   });
 
   const pc = await prisma.article.upsert({
-    where: { code: "INF-0001" },
+    where: { code: "GSM-0001" },
     update: {},
     create: {
-      code: "INF-0001",
+      code: "GSM-0001",
       designation: "PC Dell Latitude",
-      category: "EQUIPEMENT_IT",
+      category: "GSM",
       unit: "Piece",
       trackingMode: "INDIVIDUAL",
       minimumStock: 1,

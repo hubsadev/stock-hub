@@ -46,12 +46,13 @@ model User {
   firstName String
   lastName  String
   roles     UserRole[]
+  passwordHash String @default("")
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-model Supplier {
+model Client {
   id        String   @id @default(cuid())
   code      String   @unique
   name      String
@@ -63,41 +64,97 @@ model Supplier {
   updatedAt DateTime @updatedAt
 }
 
-model Project {
+model TeamService {
   id        String   @id @default(cuid())
   code      String   @unique
   name      String
-  client    String?
-  site      String?
+  type      String   @default("SERVICE")
+  manager   String?
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-model Location {
+model Employee {
+  id          String   @id @default(cuid())
+  matricule   String   @unique
+  lastName    String
+  firstName   String
+  department  String?
+  role        String?
+  phone       String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Supplier {
   id        String   @id @default(cuid())
   code      String   @unique
   name      String
-  type      String
+  fiscalId  String?
+  category  String?
+  contact   String?
+  phone     String?
+  email     String?
+  address   String?
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Project {
+  id               String    @id @default(cuid())
+  code             String    @unique
+  name             String
+  client           String?
+  clientId         String?
+  projectManagerId String?
+  region           String?
+  city             String?
+  site             String?
+  startDate        DateTime?
+  endDate          DateTime?
+  active           Boolean   @default(true)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  sites Location[]
+}
+
+model Location {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  type        String
+  responsible String?
+  region      String?
+  city        String?
+  address     String?
+  projectId   String?
+  project     Project? @relation(fields: [projectId], references: [id])
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   stockLevels StockLevel[]
 }
 
 model Article {
-  id           String       @id @default(cuid())
-  code         String       @unique
-  designation  String
-  category     String
-  unit         String
-  trackingMode TrackingMode @default(QUANTITY)
-  minimumStock Int          @default(0)
-  referencePrice Decimal?   @db.Decimal(18, 2)
-  active       Boolean      @default(true)
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  id                String       @id @default(cuid())
+  code              String       @unique
+  designation       String
+  category          String
+  unit              String
+  trackingMode      TrackingMode @default(QUANTITY)
+  minimumStock      Int          @default(0)
+  securityStock     Int          @default(0)
+  referencePrice    Decimal?     @db.Decimal(18, 2)
+  defaultSupplierId String?
+  defaultLocationId String?
+  active            Boolean      @default(true)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
 
   stockLevels StockLevel[]
   equipment   Equipment[]
@@ -137,7 +194,10 @@ model StockMovement {
   status      MovementStatus @default(DRAFT)
   date        DateTime
   supplierId  String?
+  clientId    String?
   projectId   String?
+  teamServiceId String?
+  siteLocationId String?
   fromLocationId String?
   toLocationId   String?
   requestedBy String?
@@ -183,3 +243,23 @@ model ImportBatch {
   summary   Json?
   createdAt DateTime @default(now())
 }
+model Vehicle {
+  id                 String   @id @default(cuid())
+  code               String   @unique
+  name               String
+  type               String
+  plateNumber        String   @unique
+  assignment         String?
+  driverName         String?
+  apprenticeName     String?
+  status             String   @default("AVAILABLE")
+  insuranceExpiresAt DateTime?
+  technicalVisitAt   DateTime?
+  notes              String?
+  active             Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+
+

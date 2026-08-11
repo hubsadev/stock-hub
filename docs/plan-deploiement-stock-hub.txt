@@ -1,0 +1,114 @@
+Plan de deploiement - Stock Hub
+
+
+Lot 0 - Verification avant de deployer
+- [ ] Verifier que le code est sur la bonne branche Git.
+- [ ] Verifier que les dernieres corrections sont commitees.
+- [ ] Verifier que la branche locale est bien poussee sur GitHub.
+- [ ] Verifier que les variables sensibles ne sont pas dans le code.
+- [ ] Verifier que le fichier .env.example reste propre.
+- [ ] Garder la base locale pour les tests internes.
+- [ ] Ne pas melanger les donnees locales avec la base Railway.
+
+
+Lot 1 - Verification technique locale
+- [x] Lancer pnpm install si besoin.
+- [x] Lancer pnpm db:generate.
+- [x] Lancer pnpm --filter @stock-hub/api build.
+- [x] Lancer pnpm --filter @stock-hub/web build.
+- [x] Corriger avant deployement si une commande echoue.
+- [x] Ouvrir l'application en local.
+- [x] Tester rapidement la connexion admin.
+- [x] Tester rapidement la creation d'un article avec stock de depart.
+
+
+Lot 2 - Base de donnees Railway
+- [ ] Creer un PostgreSQL dedie a Stock Hub.
+- [ ] Recuperer l'URL PostgreSQL Railway.
+- [ ] Mettre DATABASE_URL dans le service API.
+- [ ] Lancer les migrations sur la base Railway.
+- [ ] Verifier que les tables sont creees.
+- [ ] Creer le compte admin apres migration.
+- [ ] Garder l'URL de la base dans un endroit securise.
+
+
+Lot 3 - Service API Railway
+- [ ] Creer ou selectionner le service API Stock Hub.
+- [ ] Brancher le service API sur la bonne branche Git.
+- [ ] Verifier la commande de build API.
+- [ ] Verifier la commande de start API.
+- [ ] Renseigner DATABASE_URL.
+- [ ] Renseigner API_TOKEN_SECRET.
+- [ ] Mettre HOST a 0.0.0.0.
+- [ ] Verifier que PORT est compatible Railway.
+- [ ] Renseigner CORS_ORIGIN avec l'URL du web.
+- [ ] Deployer l'API.
+- [ ] Tester /health.
+- [ ] Tester /ready.
+
+
+Lot 4 - Service Web Railway
+- [ ] Creer ou selectionner le service web Stock Hub.
+- [ ] Brancher le service web sur la bonne branche Git.
+- [ ] Verifier la commande de build web.
+- [ ] Renseigner VITE_API_URL avec l'URL publique API.
+- [ ] Ne pas laisser VITE_API_URL sur http://127.0.0.1:3200.
+- [ ] Deployer le web.
+- [ ] Ouvrir l'URL publique.
+- [ ] Verifier que la page login s'affiche.
+
+
+Lot 5 - Compte admin
+- [ ] Creer le compte admin sur la base Railway.
+- [ ] Tester la connexion admin.
+- [ ] Verifier que le nom du bon utilisateur s'affiche dans la sidebar.
+- [ ] Verifier que l'admin accede aux referentiels.
+- [ ] Verifier que l'admin accede aux utilisateurs et roles.
+- [ ] Changer le mot de passe avant une vraie utilisation terrain.
+
+
+Lot 6 - Test rapide apres mise en ligne
+- [ ] Creer un emplacement de stock.
+- [ ] Creer un article avec stock de depart.
+- [ ] Choisir un emplacement de depart.
+- [ ] Verifier que l'article apparait dans Vue Stock.
+- [ ] Verifier que l'article apparait dans Inventaire de stock.
+- [ ] Ouvrir le comptage article.
+- [ ] Verifier que le stock theorique est correct.
+- [ ] Modifier les quantites du comptage.
+- [ ] Verifier que les cartes du modal se recalculent.
+- [ ] Creer une demande de materiel multi-articles.
+- [ ] Se connecter avec un gestionnaire stock.
+- [ ] Verifier que la demande apparait dans Sorties stock.
+- [ ] Verifier que le dashboard affiche les demandes en attente.
+
+
+Lot 7 - Points a surveiller
+- [ ] Si Failed to fetch apparait, verifier VITE_API_URL.
+- [ ] Si Failed to fetch apparait, verifier CORS_ORIGIN.
+- [ ] Si Internal server error apparait, regarder les logs API Railway.
+- [ ] Si l'API ne repond pas, verifier le domaine Railway actif.
+- [ ] Si les migrations bloquent, verifier Prisma migrate deploy.
+- [ ] Si des donnees fictives restent visibles, les retirer ou afficher un etat vide.
+- [ ] Si des caracteres parasites apparaissent, les corriger avant presentation.
+
+
+Lot 8 - Informations a noter
+- [ ] URL web Stock Hub.
+- [ ] URL API Stock Hub.
+- [ ] Branche deployee.
+- [ ] Date du deployement.
+- [ ] Compte admin cree.
+- [ ] Comptes de test crees.
+- [ ] Base Railway utilisee.
+- [ ] Dernieres remarques a remettre dans docs/to_do.txt.
+
+
+Lot 9 - Apres deployement
+- [ ] Reprendre les tests avec les personnes concernees.
+- [ ] Noter les blocages reels observes.
+- [ ] Noter les champs confus.
+- [ ] Noter les parcours trop longs.
+- [ ] Noter les boutons qui ne reagissent pas.
+- [ ] Continuer les corrections apres retour terrain.
+- [ ] Ne pas considerer l'application comme terminee juste parce qu'elle est en ligne.
