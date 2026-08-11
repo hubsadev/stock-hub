@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import ReactDOM from "react-dom/client";
 import { StockHubShell } from "./components/StockHubShell";
-import { createArticle, createClient, createEmployee, createExitRequest, createInventoryAdjustment, createLocation, createProject, createStockEntry, createStockExit, createStockReturn, createStockTransfer, createSupplier, createTeamService, createUser, getArticles, getAuditAlerts, getAuditLogs, getClients, getDashboardSummary, getEmployees, getEquipments, getLocations, getProjects, getStockLevels, getStockMovements, getSuppliers, getTeamServices, getUsers, getVehicles, loginUser, createVehicle, updateArticle, updateClient, updateEmployee, updateEquipment, updateLocation, updateProject, updateSupplier, updateTeamService, updateUser, type Article, type AuditAlert, type AuditLog, type Client, type Employee, type Equipment, type StockLevel, type StockLocation, type StockMovement, type StockProject, type StockUser, type Supplier, type TeamService, type Vehicle } from "./api";
+import { createArticle, createClient, createEmployee, createExitRequest, createInventoryAdjustment, createLocation, createProject, createStockEntry, createStockExit, createStockReturn, createStockTransfer, createSupplier, createTeamService, createUser, getArticles, getAuditAlerts, getAuditLogs, getClients, getDashboardSummary, getEmployees, getEquipments, getLocations, getProjects, getStockLevels, getStockMovements, getSuppliers, getTeamServices, getUsers, getVehicles, loginUser, prepareExitRequest, uploadExitRequestProof, createVehicle, updateArticle, updateClient, updateEmployee, updateEquipment, updateLocation, updateProject, updateSupplier, updateTeamService, updateUser, type Article, type AuditAlert, type AuditLog, type Client, type Employee, type Equipment, type StockLevel, type StockLocation, type StockMovement, type StockProject, type StockUser, type Supplier, type TeamService, type Vehicle } from "./api";
 import "./template.css";
 
 declare global {
@@ -783,9 +783,21 @@ function movementStatusLabel(movement: StockMovement) {
   if (movement.type === "EXIT") return "Sortie reelle";
   if (movement.status === "SUBMITTED") return "Demandee";
   if (movement.status === "PREPARED") return "Preparee";
+  if (movement.status === "COMPLETED") return "Terminee";
   if (movement.status === "REJECTED") return "Rejetee";
   if (movement.status === "CANCELLED") return "Annulee";
   return movement.status;
+}
+
+function linkedExitForRequest(movement: StockMovement) {
+  if (movement.type !== "EXIT_REQUEST") return null;
+  return movement.generatedExits?.[0]
+    ?? latestMovements.find((item) => item.type === "EXIT" && item.sourceRequestId === movement.id)
+    ?? null;
+}
+
+function visibleExitMovements(movements: StockMovement[]) {
+  return movements.filter((movement) => movement.type === "EXIT_REQUEST" || (movement.type === "EXIT" && !movement.sourceRequestId));
 }
 
 function renderExitRequestDetail(root: HTMLElement, movement: StockMovement) {
@@ -794,6 +806,7 @@ function renderExitRequestDetail(root: HTMLElement, movement: StockMovement) {
   const subtitle = root.querySelector<HTMLElement>("#exitRequestDetailSubtitle");
   const prepareButton = root.querySelector<HTMLElement>("#exitRequestPrepareButton");
   if (!body) return;
+  const linkedExit = linkedExitForRequest(movement);
   const totalRequested = movement.lines.reduce((sum, line) => sum + Number(line.requestedQuantity ?? 0), 0);
   const totalCompleted = movement.lines.reduce((sum, line) => sum + Number(line.completedQuantity ?? 0), 0);
   const rows = movement.lines.map((line, index) => {
@@ -801,7 +814,7 @@ function renderExitRequestDetail(root: HTMLElement, movement: StockMovement) {
       .filter((level) => level.article.id === line.articleId && (!movement.fromLocationId || level.location.id === movement.fromLocationId))
       .reduce((sum, level) => sum + Number(level.quantity ?? 0), 0);
     const requested = Number(line.requestedQuantity ?? 0);
-    const shortageClass = requested > available ? " text-error-700" : "";
+    const shortageClass = requested > available && movement.status === "SUBMITTED" ? " text-error-700" : "";
     return `<tr>
       <td class="px-5 py-4 font-bold text-gray-400">${index + 1}</td>
       <td class="px-5 py-4"><div class="font-bold">${escapeHtml(line.article?.designation ?? "-")}</div><div class="text-xs text-gray-500">${escapeHtml(line.article?.code ?? "-")}</div></td>
@@ -811,12 +824,32 @@ function renderExitRequestDetail(root: HTMLElement, movement: StockMovement) {
       <td class="px-5 py-4">${escapeHtml(line.observation ?? "-")}</td>
     </tr>`;
   }).join("");
+  const canPrepareNow = movement.type === "EXIT_REQUEST" && movement.status === "SUBMITTED" && canPrepareMaterialRequests();
   if (title) title.textContent = movement.reference;
   if (subtitle) subtitle.textContent = movement.type === "EXIT_REQUEST" ? "Demande de materiel a preparer ou a suivre." : "Sortie stock deja enregistree.";
   if (prepareButton) {
-    prepareButton.classList.toggle("hidden", movement.type !== "EXIT_REQUEST" || !canPrepareMaterialRequests());
+    prepareButton.classList.toggle("hidden", !canPrepareNow);
     prepareButton.dataset.action = `prepareExitFromRequest('${movement.id}')`;
   }
+  const preparedPanel = movement.type === "EXIT_REQUEST" && movement.status !== "SUBMITTED" ? `
+    <div class="rounded-2xl border border-success-100 bg-success-50 p-5">
+      <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <div class="text-xs font-bold uppercase text-success-700">Fiche de sortie</div>
+          <div class="mt-1 text-lg font-bold text-gray-900">${linkedExit ? escapeHtml(linkedExit.reference) : "Sortie liee en cours de chargement"}</div>
+          <p class="mt-1 text-sm text-gray-600">La demande est preparee. Telecharge la fiche, fais signer, puis ajoute la preuve signee.</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button class="btn-secondary" data-action="downloadPreparedMaterialPdf('${movement.id}')"><i data-lucide="download" class="h-4 w-4"></i> Telecharger fiche</button>
+          ${movement.proofFileName ? `<button class="btn-secondary" data-action="viewSignedMaterialProof('${movement.id}')"><i data-lucide="file-check" class="h-4 w-4"></i> Voir preuve</button>` : ""}
+        </div>
+      </div>
+      ${movement.status === "PREPARED" ? `<div class="mt-4 grid gap-3 md:grid-cols-[1fr_auto]">
+        <input id="signedProof-${escapeHtml(movement.id)}" type="file" accept=".pdf,image/*" class="form-input" />
+        <button class="btn-primary" data-action="uploadSignedMaterialProof('${movement.id}')"><i data-lucide="upload" class="h-4 w-4"></i> Uploader fiche signee</button>
+      </div>` : `<div class="mt-4 rounded-xl border border-success-200 bg-white p-3 text-sm text-success-800">Preuve signee ajoutee${movement.proofFileName ? ` : ${escapeHtml(movement.proofFileName)}` : ""}.</div>`}
+    </div>` : "";
+
   body.innerHTML = `
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
       <div class="rounded-xl border bg-gray-50 p-4"><div class="text-xs font-semibold text-gray-500">Statut</div><div class="font-bold text-lg mt-1">${escapeHtml(movementStatusLabel(movement))}</div></div>
@@ -830,6 +863,7 @@ function renderExitRequestDetail(root: HTMLElement, movement: StockMovement) {
       <div class="rounded-xl border p-4"><div class="text-xs font-semibold text-gray-500">Magasin source</div><div class="font-bold mt-1">${escapeHtml(movement.fromLocation?.name ?? "-")}</div></div>
     </div>
     ${movement.type === "EXIT_REQUEST" && movement.status === "SUBMITTED" ? `<div class="rounded-xl border border-accent-100 bg-accent-50 p-4 text-sm text-gray-700"><div class="font-bold text-accent-700 mb-1">Demande transmise au stock</div>En attente de preparation par le gestionnaire stock.</div>` : ""}
+    ${preparedPanel}
     <div class="border border-gray-200 rounded-xl overflow-hidden">
       <div class="px-5 py-4 bg-gray-50 border-b"><h3 class="font-bold">Articles demandes</h3><p class="text-sm text-gray-500 mt-1">Le stock disponible est calcule sur le magasin source de la demande.</p></div>
       <div class="overflow-x-auto"><table class="w-full min-w-[820px] text-sm"><thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">N</th><th class="px-5 py-3 text-left">Article</th><th class="px-5 py-3 text-right">Demandee</th><th class="px-5 py-3 text-right">Dispo</th><th class="px-5 py-3 text-right">Remise</th><th class="px-5 py-3 text-left">Observation</th></tr></thead><tbody class="divide-y">${rows || emptyRow(6, "Aucune ligne sur cette demande.")}</tbody></table></div>
@@ -837,6 +871,7 @@ function renderExitRequestDetail(root: HTMLElement, movement: StockMovement) {
     ${movement.notes ? `<div class="rounded-xl border bg-gray-50 p-4 text-sm text-gray-700"><div class="font-bold mb-1">Note</div>${escapeHtml(movement.notes)}</div>` : ""}`;
   window.lucide?.createIcons();
 }
+
 function openExitRequestDetail(root: HTMLElement, id: string) {
   const movement = latestMovements.find((item) => item.id === id);
   if (!movement) {
@@ -854,37 +889,62 @@ async function prepareExitFromRequest(root: HTMLElement, id: string) {
     showToast(root, "Impossible de preparer cette demande.", "error");
     return;
   }
-  if (!canPrepareMaterialRequests()) {
+  if (!canPrepareMaterialRequests() || movement.status !== "SUBMITTED") {
     renderExitRequestDetail(root, movement);
     openModal(root, "exitRequestDetailModal");
-    showToast(root, "Demande transmise au stock. En attente de preparation.");
+    showToast(root, movement.status === "SUBMITTED" ? "Demande transmise au stock. En attente de preparation." : "Cette demande est deja preparee ou terminee.");
     return;
   }
   closeModal(root, "exitRequestDetailModal");
   await openMaterialRequestPreparation(root, id);
 }
+function exitStatusTone(movement: StockMovement): "success" | "warning" | "error" | "gray" {
+  if (movement.type === "EXIT") return "success";
+  if (movement.status === "COMPLETED") return "success";
+  if (movement.status === "PREPARED") return "warning";
+  if (movement.status === "REJECTED" || movement.status === "CANCELLED") return "error";
+  return "warning";
+}
+
+function exitActionsMenu(movement: StockMovement) {
+  const actions: string[] = [];
+  actions.push(`<button class="block w-full px-4 py-2 text-left hover:bg-gray-50" data-action="openExitRequestDetail('${movement.id}')">Voir</button>`);
+  if (movement.type === "EXIT_REQUEST" && movement.status === "SUBMITTED" && canPrepareMaterialRequests()) {
+    actions.push(`<button class="block w-full px-4 py-2 text-left hover:bg-gray-50" data-action="prepareExitFromRequest('${movement.id}')">Preparer</button>`);
+  }
+  if (movement.type === "EXIT_REQUEST" && movement.status !== "SUBMITTED") {
+    actions.push(`<button class="block w-full px-4 py-2 text-left hover:bg-gray-50" data-action="downloadPreparedMaterialPdf('${movement.id}')">Telecharger fiche</button>`);
+    if (movement.status === "PREPARED") actions.push(`<button class="block w-full px-4 py-2 text-left hover:bg-gray-50" data-action="openExitRequestDetail('${movement.id}')">Uploader fiche signee</button>`);
+    if (movement.proofFileName) actions.push(`<button class="block w-full px-4 py-2 text-left hover:bg-gray-50" data-action="viewSignedMaterialProof('${movement.id}')">Voir preuve</button>`);
+  }
+  return `<div class="relative inline-block text-left group">
+    <button class="icon-btn" type="button" aria-label="Actions"><i data-lucide="more-vertical" class="h-4 w-4"></i></button>
+    <div class="absolute right-0 z-30 mt-2 hidden min-w-[190px] overflow-hidden rounded-xl border bg-white py-1 text-sm shadow-xl group-hover:block group-focus-within:block">${actions.join("")}</div>
+  </div>`;
+}
+
 function exitMovementRow(movement: StockMovement) {
   const first = movement.lines[0];
   const articleCount = movement.lines.length;
   const article = articleCount > 1 ? articleCount + " articles" : first?.article?.designation ?? "-";
   const requested = movement.lines.reduce((sum, line) => sum + Number(line.requestedQuantity ?? 0), 0);
   const completed = movement.lines.reduce((sum, line) => sum + Number(line.completedQuantity ?? 0), 0);
-  const quantity = requested || completed;
+  const quantity = movement.type === "EXIT_REQUEST" ? requested : completed || requested;
   const available = first?.articleId ? latestStockLevels
     .filter((level) => level.article.id === first.articleId && (!movement.fromLocationId || level.location.id === movement.fromLocationId))
     .reduce((sum, level) => sum + Number(level.quantity ?? 0), 0) : null;
-  const typeLabel = movement.type === "EXIT_REQUEST" ? "Demande" : "Sortie";
-  const statusTone: "success" | "warning" | "error" | "gray" = movement.type === "EXIT" ? "success" : movement.status === "REJECTED" ? "error" : "warning";
-  const statusLabel = movement.type === "EXIT" ? "Sortie" : movement.status === "SUBMITTED" ? "Demandee" : movement.status;
+  const linkedExit = linkedExitForRequest(movement);
+  const typeLabel = movement.type === "EXIT_REQUEST" ? (linkedExit ? "Demande preparee" : "Demande") : "Sortie";
   const project = movement.project?.name ?? movement.toLocation?.name ?? "-";
   const beneficiary = movement.requestedBy ?? movement.receivedBy ?? "-";
   const handledBy = movement.handledBy ?? movement.fromLocation?.name ?? "-";
   const transportedBy = movement.deliveredBy ?? "-";
   const deliveredTo = movement.receivedBy ?? movement.requestedBy ?? "-";
   const availableText = available === null ? "-" : formatNumber(available);
-  const availableClass = available !== null && quantity > available ? " text-error-700" : "";
+  const availableClass = available !== null && movement.status === "SUBMITTED" && quantity > available ? " text-error-700" : "";
+  const linkedInfo = linkedExit ? `<div class="text-xs text-success-700 font-normal">Sortie : ${escapeHtml(linkedExit.reference)}</div>` : "";
   return '<tr>'
-    + '<td class="px-5 py-4 font-bold">' + escapeHtml(movement.reference) + '<div class="text-xs text-gray-500 font-normal">' + typeLabel + '</div></td>'
+    + '<td class="px-5 py-4 font-bold">' + escapeHtml(movement.reference) + '<div class="text-xs text-gray-500 font-normal">' + typeLabel + '</div>' + linkedInfo + '</td>'
     + '<td class="px-5 py-4">' + formatDate(movement.date) + '</td>'
     + '<td class="px-5 py-4"><div class="font-bold">' + escapeHtml(article) + '</div><div class="text-xs text-gray-500">' + escapeHtml(first?.article?.code ?? '-') + '</div></td>'
     + '<td class="px-5 py-4 text-right font-bold">' + formatNumber(quantity) + '</td>'
@@ -894,8 +954,8 @@ function exitMovementRow(movement: StockMovement) {
     + '<td class="px-5 py-4">' + escapeHtml(handledBy) + '</td>'
     + '<td class="px-5 py-4">' + escapeHtml(transportedBy) + '</td>'
     + '<td class="px-5 py-4">' + escapeHtml(deliveredTo) + '</td>'
-    + '<td class="px-5 py-4">' + badge(statusLabel, statusTone) + '</td>'
-    + '<td class="px-5 py-4 text-right">' + actionEyeFor("openMaterialRequestPreparation('" + movement.id + "')") + '</td>'
+    + '<td class="px-5 py-4">' + badge(movementStatusLabel(movement), exitStatusTone(movement)) + '</td>'
+    + '<td class="px-5 py-4 text-right">' + exitActionsMenu(movement) + '</td>'
     + '</tr>';
 }
 
@@ -1408,15 +1468,80 @@ function syncMaterialPreparationState(root: HTMLElement) {
   }
 }
 
+function preparedMaterialPdfHtml(movement: StockMovement) {
+  const linkedExit = linkedExitForRequest(movement);
+  const rows = movement.lines.map((line, index) => `<tr>
+    <td>${index + 1}</td>
+    <td><strong>${escapeHtml(line.article?.designation ?? "-")}</strong><br><span>${escapeHtml(line.article?.code ?? "-")}</span></td>
+    <td>${escapeHtml(line.article?.unit ?? "U")}</td>
+    <td>${formatNumber(line.requestedQuantity ?? 0)}</td>
+    <td>${formatNumber(line.completedQuantity ?? 0)}</td>
+    <td>${escapeHtml(line.observation ?? "")}</td>
+  </tr>`).join("");
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(movement.reference)}</title><style>
+    body{font-family:Arial,sans-serif;margin:28px;color:#111827}.header{display:grid;grid-template-columns:120px 1fr 210px;border:1px solid #cbd5e1;border-radius:12px;overflow:hidden}.logo{font-size:42px;font-weight:900;color:#fff;background:#e11d48;padding:12px;text-align:center}.brand{padding:16px;border-left:1px solid #cbd5e1}.meta{border-left:1px solid #cbd5e1}.meta div{display:flex;justify-content:space-between;padding:9px 12px;border-bottom:1px solid #e5e7eb;font-size:12px}.title{text-align:center;margin:26px 0 18px;font-size:22px;font-weight:800;letter-spacing:.04em}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}.box{border:1px solid #dbe3ef;border-radius:10px;padding:12px}.label{font-size:11px;text-transform:uppercase;color:#64748b;font-weight:700}.value{margin-top:6px;font-weight:800}table{width:100%;border-collapse:collapse;margin-top:12px}th{background:#eef4ff;text-align:left;font-size:11px;text-transform:uppercase;color:#334155}td,th{border:1px solid #dbe3ef;padding:10px;font-size:13px}td span{color:#64748b;font-size:11px}.signatures{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:36px}.sig{border:1px solid #cbd5e1;border-radius:10px;min-height:92px;padding:10px}.small{color:#64748b;font-size:12px}</style></head><body>
+    <div class="header"><div class="logo">HUB</div><div class="brand"><div class="label">Document interne</div><div class="value">Demande de materiels</div><div class="small">Hub SA Cote d'Ivoire</div></div><div class="meta"><div><b>Doc N</b><span>${escapeHtml(movement.reference)}</span></div><div><b>Bon sortie</b><span>${escapeHtml(linkedExit?.reference ?? "-")}</span></div><div><b>Date</b><span>${formatDate(movement.date)}</span></div></div></div>
+    <div class="title">DEMANDE DE MATERIELS</div>
+    <div class="grid"><div class="box"><div class="label">Client</div><div class="value">${escapeHtml(movement.client?.name ?? "-")}</div></div><div class="box"><div class="label">Projet</div><div class="value">${escapeHtml(movement.project?.name ?? "-")}</div></div><div class="box"><div class="label">Site / zone</div><div class="value">${escapeHtml(movement.siteLocation?.name ?? movement.toLocation?.name ?? "-")}</div></div><div class="box"><div class="label">Equipe / service</div><div class="value">${escapeHtml(movement.teamService?.name ?? "-")}</div></div><div class="box"><div class="label">Demandeur</div><div class="value">${escapeHtml(movement.requestedBy ?? "-")}</div></div><div class="box"><div class="label">Responsable stock</div><div class="value">${escapeHtml(movement.handledBy ?? linkedExit?.handledBy ?? "-")}</div></div></div>
+    <table><thead><tr><th>N</th><th>Designation</th><th>Unite</th><th>Demandee</th><th>Remise</th><th>Observation</th></tr></thead><tbody>${rows}</tbody></table>
+    <div class="signatures"><div class="sig"><div class="label">Demandeur</div><br><br><div class="small">Date et signature</div></div><div class="sig"><div class="label">PM / Responsable</div><br><br><div class="small">Date et signature</div></div><div class="sig"><div class="label">Responsable logistique</div><br><br><div class="small">Date et signature</div></div></div>
+  </body></html>`;
+}
+
+function downloadPreparedMaterialPdf(root: HTMLElement, id: string) {
+  const movement = latestMovements.find((item) => item.id === id);
+  if (!movement || movement.type !== "EXIT_REQUEST" || movement.status === "SUBMITTED") {
+    showToast(root, "La fiche est disponible apres preparation.", "error");
+    return;
+  }
+  const popup = window.open("", "_blank");
+  if (!popup) {
+    showToast(root, "Autorise les popups pour telecharger la fiche.", "error");
+    return;
+  }
+  popup.document.write(preparedMaterialPdfHtml(movement));
+  popup.document.close();
+  popup.focus();
+  popup.print();
+}
+
+async function uploadSignedMaterialProof(root: HTMLElement, id: string) {
+  const input = root.querySelector<HTMLInputElement>(`#signedProof-${CSS.escape(id)}`);
+  const file = input?.files?.[0];
+  if (!file) {
+    showToast(root, "Ajoute la fiche signee avant de cloturer.", "error");
+    return;
+  }
+  try {
+    const updated = await uploadExitRequestProof(id, { fileName: file.name, uploadedBy: currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : undefined });
+    latestMovements = latestMovements.map((item) => item.id === updated.id ? updated : item);
+    renderExitRequestDetail(root, updated);
+    updateApiBackedViews(root);
+    showToast(root, "Fiche signee ajoutee. Demande terminee.");
+  } catch (error) {
+    showToast(root, error instanceof Error ? error.message : "Upload impossible.", "error");
+  }
+}
+
+function viewSignedMaterialProof(root: HTMLElement, id: string) {
+  const movement = latestMovements.find((item) => item.id === id);
+  if (!movement?.proofFileName) {
+    showToast(root, "Aucune preuve signee jointe.", "error");
+    return;
+  }
+  showToast(root, "Preuve signee : " + movement.proofFileName);
+}
+
 async function openMaterialRequestPreparation(root: HTMLElement, id: string) {
   const movement = latestMovements.find((item) => item.id === id);
   if (!movement) {
     showToast(root, "Demande introuvable dans le registre charge.", "error");
     return;
   }
-  if (movement.type === "EXIT_REQUEST" && movement.status === "SUBMITTED" && !canPrepareMaterialRequests()) {
+  if (movement.type !== "EXIT_REQUEST" || movement.status !== "SUBMITTED" || !canPrepareMaterialRequests()) {
     renderExitRequestDetail(root, movement);
     openModal(root, "exitRequestDetailModal");
+    if (movement.status !== "SUBMITTED") showToast(root, "Cette demande est deja preparee ou terminee.");
     return;
   }
   openModal(root, "exitModal");
@@ -1467,21 +1592,27 @@ async function submitMaterialRequestPreparation(root: HTMLElement) {
   const receivedBy = root.querySelector<HTMLSelectElement>("#materialReceivedBy");
   const file = root.querySelector<HTMLInputElement>("#materialSignedPdf")?.files?.[0];
   try {
-    await createStockExit({
+    let prepared = await prepareExitRequest(movement.id, {
       reference: "BS-" + Date.now(),
-      date: new Date().toISOString(),
-      projectId: movement.projectId ?? undefined,
       fromLocationId: movement.fromLocationId ?? modal.dataset.defaultLocationId ?? "",
-      requestedBy: movement.requestedBy ?? undefined,
       handledBy: selectedText(stockManager ?? undefined),
       deliveredBy: selectedText(deliveredBy ?? undefined),
-      notes: [movement.notes, selectedText(receivedBy ?? undefined) ? "Recu par : " + selectedText(receivedBy ?? undefined) : "", file ? "PDF joint : " + file.name : ""].filter(Boolean).join(" | "),
-      lines
+      receivedBy: selectedText(receivedBy ?? undefined),
+      lines: lines.map((line, index) => ({
+        ...line,
+        lineId: movement.lines[index]?.id
+      }))
     });
+    if (file) {
+      prepared = await uploadExitRequestProof(movement.id, { fileName: file.name, uploadedBy: selectedText(stockManager ?? undefined) });
+    }
     closeModal(root, "exitModal");
     selectedExitRequestId = null;
+    latestMovements = latestMovements.map((item) => item.id === prepared.id ? prepared : item);
     updateApiBackedViews(root);
-    showToast(root, "Preparation validee. La sortie reelle est enregistree.");
+    renderExitRequestDetail(root, prepared);
+    openModal(root, "exitRequestDetailModal");
+    showToast(root, file ? "Preparation validee et fiche signee ajoutee." : "Preparation validee. La fiche est prete a telecharger.");
   } catch (error) {
     showToast(root, error instanceof Error ? error.message : "Preparation impossible.", "error");
   }
@@ -2014,7 +2145,7 @@ function updateApiBackedViews(root: HTMLElement) {
       setText(root, "#entriesPartialCount", entries.filter((movement) => movement.status === "PREPARED").length);
       setText(root, "#entriesIssueCount", entries.filter((movement) => movement.status === "REJECTED").length);
       const exitsBody = root.querySelector<HTMLElement>('#sortie tbody');
-      const exits = movements.filter((movement) => movement.type === "EXIT_REQUEST" || movement.type === "EXIT");
+      const exits = visibleExitMovements(movements);
       const pendingExits = exits.filter((movement) => movement.type === "EXIT_REQUEST" && movement.status === "SUBMITTED");
       const pendingAlert = root.querySelector<HTMLElement>("#exitPendingAlert");
       const pendingCount = root.querySelector<HTMLElement>("#exitPendingCount");
@@ -2046,7 +2177,7 @@ function updateApiBackedViews(root: HTMLElement) {
       latestStockLevels = levels;
       renderInventory(root);
       const exitsBody = root.querySelector<HTMLElement>('#sortie tbody');
-      const exits = latestMovements.filter((movement) => movement.type === "EXIT_REQUEST" || movement.type === "EXIT");
+      const exits = visibleExitMovements(latestMovements);
       if (exitsBody && exits.length) exitsBody.innerHTML = exits.map(exitMovementRow).join("");
       renderReappro(root);
       window.lucide?.createIcons();
@@ -2933,6 +3064,12 @@ function parseAction(action: string) {
   if (materialPrepMatch) return { type: "material-request-prep", id: materialPrepMatch[1] } as const;
   const prepareExitMatch = action.match(/^prepareExitFromRequest\('([^']+)'\)/);
   if (prepareExitMatch) return { type: "prepare-exit-from-request", id: prepareExitMatch[1] } as const;
+  const downloadPreparedPdfMatch = action.match(/^downloadPreparedMaterialPdf\('([^']+)'\)/);
+  if (downloadPreparedPdfMatch) return { type: "download-prepared-material-pdf", id: downloadPreparedPdfMatch[1] } as const;
+  const uploadProofMatch = action.match(/^uploadSignedMaterialProof\('([^']+)'\)/);
+  if (uploadProofMatch) return { type: "upload-signed-material-proof", id: uploadProofMatch[1] } as const;
+  const viewProofMatch = action.match(/^viewSignedMaterialProof\('([^']+)'\)/);
+  if (viewProofMatch) return { type: "view-signed-material-proof", id: viewProofMatch[1] } as const;
   const vehicleDetailMatch = action.match(/^openVehicleDetail\('([^']+)'\)/);
   if (vehicleDetailMatch) return { type: "vehicle-detail", id: vehicleDetailMatch[1] } as const;
   const refMatch = action.match(/^showRef\('([^']+)'/);
@@ -3002,6 +3139,9 @@ function StockHubTemplate() {
       if (parsed.type === "exit-detail") openExitRequestDetail(root, parsed.id);
       if (parsed.type === "material-request-prep") openMaterialRequestPreparation(root, parsed.id);
       if (parsed.type === "prepare-exit-from-request") void prepareExitFromRequest(root, parsed.id);
+      if (parsed.type === "download-prepared-material-pdf") downloadPreparedMaterialPdf(root, parsed.id);
+      if (parsed.type === "upload-signed-material-proof") void uploadSignedMaterialProof(root, parsed.id);
+      if (parsed.type === "view-signed-material-proof") viewSignedMaterialProof(root, parsed.id);
       if (parsed.type === "vehicle-detail") openVehicleDetail(root, parsed.id);
       if (parsed.type === "toggle-vehicle-history") toggleVehicleHistory(root);
       if (parsed.type === "refresh-history") renderHistory(root);

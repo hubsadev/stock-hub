@@ -756,6 +756,201 @@ export function buildApp() {
     return reply.code(201).send(movement);
   });
 
+
+  app.post("/stock-movements/exit-requests/:id/prepare", async (request, reply) => {
+    const params = request.params as { id: string };
+    const body = asBody(request.body);
+    const inputLines = Array.isArray(body.lines) ? body.lines as Array<Record<string, unknown>> : [];
+    if (!inputLines.length) {
+      return reply.code(400).send({ message: "Au moins une ligne de preparation est requise." });
+    }
+
+    const movement = await prisma.$transaction(async (tx) => {
+      const requestMovement = await tx.stockMovement.findUnique({
+        where: { id: params.id },
+        include: {
+          lines: { include: { article: true } },
+          generatedExits: true
+        }
+      });
+      if (!requestMovement || requestMovement.type !== "EXIT_REQUEST") {
+        throw new Error("EXIT_REQUEST_NOT_FOUND");
+      }
+      if (requestMovement.status !== "SUBMITTED" || requestMovement.generatedExits.length > 0) {
+        throw new Error("EXIT_REQUEST_ALREADY_PREPARED");
+      }
+
+      const fromLocationId = asString(body.fromLocationId) ?? requestMovement.fromLocationId;
+      if (!fromLocationId) {
+        throw new Error("EXIT_SOURCE_REQUIRED");
+      }
+
+      const preparedLines = requestMovement.lines.map((line) => {
+        const input = inputLines.find((candidate) => asString(candidate.lineId) === line.id || asString(candidate.articleId) === line.articleId);
+        const quantity = toNumber(input?.completedQuantity) ?? 0;
+        const requestedQuantity = Number(line.requestedQuantity ?? 0);
+        const observation = asString(input?.observation);
+        if (quantity <= 0) {
+          throw new Error("INVALID_EXIT_QUANTITY|" + line.article.designation);
+        }
+        if (requestedQuantity > 0 && quantity > requestedQuantity) {
+          throw new Error("EXIT_EXCEEDS_REQUEST|" + line.article.designation + "|" + requestedQuantity + "|" + quantity);
+        }
+        if (requestedQuantity > 0 && quantity < requestedQuantity && !observation) {
+          throw new Error("PARTIAL_EXIT_NEEDS_OBSERVATION|" + line.article.designation + "|" + requestedQuantity + "|" + quantity);
+        }
+        return { line, quantity, requestedQuantity, observation };
+      });
+
+      for (const item of preparedLines) {
+        const level = await tx.stockLevel.findUnique({
+          where: { articleId_locationId: { articleId: item.line.articleId, locationId: fromLocationId } },
+          include: { article: true }
+        });
+        if (!level || level.quantity < item.quantity) {
+          const available = level?.quantity ?? 0;
+          throw new Error("STOCK_INSUFFICIENT|" + item.line.article.designation + "|" + available + "|" + item.quantity);
+        }
+      }
+
+      const exit = await tx.stockMovement.create({
+        data: {
+          reference: String(body.reference ?? "BS-" + Date.now()),
+          type: "EXIT",
+          status: "COMPLETED",
+          date: new Date(),
+          clientId: requestMovement.clientId,
+          projectId: requestMovement.projectId,
+          teamServiceId: requestMovement.teamServiceId,
+          siteLocationId: requestMovement.siteLocationId,
+          fromLocationId,
+          requestedBy: requestMovement.requestedBy,
+          handledBy: asString(body.handledBy),
+          deliveredBy: asString(body.deliveredBy),
+          receivedBy: asString(body.receivedBy),
+          sourceRequestId: requestMovement.id,
+          notes: requestMovement.notes,
+          lines: {
+            create: preparedLines.map((item) => ({
+              articleId: item.line.articleId,
+              requestedQuantity: item.line.requestedQuantity,
+              completedQuantity: item.quantity,
+              observation: item.observation
+            }))
+          }
+        }
+      });
+
+      for (const item of preparedLines) {
+        await tx.stockLevel.update({
+          where: { articleId_locationId: { articleId: item.line.articleId, locationId: fromLocationId } },
+          data: { quantity: { decrement: item.quantity } }
+        });
+        await tx.stockMovementLine.update({
+          where: { id: item.line.id },
+          data: { completedQuantity: item.quantity, observation: item.observation }
+        });
+      }
+
+      const updated = await tx.stockMovement.update({
+        where: { id: requestMovement.id },
+        data: {
+          status: "PREPARED",
+          fromLocationId,
+          handledBy: asString(body.handledBy),
+          deliveredBy: asString(body.deliveredBy),
+          receivedBy: asString(body.receivedBy)
+        },
+        include: {
+          lines: { include: { article: true } },
+          generatedExits: { include: { lines: { include: { article: true } } } }
+        }
+      });
+
+      await tx.auditLog.create({
+        data: {
+          action: "PREPARE_EXIT_REQUEST",
+          entity: "StockMovement",
+          entityId: requestMovement.id,
+          after: { request: updated, exit } as any
+        }
+      });
+
+      return updated;
+    }).catch((error) => {
+      if (error instanceof Error && error.message === "EXIT_REQUEST_NOT_FOUND") {
+        return reply.code(404).send({ message: "Demande materiel introuvable." });
+      }
+      if (error instanceof Error && error.message === "EXIT_REQUEST_ALREADY_PREPARED") {
+        return reply.code(409).send({ message: "Cette demande est deja preparee ou terminee. Le stock ne peut pas etre deduit une deuxieme fois." });
+      }
+      if (error instanceof Error && error.message === "EXIT_SOURCE_REQUIRED") {
+        return reply.code(400).send({ message: "Un magasin source est requis pour preparer la demande." });
+      }
+      if (error instanceof Error && error.message.startsWith("STOCK_INSUFFICIENT|")) {
+        const [, label, available, quantity] = error.message.split("|");
+        return reply.code(409).send({ message: "Stock insuffisant pour " + label + ". Disponible " + available + ", demande " + quantity + "." });
+      }
+      if (error instanceof Error && error.message.startsWith("EXIT_EXCEEDS_REQUEST|")) {
+        const [, label, requested, quantity] = error.message.split("|");
+        return reply.code(400).send({ message: "Quantite remise superieure a la demande pour " + label + ". Demandee " + requested + ", remise " + quantity + "." });
+      }
+      if (error instanceof Error && error.message.startsWith("PARTIAL_EXIT_NEEDS_OBSERVATION|")) {
+        const [, label] = error.message.split("|");
+        return reply.code(400).send({ message: "Remise partielle pour " + label + " : ajoute une observation avant validation." });
+      }
+      if (error instanceof Error && error.message.startsWith("INVALID_EXIT_QUANTITY|")) {
+        return reply.code(400).send({ message: "La quantite remise doit etre superieure a 0." });
+      }
+      throw error;
+    });
+
+    if (reply.sent) return;
+    return reply.send(movement);
+  });
+
+  app.post("/stock-movements/exit-requests/:id/proof", async (request, reply) => {
+    const params = request.params as { id: string };
+    const body = asBody(request.body);
+    const fileName = asString(body.fileName);
+    if (!fileName) {
+      return reply.code(400).send({ message: "Ajoute le nom de la fiche signee." });
+    }
+
+    const existing = await prisma.stockMovement.findUnique({ where: { id: params.id } });
+    if (!existing || existing.type !== "EXIT_REQUEST") {
+      return reply.code(404).send({ message: "Demande materiel introuvable." });
+    }
+    if (existing.status === "SUBMITTED") {
+      return reply.code(400).send({ message: "La demande doit etre preparee avant de joindre la fiche signee." });
+    }
+
+    const updated = await prisma.stockMovement.update({
+      where: { id: params.id },
+      data: {
+        status: "COMPLETED",
+        proofFileName: fileName,
+        proofUploadedAt: new Date(),
+        proofUploadedBy: asString(body.uploadedBy)
+      },
+      include: {
+        lines: { include: { article: true } },
+        generatedExits: { include: { lines: { include: { article: true } } } }
+      }
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        action: "UPLOAD_EXIT_REQUEST_PROOF",
+        entity: "StockMovement",
+        entityId: updated.id,
+        after: updated as any
+      }
+    });
+
+    return reply.send(updated);
+  });
+
   app.post("/stock-movements/exits", async (request, reply) => {
     const body = asBody(request.body);
     const lines = Array.isArray(body.lines) ? body.lines as Array<Record<string, unknown>> : [];
@@ -1096,7 +1291,11 @@ export function buildApp() {
 
   app.get("/stock-movements", async () => {
     const movements = await prisma.stockMovement.findMany({
-      include: { lines: { include: { article: true } } },
+      include: {
+        lines: { include: { article: true } },
+        generatedExits: { include: { lines: { include: { article: true } } } },
+        sourceRequest: { include: { lines: { include: { article: true } } } }
+      },
       orderBy: { date: "desc" }
     });
     const supplierIds = movements.map((movement) => movement.supplierId).filter(Boolean) as string[];

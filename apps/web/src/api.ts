@@ -177,6 +177,10 @@ export type StockMovement = {
   requestedBy: string | null;
   receivedBy: string | null;
   deliveredBy: string | null;
+  sourceRequestId: string | null;
+  proofFileName: string | null;
+  proofUploadedAt: string | null;
+  proofUploadedBy: string | null;
   notes: string | null;
   supplier?: Supplier | null;
   client?: Client | null;
@@ -185,6 +189,8 @@ export type StockMovement = {
   siteLocation?: StockLocation | null;
   fromLocation?: StockLocation | null;
   toLocation?: StockLocation | null;
+  sourceRequest?: StockMovement | null;
+  generatedExits?: StockMovement[];
   lines: StockMovementLine[];
 };
 
@@ -569,6 +575,28 @@ export function createStockExit(body: {
 }) {
   return post<StockMovement>("/stock-movements/exits", body);
 }
+
+export function prepareExitRequest(id: string, body: {
+  reference?: string;
+  fromLocationId: string;
+  handledBy?: string;
+  deliveredBy?: string;
+  receivedBy?: string;
+  lines: Array<{
+    lineId?: string;
+    articleId: string;
+    requestedQuantity?: number;
+    completedQuantity: number;
+    observation?: string;
+  }>;
+}) {
+  return post<StockMovement>("/stock-movements/exit-requests/" + encodeURIComponent(id) + "/prepare", body);
+}
+
+export function uploadExitRequestProof(id: string, body: { fileName: string; uploadedBy?: string }) {
+  return post<StockMovement>("/stock-movements/exit-requests/" + encodeURIComponent(id) + "/proof", body);
+}
+
 
 export function createStockReturn(body: {
   reference: string;

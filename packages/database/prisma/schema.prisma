@@ -204,11 +204,19 @@ model StockMovement {
   handledBy   String?
   receivedBy  String?
   deliveredBy String?
+  sourceRequestId String?
+  proofFileName   String?
+  proofUploadedAt DateTime?
+  proofUploadedBy String?
   notes       String?
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
 
   lines StockMovementLine[]
+  sourceRequest  StockMovement?  @relation("RequestGeneratedExits", fields: [sourceRequestId], references: [id], onDelete: SetNull)
+  generatedExits StockMovement[] @relation("RequestGeneratedExits")
+
+  @@index([sourceRequestId])
 }
 
 model StockMovementLine {
