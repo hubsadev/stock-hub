@@ -11,7 +11,8 @@
     "db:migrate:dev": "prisma migrate dev",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
-    "db:clear-test-data": "tsx prisma/clear-test-data.ts"
+    "db:clear-test-data": "tsx prisma/clear-test-data.ts",
+    "admin:seed": "tsx prisma/seed-admin.ts"
   },
   "dependencies": {
     "@prisma/client": "^7.0.0",
