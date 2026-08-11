@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+﻿import React, { useEffect, useRef } from "react";
 import ReactDOM from "react-dom/client";
 import { StockHubShell } from "./components/StockHubShell";
 import { createArticle, createClient, createEmployee, createExitRequest, createInventoryAdjustment, createLocation, createProject, createStockEntry, createStockExit, createStockReturn, createStockTransfer, createSupplier, createTeamService, createUser, getArticles, getAuditAlerts, getAuditLogs, getClients, getDashboardSummary, getEmployees, getEquipments, getLocations, getProjects, getStockLevels, getStockMovements, getSuppliers, getTeamServices, getUsers, getVehicles, loginUser, prepareExitRequest, uploadExitRequestProof, createVehicle, updateArticle, updateClient, updateEmployee, updateEquipment, updateLocation, updateProject, updateSupplier, updateTeamService, updateUser, type Article, type AuditAlert, type AuditLog, type Client, type Employee, type Equipment, type StockLevel, type StockLocation, type StockMovement, type StockProject, type StockUser, type Supplier, type TeamService, type Vehicle } from "./api";
@@ -796,6 +796,21 @@ function linkedExitForRequest(movement: StockMovement) {
     ?? null;
 }
 
+function requestForExit(movement: StockMovement) {
+  if (movement.type !== "EXIT") return null;
+  return movement.sourceRequest
+    ?? latestMovements.find((item) => item.type === "EXIT_REQUEST" && (item.id === movement.sourceRequestId || item.generatedExits?.some((exit) => exit.id === movement.id)))
+    ?? null;
+}
+
+function materialPdfMovement(movement: StockMovement) {
+  return movement.type === "EXIT" ? requestForExit(movement) ?? movement : movement;
+}
+
+function materialPdfLinkedExit(movement: StockMovement) {
+  return movement.type === "EXIT" ? movement : linkedExitForRequest(movement);
+}
+
 function visibleExitMovements(movements: StockMovement[]) {
   return movements.filter((movement) => movement.type === "EXIT_REQUEST" || (movement.type === "EXIT" && !movement.sourceRequestId));
 }
@@ -805,6 +820,7 @@ function renderExitRequestDetail(root: HTMLElement, movement: StockMovement) {
   const title = root.querySelector<HTMLElement>("#exitRequestDetailTitle");
   const subtitle = root.querySelector<HTMLElement>("#exitRequestDetailSubtitle");
   const prepareButton = root.querySelector<HTMLElement>("#exitRequestPrepareButton");
+  const downloadButton = root.querySelector<HTMLElement>("#exitRequestDownloadButton");
   if (!body) return;
   const linkedExit = linkedExitForRequest(movement);
   const totalRequested = movement.lines.reduce((sum, line) => sum + Number(line.requestedQuantity ?? 0), 0);
@@ -831,23 +847,31 @@ function renderExitRequestDetail(root: HTMLElement, movement: StockMovement) {
     prepareButton.classList.toggle("hidden", !canPrepareNow);
     prepareButton.dataset.action = `prepareExitFromRequest('${movement.id}')`;
   }
-  const preparedPanel = movement.type === "EXIT_REQUEST" && movement.status !== "SUBMITTED" ? `
+  const proofSource = movement.type === "EXIT" ? requestForExit(movement) : movement;
+  const canDownloadPdf = movement.type === "EXIT" || (movement.type === "EXIT_REQUEST" && movement.status !== "SUBMITTED");
+  const canUploadProof = proofSource?.type === "EXIT_REQUEST" && proofSource.status === "PREPARED";
+  const hasProof = Boolean(proofSource?.proofFileName);
+  if (downloadButton) {
+    downloadButton.classList.toggle("hidden", !canDownloadPdf);
+    downloadButton.dataset.action = `downloadPreparedMaterialPdf('${movement.id}')`;
+  }
+  const preparedPanel = canDownloadPdf ? `
     <div class="rounded-2xl border border-success-100 bg-success-50 p-5">
       <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <div class="text-xs font-bold uppercase text-success-700">Fiche de sortie</div>
-          <div class="mt-1 text-lg font-bold text-gray-900">${linkedExit ? escapeHtml(linkedExit.reference) : "Sortie liee en cours de chargement"}</div>
-          <p class="mt-1 text-sm text-gray-600">La demande est preparee. Telecharge la fiche, fais signer, puis ajoute la preuve signee.</p>
+          <div class="mt-1 text-lg font-bold text-gray-900">${linkedExit ? escapeHtml(linkedExit.reference) : escapeHtml(movement.reference)}</div>
+          <p class="mt-1 text-sm text-gray-600">Telecharge la fiche de sortie, fais signer, puis ajoute la preuve signee quand elle revient.</p>
         </div>
         <div class="flex flex-wrap gap-2">
           <button class="btn-secondary" data-action="downloadPreparedMaterialPdf('${movement.id}')"><i data-lucide="download" class="h-4 w-4"></i> Telecharger fiche</button>
-          ${movement.proofFileName ? `<button class="btn-secondary" data-action="viewSignedMaterialProof('${movement.id}')"><i data-lucide="file-check" class="h-4 w-4"></i> Voir preuve</button>` : ""}
+          ${hasProof && proofSource ? `<button class="btn-secondary" data-action="viewSignedMaterialProof('${proofSource.id}')"><i data-lucide="file-check" class="h-4 w-4"></i> Voir preuve</button>` : ""}
         </div>
       </div>
-      ${movement.status === "PREPARED" ? `<div class="mt-4 grid gap-3 md:grid-cols-[1fr_auto]">
-        <input id="signedProof-${escapeHtml(movement.id)}" type="file" accept=".pdf,image/*" class="form-input" />
-        <button class="btn-primary" data-action="uploadSignedMaterialProof('${movement.id}')"><i data-lucide="upload" class="h-4 w-4"></i> Uploader fiche signee</button>
-      </div>` : `<div class="mt-4 rounded-xl border border-success-200 bg-white p-3 text-sm text-success-800">Preuve signee ajoutee${movement.proofFileName ? ` : ${escapeHtml(movement.proofFileName)}` : ""}.</div>`}
+      ${canUploadProof && proofSource ? `<div class="mt-4 grid gap-3 md:grid-cols-[1fr_auto]">
+        <input id="signedProof-${escapeHtml(proofSource.id)}" type="file" accept=".pdf,image/*" class="form-input" />
+        <button class="btn-primary" data-action="uploadSignedMaterialProof('${proofSource.id}')"><i data-lucide="upload" class="h-4 w-4"></i> Uploader fiche signee</button>
+      </div>` : hasProof && proofSource ? `<div class="mt-4 rounded-xl border border-success-200 bg-white p-3 text-sm text-success-800">Preuve signee ajoutee : ${escapeHtml(proofSource.proofFileName ?? "")}</div>` : ""}
     </div>` : "";
 
   body.innerHTML = `
@@ -906,20 +930,29 @@ function exitStatusTone(movement: StockMovement): "success" | "warning" | "error
   return "warning";
 }
 
+function exitMenuItem(icon: string, label: string, action: string) {
+  return `<button class="flex w-full items-center gap-3 px-4 py-2 text-left hover:bg-gray-50" data-action="${action}"><i data-lucide="${icon}" class="h-4 w-4 text-gray-500"></i><span>${label}</span></button>`;
+}
+
 function exitActionsMenu(movement: StockMovement) {
   const actions: string[] = [];
-  actions.push(`<button class="block w-full px-4 py-2 text-left hover:bg-gray-50" data-action="openExitRequestDetail('${movement.id}')">Voir</button>`);
+  const proofSource = movement.type === "EXIT" ? requestForExit(movement) : movement;
+  actions.push(exitMenuItem("eye", "Voir", `openExitRequestDetail('${movement.id}')`));
   if (movement.type === "EXIT_REQUEST" && movement.status === "SUBMITTED" && canPrepareMaterialRequests()) {
-    actions.push(`<button class="block w-full px-4 py-2 text-left hover:bg-gray-50" data-action="prepareExitFromRequest('${movement.id}')">Preparer</button>`);
+    actions.push(exitMenuItem("package-check", "Preparer", `prepareExitFromRequest('${movement.id}')`));
   }
-  if (movement.type === "EXIT_REQUEST" && movement.status !== "SUBMITTED") {
-    actions.push(`<button class="block w-full px-4 py-2 text-left hover:bg-gray-50" data-action="downloadPreparedMaterialPdf('${movement.id}')">Telecharger fiche</button>`);
-    if (movement.status === "PREPARED") actions.push(`<button class="block w-full px-4 py-2 text-left hover:bg-gray-50" data-action="openExitRequestDetail('${movement.id}')">Uploader fiche signee</button>`);
-    if (movement.proofFileName) actions.push(`<button class="block w-full px-4 py-2 text-left hover:bg-gray-50" data-action="viewSignedMaterialProof('${movement.id}')">Voir preuve</button>`);
+  if (movement.type === "EXIT" || (movement.type === "EXIT_REQUEST" && movement.status !== "SUBMITTED")) {
+    actions.push(exitMenuItem("download", "Telecharger fiche", `downloadPreparedMaterialPdf('${movement.id}')`));
+  }
+  if (proofSource?.type === "EXIT_REQUEST" && proofSource.status === "PREPARED") {
+    actions.push(exitMenuItem("upload", "Uploader fiche signee", `openExitRequestDetail('${movement.id}')`));
+  }
+  if (proofSource?.proofFileName) {
+    actions.push(exitMenuItem("file-check", "Voir preuve", `viewSignedMaterialProof('${proofSource.id}')`));
   }
   return `<div class="relative inline-block text-left group">
     <button class="icon-btn" type="button" aria-label="Actions"><i data-lucide="more-vertical" class="h-4 w-4"></i></button>
-    <div class="absolute right-0 z-30 mt-2 hidden min-w-[190px] overflow-hidden rounded-xl border bg-white py-1 text-sm shadow-xl group-hover:block group-focus-within:block">${actions.join("")}</div>
+    <div class="absolute right-0 z-30 mt-2 hidden min-w-[220px] overflow-hidden rounded-xl border bg-white py-1 text-sm shadow-xl group-hover:block group-focus-within:block">${actions.join("")}</div>
   </div>`;
 }
 
@@ -1469,8 +1502,9 @@ function syncMaterialPreparationState(root: HTMLElement) {
 }
 
 function preparedMaterialPdfHtml(movement: StockMovement) {
-  const linkedExit = linkedExitForRequest(movement);
-  const rows = movement.lines.map((line, index) => `<tr>
+  const source = materialPdfMovement(movement);
+  const linkedExit = materialPdfLinkedExit(movement);
+  const rows = source.lines.map((line, index) => `<tr>
     <td>${index + 1}</td>
     <td><strong>${escapeHtml(line.article?.designation ?? "-")}</strong><br><span>${escapeHtml(line.article?.code ?? "-")}</span></td>
     <td>${escapeHtml(line.article?.unit ?? "U")}</td>
@@ -1478,11 +1512,11 @@ function preparedMaterialPdfHtml(movement: StockMovement) {
     <td>${formatNumber(line.completedQuantity ?? 0)}</td>
     <td>${escapeHtml(line.observation ?? "")}</td>
   </tr>`).join("");
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(movement.reference)}</title><style>
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(source.reference)}</title><style>
     body{font-family:Arial,sans-serif;margin:28px;color:#111827}.header{display:grid;grid-template-columns:120px 1fr 210px;border:1px solid #cbd5e1;border-radius:12px;overflow:hidden}.logo{font-size:42px;font-weight:900;color:#fff;background:#e11d48;padding:12px;text-align:center}.brand{padding:16px;border-left:1px solid #cbd5e1}.meta{border-left:1px solid #cbd5e1}.meta div{display:flex;justify-content:space-between;padding:9px 12px;border-bottom:1px solid #e5e7eb;font-size:12px}.title{text-align:center;margin:26px 0 18px;font-size:22px;font-weight:800;letter-spacing:.04em}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}.box{border:1px solid #dbe3ef;border-radius:10px;padding:12px}.label{font-size:11px;text-transform:uppercase;color:#64748b;font-weight:700}.value{margin-top:6px;font-weight:800}table{width:100%;border-collapse:collapse;margin-top:12px}th{background:#eef4ff;text-align:left;font-size:11px;text-transform:uppercase;color:#334155}td,th{border:1px solid #dbe3ef;padding:10px;font-size:13px}td span{color:#64748b;font-size:11px}.signatures{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:36px}.sig{border:1px solid #cbd5e1;border-radius:10px;min-height:92px;padding:10px}.small{color:#64748b;font-size:12px}</style></head><body>
-    <div class="header"><div class="logo">HUB</div><div class="brand"><div class="label">Document interne</div><div class="value">Demande de materiels</div><div class="small">Hub SA Cote d'Ivoire</div></div><div class="meta"><div><b>Doc N</b><span>${escapeHtml(movement.reference)}</span></div><div><b>Bon sortie</b><span>${escapeHtml(linkedExit?.reference ?? "-")}</span></div><div><b>Date</b><span>${formatDate(movement.date)}</span></div></div></div>
+    <div class="header"><div class="logo">HUB</div><div class="brand"><div class="label">Document interne</div><div class="value">Demande de materiels</div><div class="small">Hub SA Cote d'Ivoire</div></div><div class="meta"><div><b>Doc N</b><span>${escapeHtml(source.reference)}</span></div><div><b>Bon sortie</b><span>${escapeHtml(linkedExit?.reference ?? "-")}</span></div><div><b>Date</b><span>${formatDate(movement.date)}</span></div></div></div>
     <div class="title">DEMANDE DE MATERIELS</div>
-    <div class="grid"><div class="box"><div class="label">Client</div><div class="value">${escapeHtml(movement.client?.name ?? "-")}</div></div><div class="box"><div class="label">Projet</div><div class="value">${escapeHtml(movement.project?.name ?? "-")}</div></div><div class="box"><div class="label">Site / zone</div><div class="value">${escapeHtml(movement.siteLocation?.name ?? movement.toLocation?.name ?? "-")}</div></div><div class="box"><div class="label">Equipe / service</div><div class="value">${escapeHtml(movement.teamService?.name ?? "-")}</div></div><div class="box"><div class="label">Demandeur</div><div class="value">${escapeHtml(movement.requestedBy ?? "-")}</div></div><div class="box"><div class="label">Responsable stock</div><div class="value">${escapeHtml(movement.handledBy ?? linkedExit?.handledBy ?? "-")}</div></div></div>
+    <div class="grid"><div class="box"><div class="label">Client</div><div class="value">${escapeHtml(source.client?.name ?? "-")}</div></div><div class="box"><div class="label">Projet</div><div class="value">${escapeHtml(source.project?.name ?? "-")}</div></div><div class="box"><div class="label">Site / zone</div><div class="value">${escapeHtml(source.siteLocation?.name ?? source.toLocation?.name ?? "-")}</div></div><div class="box"><div class="label">Equipe / service</div><div class="value">${escapeHtml(source.teamService?.name ?? "-")}</div></div><div class="box"><div class="label">Demandeur</div><div class="value">${escapeHtml(source.requestedBy ?? source.receivedBy ?? "-")}</div></div><div class="box"><div class="label">Responsable stock</div><div class="value">${escapeHtml(source.handledBy ?? linkedExit?.handledBy ?? "-")}</div></div></div>
     <table><thead><tr><th>N</th><th>Designation</th><th>Unite</th><th>Demandee</th><th>Remise</th><th>Observation</th></tr></thead><tbody>${rows}</tbody></table>
     <div class="signatures"><div class="sig"><div class="label">Demandeur</div><br><br><div class="small">Date et signature</div></div><div class="sig"><div class="label">PM / Responsable</div><br><br><div class="small">Date et signature</div></div><div class="sig"><div class="label">Responsable logistique</div><br><br><div class="small">Date et signature</div></div></div>
   </body></html>`;
@@ -1490,7 +1524,7 @@ function preparedMaterialPdfHtml(movement: StockMovement) {
 
 function downloadPreparedMaterialPdf(root: HTMLElement, id: string) {
   const movement = latestMovements.find((item) => item.id === id);
-  if (!movement || movement.type !== "EXIT_REQUEST" || movement.status === "SUBMITTED") {
+  if (!movement || (movement.type === "EXIT_REQUEST" && movement.status === "SUBMITTED")) {
     showToast(root, "La fiche est disponible apres preparation.", "error");
     return;
   }
@@ -3184,6 +3218,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <StockHubTemplate />
   </React.StrictMode>
 );
+
+
+
 
 
 
