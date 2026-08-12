@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+﻿import React, { useEffect, useRef } from "react";
 import ReactDOM from "react-dom/client";
 import { StockHubShell } from "./components/StockHubShell";
 import { createArticle, createClient, createEmployee, createExitRequest, createInventoryAdjustment, createLocation, createProject, createStockEntry, createStockExit, createStockReturn, createStockTransfer, createSupplier, createTeamService, createUser, getArticles, getAuditAlerts, getAuditLogs, getClients, getDashboardSummary, getEmployees, getEquipments, getLocations, getProjects, getStockLevels, getStockMovements, getSuppliers, getTeamServices, getUsers, getVehicles, loginUser, prepareExitRequest, uploadExitRequestProof, createVehicle, updateArticle, updateClient, updateEmployee, updateEquipment, updateLocation, updateProject, updateSupplier, updateTeamService, updateUser, type Article, type AuditAlert, type AuditLog, type Client, type Employee, type Equipment, type StockLevel, type StockLocation, type StockMovement, type StockProject, type StockUser, type Supplier, type TeamService, type Vehicle } from "./api";
@@ -594,132 +594,31 @@ function downloadMaterialRequestPdf(root: HTMLElement) {
     const requested = toNumber(inputs[1]?.value ?? "0");
     const delivered = toNumber(inputs[2]?.value ?? "0");
     const observation = inputs[3]?.value || (delivered < requested ? "Remise partielle" : "RAS");
-    const deliveredHtml = delivered < requested
-      ? '<span class="warn">' + escapeHtml(formatNumber(delivered)) + '</span>'
-      : '<span class="qty">' + escapeHtml(formatNumber(delivered)) + '</span>';
     return '<tr>'
       + '<td class="num">' + (index + 1) + '</td>'
-      + '<td><div class="item-name">' + escapeHtml(articleName) + '</div><div class="item-sub">' + escapeHtml(articleCode) + '</div></td>'
+      + '<td><strong>' + escapeHtml(articleName) + '</strong><br><span>' + escapeHtml(articleCode) + '</span></td>'
       + '<td>' + escapeHtml(unit) + '</td>'
-      + '<td class="right qty">' + escapeHtml(formatNumber(requested)) + '</td>'
-      + '<td class="right">' + deliveredHtml + '</td>'
+      + '<td class="right strong">' + escapeHtml(formatNumber(requested)) + '</td>'
+      + '<td class="right strong">' + escapeHtml(formatNumber(delivered)) + '</td>'
       + '<td>' + escapeHtml(observation) + '</td>'
       + '</tr>';
   }).join("");
 
-  const html = `<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Demande materiel ${escapeHtml(reference)}</title>
-  <style>
-    * { box-sizing: border-box; }
-    body { margin: 0; background: #eef2f7; color: #0f172a; font-family: Arial, Helvetica, sans-serif; font-size: 13px; }
-    .toolbar { max-width: 980px; margin: 18px auto 0; display: flex; justify-content: flex-end; }
-    .toolbar button { border: 1px solid #cbd5e1; background: #fff; border-radius: 10px; padding: 10px 14px; font-weight: 800; cursor: pointer; }
-    .page { max-width: 980px; margin: 18px auto 26px; background: #fff; border: 1px solid #d8e1ec; border-radius: 18px; overflow: hidden; box-shadow: 0 18px 55px rgba(15, 23, 42, .10); }
-    .doc-head { padding: 24px 28px 18px; border-bottom: 1px solid #dce4ef; }
-    .company-row { display: grid; grid-template-columns: 220px 1fr 230px; border: 1px solid #cfd8e6; border-radius: 14px; overflow: hidden; }
-    .logo-box { padding: 16px 18px; display: flex; align-items: center; gap: 14px; border-right: 1px solid #cfd8e6; background: #f8fafc; }
-    .logo-mark { width: 92px; height: 54px; border-radius: 0; background: #ed1010; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 950; letter-spacing: -.08em; line-height: .82; box-shadow: inset 0 0 0 1px rgba(255,255,255,.35); }
-    .logo-mark .hub-main { font-size: 38px; }
-    .logo-mark .hub-tag { margin-top: 5px; font-size: 5px; letter-spacing: .08em; color: #fff3f3; font-weight: 900; }
-    .logo-text { line-height: 1.05; }
-    .logo-text strong { display: block; font-size: 16px; letter-spacing: .01em; }
-    .logo-text span { color: #64748b; font-size: 9px; text-transform: uppercase; font-weight: 900; line-height: 1.2; }
-    .company-title { padding: 14px 18px; display: flex; flex-direction: column; justify-content: center; }
-    .company-title .small { color: #64748b; font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: .08em; }
-    .company-title .name { margin-top: 7px; font-size: 18px; font-weight: 950; }
-    .doc-ref { border-left: 1px solid #cfd8e6; display: grid; grid-template-rows: repeat(3, 1fr); }
-    .doc-ref div { padding: 10px 13px; border-bottom: 1px solid #cfd8e6; font-size: 12px; display: flex; justify-content: space-between; gap: 8px; align-items: center; }
-    .doc-ref div:last-child { border-bottom: 0; }
-    .doc-ref span { color: #64748b; font-weight: 800; }
-    .doc-ref strong { color: #0f172a; font-weight: 950; text-align: right; }
-    .doc-title { margin-top: 20px; border: 1px solid #cfd8e6; border-radius: 12px; padding: 14px; text-align: center; text-transform: uppercase; letter-spacing: .08em; font-weight: 950; font-size: 20px; }
-    .doc-sub { margin-top: 10px; display: flex; justify-content: center; gap: 28px; color: #475569; font-size: 12px; }
-    .section { padding: 20px 28px 0; }
-    .section-title { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; }
-    .section-title h2 { margin: 0; font-size: 16px; font-weight: 950; }
-    .pill { display: inline-flex; align-items: center; border-radius: 999px; padding: 5px 11px; background: #eef2ff; color: #1d4ed8; font-size: 11px; font-weight: 950; }
-    .info-grid { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid #d8e1ec; border-radius: 14px; overflow: hidden; }
-    .field { min-height: 76px; padding: 14px 16px; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; }
-    .field:nth-child(3n) { border-right: 0; }
-    .field:nth-last-child(-n+3) { border-bottom: 0; }
-    .field-label { color: #64748b; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: .04em; }
-    .field-value { margin-top: 7px; font-size: 17px; font-weight: 950; }
-    table { width: 100%; border-collapse: separate; border-spacing: 0; border: 1px solid #d8e1ec; border-radius: 14px; overflow: hidden; }
-    th { padding: 12px 14px; background: #eef2ff; color: #334155; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; text-align: left; border-bottom: 1px solid #cfd8e6; }
-    td { padding: 16px 14px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
-    tr:last-child td { border-bottom: 0; }
-    .right { text-align: right; }
-    .num { color: #1d4ed8; font-weight: 950; }
-    .item-name { font-size: 15px; font-weight: 950; }
-    .item-sub { margin-top: 4px; color: #64748b; font-size: 11px; }
-    .qty { font-weight: 950; font-size: 17px; color: #0f172a; }
-    .warn { color: #b45309; font-weight: 950; background: #fff7ed; border-radius: 999px; padding: 4px 10px; display: inline-flex; align-items: center; justify-content: center; min-width: 42px; }
-    .sign-section { padding: 26px 28px 34px; }
-    .signatures { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-    .signature { min-height: 178px; border: 1px solid #d8e1ec; background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; }
-    .signature-name { margin-top: 8px; font-weight: 900; font-size: 15px; }
-    .signature-date { color: #64748b; font-size: 12px; margin-top: 4px; }
-    .signature-line { height: 70px; border-bottom: 1px dashed #94a3b8; }
-    .signature-caption { color: #64748b; font-size: 11px; margin-top: 10px; }
-    .footer-note { padding: 15px 28px; color: #64748b; font-size: 11px; display: flex; justify-content: space-between; gap: 20px; background: #f8fafc; border-top: 1px solid #e5e7eb; }
-    @media print { body { background: white; } .toolbar { display: none; } .page { margin: 0; max-width: none; border: 0; border-radius: 0; box-shadow: none; } }
-  </style>
-</head>
-<body>
-  <div class="toolbar"><button onclick="window.print()">Imprimer / Enregistrer PDF</button></div>
-  <main class="page">
-    <header class="doc-head">
-      <div class="company-row">
-        <div class="logo-box">
-          <div class="logo-mark"><div class="hub-main">HUB</div><div class="hub-tag">QUALITE PRECISION FIABILITE</div></div>
-          <div class="logo-text"><strong>HUB</strong><span>Sa Cote<br>d'Ivoire</span></div>
-        </div>
-        <div class="company-title">
-          <div class="small">Document interne</div>
-          <div class="name">Demande de materiel</div>
-        </div>
-        <div class="doc-ref">
-          <div><span>Code doc</span><strong>${escapeHtml(docCode)}</strong></div>
-          <div><span>Reference</span><strong>${escapeHtml(reference)}</strong></div>
-          <div><span>Date</span><strong>${escapeHtml(formatDate(date))}</strong></div>
-        </div>
-      </div>
-      <div class="doc-title">Demande de materiels</div>
-      <div class="doc-sub"><span>N demande : <strong>${escapeHtml(reference)}</strong></span><span>Code document : <strong>${escapeHtml(docCode)}</strong></span></div>
-    </header>
-    <section class="section">
-      <div class="section-title"><h2>Informations demande</h2><span class="pill">A valider</span></div>
-      <div class="info-grid">
-        <div class="field"><div class="field-label">Client</div><div class="field-value">${escapeHtml(client)}</div></div>
-        <div class="field"><div class="field-label">Projet</div><div class="field-value">${escapeHtml(project)}</div></div>
-        <div class="field"><div class="field-label">Equipe</div><div class="field-value">${escapeHtml(team)}</div></div>
-        <div class="field"><div class="field-label">Site / zone</div><div class="field-value">${escapeHtml(site)}</div></div>
-        <div class="field"><div class="field-label">Date demande</div><div class="field-value">${escapeHtml(formatDate(date))}</div></div>
-        <div class="field"><div class="field-label">Demandeur</div><div class="field-value">${escapeHtml(requester)}</div></div>
-      </div>
-    </section>
-    <section class="section">
-      <div class="section-title"><h2>Articles demandes</h2><span class="pill">Quantites remises</span></div>
-      <table>
-        <thead><tr><th>N</th><th>Designation</th><th>Unite</th><th class="right">Demandee</th><th class="right">Remise</th><th>Observation</th></tr></thead>
-        <tbody>${lineHtml}</tbody>
-      </table>
-    </section>
-    <section class="sign-section">
-      <div class="section-title"><h2>Validation et signatures</h2><span class="pill">Document tracable</span></div>
-      <div class="signatures">
-        <div class="signature"><div><div class="field-label">Demandeur</div><div class="signature-name">${escapeHtml(requester)}</div><div class="signature-date">Date : ${escapeHtml(formatDate(date))}</div></div><div><div class="signature-line"></div><div class="signature-caption">Signature demandeur</div></div></div>
-        <div class="signature"><div><div class="field-label">PM / PMO / DO</div><div class="signature-name">En attente</div><div class="signature-date">Validation operationnelle</div></div><div><div class="signature-line"></div><div class="signature-caption">Signature validation</div></div></div>
-        <div class="signature"><div><div class="field-label">Responsable logistique</div><div class="signature-name">${escapeHtml(stockManager)}</div><div class="signature-date">Remise a ${escapeHtml(receivedBy)}</div></div><div><div class="signature-line"></div><div class="signature-caption">Signature logistique</div></div></div>
-      </div>
-    </section>
-    <div class="footer-note"><span>Document genere depuis Stock Hub.</span><span>Les quantites remises alimentent le registre des sorties.</span></div>
-  </main>
-</body>
-</html>`;
+  const html = materialRequestDocumentHtml({
+    reference,
+    docCode,
+    exitReference: "-",
+    date,
+    client,
+    project,
+    site,
+    team,
+    requester,
+    stockManager,
+    receivedBy,
+    rows: lineHtml,
+  });
+
   const popup = window.open("", "_blank");
   if (!popup) {
     showToast(root, "Impossible d'ouvrir le PDF. Autorise les popups pour Stock Hub.", "error");
@@ -727,6 +626,98 @@ function downloadMaterialRequestPdf(root: HTMLElement) {
   }
   popup.document.write(html);
   popup.document.close();
+}
+
+function hubLogoMarkup() {
+  return `<div class="hub-logo" aria-label="HUB"><div class="hub-logo-main">HUB</div><div class="hub-logo-tag">QUALITE PRECISION FIABILITE</div></div>`;
+}
+
+function materialRequestDocumentHtml(input: {
+  reference: string;
+  docCode: string;
+  exitReference: string;
+  date: string;
+  client: string;
+  project: string;
+  site: string;
+  team: string;
+  requester: string;
+  stockManager: string;
+  receivedBy: string;
+  rows: string;
+}) {
+  return `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Demande materiel ${escapeHtml(input.reference)}</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f3f6fb; color: #0f172a; font-family: Arial, Helvetica, sans-serif; font-size: 13px; }
+    .toolbar { max-width: 1080px; margin: 16px auto 0; display: flex; justify-content: flex-end; }
+    .toolbar button { border: 1px solid #cbd5e1; background: #fff; border-radius: 8px; padding: 9px 13px; font-weight: 800; cursor: pointer; }
+    .page { max-width: 1080px; margin: 16px auto 24px; background: #fff; border: 1px solid #cfd8e6; border-radius: 8px; overflow: hidden; }
+    .doc-head { display: grid; grid-template-columns: 132px 1fr 250px; border-bottom: 1px solid #cfd8e6; min-height: 98px; }
+    .logo-cell { display: flex; align-items: center; justify-content: center; border-right: 1px solid #cfd8e6; padding: 12px; }
+    .hub-logo { width: 104px; height: 70px; background: #e71845; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: .86; }
+    .hub-logo-main { font-size: 40px; font-weight: 950; letter-spacing: -.06em; }
+    .hub-logo-tag { margin-top: 6px; font-size: 5.5px; font-weight: 900; letter-spacing: .06em; }
+    .doc-name { padding: 20px 18px; display: flex; flex-direction: column; justify-content: center; }
+    .doc-name .small { color: #475569; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: .08em; }
+    .doc-name .value { margin-top: 8px; font-size: 21px; font-weight: 950; }
+    .doc-name .hint { margin-top: 4px; color: #64748b; font-size: 12px; }
+    .meta { border-left: 1px solid #cfd8e6; display: grid; grid-template-rows: repeat(4, 1fr); }
+    .meta div { display: grid; grid-template-columns: 84px 1fr; align-items: center; border-bottom: 1px solid #d8e1ec; }
+    .meta div:last-child { border-bottom: 0; }
+    .meta b { padding: 8px 10px; font-size: 11px; text-transform: uppercase; color: #334155; }
+    .meta span { padding: 8px 10px; text-align: right; font-weight: 800; }
+    .title { padding: 24px 24px 14px; text-align: center; font-size: 23px; font-weight: 950; letter-spacing: .08em; text-transform: uppercase; }
+    .info-table, .items, .signature-table { width: calc(100% - 48px); margin: 0 24px 18px; border-collapse: collapse; }
+    .info-table th, .info-table td { border: 1px solid #d8e1ec; padding: 9px 11px; text-align: left; }
+    .info-table th { width: 16%; color: #475569; font-size: 10px; text-transform: uppercase; letter-spacing: .06em; background: #f8fafc; }
+    .info-table td { width: 17%; font-size: 14px; font-weight: 800; }
+    .items th { background: #eaf1fb; color: #1e293b; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; text-align: left; }
+    .items td, .items th { border: 1px solid #d8e1ec; padding: 10px 11px; vertical-align: middle; }
+    .items td { min-height: 42px; font-size: 13px; }
+    .items span { color: #64748b; font-size: 11px; }
+    .right { text-align: right; }
+    .strong { font-weight: 900; }
+    .num { width: 42px; text-align: center; font-weight: 900; color: #1d4ed8; }
+    .sign-title { margin: 28px 24px 10px; font-size: 14px; font-weight: 950; }
+    .signature-table td { border: 1px solid #cfd8e6; width: 33.33%; height: 118px; vertical-align: top; padding: 11px; }
+    .signature-table .role { color: #334155; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: .05em; }
+    .signature-table .name { margin-top: 8px; font-size: 14px; font-weight: 900; }
+    .signature-table .line { margin-top: 54px; color: #64748b; font-size: 11px; }
+    .footer { margin: 4px 24px 18px; color: #64748b; font-size: 10px; display: flex; justify-content: space-between; gap: 18px; }
+    @media print { body { background: white; } .toolbar { display: none; } .page { max-width: none; margin: 0; border: 0; border-radius: 0; } }
+  </style>
+</head>
+<body>
+  <div class="toolbar"><button onclick="window.print()">Imprimer / Enregistrer PDF</button></div>
+  <main class="page">
+    <header class="doc-head">
+      <div class="logo-cell">${hubLogoMarkup()}</div>
+      <div class="doc-name"><div class="small">Document interne</div><div class="value">Demande de matériels</div><div class="hint">Document de sortie stock et remise matériel</div></div>
+      <div class="meta"><div><b>Doc N</b><span>${escapeHtml(input.docCode)}</span></div><div><b>Demande</b><span>${escapeHtml(input.reference)}</span></div><div><b>Bon sortie</b><span>${escapeHtml(input.exitReference)}</span></div><div><b>Date</b><span>${escapeHtml(formatDate(input.date))}</span></div></div>
+    </header>
+    <div class="title">Demande de matériels</div>
+    <table class="info-table">
+      <tbody>
+        <tr><th>Client</th><td>${escapeHtml(input.client)}</td><th>Projet</th><td>${escapeHtml(input.project)}</td><th>Site / zone</th><td>${escapeHtml(input.site)}</td></tr>
+        <tr><th>Equipe / service</th><td>${escapeHtml(input.team)}</td><th>Demandeur</th><td>${escapeHtml(input.requester)}</td><th>Resp. stock</th><td>${escapeHtml(input.stockManager)}</td></tr>
+      </tbody>
+    </table>
+    <table class="items"><thead><tr><th>N</th><th>Designation</th><th>Unite</th><th class="right">Demandee</th><th class="right">Remise</th><th>Observation</th></tr></thead><tbody>${input.rows}</tbody></table>
+    <div class="sign-title">Signatures</div>
+    <table class="signature-table"><tbody><tr>
+      <td><div class="role">Demandeur</div><div class="name">${escapeHtml(input.requester)}</div><div class="line">Date et signature</div></td>
+      <td><div class="role">PM / Responsable</div><div class="name">${escapeHtml(input.receivedBy)}</div><div class="line">Date et signature</div></td>
+      <td><div class="role">Responsable logistique</div><div class="name">${escapeHtml(input.stockManager)}</div><div class="line">Date et signature</div></td>
+    </tr></tbody></table>
+    <div class="footer"><span>Fiche générée depuis Stock Hub.</span><span>La fiche signée doit être uploadée comme preuve après remise.</span></div>
+  </main>
+</body>
+</html>`;
 }
 function exportRows(kind: string, root: HTMLElement) {
   if (kind === "stock" || kind === "inventory") {
@@ -976,7 +967,7 @@ function renderExitRequestDetail(root: HTMLElement, movement: StockMovement) {
     downloadButton.dataset.action = `downloadPreparedMaterialPdf('${movement.id}')`;
   }
   const sourceReference = sourceRequest?.reference ?? (movement.type === "EXIT_REQUEST" ? movement.reference : "-");
-  const ficheStatus = hasProof ? "Signée uploadée" : canDownloadPdf ? "À signer" : "En attente";
+  const ficheStatus = hasProof ? "SignÃ©e uploadÃ©e" : canDownloadPdf ? "Ã€ signer" : "En attente";
   const ficheStatusClass = hasProof ? "text-success-700" : canDownloadPdf ? "text-warning-700" : "text-gray-500";
   const preparedPanel = canDownloadPdf ? `
     <div class="rounded-xl border border-gray-200 bg-white overflow-hidden">
@@ -986,16 +977,16 @@ function renderExitRequestDetail(root: HTMLElement, movement: StockMovement) {
           <div class="mt-1 font-bold text-gray-900">${linkedExit ? escapeHtml(linkedExit.reference) : escapeHtml(movement.reference)}</div>
         </div>
         <div class="flex flex-wrap gap-2">
-          <button class="icon-button" title="Télécharger fiche" data-action="downloadPreparedMaterialPdf('${movement.id}')"><i data-lucide="download" class="h-4 w-4"></i></button>
+          <button class="icon-button" title="TÃ©lÃ©charger fiche" data-action="downloadPreparedMaterialPdf('${movement.id}')"><i data-lucide="download" class="h-4 w-4"></i></button>
           ${hasProof && proofSource ? `<button class="icon-button" title="Voir preuve" data-action="viewSignedMaterialProof('${proofSource.id}')"><i data-lucide="file-check" class="h-4 w-4"></i></button>` : ""}
         </div>
       </div>
       <div class="grid gap-4 px-5 py-4 md:grid-cols-[1fr_auto] md:items-center">
-        <p class="text-sm text-gray-600">Télécharger la fiche, la faire signer, puis ajouter la preuve signée au retour du document.</p>
+        <p class="text-sm text-gray-600">TÃ©lÃ©charger la fiche, la faire signer, puis ajouter la preuve signÃ©e au retour du document.</p>
         ${canUploadProof && proofSource ? `<div class="flex flex-col gap-2 sm:flex-row sm:items-center">
           <input id="signedProof-${escapeHtml(proofSource.id)}" type="file" accept=".pdf,image/*" class="form-input max-w-xs" />
-          <button class="icon-button" title="Uploader fiche signée" data-action="uploadSignedMaterialProof('${proofSource.id}')"><i data-lucide="upload" class="h-4 w-4"></i></button>
-        </div>` : hasProof && proofSource ? `<div class="rounded-lg border border-gray-200 bg-success-50 px-3 py-2 text-sm text-success-700">${escapeHtml(proofSource.proofFileName ?? "Preuve ajoutée")}</div>` : ""}
+          <button class="icon-button" title="Uploader fiche signÃ©e" data-action="uploadSignedMaterialProof('${proofSource.id}')"><i data-lucide="upload" class="h-4 w-4"></i></button>
+        </div>` : hasProof && proofSource ? `<div class="rounded-lg border border-gray-200 bg-success-50 px-3 py-2 text-sm text-success-700">${escapeHtml(proofSource.proofFileName ?? "Preuve ajoutÃ©e")}</div>` : ""}
       </div>
     </div>` : "";
 
@@ -1009,22 +1000,22 @@ function renderExitRequestDetail(root: HTMLElement, movement: StockMovement) {
           </div>
           <div class="mt-4 grid gap-3 text-sm md:grid-cols-2">
             <div><span class="detail-label">Demande source</span><strong>${escapeHtml(sourceReference)}</strong></div>
-            <div><span class="detail-label">Fiche signée</span><strong class="${ficheStatusClass}">${ficheStatus}</strong></div>
+            <div><span class="detail-label">Fiche signÃ©e</span><strong class="${ficheStatusClass}">${ficheStatus}</strong></div>
             <div><span class="detail-label">Projet / chantier</span><strong>${escapeHtml(displayedRequest.project?.name ?? movement.project?.name ?? movement.toLocation?.name ?? "-")}</strong></div>
             <div><span class="detail-label">Magasin source</span><strong>${escapeHtml(movement.fromLocation?.name ?? displayedRequest.fromLocation?.name ?? "-")}</strong></div>
           </div>
         </div>
         <div class="border-t bg-gray-50 p-5 md:border-l md:border-t-0">
           <div class="grid gap-3 text-sm">
-            <div><span class="detail-label">Demandeur / bénéficiaire</span><strong>${escapeHtml(displayedRequest.requestedBy ?? movement.receivedBy ?? "-")}</strong></div>
+            <div><span class="detail-label">Demandeur / bÃ©nÃ©ficiaire</span><strong>${escapeHtml(displayedRequest.requestedBy ?? movement.receivedBy ?? "-")}</strong></div>
             <div><span class="detail-label">Sorti par</span><strong>${escapeHtml(movement.handledBy ?? "-")}</strong></div>
-            <div><span class="detail-label">Transporté par</span><strong>${escapeHtml(movement.deliveredBy ?? "-")}</strong></div>
-            <div><span class="detail-label">Remis à</span><strong>${escapeHtml(movement.receivedBy ?? displayedRequest.receivedBy ?? displayedRequest.requestedBy ?? "-")}</strong></div>
+            <div><span class="detail-label">TransportÃ© par</span><strong>${escapeHtml(movement.deliveredBy ?? "-")}</strong></div>
+            <div><span class="detail-label">Remis Ã </span><strong>${escapeHtml(movement.receivedBy ?? displayedRequest.receivedBy ?? displayedRequest.requestedBy ?? "-")}</strong></div>
           </div>
         </div>
       </div>
     </div>
-    ${movement.type === "EXIT_REQUEST" && movement.status === "SUBMITTED" ? `<div class="rounded-xl border border-accent-100 bg-accent-50 p-4 text-sm text-gray-700"><div class="font-bold text-accent-700 mb-1">Demande transmise au stock</div>En attente de préparation par le gestionnaire stock.</div>` : ""}
+    ${movement.type === "EXIT_REQUEST" && movement.status === "SUBMITTED" ? `<div class="rounded-xl border border-accent-100 bg-accent-50 p-4 text-sm text-gray-700"><div class="font-bold text-accent-700 mb-1">Demande transmise au stock</div>En attente de prÃ©paration par le gestionnaire stock.</div>` : ""}
     ${preparedPanel}
     <div class="border border-gray-200 rounded-xl overflow-hidden">
       <div class="px-5 py-4 bg-gray-50 border-b"><h3 class="font-bold">Articles demandes</h3><p class="text-sm text-gray-500 mt-1">Le stock disponible est calcule sur le magasin source de la demande.</p></div>
@@ -1646,23 +1637,28 @@ function preparedMaterialPdfHtml(movement: StockMovement) {
   const source = materialPdfMovement(movement);
   const linkedExit = materialPdfLinkedExit(movement);
   const rows = source.lines.map((line, index) => `<tr>
-    <td>${index + 1}</td>
+    <td class="num">${index + 1}</td>
     <td><strong>${escapeHtml(line.article?.designation ?? "-")}</strong><br><span>${escapeHtml(line.article?.code ?? "-")}</span></td>
     <td>${escapeHtml(line.article?.unit ?? "U")}</td>
-    <td>${formatNumber(line.requestedQuantity ?? 0)}</td>
-    <td>${formatNumber(line.completedQuantity ?? 0)}</td>
+    <td class="right strong">${formatNumber(line.requestedQuantity ?? 0)}</td>
+    <td class="right strong">${formatNumber(line.completedQuantity ?? 0)}</td>
     <td>${escapeHtml(line.observation ?? "")}</td>
   </tr>`).join("");
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(source.reference)}</title><style>
-    body{font-family:Arial,sans-serif;margin:28px;color:#111827}.header{display:grid;grid-template-columns:120px 1fr 210px;border:1px solid #cbd5e1;border-radius:12px;overflow:hidden}.logo{font-size:42px;font-weight:900;color:#fff;background:#e11d48;padding:12px;text-align:center}.brand{padding:16px;border-left:1px solid #cbd5e1}.meta{border-left:1px solid #cbd5e1}.meta div{display:flex;justify-content:space-between;padding:9px 12px;border-bottom:1px solid #e5e7eb;font-size:12px}.title{text-align:center;margin:26px 0 18px;font-size:22px;font-weight:800;letter-spacing:.04em}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}.box{border:1px solid #dbe3ef;border-radius:10px;padding:12px}.label{font-size:11px;text-transform:uppercase;color:#64748b;font-weight:700}.value{margin-top:6px;font-weight:800}table{width:100%;border-collapse:collapse;margin-top:12px}th{background:#eef4ff;text-align:left;font-size:11px;text-transform:uppercase;color:#334155}td,th{border:1px solid #dbe3ef;padding:10px;font-size:13px}td span{color:#64748b;font-size:11px}.signatures{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:36px}.sig{border:1px solid #cbd5e1;border-radius:10px;min-height:92px;padding:10px}.small{color:#64748b;font-size:12px}</style></head><body>
-    <div class="header"><div class="logo">HUB</div><div class="brand"><div class="label">Document interne</div><div class="value">Demande de materiels</div><div class="small">Hub SA Cote d'Ivoire</div></div><div class="meta"><div><b>Doc N</b><span>${escapeHtml(source.reference)}</span></div><div><b>Bon sortie</b><span>${escapeHtml(linkedExit?.reference ?? "-")}</span></div><div><b>Date</b><span>${formatDate(movement.date)}</span></div></div></div>
-    <div class="title">DEMANDE DE MATERIELS</div>
-    <div class="grid"><div class="box"><div class="label">Client</div><div class="value">${escapeHtml(source.client?.name ?? "-")}</div></div><div class="box"><div class="label">Projet</div><div class="value">${escapeHtml(source.project?.name ?? "-")}</div></div><div class="box"><div class="label">Site / zone</div><div class="value">${escapeHtml(source.siteLocation?.name ?? source.toLocation?.name ?? "-")}</div></div><div class="box"><div class="label">Equipe / service</div><div class="value">${escapeHtml(source.teamService?.name ?? "-")}</div></div><div class="box"><div class="label">Demandeur</div><div class="value">${escapeHtml(source.requestedBy ?? source.receivedBy ?? "-")}</div></div><div class="box"><div class="label">Responsable stock</div><div class="value">${escapeHtml(source.handledBy ?? linkedExit?.handledBy ?? "-")}</div></div></div>
-    <table><thead><tr><th>N</th><th>Designation</th><th>Unite</th><th>Demandee</th><th>Remise</th><th>Observation</th></tr></thead><tbody>${rows}</tbody></table>
-    <div class="signatures"><div class="sig"><div class="label">Demandeur</div><br><br><div class="small">Date et signature</div></div><div class="sig"><div class="label">PM / Responsable</div><br><br><div class="small">Date et signature</div></div><div class="sig"><div class="label">Responsable logistique</div><br><br><div class="small">Date et signature</div></div></div>
-  </body></html>`;
+  return materialRequestDocumentHtml({
+    reference: source.reference,
+    docCode: source.reference.replace(/^DS-/, "DM-"),
+    exitReference: linkedExit?.reference ?? "-",
+    date: linkedExit?.date ?? movement.date,
+    client: source.client?.name ?? "-",
+    project: source.project?.name ?? "-",
+    site: source.siteLocation?.name ?? source.toLocation?.name ?? "-",
+    team: source.teamService?.name ?? "-",
+    requester: source.requestedBy ?? source.receivedBy ?? "-",
+    stockManager: source.handledBy ?? linkedExit?.handledBy ?? "-",
+    receivedBy: source.receivedBy ?? linkedExit?.receivedBy ?? "-",
+    rows,
+  });
 }
-
 function downloadPreparedMaterialPdf(root: HTMLElement, id: string) {
   const movement = latestMovements.find((item) => item.id === id);
   if (!movement || (movement.type === "EXIT_REQUEST" && movement.status === "SUBMITTED")) {
@@ -3365,6 +3361,8 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <StockHubTemplate />
   </React.StrictMode>
 );
+
+
 
 
 
