@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import ReactDOM from "react-dom/client";
 import { StockHubShell } from "./components/StockHubShell";
 import { createArticle, createClient, createEmployee, createExitRequest, createInventoryAdjustment, createLocation, createProject, createStockEntry, createStockExit, createStockReturn, createStockTransfer, createSupplier, createTeamService, createUser, getArticles, getAuditAlerts, getAuditLogs, getClients, getDashboardSummary, getEmployees, getEquipments, getLocations, getProjects, getStockLevels, getStockMovements, getSuppliers, getTeamServices, getUsers, getVehicles, loginUser, prepareExitRequest, uploadExitRequestProof, createVehicle, updateArticle, updateClient, updateEmployee, updateEquipment, updateLocation, updateProject, updateSupplier, updateTeamService, updateUser, type Article, type AuditAlert, type AuditLog, type Client, type Employee, type Equipment, type StockLevel, type StockLocation, type StockMovement, type StockProject, type StockUser, type Supplier, type TeamService, type Vehicle } from "./api";
@@ -79,7 +79,7 @@ function canAccessView(view: string) {
   if (view === "home") return true;
   const roles = currentUser.roles;
   const allowedByRole: Record<string, string[]> = {
-    GESTIONNAIRE_STOCK: ["entrees", "sortie", "retours", "inventaire", "stock"],
+    GESTIONNAIRE_STOCK: ["referentiels", "entrees", "sortie", "retours", "inventaire", "stock"],
     AUDIT: ["inventaire", "audit", "historique", "stock"],
     RH: ["stock", "equipements", "parcAuto"],
     DIRECTION: ["home", "stock", "audit", "historique"],
@@ -2220,7 +2220,7 @@ function roleLabel(role: string) {
 
 function accessLabel(roles: string[]) {
   if (roles.includes("ADMIN_STOCK")) return "Tous modules";
-  if (roles.includes("GESTIONNAIRE_STOCK")) return "Entrees, sorties, retours";
+  if (roles.includes("GESTIONNAIRE_STOCK")) return "Referentiels, entrees, sorties, retours";
   if (roles.includes("AUDIT")) return "Inventaire, alertes, exports";
   if (roles.includes("DIRECTION")) return "KPI et controles";
   if (roles.includes("CHEF_PROJET")) return "Demandes, stock consulte";
@@ -2450,6 +2450,7 @@ function canUseHeaderAction(view: string, action: HeaderAction) {
   if (hasRole("ADMIN_STOCK")) return true;
   if (action.action?.startsWith("exportData")) return hasRole("DIRECTION") || hasRole("AUDIT") || hasRole("GESTIONNAIRE_STOCK");
   if (action.modal === "importModal") return hasRole("GESTIONNAIRE_STOCK");
+  if (view === "referentiels") return hasRole("GESTIONNAIRE_STOCK");
   if (view === "entrees") return hasRole("GESTIONNAIRE_STOCK");
   if (view === "sortie" && action.modal === "directExitModal") return hasRole("GESTIONNAIRE_STOCK");
   if (view === "sortie" && action.modal === "exitModal") return hasRole("GESTIONNAIRE_STOCK") || hasRole("CHEF_PROJET");
