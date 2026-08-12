@@ -790,17 +790,78 @@ function movementStatusLabel(movement: StockMovement) {
   return movement.status;
 }
 
+function movementTextKey(value: string | null | undefined) {
+  return (value ?? "").trim().toLowerCase();
+}
+
+function movementDateKey(value: string | null | undefined) {
+  return (value ?? "").slice(0, 10);
+}
+
+function movementProjectKey(movement: StockMovement) {
+  return movement.projectId ?? movementTextKey(movement.project?.code ?? movement.project?.name);
+}
+
+function movementPersonKey(movement: StockMovement) {
+  return movementTextKey(movement.receivedBy ?? movement.requestedBy ?? movement.handledBy);
+}
+
+function movementArticleKeys(movement: StockMovement) {
+  return new Set(
+    movement.lines
+      .map((line) => line.articleId || line.article?.id || line.article?.code || line.article?.designation || "")
+      .filter(Boolean)
+  );
+}
+
+function movementRequestedTotal(movement: StockMovement) {
+  return movement.lines.reduce((sum, line) => sum + Number(line.requestedQuantity ?? 0), 0);
+}
+
+function movementCompletedTotal(movement: StockMovement) {
+  return movement.lines.reduce((sum, line) => sum + Number(line.completedQuantity ?? 0), 0);
+}
+
+function hasCommonArticle(left: StockMovement, right: StockMovement) {
+  const leftKeys = movementArticleKeys(left);
+  const rightKeys = movementArticleKeys(right);
+  return [...leftKeys].some((key) => rightKeys.has(key));
+}
+
+function looksLikeGeneratedExit(request: StockMovement, exit: StockMovement) {
+  if (request.type !== "EXIT_REQUEST" || exit.type !== "EXIT") return false;
+  if (exit.sourceRequestId === request.id || request.generatedExits?.some((item) => item.id === exit.id)) return true;
+
+  const requestProject = movementProjectKey(request);
+  const exitProject = movementProjectKey(exit);
+  const requestPerson = movementPersonKey(request);
+  const exitPerson = movementPersonKey(exit);
+  const requestedTotal = movementRequestedTotal(request);
+  const completedTotal = movementCompletedTotal(exit);
+
+  return Boolean(
+    requestProject
+    && exitProject
+    && requestProject === exitProject
+    && (!requestPerson || !exitPerson || requestPerson === exitPerson)
+    && movementDateKey(request.date) === movementDateKey(exit.date)
+    && hasCommonArticle(request, exit)
+    && completedTotal > 0
+    && (!requestedTotal || requestedTotal >= completedTotal)
+  );
+}
+
 function linkedExitForRequest(movement: StockMovement) {
   if (movement.type !== "EXIT_REQUEST") return null;
   return movement.generatedExits?.[0]
-    ?? latestMovements.find((item) => item.type === "EXIT" && item.sourceRequestId === movement.id)
+    ?? latestMovements.find((item) => item.type === "EXIT" && looksLikeGeneratedExit(movement, item))
     ?? null;
 }
 
 function requestForExit(movement: StockMovement) {
   if (movement.type !== "EXIT") return null;
   return movement.sourceRequest
-    ?? latestMovements.find((item) => item.type === "EXIT_REQUEST" && (item.id === movement.sourceRequestId || item.generatedExits?.some((exit) => exit.id === movement.id)))
+    ?? latestMovements.find((item) => item.type === "EXIT_REQUEST" && looksLikeGeneratedExit(item, movement))
     ?? null;
 }
 
@@ -818,9 +879,11 @@ function proofRequestForMovement(movement: StockMovement) {
 
 function canUploadSignedProofFor(movement: StockMovement) {
   const proofSource = proofRequestForMovement(movement);
+  const linkedExit = proofSource ? linkedExitForRequest(proofSource) : null;
+  const preparedEnough = proofSource?.status !== "SUBMITTED" || Boolean(linkedExit);
   return Boolean(
     proofSource?.type === "EXIT_REQUEST"
-    && proofSource.status !== "SUBMITTED"
+    && preparedEnough
     && proofSource.status !== "REJECTED"
     && proofSource.status !== "CANCELLED"
     && !proofSource.proofFileName
