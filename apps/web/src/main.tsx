@@ -975,41 +975,56 @@ function renderExitRequestDetail(root: HTMLElement, movement: StockMovement) {
     downloadButton.classList.toggle("hidden", !canDownloadPdf);
     downloadButton.dataset.action = `downloadPreparedMaterialPdf('${movement.id}')`;
   }
+  const sourceReference = sourceRequest?.reference ?? (movement.type === "EXIT_REQUEST" ? movement.reference : "-");
+  const ficheStatus = hasProof ? "Signée uploadée" : canDownloadPdf ? "À signer" : "En attente";
+  const ficheStatusClass = hasProof ? "text-success-700" : canDownloadPdf ? "text-warning-700" : "text-gray-500";
   const preparedPanel = canDownloadPdf ? `
-    <div class="rounded-2xl border border-success-100 bg-success-50 p-5">
-      <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div class="rounded-xl border border-gray-200 bg-white overflow-hidden">
+      <div class="flex flex-col gap-3 border-b bg-gray-50 px-5 py-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <div class="text-xs font-bold uppercase text-success-700">Fiche de sortie</div>
-          <div class="mt-1 text-lg font-bold text-gray-900">${linkedExit ? escapeHtml(linkedExit.reference) : escapeHtml(movement.reference)}</div>
-          <p class="mt-1 text-sm text-gray-600">Telecharge la fiche de sortie, fais signer, puis ajoute la preuve signee quand elle revient.</p>
+          <div class="text-xs font-bold uppercase text-gray-500">Fiche de sortie</div>
+          <div class="mt-1 font-bold text-gray-900">${linkedExit ? escapeHtml(linkedExit.reference) : escapeHtml(movement.reference)}</div>
         </div>
         <div class="flex flex-wrap gap-2">
-          <button class="btn-secondary" data-action="downloadPreparedMaterialPdf('${movement.id}')"><i data-lucide="download" class="h-4 w-4"></i> Telecharger fiche</button>
-          ${hasProof && proofSource ? `<button class="btn-secondary" data-action="viewSignedMaterialProof('${proofSource.id}')"><i data-lucide="file-check" class="h-4 w-4"></i> Voir preuve</button>` : ""}
+          <button class="icon-button" title="Télécharger fiche" data-action="downloadPreparedMaterialPdf('${movement.id}')"><i data-lucide="download" class="h-4 w-4"></i></button>
+          ${hasProof && proofSource ? `<button class="icon-button" title="Voir preuve" data-action="viewSignedMaterialProof('${proofSource.id}')"><i data-lucide="file-check" class="h-4 w-4"></i></button>` : ""}
         </div>
       </div>
-      ${canUploadProof && proofSource ? `<div class="mt-4 grid gap-3 md:grid-cols-[1fr_auto]">
-        <input id="signedProof-${escapeHtml(proofSource.id)}" type="file" accept=".pdf,image/*" class="form-input" />
-        <button class="btn-primary" data-action="uploadSignedMaterialProof('${proofSource.id}')"><i data-lucide="upload" class="h-4 w-4"></i> Uploader fiche signee</button>
-      </div>` : hasProof && proofSource ? `<div class="mt-4 rounded-xl border border-success-200 bg-white p-3 text-sm text-success-800">Preuve signee ajoutee : ${escapeHtml(proofSource.proofFileName ?? "")}</div>` : ""}
+      <div class="grid gap-4 px-5 py-4 md:grid-cols-[1fr_auto] md:items-center">
+        <p class="text-sm text-gray-600">Télécharger la fiche, la faire signer, puis ajouter la preuve signée au retour du document.</p>
+        ${canUploadProof && proofSource ? `<div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <input id="signedProof-${escapeHtml(proofSource.id)}" type="file" accept=".pdf,image/*" class="form-input max-w-xs" />
+          <button class="icon-button" title="Uploader fiche signée" data-action="uploadSignedMaterialProof('${proofSource.id}')"><i data-lucide="upload" class="h-4 w-4"></i></button>
+        </div>` : hasProof && proofSource ? `<div class="rounded-lg border border-gray-200 bg-success-50 px-3 py-2 text-sm text-success-700">${escapeHtml(proofSource.proofFileName ?? "Preuve ajoutée")}</div>` : ""}
+      </div>
     </div>` : "";
 
   body.innerHTML = `
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <div class="rounded-xl border bg-gray-50 p-4"><div class="text-xs font-semibold text-gray-500">Statut</div><div class="font-bold text-lg mt-1">${escapeHtml(movementStatusLabel(movement))}</div></div>
-      <div class="rounded-xl border bg-gray-50 p-4"><div class="text-xs font-semibold text-gray-500">Date</div><div class="font-bold text-lg mt-1">${formatDate(movement.date)}</div></div>
-      <div class="rounded-xl border bg-gray-50 p-4"><div class="text-xs font-semibold text-gray-500">Demande source</div><div class="font-bold text-lg mt-1">${escapeHtml(sourceRequest?.reference ?? (movement.type === "EXIT_REQUEST" ? movement.reference : "-"))}</div></div>
-      <div class="rounded-xl border ${hasProof ? "border-success-100 bg-success-50" : canDownloadPdf ? "border-warning-100 bg-warning-50" : "bg-gray-50"} p-4"><div class="text-xs font-semibold text-gray-500">Fiche signee</div><div class="font-bold text-lg mt-1">${hasProof ? "Uploadée" : canDownloadPdf ? "À signer" : "En attente"}</div></div>
+    <div class="rounded-xl border border-gray-200 bg-white overflow-hidden">
+      <div class="grid gap-0 md:grid-cols-[1.2fr_1fr]">
+        <div class="p-5">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="badge ${movement.type === "EXIT" ? "success" : "warning"}">${escapeHtml(movementStatusLabel(movement))}</span>
+            <span class="text-sm text-gray-500">${formatDate(movement.date)}</span>
+          </div>
+          <div class="mt-4 grid gap-3 text-sm md:grid-cols-2">
+            <div><span class="detail-label">Demande source</span><strong>${escapeHtml(sourceReference)}</strong></div>
+            <div><span class="detail-label">Fiche signée</span><strong class="${ficheStatusClass}">${ficheStatus}</strong></div>
+            <div><span class="detail-label">Projet / chantier</span><strong>${escapeHtml(displayedRequest.project?.name ?? movement.project?.name ?? movement.toLocation?.name ?? "-")}</strong></div>
+            <div><span class="detail-label">Magasin source</span><strong>${escapeHtml(movement.fromLocation?.name ?? displayedRequest.fromLocation?.name ?? "-")}</strong></div>
+          </div>
+        </div>
+        <div class="border-t bg-gray-50 p-5 md:border-l md:border-t-0">
+          <div class="grid gap-3 text-sm">
+            <div><span class="detail-label">Demandeur / bénéficiaire</span><strong>${escapeHtml(displayedRequest.requestedBy ?? movement.receivedBy ?? "-")}</strong></div>
+            <div><span class="detail-label">Sorti par</span><strong>${escapeHtml(movement.handledBy ?? "-")}</strong></div>
+            <div><span class="detail-label">Transporté par</span><strong>${escapeHtml(movement.deliveredBy ?? "-")}</strong></div>
+            <div><span class="detail-label">Remis à</span><strong>${escapeHtml(movement.receivedBy ?? displayedRequest.receivedBy ?? displayedRequest.requestedBy ?? "-")}</strong></div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div class="rounded-xl border p-4"><div class="text-xs font-semibold text-gray-500">Projet / chantier</div><div class="font-bold mt-1">${escapeHtml(displayedRequest.project?.name ?? movement.project?.name ?? movement.toLocation?.name ?? "-")}</div></div>
-      <div class="rounded-xl border p-4"><div class="text-xs font-semibold text-gray-500">Demandeur / beneficiaire</div><div class="font-bold mt-1">${escapeHtml(displayedRequest.requestedBy ?? movement.receivedBy ?? "-")}</div></div>
-      <div class="rounded-xl border p-4"><div class="text-xs font-semibold text-gray-500">Magasin source</div><div class="font-bold mt-1">${escapeHtml(movement.fromLocation?.name ?? displayedRequest.fromLocation?.name ?? "-")}</div></div>
-      <div class="rounded-xl border p-4"><div class="text-xs font-semibold text-gray-500">Sorti par</div><div class="font-bold mt-1">${escapeHtml(movement.handledBy ?? "-")}</div></div>
-      <div class="rounded-xl border p-4"><div class="text-xs font-semibold text-gray-500">Transporte par</div><div class="font-bold mt-1">${escapeHtml(movement.deliveredBy ?? "-")}</div></div>
-      <div class="rounded-xl border p-4"><div class="text-xs font-semibold text-gray-500">Remis a</div><div class="font-bold mt-1">${escapeHtml(movement.receivedBy ?? displayedRequest.receivedBy ?? displayedRequest.requestedBy ?? "-")}</div></div>
-    </div>
-    ${movement.type === "EXIT_REQUEST" && movement.status === "SUBMITTED" ? `<div class="rounded-xl border border-accent-100 bg-accent-50 p-4 text-sm text-gray-700"><div class="font-bold text-accent-700 mb-1">Demande transmise au stock</div>En attente de preparation par le gestionnaire stock.</div>` : ""}
+    ${movement.type === "EXIT_REQUEST" && movement.status === "SUBMITTED" ? `<div class="rounded-xl border border-accent-100 bg-accent-50 p-4 text-sm text-gray-700"><div class="font-bold text-accent-700 mb-1">Demande transmise au stock</div>En attente de préparation par le gestionnaire stock.</div>` : ""}
     ${preparedPanel}
     <div class="border border-gray-200 rounded-xl overflow-hidden">
       <div class="px-5 py-4 bg-gray-50 border-b"><h3 class="font-bold">Articles demandes</h3><p class="text-sm text-gray-500 mt-1">Le stock disponible est calcule sur le magasin source de la demande.</p></div>
@@ -3350,6 +3365,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <StockHubTemplate />
   </React.StrictMode>
 );
+
 
 
 
