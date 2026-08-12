@@ -11,9 +11,10 @@ async function main() {
   const initialPasswordHash = hashPassword("12345678");
 
   await prisma.user.upsert({
-    where: { email: "admin@stock.local" },
-    update: { passwordHash: initialPasswordHash, active: true, roles: ["ADMIN_STOCK"] },
+    where: { identifier: "admin" },
+    update: { identifier: "admin", email: "admin@stock.local", passwordHash: initialPasswordHash, active: true, roles: ["ADMIN_STOCK"] },
     create: {
+      identifier: "admin",
       email: "admin@stock.local",
       firstName: "Admin",
       lastName: "Stock",
@@ -24,9 +25,10 @@ async function main() {
   });
 
   await prisma.user.upsert({
-    where: { email: "gestionnaire@stock.local" },
-    update: { passwordHash: initialPasswordHash },
+    where: { identifier: "gestionnaire" },
+    update: { identifier: "gestionnaire", email: "gestionnaire@stock.local", passwordHash: initialPasswordHash, active: true, roles: ["GESTIONNAIRE_STOCK"] },
     create: {
+      identifier: "gestionnaire",
       email: "gestionnaire@stock.local",
       firstName: "Awa",
       lastName: "Stock",
@@ -37,9 +39,10 @@ async function main() {
   });
 
   await prisma.user.upsert({
-    where: { email: "audit@stock.local" },
-    update: { passwordHash: initialPasswordHash },
+    where: { identifier: "audit" },
+    update: { identifier: "audit", email: "audit@stock.local", passwordHash: initialPasswordHash, active: true, roles: ["AUDIT"] },
     create: {
+      identifier: "audit",
       email: "audit@stock.local",
       firstName: "Jean",
       lastName: "Audit",
@@ -127,3 +130,6 @@ main()
     await prisma.$disconnect();
     process.exit(1);
   });
+
+
+

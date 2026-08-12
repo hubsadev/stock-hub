@@ -8,14 +8,17 @@ function hashPassword(password: string) {
 }
 
 async function main() {
+  const identifier = (process.env.ADMIN_IDENTIFIER ?? "admin").trim().toLowerCase();
   const email = process.env.ADMIN_EMAIL ?? "admin@stock.local";
   const password = process.env.ADMIN_PASSWORD ?? "12345678";
   const firstName = process.env.ADMIN_FIRST_NAME ?? "Admin";
   const lastName = process.env.ADMIN_LAST_NAME ?? "Stock";
 
   await prisma.user.upsert({
-    where: { email },
+    where: { identifier },
     update: {
+      identifier,
+      email,
       firstName,
       lastName,
       passwordHash: hashPassword(password),
@@ -23,6 +26,7 @@ async function main() {
       roles: ["ADMIN_STOCK"]
     },
     create: {
+      identifier,
       email,
       firstName,
       lastName,
@@ -32,7 +36,7 @@ async function main() {
     }
   });
 
-  console.log(`Admin user ready: ${email}`);
+  console.log(`Admin user ready: ${identifier}`);
 }
 
 main()
@@ -42,3 +46,6 @@ main()
     await prisma.$disconnect();
     process.exit(1);
   });
+
+
+

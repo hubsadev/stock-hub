@@ -41,9 +41,10 @@ enum MovementStatus {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  firstName String
+  id         String   @id @default(cuid())
+  identifier String   @unique
+  email      String?  @unique
+  firstName  String
   lastName  String
   roles     UserRole[]
   passwordHash String @default("")

@@ -18,9 +18,10 @@ function verifyPassword(password: string, storedHash: string) {
   return expected.length === actual.length && timingSafeEqual(expected, actual);
 }
 
-function publicUser(user: { id: string; email: string; firstName: string; lastName: string; roles: unknown; active: boolean }) {
+function publicUser(user: { id: string; identifier: string; email: string | null; firstName: string; lastName: string; roles: unknown; active: boolean }) {
   return {
     id: user.id,
+    identifier: user.identifier,
     email: user.email,
     firstName: user.firstName,
     lastName: user.lastName,
@@ -94,14 +95,16 @@ export function buildApp() {
 
   app.post("/auth/login", async (request, reply) => {
     const body = asBody(request.body);
-    const email = String(body.email ?? "").trim().toLowerCase();
+    const identifier = String(body.identifier ?? body.email ?? "").trim().toLowerCase();
     const password = String(body.password ?? "");
-    if (!email || !password) {
-      return reply.code(400).send({ message: "Email et mot de passe sont requis." });
+    if (!identifier || !password) {
+      return reply.code(400).send({ message: "Identifiant et mot de passe sont requis." });
     }
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await prisma.user.findFirst({
+      where: { OR: [{ identifier }, { email: identifier }] }
+    });
     if (!user || !verifyPassword(password, user.passwordHash)) {
-      return reply.code(401).send({ message: "Email ou mot de passe incorrect." });
+      return reply.code(401).send({ message: "Identifiant ou mot de passe incorrect." });
     }
     if (!user.active) {
       return reply.code(403).send({ message: "Compte utilisateur inactif." });
@@ -413,17 +416,21 @@ export function buildApp() {
   });
 
   app.get("/users", async () => {
-    const users = await prisma.user.findMany({ orderBy: [{ active: "desc" }, { firstName: "asc" }] });
+    const users = await prisma.user.findMany({ orderBy: [{ active: "desc" }, { firstName: "asc" }, { identifier: "asc" }] });
     return users.map(publicUser);
   });
 
   app.post("/users", async (request, reply) => {
     const body = asBody(request.body);
     const roles = Array.isArray(body.roles) ? body.roles.map(String) : ["GESTIONNAIRE_STOCK"];
+    const identifier = String(body.identifier ?? "").trim().toLowerCase();
+    if (!identifier) return reply.code(400).send({ message: "Identifiant utilisateur requis." });
+    const email = asString(body.email)?.trim().toLowerCase() ?? null;
     const passwordHash = hashPassword(String(body.password ?? "12345678"));
     const user = await prisma.user.create({
       data: {
-        email: String(body.email ?? ""),
+        identifier,
+        email,
         firstName: String(body.firstName ?? ""),
         lastName: String(body.lastName ?? ""),
         roles: roles as any,
@@ -438,7 +445,8 @@ export function buildApp() {
     const { id } = request.params as { id: string };
     const body = asBody(request.body);
     const data: Record<string, unknown> = {};
-    if (body.email !== undefined) data.email = String(body.email);
+    if (body.identifier !== undefined) data.identifier = String(body.identifier).trim().toLowerCase();
+    if (body.email !== undefined) data.email = asString(body.email)?.trim().toLowerCase() ?? null;
     if (body.firstName !== undefined) data.firstName = String(body.firstName);
     if (body.lastName !== undefined) data.lastName = String(body.lastName);
     if (Array.isArray(body.roles)) data.roles = body.roles.map(String);

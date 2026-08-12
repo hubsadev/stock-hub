@@ -33,10 +33,18 @@ function readStoredUser(): StockUser | null {
   if (!raw) return null;
   try {
     const parsed = JSON.parse(raw) as StockUser;
-    return parsed?.email ? parsed : null;
+    return parsed?.identifier || parsed?.email ? parsed : null;
   } catch {
     return null;
   }
+}
+
+function userIdentity(user: Pick<StockUser, "identifier" | "email">) {
+  return user.identifier || user.email || "-";
+}
+
+function userDisplayName(user: Pick<StockUser, "firstName" | "lastName" | "identifier" | "email">) {
+  return `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || userIdentity(user);
 }
 
 function setLoginError(root: HTMLElement, message: string | null) {
@@ -91,9 +99,9 @@ function updateCurrentUserDisplay(root: HTMLElement) {
   const storedUser = readStoredUser();
   const user = currentUser ?? storedUser;
   if (user) currentUser = user;
-  const fullName = user ? `${user.firstName} ${user.lastName}`.trim() || user.email : "Utilisateur";
+  const fullName = user ? userDisplayName(user) : "Utilisateur";
   const primaryRole = user ? roleLabel(rolePriority(user.roles)) : "Non connecte";
-  const initials = user ? `${user.firstName?.[0] ?? ""}${user.lastName?.[0] ?? ""}`.trim().toUpperCase() || user.email.slice(0, 2).toUpperCase() : "--";
+  const initials = user ? `${user.firstName?.[0] ?? ""}${user.lastName?.[0] ?? ""}`.trim().toUpperCase() || userIdentity(user).slice(0, 2).toUpperCase() : "--";
   const nameNode = root.querySelector<HTMLElement>("#currentUserName");
   const roleNode = root.querySelector<HTMLElement>("#currentUserRole");
   const initialsNodes = root.querySelectorAll<HTMLElement>("#currentUserInitials, #topUserInitials");
@@ -700,10 +708,10 @@ function materialRequestDocumentHtml(input: {
   <main class="page">
     <header class="doc-head">
       <div class="logo-cell">${hubLogoMarkup()}</div>
-      <div class="doc-name"><div class="small">Document interne</div><div class="value">Demande de matériels</div><div class="hint">Document de sortie stock et remise matériel</div></div>
+      <div class="doc-name"><div class="small">Document interne</div><div class="value">Demande de matÃ©riels</div><div class="hint">Document de sortie stock et remise matÃ©riel</div></div>
       <div class="meta"><div><b>Doc N</b><span>${escapeHtml(input.docCode)}</span></div><div><b>Demande</b><span>${escapeHtml(input.reference)}</span></div><div><b>Bon sortie</b><span>${escapeHtml(input.exitReference)}</span></div><div><b>Date</b><span>${escapeHtml(formatDate(input.date))}</span></div></div>
     </header>
-    <div class="title">Demande de matériels</div>
+    <div class="title">Demande de matÃ©riels</div>
     <section class="info-strip" aria-label="Informations de la demande">
       <div class="info-item"><div class="label">Client</div><div class="value">${escapeHtml(input.client)}</div></div>
       <div class="info-item"><div class="label">Projet</div><div class="value">${escapeHtml(input.project)}</div></div>
@@ -719,7 +727,7 @@ function materialRequestDocumentHtml(input: {
       <td><div class="role">PM / Responsable</div><div class="name">${escapeHtml(input.receivedBy)}</div><div class="line">Date et signature</div></td>
       <td><div class="role">Responsable logistique</div><div class="name">${escapeHtml(input.stockManager)}</div><div class="line">Date et signature</div></td>
     </tr></tbody></table>
-    <div class="footer"><span>Fiche générée depuis Stock Hub.</span><span>La fiche signée doit être uploadée comme preuve après remise.</span></div>
+    <div class="footer"><span>Fiche gÃ©nÃ©rÃ©e depuis Stock Hub.</span><span>La fiche signÃ©e doit Ãªtre uploadÃ©e comme preuve aprÃ¨s remise.</span></div>
   </main>
 </body>
 </html>`;
@@ -972,7 +980,7 @@ function renderExitRequestDetail(root: HTMLElement, movement: StockMovement) {
     downloadButton.dataset.action = `downloadPreparedMaterialPdf('${movement.id}')`;
   }
   const sourceReference = sourceRequest?.reference ?? (movement.type === "EXIT_REQUEST" ? movement.reference : "-");
-  const ficheStatus = hasProof ? "SignÃ©e uploadÃ©e" : canDownloadPdf ? "Ã€ signer" : "En attente";
+  const ficheStatus = hasProof ? "SignÃƒÂ©e uploadÃƒÂ©e" : canDownloadPdf ? "Ãƒâ‚¬ signer" : "En attente";
   const ficheStatusClass = hasProof ? "text-success-700" : canDownloadPdf ? "text-warning-700" : "text-gray-500";
   const preparedPanel = canDownloadPdf ? `
     <div class="rounded-xl border border-gray-200 bg-white overflow-hidden">
@@ -982,16 +990,16 @@ function renderExitRequestDetail(root: HTMLElement, movement: StockMovement) {
           <div class="mt-1 font-bold text-gray-900">${linkedExit ? escapeHtml(linkedExit.reference) : escapeHtml(movement.reference)}</div>
         </div>
         <div class="flex flex-wrap gap-2">
-          <button class="icon-button" title="TÃ©lÃ©charger fiche" data-action="downloadPreparedMaterialPdf('${movement.id}')"><i data-lucide="download" class="h-4 w-4"></i></button>
+          <button class="icon-button" title="TÃƒÂ©lÃƒÂ©charger fiche" data-action="downloadPreparedMaterialPdf('${movement.id}')"><i data-lucide="download" class="h-4 w-4"></i></button>
           ${hasProof && proofSource ? `<button class="icon-button" title="Voir preuve" data-action="viewSignedMaterialProof('${proofSource.id}')"><i data-lucide="file-check" class="h-4 w-4"></i></button>` : ""}
         </div>
       </div>
       <div class="grid gap-4 px-5 py-4 md:grid-cols-[1fr_auto] md:items-center">
-        <p class="text-sm text-gray-600">TÃ©lÃ©charger la fiche, la faire signer, puis ajouter la preuve signÃ©e au retour du document.</p>
+        <p class="text-sm text-gray-600">TÃƒÂ©lÃƒÂ©charger la fiche, la faire signer, puis ajouter la preuve signÃƒÂ©e au retour du document.</p>
         ${canUploadProof && proofSource ? `<div class="flex flex-col gap-2 sm:flex-row sm:items-center">
           <input id="signedProof-${escapeHtml(proofSource.id)}" type="file" accept=".pdf,image/*" class="form-input max-w-xs" />
-          <button class="icon-button" title="Uploader fiche signÃ©e" data-action="uploadSignedMaterialProof('${proofSource.id}')"><i data-lucide="upload" class="h-4 w-4"></i></button>
-        </div>` : hasProof && proofSource ? `<div class="rounded-lg border border-gray-200 bg-success-50 px-3 py-2 text-sm text-success-700">${escapeHtml(proofSource.proofFileName ?? "Preuve ajoutÃ©e")}</div>` : ""}
+          <button class="icon-button" title="Uploader fiche signÃƒÂ©e" data-action="uploadSignedMaterialProof('${proofSource.id}')"><i data-lucide="upload" class="h-4 w-4"></i></button>
+        </div>` : hasProof && proofSource ? `<div class="rounded-lg border border-gray-200 bg-success-50 px-3 py-2 text-sm text-success-700">${escapeHtml(proofSource.proofFileName ?? "Preuve ajoutÃƒÂ©e")}</div>` : ""}
       </div>
     </div>` : "";
 
@@ -1005,22 +1013,22 @@ function renderExitRequestDetail(root: HTMLElement, movement: StockMovement) {
           </div>
           <div class="mt-4 grid gap-3 text-sm md:grid-cols-2">
             <div><span class="detail-label">Demande source</span><strong>${escapeHtml(sourceReference)}</strong></div>
-            <div><span class="detail-label">Fiche signÃ©e</span><strong class="${ficheStatusClass}">${ficheStatus}</strong></div>
+            <div><span class="detail-label">Fiche signÃƒÂ©e</span><strong class="${ficheStatusClass}">${ficheStatus}</strong></div>
             <div><span class="detail-label">Projet / chantier</span><strong>${escapeHtml(displayedRequest.project?.name ?? movement.project?.name ?? movement.toLocation?.name ?? "-")}</strong></div>
             <div><span class="detail-label">Magasin source</span><strong>${escapeHtml(movement.fromLocation?.name ?? displayedRequest.fromLocation?.name ?? "-")}</strong></div>
           </div>
         </div>
         <div class="border-t bg-gray-50 p-5 md:border-l md:border-t-0">
           <div class="grid gap-3 text-sm">
-            <div><span class="detail-label">Demandeur / bÃ©nÃ©ficiaire</span><strong>${escapeHtml(displayedRequest.requestedBy ?? movement.receivedBy ?? "-")}</strong></div>
+            <div><span class="detail-label">Demandeur / bÃƒÂ©nÃƒÂ©ficiaire</span><strong>${escapeHtml(displayedRequest.requestedBy ?? movement.receivedBy ?? "-")}</strong></div>
             <div><span class="detail-label">Sorti par</span><strong>${escapeHtml(movement.handledBy ?? "-")}</strong></div>
-            <div><span class="detail-label">TransportÃ© par</span><strong>${escapeHtml(movement.deliveredBy ?? "-")}</strong></div>
-            <div><span class="detail-label">Remis Ã </span><strong>${escapeHtml(movement.receivedBy ?? displayedRequest.receivedBy ?? displayedRequest.requestedBy ?? "-")}</strong></div>
+            <div><span class="detail-label">TransportÃƒÂ© par</span><strong>${escapeHtml(movement.deliveredBy ?? "-")}</strong></div>
+            <div><span class="detail-label">Remis ÃƒÂ </span><strong>${escapeHtml(movement.receivedBy ?? displayedRequest.receivedBy ?? displayedRequest.requestedBy ?? "-")}</strong></div>
           </div>
         </div>
       </div>
     </div>
-    ${movement.type === "EXIT_REQUEST" && movement.status === "SUBMITTED" ? `<div class="rounded-xl border border-accent-100 bg-accent-50 p-4 text-sm text-gray-700"><div class="font-bold text-accent-700 mb-1">Demande transmise au stock</div>En attente de prÃ©paration par le gestionnaire stock.</div>` : ""}
+    ${movement.type === "EXIT_REQUEST" && movement.status === "SUBMITTED" ? `<div class="rounded-xl border border-accent-100 bg-accent-50 p-4 text-sm text-gray-700"><div class="font-bold text-accent-700 mb-1">Demande transmise au stock</div>En attente de prÃƒÂ©paration par le gestionnaire stock.</div>` : ""}
     ${preparedPanel}
     <div class="border border-gray-200 rounded-xl overflow-hidden">
       <div class="px-5 py-4 bg-gray-50 border-b"><h3 class="font-bold">Articles demandes</h3><p class="text-sm text-gray-500 mt-1">Le stock disponible est calcule sur le magasin source de la demande.</p></div>
@@ -1161,7 +1169,7 @@ function selectedText(select: HTMLSelectElement | undefined) {
 }
 
 function userOptions(users: StockUser[]) {
-  return users.map((user) => option(user.id, (user.firstName + " " + user.lastName).trim() || user.email)).join("");
+  return users.map((user) => option(user.id, userDisplayName(user))).join("");
 }
 
 function articleOptions(articles: Article[]) {
@@ -1345,7 +1353,7 @@ async function populateEntryModal(root: HTMLElement) {
   const stockLocations = locations.filter((location) => ["MAGASIN", "DEPOT", "BUREAU", "VEHICULE"].includes(location.type.toUpperCase()));
   fillSelect(locationSelect, stockLocations.map((location) => option(location.id, location.name)).join(""), "Selectionner magasin");
   const peopleOptions = users.map((user) => {
-    const name = (user.firstName + " " + user.lastName).trim() || user.email;
+    const name = userDisplayName(user);
     return option(name, name);
   }).join("");
   fillSelect(handledBySelect, peopleOptions, "Selectionner responsable");
@@ -2221,9 +2229,11 @@ function accessLabel(roles: string[]) {
 }
 
 function userRow(user: StockUser) {
-  const fullName = `${user.firstName} ${user.lastName}`.trim();
+  const fullName = userDisplayName(user);
   const role = user.roles[0] ?? "GESTIONNAIRE_STOCK";
-  return `<tr><td class="px-5 py-4"><div class="font-bold">${escapeHtml(fullName)}</div><div class="text-xs text-gray-500">${escapeHtml(user.roles.map(roleLabel).join(", "))}</div></td><td class="px-5 py-4">${escapeHtml(user.email)}</td><td class="px-5 py-4">${badge(roleLabel(role), role === "ADMIN_STOCK" ? "accent" : role === "AUDIT" ? "warning" : "success")}</td><td class="px-5 py-4">${escapeHtml(accessLabel(user.roles))}</td><td class="px-5 py-4">${badge(user.active ? "Actif" : "Inactif", user.active ? "success" : "gray")}</td><td class="px-5 py-4 text-right"><button data-action="openUserDetail('${escapeHtml(user.id)}')" title="Voir utilisateur" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-accent-600"><i data-lucide="eye" class="w-4 h-4"></i></button></td></tr>`;
+  const identity = userIdentity(user);
+  const contact = user.email ?? "Email non renseigne";
+  return `<tr><td class="px-5 py-4"><div class="font-bold">${escapeHtml(fullName)}</div><div class="text-xs text-gray-500">${escapeHtml(user.roles.map(roleLabel).join(", "))}</div></td><td class="px-5 py-4"><div class="font-semibold">${escapeHtml(identity)}</div><div class="text-xs text-gray-500">${escapeHtml(contact)}</div></td><td class="px-5 py-4">${badge(roleLabel(role), role === "ADMIN_STOCK" ? "accent" : role === "AUDIT" ? "warning" : "success")}</td><td class="px-5 py-4">${escapeHtml(accessLabel(user.roles))}</td><td class="px-5 py-4">${badge(user.active ? "Actif" : "Inactif", user.active ? "success" : "gray")}</td><td class="px-5 py-4 text-right"><button data-action="openUserDetail('${escapeHtml(user.id)}')" title="Voir utilisateur" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-accent-600"><i data-lucide="eye" class="w-4 h-4"></i></button></td></tr>`;
 }
 
 function clientRow(client: Client) {
@@ -2538,11 +2548,13 @@ function prepareUserModal(root: HTMLElement) {
   setUserModalMode(root, "Nouvel utilisateur", "Administration");
   const firstName = root.querySelector<HTMLInputElement>("#userFirstName");
   const lastName = root.querySelector<HTMLInputElement>("#userLastName");
+  const identifier = root.querySelector<HTMLInputElement>("#userIdentifier");
   const email = root.querySelector<HTMLInputElement>("#userEmail");
   const password = root.querySelector<HTMLInputElement>("#userPassword");
   const active = root.querySelector<HTMLSelectElement>("#userActive");
   if (firstName) firstName.value = "";
   if (lastName) lastName.value = "";
+  if (identifier) identifier.value = "";
   if (email) email.value = "";
   if (password) password.value = "";
   if (active) active.value = "true";
@@ -2553,15 +2565,17 @@ function prepareUserModal(root: HTMLElement) {
 
 function fillUserModal(root: HTMLElement, user: StockUser) {
   selectedUserId = user.id;
-  setUserModalMode(root, `${user.firstName} ${user.lastName}`.trim() || user.email, "Compte utilisateur");
+  setUserModalMode(root, userDisplayName(user), "Compte utilisateur");
   const firstName = root.querySelector<HTMLInputElement>("#userFirstName");
   const lastName = root.querySelector<HTMLInputElement>("#userLastName");
+  const identifier = root.querySelector<HTMLInputElement>("#userIdentifier");
   const email = root.querySelector<HTMLInputElement>("#userEmail");
   const password = root.querySelector<HTMLInputElement>("#userPassword");
   const active = root.querySelector<HTMLSelectElement>("#userActive");
   if (firstName) firstName.value = user.firstName;
   if (lastName) lastName.value = user.lastName;
-  if (email) email.value = user.email;
+  if (identifier) identifier.value = user.identifier;
+  if (email) email.value = user.email ?? "";
   if (password) password.value = "";
   if (active) active.value = user.active ? "true" : "false";
   root.querySelectorAll<HTMLInputElement>('input[name="userRole"]').forEach((input) => {
@@ -2613,11 +2627,11 @@ function togglePassword(root: HTMLElement) {
 }
 
 async function login(root: HTMLElement) {
-  const email = root.querySelector<HTMLInputElement>("#loginEmail")?.value.trim() ?? "";
+  const identifier = root.querySelector<HTMLInputElement>("#loginIdentifier")?.value.trim().toLowerCase() ?? "";
   const password = root.querySelector<HTMLInputElement>("#loginPassword")?.value ?? "";
   setLoginError(root, null);
   try {
-    const { user } = await loginUser({ email, password });
+    const { user } = await loginUser({ identifier, password });
     currentUser = user;
     localStorage.setItem("stock-hub.session", "1");
     localStorage.setItem("stock-hub.user", JSON.stringify(user));
@@ -3156,14 +3170,15 @@ async function submitReferential(root: HTMLElement) {
 
 
 async function submitUser(root: HTMLElement) {
+  const identifier = root.querySelector<HTMLInputElement>("#userIdentifier")?.value.trim().toLowerCase() ?? "";
   const email = root.querySelector<HTMLInputElement>("#userEmail")?.value.trim().toLowerCase() ?? "";
   const firstName = root.querySelector<HTMLInputElement>("#userFirstName")?.value.trim() ?? "";
   const lastName = root.querySelector<HTMLInputElement>("#userLastName")?.value.trim() ?? "";
   const password = root.querySelector<HTMLInputElement>("#userPassword")?.value ?? "";
   const active = root.querySelector<HTMLSelectElement>("#userActive")?.value !== "false";
   const roles = Array.from(root.querySelectorAll<HTMLInputElement>('input[name="userRole"]:checked')).map((input) => input.value);
-  if (!email || !firstName || !lastName) {
-    showToast(root, "Prenom, nom et email sont requis.", "error");
+  if (!identifier || !firstName || !lastName) {
+    showToast(root, "Identifiant, prenom et nom sont requis.", "error");
     return;
   }
   if (roles.length === 0) {
@@ -3172,10 +3187,10 @@ async function submitUser(root: HTMLElement) {
   }
   try {
     if (selectedUserId) {
-      await updateUser(selectedUserId, { email, firstName, lastName, roles, password: password || undefined, active });
+      await updateUser(selectedUserId, { identifier, email: email || null, firstName, lastName, roles, password: password || undefined, active });
       showToast(root, "Utilisateur mis a jour.");
     } else {
-      await createUser({ email, firstName, lastName, roles, password: password || undefined, active });
+      await createUser({ identifier, email: email || null, firstName, lastName, roles, password: password || undefined, active });
       showToast(root, "Utilisateur cree et registre mis a jour.");
     }
     closeModal(root, "userModal");
@@ -3366,6 +3381,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <StockHubTemplate />
   </React.StrictMode>
 );
+
+
+
 
 
 

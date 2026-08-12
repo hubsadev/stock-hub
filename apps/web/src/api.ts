@@ -196,7 +196,8 @@ export type StockMovement = {
 
 export type StockUser = {
   id: string;
-  email: string;
+  identifier: string;
+  email: string | null;
   firstName: string;
   lastName: string;
   roles: string[];
@@ -262,12 +263,13 @@ function patch<T>(path: string, body: unknown) {
   return request<T>(path, { method: "PATCH", body: JSON.stringify(body) });
 }
 
-export function loginUser(body: { email: string; password: string }) {
+export function loginUser(body: { identifier: string; password: string }) {
   return post<{ user: StockUser }>("/auth/login", body);
 }
 
 export function createUser(body: {
-  email: string;
+  identifier: string;
+  email?: string | null;
   firstName: string;
   lastName: string;
   roles: string[];
@@ -500,7 +502,8 @@ export function getUsers() {
 }
 
 export function updateUser(id: string, body: {
-  email?: string;
+  identifier?: string;
+  email?: string | null;
   firstName?: string;
   lastName?: string;
   roles?: string[];
