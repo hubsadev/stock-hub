@@ -652,44 +652,47 @@ function materialRequestDocumentHtml(input: {
   <meta charset="utf-8">
   <title>Demande materiel ${escapeHtml(input.reference)}</title>
   <style>
+    @page { size: A4; margin: 10mm; }
     * { box-sizing: border-box; }
-    body { margin: 0; background: #f3f6fb; color: #0f172a; font-family: Arial, Helvetica, sans-serif; font-size: 13px; }
-    .toolbar { max-width: 1080px; margin: 16px auto 0; display: flex; justify-content: flex-end; }
-    .toolbar button { border: 1px solid #cbd5e1; background: #fff; border-radius: 8px; padding: 9px 13px; font-weight: 800; cursor: pointer; }
-    .page { max-width: 1080px; margin: 16px auto 24px; background: #fff; border: 1px solid #cfd8e6; border-radius: 8px; overflow: hidden; }
-    .doc-head { display: grid; grid-template-columns: 132px 1fr 250px; border-bottom: 1px solid #cfd8e6; min-height: 98px; }
-    .logo-cell { display: flex; align-items: center; justify-content: center; border-right: 1px solid #cfd8e6; padding: 12px; }
-    .hub-logo { width: 104px; height: 70px; background: #e71845; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: .86; }
-    .hub-logo-main { font-size: 40px; font-weight: 950; letter-spacing: -.06em; }
-    .hub-logo-tag { margin-top: 6px; font-size: 5.5px; font-weight: 900; letter-spacing: .06em; }
-    .doc-name { padding: 20px 18px; display: flex; flex-direction: column; justify-content: center; }
-    .doc-name .small { color: #475569; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: .08em; }
-    .doc-name .value { margin-top: 8px; font-size: 21px; font-weight: 950; }
-    .doc-name .hint { margin-top: 4px; color: #64748b; font-size: 12px; }
-    .meta { border-left: 1px solid #cfd8e6; display: grid; grid-template-rows: repeat(4, 1fr); }
-    .meta div { display: grid; grid-template-columns: 84px 1fr; align-items: center; border-bottom: 1px solid #d8e1ec; }
+    body { margin: 0; background: #e9edf4; color: #0f172a; font-family: Arial, Helvetica, sans-serif; font-size: 11px; }
+    .toolbar { width: 210mm; margin: 10px auto 0; display: flex; justify-content: flex-end; }
+    .toolbar button { border: 1px solid #cbd5e1; background: #fff; border-radius: 6px; padding: 7px 11px; font-weight: 800; cursor: pointer; font-size: 12px; }
+    .page { width: 210mm; min-height: 297mm; margin: 10px auto 18px; background: #fff; padding: 10mm; box-shadow: 0 8px 26px rgba(15, 23, 42, .12); }
+    .doc-head { display: grid; grid-template-columns: 30mm 1fr 46mm; border: 1px solid #b9c7da; min-height: 23mm; }
+    .logo-cell { display: flex; align-items: center; justify-content: center; border-right: 1px solid #b9c7da; padding: 3mm; }
+    .hub-logo { width: 24mm; height: 16mm; background: #e71845; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: .86; }
+    .hub-logo-main { font-size: 20pt; font-weight: 950; letter-spacing: -.07em; }
+    .hub-logo-tag { margin-top: 1.5mm; font-size: 3pt; font-weight: 900; letter-spacing: .04em; }
+    .doc-name { padding: 4mm 5mm; display: flex; flex-direction: column; justify-content: center; }
+    .doc-name .small { color: #334155; font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: .12em; }
+    .doc-name .value { margin-top: 2mm; font-size: 15px; font-weight: 950; }
+    .doc-name .hint { margin-top: 1mm; color: #64748b; font-size: 10px; }
+    .meta { border-left: 1px solid #b9c7da; display: grid; grid-template-rows: repeat(4, 1fr); }
+    .meta div { display: grid; grid-template-columns: 18mm 1fr; align-items: center; border-bottom: 1px solid #d3dcea; min-height: 5.8mm; }
     .meta div:last-child { border-bottom: 0; }
-    .meta b { padding: 8px 10px; font-size: 11px; text-transform: uppercase; color: #334155; }
-    .meta span { padding: 8px 10px; text-align: right; font-weight: 800; }
-    .title { padding: 24px 24px 14px; text-align: center; font-size: 23px; font-weight: 950; letter-spacing: .08em; text-transform: uppercase; }
-    .info-table, .items, .signature-table { width: calc(100% - 48px); margin: 0 24px 18px; border-collapse: collapse; }
-    .info-table th, .info-table td { border: 1px solid #d8e1ec; padding: 9px 11px; text-align: left; }
-    .info-table th { width: 16%; color: #475569; font-size: 10px; text-transform: uppercase; letter-spacing: .06em; background: #f8fafc; }
-    .info-table td { width: 17%; font-size: 14px; font-weight: 800; }
-    .items th { background: #eaf1fb; color: #1e293b; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; text-align: left; }
-    .items td, .items th { border: 1px solid #d8e1ec; padding: 10px 11px; vertical-align: middle; }
-    .items td { min-height: 42px; font-size: 13px; }
-    .items span { color: #64748b; font-size: 11px; }
+    .meta b { padding: 1.7mm; font-size: 7.5px; text-transform: uppercase; color: #1e293b; }
+    .meta span { padding: 1.7mm; text-align: right; font-size: 9.5px; font-weight: 900; }
+    .title { padding: 10mm 0 7mm; text-align: center; font-size: 17px; font-weight: 950; letter-spacing: .13em; text-transform: uppercase; }
+    .info-strip { margin: 0 0 7mm; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm 10mm; }
+    .info-item { min-width: 0; padding-bottom: 2.5mm; border-bottom: 1px solid #d8e1ec; }
+    .info-item .label { color: #475569; font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: .09em; }
+    .info-item .value { margin-top: 1.5mm; font-size: 12px; font-weight: 900; line-height: 1.25; }
+    .items, .signature-table { width: 100%; border-collapse: collapse; }
+    .items { margin-top: 2mm; }
+    .items th { background: #eaf1fb; color: #102033; font-size: 8.5px; text-transform: uppercase; letter-spacing: .05em; text-align: left; }
+    .items td, .items th { border: 1px solid #d3dcea; padding: 3mm; vertical-align: middle; }
+    .items td { font-size: 11px; }
+    .items span { color: #64748b; font-size: 9px; }
     .right { text-align: right; }
     .strong { font-weight: 900; }
-    .num { width: 42px; text-align: center; font-weight: 900; color: #1d4ed8; }
-    .sign-title { margin: 28px 24px 10px; font-size: 14px; font-weight: 950; }
-    .signature-table td { border: 1px solid #cfd8e6; width: 33.33%; height: 118px; vertical-align: top; padding: 11px; }
-    .signature-table .role { color: #334155; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: .05em; }
-    .signature-table .name { margin-top: 8px; font-size: 14px; font-weight: 900; }
-    .signature-table .line { margin-top: 54px; color: #64748b; font-size: 11px; }
-    .footer { margin: 4px 24px 18px; color: #64748b; font-size: 10px; display: flex; justify-content: space-between; gap: 18px; }
-    @media print { body { background: white; } .toolbar { display: none; } .page { max-width: none; margin: 0; border: 0; border-radius: 0; } }
+    .num { width: 10mm; text-align: center; font-weight: 900; color: #1d4ed8; }
+    .sign-title { margin: 10mm 0 3mm; font-size: 12px; font-weight: 950; }
+    .signature-table td { border: 1px solid #b9c7da; width: 33.33%; height: 34mm; vertical-align: top; padding: 3mm; }
+    .signature-table .role { color: #1e293b; font-size: 8.5px; font-weight: 900; text-transform: uppercase; letter-spacing: .08em; }
+    .signature-table .name { margin-top: 3mm; font-size: 11px; font-weight: 900; }
+    .signature-table .line { margin-top: 18mm; color: #475569; font-size: 9px; }
+    .footer { margin-top: 6mm; color: #64748b; font-size: 8px; display: flex; justify-content: space-between; gap: 10mm; }
+    @media print { body { background: white; } .toolbar { display: none; } .page { width: auto; min-height: auto; margin: 0; padding: 0; box-shadow: none; } }
   </style>
 </head>
 <body>
@@ -701,12 +704,14 @@ function materialRequestDocumentHtml(input: {
       <div class="meta"><div><b>Doc N</b><span>${escapeHtml(input.docCode)}</span></div><div><b>Demande</b><span>${escapeHtml(input.reference)}</span></div><div><b>Bon sortie</b><span>${escapeHtml(input.exitReference)}</span></div><div><b>Date</b><span>${escapeHtml(formatDate(input.date))}</span></div></div>
     </header>
     <div class="title">Demande de matériels</div>
-    <table class="info-table">
-      <tbody>
-        <tr><th>Client</th><td>${escapeHtml(input.client)}</td><th>Projet</th><td>${escapeHtml(input.project)}</td><th>Site / zone</th><td>${escapeHtml(input.site)}</td></tr>
-        <tr><th>Equipe / service</th><td>${escapeHtml(input.team)}</td><th>Demandeur</th><td>${escapeHtml(input.requester)}</td><th>Resp. stock</th><td>${escapeHtml(input.stockManager)}</td></tr>
-      </tbody>
-    </table>
+    <section class="info-strip" aria-label="Informations de la demande">
+      <div class="info-item"><div class="label">Client</div><div class="value">${escapeHtml(input.client)}</div></div>
+      <div class="info-item"><div class="label">Projet</div><div class="value">${escapeHtml(input.project)}</div></div>
+      <div class="info-item"><div class="label">Site / zone</div><div class="value">${escapeHtml(input.site)}</div></div>
+      <div class="info-item"><div class="label">Equipe / service</div><div class="value">${escapeHtml(input.team)}</div></div>
+      <div class="info-item"><div class="label">Demandeur</div><div class="value">${escapeHtml(input.requester)}</div></div>
+      <div class="info-item"><div class="label">Resp. stock</div><div class="value">${escapeHtml(input.stockManager)}</div></div>
+    </section>
     <table class="items"><thead><tr><th>N</th><th>Designation</th><th>Unite</th><th class="right">Demandee</th><th class="right">Remise</th><th>Observation</th></tr></thead><tbody>${input.rows}</tbody></table>
     <div class="sign-title">Signatures</div>
     <table class="signature-table"><tbody><tr>
@@ -3361,6 +3366,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <StockHubTemplate />
   </React.StrictMode>
 );
+
+
+
 
 
 
