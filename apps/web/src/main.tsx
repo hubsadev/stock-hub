@@ -1148,7 +1148,7 @@ function exitMenuItem(icon: string, label: string, action: string) {
   return `<button class="flex w-full items-center gap-3 px-4 py-2 text-left hover:bg-gray-50" data-action="${action}"><i data-lucide="${icon}" class="h-4 w-4 text-gray-500"></i><span>${label}</span></button>`;
 }
 
-function exitActionsMenu(movement: StockMovement) {
+function exitActionItems(movement: StockMovement) {
   const actions: string[] = [];
   const proofSource = proofRequestForMovement(movement);
   actions.push(exitMenuItem("eye", "Voir", `openExitRequestDetail('${movement.id}')`));
@@ -1164,10 +1164,46 @@ function exitActionsMenu(movement: StockMovement) {
   if (proofSource?.proofFileName) {
     actions.push(exitMenuItem("file-check", "Voir preuve", `viewSignedMaterialProof('${proofSource.id}')`));
   }
-  return `<div class="relative inline-block text-left group">
-    <button class="icon-btn" type="button" aria-label="Actions"><i data-lucide="more-vertical" class="h-4 w-4"></i></button>
-    <div class="absolute right-0 z-30 mt-2 hidden min-w-[220px] overflow-hidden rounded-xl border bg-white py-1 text-sm shadow-xl group-hover:block group-focus-within:block">${actions.join("")}</div>
-  </div>`;
+  return actions;
+}
+
+function closeFloatingExitActions(root: HTMLElement) {
+  root.querySelector<HTMLElement>("[data-floating-exit-menu]")?.remove();
+}
+
+function toggleFloatingExitActions(root: HTMLElement, movementId: string, trigger: HTMLElement) {
+  const existing = root.querySelector<HTMLElement>("[data-floating-exit-menu]");
+  if (existing?.dataset.menuFor === movementId) {
+    existing.remove();
+    return;
+  }
+  existing?.remove();
+
+  const movement = latestMovements.find((item) => item.id === movementId);
+  if (!movement) return;
+
+  const menu = document.createElement("div");
+  menu.dataset.floatingExitMenu = "true";
+  menu.dataset.menuFor = movementId;
+  menu.className = "fixed z-[10000] min-w-[230px] overflow-hidden rounded-xl border border-gray-200 bg-white py-1 text-sm shadow-2xl";
+  menu.innerHTML = exitActionItems(movement).join("");
+  root.appendChild(menu);
+
+  const triggerRect = trigger.getBoundingClientRect();
+  const menuRect = menu.getBoundingClientRect();
+  const left = Math.min(Math.max(12, triggerRect.right - menuRect.width), window.innerWidth - menuRect.width - 12);
+  const preferredTop = triggerRect.bottom + 8;
+  const top = preferredTop + menuRect.height > window.innerHeight
+    ? Math.max(12, triggerRect.top - menuRect.height - 8)
+    : preferredTop;
+
+  menu.style.left = `${left}px`;
+  menu.style.top = `${top}px`;
+  window.lucide?.createIcons();
+}
+
+function exitActionsMenu(movement: StockMovement) {
+  return `<button class="icon-btn" type="button" aria-label="Actions" data-action="toggleExitActions('${movement.id}')"><i data-lucide="more-vertical" class="h-4 w-4"></i></button>`;
 }
 
 function exitMovementRow(movement: StockMovement) {
@@ -3362,6 +3398,8 @@ function parseAction(action: string) {
   if (inventoryModeMatch) return { type: "inventory-mode", mode: inventoryModeMatch[1] } as const;
   const exitFilterMatch = action.match(/^setExitFilter\('([^']+)'\)/);
   if (exitFilterMatch) return { type: "exit-filter", filter: exitFilterMatch[1] } as const;
+  const exitActionsMatch = action.match(/^toggleExitActions\('([^']+)'\)/);
+  if (exitActionsMatch) return { type: "toggle-exit-actions", id: exitActionsMatch[1] } as const;
   if (action === "refreshHistory") return { type: "refresh-history" } as const;
   if (action.includes("toggleLoginPassword")) return { type: "toggle-password" } as const;
   if (action.includes("toggleUserPassword")) return { type: "toggle-user-password" } as const;
@@ -3433,6 +3471,11 @@ function StockHubTemplate() {
       const action = target.dataset.action;
       if (!action) return;
       const parsed = parseAction(action);
+      if (parsed.type === "toggle-exit-actions") {
+        toggleFloatingExitActions(root, parsed.id, target);
+        return;
+      }
+      closeFloatingExitActions(root);
       if (parsed.type === "view") navigateToView(root, parsed.id, target);
       if (parsed.type === "open") openModal(root, parsed.id);
       if (parsed.type === "count") {
@@ -3500,6 +3543,7 @@ function StockHubTemplate() {
         syncMaterialPreparationState(root);
       }
     };
+    const onWindowScroll = () => closeFloatingExitActions(root);
     root.addEventListener("click", onClick);
     root.addEventListener("change", onChange);
     root.addEventListener("input", onInput);
@@ -3507,11 +3551,15 @@ function StockHubTemplate() {
       openRoute(root, { skipHistory: true });
     };
     window.addEventListener("popstate", onPopState);
+    window.addEventListener("resize", onWindowScroll);
+    window.addEventListener("scroll", onWindowScroll, true);
     return () => {
       root.removeEventListener("click", onClick);
       root.removeEventListener("change", onChange);
       root.removeEventListener("input", onInput);
       window.removeEventListener("popstate", onPopState);
+      window.removeEventListener("resize", onWindowScroll);
+      window.removeEventListener("scroll", onWindowScroll, true);
     };
   }, []);
 
