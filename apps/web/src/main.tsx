@@ -88,6 +88,78 @@ function canAccessView(view: string) {
   return roles.some((role) => allowedByRole[role]?.includes(view));
 }
 
+const LOGIN_ROUTE = "/login";
+const DEFAULT_ROUTE = "/dashboard";
+const VIEW_ROUTES: Record<string, string> = {
+  home: DEFAULT_ROUTE,
+  referentiels: "/referentiels",
+  stock: "/stock",
+  equipements: "/equipements",
+  parcAuto: "/parc-auto",
+  entrees: "/entrees-stock",
+  sortie: "/sorties-stock",
+  retours: "/retours-transferts",
+  reappro: "/reapprovisionnement",
+  inventaire: "/inventaire",
+  audit: "/audit-alertes",
+  historique: "/historique-exports",
+  users: "/utilisateurs-roles"
+};
+const ROUTE_VIEWS: Record<string, string> = {
+  [DEFAULT_ROUTE]: "home",
+  "/referentiels": "referentiels",
+  "/stock": "stock",
+  "/equipements": "equipements",
+  "/parc-auto": "parcAuto",
+  "/entrees-stock": "entrees",
+  "/sorties-stock": "sortie",
+  "/retours-transferts": "retours",
+  "/reapprovisionnement": "reappro",
+  "/inventaire": "inventaire",
+  "/audit-alertes": "audit",
+  "/historique-exports": "historique",
+  "/utilisateurs-roles": "users"
+};
+let pendingRouteAfterLogin = DEFAULT_ROUTE;
+
+function normalizeRoute(pathname = window.location.pathname) {
+  const path = pathname.replace(/\/+$/, "");
+  return path || DEFAULT_ROUTE;
+}
+
+function routeForView(view: string) {
+  return VIEW_ROUTES[view] ?? DEFAULT_ROUTE;
+}
+
+function viewForRoute(pathname = window.location.pathname) {
+  return ROUTE_VIEWS[normalizeRoute(pathname)];
+}
+
+function navButtonForView(root: HTMLElement, view: string) {
+  return root.querySelector<HTMLElement>(`.nav-btn[data-view="${CSS.escape(view)}"]`);
+}
+
+function writeRoute(view: string, replace = false) {
+  const route = routeForView(view);
+  if (normalizeRoute() === route) return;
+  const state = { stockHubView: view };
+  if (replace) {
+    window.history.replaceState(state, "", route);
+  } else {
+    window.history.pushState(state, "", route);
+  }
+}
+
+function writeLoginRoute(replace = true) {
+  if (normalizeRoute() === LOGIN_ROUTE) return;
+  const state = { stockHubView: "login" };
+  if (replace) {
+    window.history.replaceState(state, "", LOGIN_ROUTE);
+  } else {
+    window.history.pushState(state, "", LOGIN_ROUTE);
+  }
+}
+
 function applyRoleAccess(root: HTMLElement) {
   root.querySelectorAll<HTMLElement>(".nav-btn[data-view]").forEach((button) => {
     const view = button.dataset.view ?? "";
@@ -2496,9 +2568,10 @@ function setViewActions(root: HTMLElement, view: string) {
 
 function showView(root: HTMLElement, view: string, navButton?: HTMLElement) {
   root.querySelectorAll(".view").forEach((section) => setVisible(section, section.id === view));
-  if (navButton?.classList.contains("nav-btn")) {
+  const activeButton = navButton?.classList.contains("nav-btn") ? navButton : navButtonForView(root, view);
+  if (activeButton?.classList.contains("nav-btn")) {
     clearActiveNav(root);
-    activateNavButton(navButton);
+    activateNavButton(activeButton);
   }
   const crumb = root.querySelector("#crumbPage");
   const titles: Record<string, string> = {
@@ -2519,6 +2592,65 @@ function showView(root: HTMLElement, view: string, navButton?: HTMLElement) {
   if (crumb) crumb.textContent = titles[view] ?? "Accueil Module";
   setViewActions(root, view);
   window.lucide?.createIcons();
+}
+
+function navigateToView(
+  root: HTMLElement,
+  view: string,
+  navButton?: HTMLElement,
+  options: { replace?: boolean; skipHistory?: boolean } = {}
+) {
+  const targetRoute = VIEW_ROUTES[view];
+  let targetView = targetRoute ? view : "home";
+
+  if (!currentUser) {
+    pendingRouteAfterLogin = targetRoute ?? DEFAULT_ROUTE;
+    showLogin(root);
+    writeLoginRoute(true);
+    return;
+  }
+
+  if (!canAccessView(targetView)) {
+    showToast(root, "Acces non autorise pour cette page.");
+    targetView = "home";
+    options.replace = true;
+  }
+
+  hideLogin(root);
+  showView(root, targetView, navButton ?? navButtonForView(root, targetView) ?? undefined);
+
+  if (!options.skipHistory) {
+    writeRoute(targetView, options.replace);
+  }
+}
+
+function openRoute(root: HTMLElement, options: { replace?: boolean; skipHistory?: boolean } = {}) {
+  const route = normalizeRoute();
+
+  if (route === LOGIN_ROUTE) {
+    if (currentUser) {
+      navigateToView(root, "home", undefined, { replace: true });
+    } else {
+      showLogin(root);
+    }
+    return;
+  }
+
+  const view = viewForRoute(route);
+  if (!currentUser) {
+    pendingRouteAfterLogin = view ? route : DEFAULT_ROUTE;
+    showLogin(root);
+    writeLoginRoute(true);
+    return;
+  }
+
+  if (!view) {
+    showToast(root, "Page introuvable. Retour au tableau de bord.");
+    navigateToView(root, "home", undefined, { replace: true });
+    return;
+  }
+
+  navigateToView(root, view, undefined, options);
 }
 
 function showRef(root: HTMLElement, ref: string, button?: HTMLElement) {
@@ -2640,7 +2772,9 @@ async function login(root: HTMLElement) {
     hideLogin(root);
     updateCurrentUserDisplay(root);
     applyRoleAccess(root);
-    showView(root, "home", root.querySelector<HTMLElement>('.nav-btn[data-view="home"]') ?? undefined);
+    const requestedView = viewForRoute(pendingRouteAfterLogin) ?? "home";
+    navigateToView(root, canAccessView(requestedView) ? requestedView : "home", undefined, { replace: true });
+    pendingRouteAfterLogin = DEFAULT_ROUTE;
   } catch (error) {
     setLoginError(root, error instanceof Error ? error.message : "Connexion impossible.");
   }
@@ -2652,6 +2786,7 @@ function logout(root: HTMLElement) {
   localStorage.removeItem("stock-hub.user");
   updateCurrentUserDisplay(root);
   showLogin(root);
+  writeLoginRoute(true);
 }
 
 function prepareTemplateActions(root: HTMLElement) {
@@ -3286,10 +3421,10 @@ function StockHubTemplate() {
     }
     updateCurrentUserDisplay(root);
     applyRoleAccess(root);
-    showView(root, "home", root.querySelector<HTMLElement>('.nav-btn[data-action*="home"]') ?? undefined);
     prepareTemplateActions(root);
     updateReferentialForm(root, root.querySelector<HTMLSelectElement>("#referentialType")?.value ?? "");
     updateApiBackedViews(root);
+    openRoute(root, { replace: true, skipHistory: true });
     window.lucide?.createIcons();
 
     const onClick = (event: MouseEvent) => {
@@ -3298,7 +3433,7 @@ function StockHubTemplate() {
       const action = target.dataset.action;
       if (!action) return;
       const parsed = parseAction(action);
-      if (parsed.type === "view") showView(root, parsed.id, target);
+      if (parsed.type === "view") navigateToView(root, parsed.id, target);
       if (parsed.type === "open") openModal(root, parsed.id);
       if (parsed.type === "count") {
         openModal(root, "countModal");
@@ -3368,10 +3503,15 @@ function StockHubTemplate() {
     root.addEventListener("click", onClick);
     root.addEventListener("change", onChange);
     root.addEventListener("input", onInput);
+    const onPopState = () => {
+      openRoute(root, { skipHistory: true });
+    };
+    window.addEventListener("popstate", onPopState);
     return () => {
       root.removeEventListener("click", onClick);
       root.removeEventListener("change", onChange);
       root.removeEventListener("input", onInput);
+      window.removeEventListener("popstate", onPopState);
     };
   }, []);
 
