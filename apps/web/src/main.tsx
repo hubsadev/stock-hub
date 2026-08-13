@@ -79,7 +79,7 @@ function canAccessView(view: string) {
   if (view === "home") return true;
   const roles = currentUser.roles;
   const allowedByRole: Record<string, string[]> = {
-    GESTIONNAIRE_STOCK: ["referentiels", "entrees", "sortie", "retours", "inventaire", "stock"],
+    GESTIONNAIRE_STOCK: ["referentiels", "stock", "equipements", "parcAuto", "entrees", "sortie", "retours", "reappro", "inventaire"],
     AUDIT: ["inventaire", "audit", "historique", "stock"],
     RH: ["stock", "equipements", "parcAuto"],
     DIRECTION: ["home", "stock", "audit", "historique"],
@@ -2220,7 +2220,7 @@ function roleLabel(role: string) {
 
 function accessLabel(roles: string[]) {
   if (roles.includes("ADMIN_STOCK")) return "Tous modules";
-  if (roles.includes("GESTIONNAIRE_STOCK")) return "Referentiels, entrees, sorties, retours";
+  if (roles.includes("GESTIONNAIRE_STOCK")) return "Referentiels, stock, equipements, parc auto, mouvements";
   if (roles.includes("AUDIT")) return "Inventaire, alertes, exports";
   if (roles.includes("DIRECTION")) return "KPI et controles";
   if (roles.includes("CHEF_PROJET")) return "Demandes, stock consulte";
@@ -2457,6 +2457,7 @@ function canUseHeaderAction(view: string, action: HeaderAction) {
   if (view === "retours") return hasRole("GESTIONNAIRE_STOCK");
   if (view === "inventaire") return hasRole("GESTIONNAIRE_STOCK") || hasRole("AUDIT");
   if (view === "equipements") return hasRole("GESTIONNAIRE_STOCK") || hasRole("RH");
+  if (view === "parcAuto") return hasRole("GESTIONNAIRE_STOCK") || hasRole("RH");
   return false;
 }
 
