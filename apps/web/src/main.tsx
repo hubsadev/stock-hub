@@ -1084,18 +1084,18 @@ function renderExitRequestDetail(root: HTMLElement, movement: StockMovement) {
             <span class="text-sm text-gray-500">${formatDate(movement.date)}</span>
           </div>
           <div class="mt-4 grid gap-3 text-sm md:grid-cols-2">
-            <div><span class="detail-label">Demande source</span><strong>${escapeHtml(sourceReference)}</strong></div>
-            <div><span class="detail-label">Fiche signée</span><strong class="${ficheStatusClass}">${ficheStatus}</strong></div>
-            <div><span class="detail-label">Projet / chantier</span><strong>${escapeHtml(displayedRequest.project?.name ?? movement.project?.name ?? movement.toLocation?.name ?? "-")}</strong></div>
-            <div><span class="detail-label">Magasin source</span><strong>${escapeHtml(movement.fromLocation?.name ?? displayedRequest.fromLocation?.name ?? "-")}</strong></div>
+            <div><span class="detail-label">Demande source</span> <strong>${escapeHtml(sourceReference)}</strong></div>
+            <div><span class="detail-label">Fiche signée</span> <strong class="${ficheStatusClass}">${ficheStatus}</strong></div>
+            <div><span class="detail-label">Projet / chantier</span> <strong>${escapeHtml(displayedRequest.project?.name ?? movement.project?.name ?? movement.toLocation?.name ?? "-")}</strong></div>
+            <div><span class="detail-label">Magasin source</span> <strong>${escapeHtml(movement.fromLocation?.name ?? displayedRequest.fromLocation?.name ?? "-")}</strong></div>
           </div>
         </div>
         <div class="border-t bg-gray-50 p-5 md:border-l md:border-t-0">
           <div class="grid gap-3 text-sm">
-            <div><span class="detail-label">Demandeur / bénéficiaire</span><strong>${escapeHtml(displayedRequest.requestedBy ?? movement.receivedBy ?? "-")}</strong></div>
-            <div><span class="detail-label">Sorti par</span><strong>${escapeHtml(movement.handledBy ?? "-")}</strong></div>
-            <div><span class="detail-label">Transporté par</span><strong>${escapeHtml(movement.deliveredBy ?? "-")}</strong></div>
-            <div><span class="detail-label">Remis à</span><strong>${escapeHtml(movement.receivedBy ?? displayedRequest.receivedBy ?? displayedRequest.requestedBy ?? "-")}</strong></div>
+            <div><span class="detail-label">Demandeur / bénéficiaire</span> <strong>${escapeHtml(displayedRequest.requestedBy ?? movement.receivedBy ?? "-")}</strong></div>
+            <div><span class="detail-label">Sorti par</span> <strong>${escapeHtml(movement.handledBy ?? "-")}</strong></div>
+            <div><span class="detail-label">Transporté par</span> <strong>${escapeHtml(movement.deliveredBy ?? "-")}</strong></div>
+            <div><span class="detail-label">Remis à</span> <strong>${escapeHtml(movement.receivedBy ?? displayedRequest.receivedBy ?? displayedRequest.requestedBy ?? "-")}</strong></div>
           </div>
         </div>
       </div>
