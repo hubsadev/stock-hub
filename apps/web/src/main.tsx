@@ -929,15 +929,15 @@ function looksLikeGeneratedExit(request: StockMovement, exit: StockMovement) {
 
 function linkedExitForRequest(movement: StockMovement) {
   if (movement.type !== "EXIT_REQUEST") return null;
-  return movement.generatedExits?.[0]
-    ?? latestMovements.find((item) => item.type === "EXIT" && looksLikeGeneratedExit(movement, item))
+  return latestMovements.find((item) => item.type === "EXIT" && looksLikeGeneratedExit(movement, item))
+    ?? movement.generatedExits?.[0]
     ?? null;
 }
 
 function requestForExit(movement: StockMovement) {
   if (movement.type !== "EXIT") return null;
-  return movement.sourceRequest
-    ?? latestMovements.find((item) => item.type === "EXIT_REQUEST" && looksLikeGeneratedExit(item, movement))
+  return latestMovements.find((item) => item.type === "EXIT_REQUEST" && looksLikeGeneratedExit(item, movement))
+    ?? movement.sourceRequest
     ?? null;
 }
 
@@ -1017,7 +1017,7 @@ function renderExitRequestDetail(root: HTMLElement, movement: StockMovement) {
   const linkedExit = linkedExitForRequest(movement);
   const sourceRequest = requestForExit(movement);
   const proofSource = proofRequestForMovement(movement);
-  const displayedRequest = movement.type === "EXIT" ? proofSource ?? movement : movement;
+  const displayedRequest = movement.type === "EXIT" ? sourceRequest ?? proofSource ?? movement : movement;
   const totalRequested = displayedRequest.lines.reduce((sum, line) => sum + Number(line.requestedQuantity ?? 0), 0);
   const totalCompleted = movement.lines.reduce((sum, line) => sum + Number(line.completedQuantity ?? 0), 0);
   const rows = movement.lines.map((line, index) => {
@@ -1754,17 +1754,38 @@ function syncMaterialPreparationState(root: HTMLElement) {
   }
 }
 
+function stockMovementLineKey(line: StockMovement["lines"][number]) {
+  const articleId = (line as { articleId?: string | null }).articleId;
+  return articleId ?? line.article?.code ?? "";
+}
+
+function linkedExitLineFor(sourceLine: StockMovement["lines"][number], index: number, linkedExit: StockMovement | null) {
+  if (!linkedExit) return null;
+  const key = stockMovementLineKey(sourceLine);
+  return linkedExit.lines.find((line) => key && stockMovementLineKey(line) === key)
+    ?? linkedExit.lines[index]
+    ?? null;
+}
+
 function preparedMaterialPdfHtml(movement: StockMovement) {
   const source = materialPdfMovement(movement);
   const linkedExit = materialPdfLinkedExit(movement);
-  const rows = source.lines.map((line, index) => `<tr>
+  const sourceLines = source.lines.length ? source.lines : linkedExit?.lines ?? [];
+  const rows = sourceLines.map((line, index) => {
+    const exitLine = linkedExitLineFor(line, index, linkedExit);
+    const article = line.article ?? exitLine?.article;
+    const requested = Number(line.requestedQuantity ?? exitLine?.requestedQuantity ?? 0);
+    const completed = Number(exitLine?.completedQuantity ?? line.completedQuantity ?? 0);
+    const observation = exitLine?.observation ?? line.observation ?? "";
+    return `<tr>
     <td class="num">${index + 1}</td>
-    <td><strong>${escapeHtml(line.article?.designation ?? "-")}</strong><br><span>${escapeHtml(line.article?.code ?? "-")}</span></td>
-    <td>${escapeHtml(line.article?.unit ?? "U")}</td>
-    <td class="right strong">${formatNumber(line.requestedQuantity ?? 0)}</td>
-    <td class="right strong">${formatNumber(line.completedQuantity ?? 0)}</td>
-    <td>${escapeHtml(line.observation ?? "")}</td>
-  </tr>`).join("");
+    <td><strong>${escapeHtml(article?.designation ?? "-")}</strong><br><span>${escapeHtml(article?.code ?? "-")}</span></td>
+    <td>${escapeHtml(article?.unit ?? "U")}</td>
+    <td class="right strong">${formatNumber(requested)}</td>
+    <td class="right strong">${formatNumber(completed)}</td>
+    <td>${escapeHtml(observation)}</td>
+  </tr>`;
+  }).join("");
   return materialRequestDocumentHtml({
     reference: source.reference,
     docCode: source.reference.replace(/^DS-/, "DM-"),
@@ -1775,8 +1796,8 @@ function preparedMaterialPdfHtml(movement: StockMovement) {
     site: source.siteLocation?.name ?? source.toLocation?.name ?? "-",
     team: source.teamService?.name ?? "-",
     requester: source.requestedBy ?? source.receivedBy ?? "-",
-    stockManager: source.handledBy ?? linkedExit?.handledBy ?? "-",
-    receivedBy: source.receivedBy ?? linkedExit?.receivedBy ?? "-",
+    stockManager: linkedExit?.handledBy ?? source.handledBy ?? "-",
+    receivedBy: linkedExit?.receivedBy ?? source.receivedBy ?? source.requestedBy ?? "-",
     rows,
   });
 }

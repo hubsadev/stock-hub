@@ -8,3 +8,19 @@
 .workspace-scroll{padding:24px 24px 32px;background:#f7f9fc}.topbar{height:66px}.breadcrumb{font-size:14px}.breadcrumb svg{color:#667085}.page-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin:22px 0 24px}.page-title{max-width:none;margin:0;min-width:0}.page-title span{font-size:12px;font-weight:850;color:#667085}.page-title h1{font-size:30px;line-height:1.08;margin:7px 0 8px;font-weight:900;letter-spacing:0}.page-title p{font-size:14px;line-height:1.45;color:#667085}.page-actions{margin:20px 0 0;flex:none;display:flex;align-items:center;justify-content:flex-end;gap:12px}.ghost-button,.primary-action.small{height:40px;min-height:40px;border-radius:9px;padding:0 15px;font-size:14px}.kpi-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin:0 0 24px}.kpi-card{min-height:184px;padding:20px 20px 18px;border-radius:10px;box-shadow:0 8px 22px rgba(16,24,40,.06);display:flex;flex-direction:column;align-items:stretch}.kpi-label{font-size:14px}.kpi-card strong{font-size:32px;line-height:1;margin:20px 0 8px}.kpi-card small{margin-top:auto;font-size:13px}.role-panel{border-radius:10px}.role-panel-head{padding:20px}.role-panel-head h2{font-size:20px}.role-panel-head p{font-size:14px}.role-panel .role-strip article{min-height:118px}.side-nav{padding:20px 14px 18px}.nav-group{display:grid;gap:5px}.nav-group p{font-size:12px;margin-bottom:6px}.nav-group button{height:40px;border-radius:9px;font-size:14px}.brand{font-size:22px}.sidebar{width:256px}.user-card{height:68px}.notice.quiet{display:none!important}
 @media(max-width:1200px){.page-hero{display:grid}.page-actions{justify-content:flex-start;margin-top:0}.page-title h1{font-size:28px}.kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){.kpi-grid{grid-template-columns:1fr}.page-actions{flex-wrap:wrap}.workspace-scroll{padding:18px}.page-title h1{font-size:26px}}
+
+.detail-label {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.detail-label + strong {
+  display: block;
+  color: #0f172a;
+  line-height: 1.35;
+  word-break: break-word;
+}
