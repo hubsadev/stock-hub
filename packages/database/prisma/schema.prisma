@@ -102,6 +102,7 @@ model Supplier {
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  equipments Equipment[]
 }
 
 model Project {
@@ -168,12 +169,34 @@ model Equipment {
   serialNumber String?
   articleId    String
   article      Article  @relation(fields: [articleId], references: [id])
+  supplierId   String?
+  supplier     Supplier? @relation(fields: [supplierId], references: [id])
   state        String   @default("GOOD")
   status       String   @default("AVAILABLE")
   assignedTo   String?
   locationId   String?
+  entryDate    DateTime @default(now())
+  origin       String?
+  notes        String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  history EquipmentHistory[]
+}
+
+model EquipmentHistory {
+  id             String    @id @default(cuid())
+  equipmentId    String
+  equipment      Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  action         String
+  status         String?
+  state          String?
+  assignedTo     String?
+  locationId     String?
+  observation    String?
+  createdAt      DateTime  @default(now())
+
+  @@index([equipmentId, createdAt])
 }
 
 model StockLevel {

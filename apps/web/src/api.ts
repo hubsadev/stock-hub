@@ -126,8 +126,25 @@ export type Equipment = {
   assignedTo: string | null;
   locationId: string | null;
   location?: StockLocation | null;
+  supplierId: string | null;
+  supplier?: Supplier | null;
+  entryDate: string;
+  origin: string | null;
+  notes: string | null;
+  history: EquipmentHistory[];
   createdAt: string;
   updatedAt: string;
+};
+
+export type EquipmentHistory = {
+  id: string;
+  action: string;
+  status: string | null;
+  state: string | null;
+  assignedTo: string | null;
+  locationId: string | null;
+  observation: string | null;
+  createdAt: string;
 };
 
 
@@ -440,13 +457,14 @@ export function getEquipments() {
 }
 
 export function createEquipment(body: {
-  code: string;
   articleId: string;
   serialNumber?: string;
   state?: string;
-  status?: string;
-  assignedTo?: string;
   locationId?: string;
+  supplierId?: string;
+  entryDate?: string;
+  origin?: string;
+  notes?: string;
 }) {
   return post<Equipment>("/equipments", body);
 }
@@ -457,6 +475,10 @@ export function updateEquipment(id: string, body: {
   status?: string;
   assignedTo?: string;
   locationId?: string | null;
+  supplierId?: string | null;
+  entryDate?: string;
+  origin?: string | null;
+  notes?: string | null;
 }) {
   return patch<Equipment>("/equipments/" + encodeURIComponent(id), body);
 }
@@ -467,8 +489,7 @@ export function getVehicles() {
 }
 
 export function createVehicle(body: {
-  code: string;
-  name: string;
+  name?: string;
   type: string;
   plateNumber: string;
   assignment?: string;

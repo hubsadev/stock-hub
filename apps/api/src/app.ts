@@ -486,7 +486,7 @@ export function buildApp() {
 
   app.get("/equipments", async () => {
     const equipments = await prisma.equipment.findMany({
-      include: { article: true },
+      include: { article: true, supplier: true, history: { orderBy: { createdAt: "desc" } } },
       orderBy: { code: "asc" }
     });
     const locationIds = equipments.map((equipment) => equipment.locationId).filter(Boolean) as string[];
@@ -504,17 +504,40 @@ export function buildApp() {
     if (!articleId) {
       return reply.code(400).send({ message: "Un article modele est requis pour creer un equipement." });
     }
+    const article = await prisma.article.findUnique({ where: { id: articleId } });
+    if (!article) {
+      return reply.code(404).send({ message: "Article modele introuvable." });
+    }
+    if (article.trackingMode !== "INDIVIDUAL") {
+      return reply.code(400).send({ message: "Un equipement ne peut etre cree que pour un article en suivi individuel." });
+    }
+    const equipmentCount = await prisma.equipment.count();
+    const code = "EQP-" + new Date().getFullYear() + "-" + String(equipmentCount + 1).padStart(3, "0");
     const equipment = await prisma.equipment.create({
       data: {
-        code: String(body.code ?? "EQP-" + Date.now()),
+        code,
         serialNumber: asString(body.serialNumber),
         articleId,
+        supplierId: asString(body.supplierId),
         state: String(body.state ?? "GOOD"),
-        status: String(body.status ?? "AVAILABLE"),
-        assignedTo: asString(body.assignedTo),
-        locationId: asString(body.locationId)
+        status: "AVAILABLE",
+        assignedTo: null,
+        locationId: asString(body.locationId),
+        entryDate: body.entryDate ? parseDate(body.entryDate) : undefined,
+        origin: asString(body.origin),
+        notes: asString(body.notes)
       },
-      include: { article: true }
+      include: { article: true, supplier: true }
+    });
+    await prisma.equipmentHistory.create({
+      data: {
+        equipmentId: equipment.id,
+        action: "CREATED",
+        status: equipment.status,
+        state: equipment.state,
+        locationId: equipment.locationId,
+        observation: equipment.notes
+      }
     });
     await prisma.auditLog.create({
       data: {
@@ -531,7 +554,7 @@ export function buildApp() {
   app.patch("/equipments/:id", async (request, reply) => {
     const body = asBody(request.body);
     const params = request.params as { id: string };
-    const before = await prisma.equipment.findUnique({ where: { id: params.id }, include: { article: true } });
+    const before = await prisma.equipment.findUnique({ where: { id: params.id }, include: { article: true, supplier: true } });
     if (!before) {
       return reply.code(404).send({ message: "Equipement introuvable." });
     }
@@ -539,12 +562,27 @@ export function buildApp() {
       where: { id: params.id },
       data: {
         serialNumber: asString(body.serialNumber) ?? before.serialNumber,
+        supplierId: body.supplierId === null ? null : asString(body.supplierId) ?? before.supplierId,
         state: asString(body.state) ?? before.state,
         status: asString(body.status) ?? before.status,
         assignedTo: asString(body.assignedTo) ?? before.assignedTo,
-        locationId: body.locationId === null ? null : asString(body.locationId) ?? before.locationId
+        locationId: body.locationId === null ? null : asString(body.locationId) ?? before.locationId,
+        entryDate: body.entryDate ? parseDate(body.entryDate) : before.entryDate,
+        origin: body.origin === null ? null : asString(body.origin) ?? before.origin,
+        notes: body.notes === null ? null : asString(body.notes) ?? before.notes
       },
-      include: { article: true }
+      include: { article: true, supplier: true }
+    });
+    await prisma.equipmentHistory.create({
+      data: {
+        equipmentId: equipment.id,
+        action: before.status !== equipment.status ? "STATUS_CHANGED" : before.assignedTo !== equipment.assignedTo ? "ASSIGNED" : "UPDATED",
+        status: equipment.status,
+        state: equipment.state,
+        assignedTo: equipment.assignedTo,
+        locationId: equipment.locationId,
+        observation: equipment.notes
+      }
     });
     await prisma.auditLog.create({
       data: {
@@ -556,7 +594,8 @@ export function buildApp() {
       }
     });
     const location = equipment.locationId ? await prisma.location.findUnique({ where: { id: equipment.locationId } }) : null;
-    return { ...equipment, location };
+    const history = await prisma.equipmentHistory.findMany({ where: { equipmentId: equipment.id }, orderBy: { createdAt: "desc" } });
+    return { ...equipment, location, history };
   });
 
 
@@ -566,13 +605,15 @@ export function buildApp() {
 
   app.post("/vehicles", async (request, reply) => {
     const body = asBody(request.body);
-    const code = String(body.code ?? "").trim();
-    const name = String(body.name ?? "").trim();
     const type = String(body.type ?? "").trim();
     const plateNumber = String(body.plateNumber ?? "").trim();
-    if (!code || !name || !type || !plateNumber) {
-      return reply.code(400).send({ message: "Code, vehicule, type et immatriculation sont requis." });
+    if (!type || !plateNumber) {
+      return reply.code(400).send({ message: "Le type et l'immatriculation sont requis." });
     }
+    const year = new Date().getFullYear();
+    const vehicleCount = await prisma.vehicle.count();
+    const code = "VH-" + year + "-" + String(vehicleCount + 1).padStart(3, "0");
+    const name = String(body.name ?? "").trim() || plateNumber;
     const vehicle = await prisma.vehicle.create({
       data: {
         code,
@@ -582,7 +623,7 @@ export function buildApp() {
         assignment: asString(body.assignment),
         driverName: asString(body.driverName),
         apprenticeName: asString(body.apprenticeName),
-        status: String(body.status ?? "AVAILABLE"),
+        status: "AVAILABLE",
         insuranceExpiresAt: body.insuranceExpiresAt ? parseDate(body.insuranceExpiresAt) : undefined,
         technicalVisitAt: body.technicalVisitAt ? parseDate(body.technicalVisitAt) : undefined,
         notes: asString(body.notes)

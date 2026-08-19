@@ -72,3 +72,21 @@
 - Exporter stock actuel.
 - Verifier que les fichiers sont lisibles.
 - Verifier qu'il n'y a pas de #REF! ni d'IDs inutiles.
+
+12. Absence de donnees fictives
+- Demarrer l'interface avec une base vide.
+- Verifier que les registres Entrees, Equipements et Parc auto affichent un etat vide.
+- Ouvrir les formulaires d'affectation, retour et transfert.
+- Verifier que les listes de fournisseurs, utilisateurs, articles, projets et emplacements sont chargees depuis l'API.
+- Verifier qu'aucun nom, code, bon, historique ou vehicule d'exemple n'apparait dans l'interface.
+- Verifier que les donnees du seed sont reservees au developpement local et ne sont pas injectees automatiquement en production.
+
+13. Corrections entrees, equipements et parc auto
+- Creer une entree puis la recevoir.
+- Ouvrir sa fiche avec l'icone oeil et verifier qu'elle est en lecture seule.
+- Verifier qu'aucune action ne permet de reenregistrer l'entree recue.
+- Creer un equipement uniquement a partir d'un article en suivi individuel.
+- Verifier le code genere, le statut Disponible et l'absence d'affectation obligatoire.
+- Verifier les metadonnees et l'historique reel de l'equipement.
+- Creer un vehicule avec immatriculation et type seulement.
+- Verifier le code genere, le statut Disponible et les champs date assurance/visite technique.

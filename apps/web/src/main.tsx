@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import ReactDOM from "react-dom/client";
 import { StockHubShell } from "./components/StockHubShell";
-import { createArticle, createClient, createEmployee, createExitRequest, createInventoryAdjustment, createLocation, createProject, createStockEntry, createStockExit, createStockReturn, createStockTransfer, createSupplier, createTeamService, createUser, getArticles, getAuditAlerts, getAuditLogs, getClients, getDashboardSummary, getEmployees, getEquipments, getLocations, getProjects, getStockLevels, getStockMovements, getSuppliers, getTeamServices, getUsers, getVehicles, loginUser, prepareExitRequest, uploadExitRequestProof, createVehicle, updateArticle, updateClient, updateEmployee, updateEquipment, updateLocation, updateProject, updateSupplier, updateTeamService, updateUser, type Article, type AuditAlert, type AuditLog, type Client, type Employee, type Equipment, type StockLevel, type StockLocation, type StockMovement, type StockProject, type StockUser, type Supplier, type TeamService, type Vehicle } from "./api";
+import { createArticle, createClient, createEmployee, createEquipment, createExitRequest, createInventoryAdjustment, createLocation, createProject, createStockEntry, createStockExit, createStockReturn, createStockTransfer, createSupplier, createTeamService, createUser, getArticles, getAuditAlerts, getAuditLogs, getClients, getDashboardSummary, getEmployees, getEquipments, getLocations, getProjects, getStockLevels, getStockMovements, getSuppliers, getTeamServices, getUsers, getVehicles, loginUser, prepareExitRequest, uploadExitRequestProof, createVehicle, updateArticle, updateClient, updateEmployee, updateEquipment, updateLocation, updateProject, updateSupplier, updateTeamService, updateUser, type Article, type AuditAlert, type AuditLog, type Client, type Employee, type Equipment, type StockLevel, type StockLocation, type StockMovement, type StockProject, type StockUser, type Supplier, type TeamService, type Vehicle } from "./api";
 import "./template.css";
 
 declare global {
@@ -491,8 +491,41 @@ function equipmentRow(equipment: Equipment) {
     + "<td class=\"px-5 py-4\">" + escapeHtml(location) + "</td>"
     + "<td class=\"px-5 py-4\">" + escapeHtml(equipment.assignedTo ?? "-") + "</td>"
     + "<td class=\"px-5 py-4\">" + badge(equipmentStatusLabel(equipment.status), equipmentStatusTone(equipment.status)) + "</td>"
-    + "<td class=\"px-5 py-4 text-right\"><button data-action=\"openModal('equipmentDetailModal')\" class=\"inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-accent-600 hover:bg-accent-50\" title=\"Voir la fiche\"><i data-lucide=\"eye\" class=\"w-4 h-4\"></i></button></td>"
+    + "<td class=\"px-5 py-4 text-right\"><button data-action=\"openEquipmentDetail('" + escapeHtml(equipment.id) + "')\" class=\"inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-accent-600 hover:bg-accent-50\" title=\"Voir la fiche\"><i data-lucide=\"eye\" class=\"w-4 h-4\"></i></button></td>"
     + "</tr>";
+}
+
+function openEquipmentDetail(root: HTMLElement, id: string) {
+  const equipment = latestEquipments.find((item) => item.id === id);
+  if (!equipment) {
+    showToast(root, "Equipement introuvable dans la liste chargee.", "error");
+    return;
+  }
+  const detailModal = root.querySelector<HTMLElement>("#equipmentDetailModal");
+  const title = detailModal?.querySelector<HTMLElement>("h2");
+  const subtitle = detailModal?.querySelector<HTMLElement>("h2 + p");
+  if (title) title.textContent = equipment.code + " - " + (equipment.article?.designation ?? "Equipement");
+  if (subtitle) subtitle.textContent = "Piece suivie individuellement. Affectation separee de la creation.";
+  const cards = detailModal?.querySelector<HTMLElement>(".p-6 > .grid");
+  if (cards) cards.innerHTML = [
+    ["Numero serie", equipment.serialNumber ?? "-"],
+    ["Etat", equipmentStateLabel(equipment.state)],
+    ["Affecte a", equipment.assignedTo ?? "-"],
+    ["Statut", equipmentStatusLabel(equipment.status)]
+  ].map(([label, value]) => "<div class=\"p-4 rounded-xl bg-gray-50 border\"><div class=\"text-xs font-semibold text-gray-500\">" + escapeHtml(label) + "</div><div class=\"font-bold mt-1\">" + escapeHtml(value) + "</div></div>").join("");
+  const tracking = detailModal?.querySelector<HTMLElement>(".p-6 > .border .p-5.grid");
+  if (tracking) tracking.innerHTML = [
+    ["Article modele", equipment.article ? equipment.article.code + " - " + equipment.article.designation : "-"],
+    ["Emplacement", equipment.location?.name ?? "Non localise"],
+    ["Date d'entree", formatDate(equipment.entryDate)],
+    ["Fournisseur", equipment.supplier?.name ?? "-"],
+    ["Origine", equipment.origin ?? "-"],
+    ["Observation", equipment.notes ?? "-"]
+  ].map(([label, value]) => "<div><span class=\"text-gray-500\">" + escapeHtml(label) + "</span><div class=\"font-semibold\">" + escapeHtml(value) + "</div></div>").join("");
+  const history = detailModal?.querySelector<HTMLElement>("#equipmentHistory");
+  if (history) history.innerHTML = equipment.history.length ? equipment.history.map((event) => "<div class=\"flex gap-4\"><div class=\"w-10 h-10 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center\"><i data-lucide=\"history\" class=\"w-4 h-4\"></i></div><div><div class=\"font-bold\">" + escapeHtml(event.action) + "</div><div class=\"text-sm text-gray-600\">" + escapeHtml(formatDate(event.createdAt)) + " - " + escapeHtml(event.observation ?? "Aucune observation") + "</div></div></div>").join("") : "<div class=\"text-sm text-gray-500\">Aucun historique.</div>";
+  history?.classList.add("hidden");
+  openModal(root, "equipmentDetailModal");
 }
 
 function equipmentOptions(equipments: Equipment[]) {
@@ -520,6 +553,43 @@ async function populateEquipmentModal(root: HTMLElement) {
   if (beneficiarySelect) beneficiarySelect.innerHTML = userOptions(users);
   if (locationSelect) locationSelect.innerHTML = locationOptions(locations);
   if (handledBySelect) handledBySelect.innerHTML = userOptions(users);
+}
+
+async function populateEquipmentCreateModal(root: HTMLElement) {
+  const modal = root.querySelector<HTMLElement>("#equipmentCreateModal");
+  if (!modal) return;
+  const [articles, locations, suppliers] = await Promise.all([getArticles().catch(() => []), getLocations().catch(() => []), getSuppliers().catch(() => [])]);
+  const articleSelect = modal.querySelector<HTMLSelectElement>("#equipmentCreateArticle");
+  const locationSelect = modal.querySelector<HTMLSelectElement>("#equipmentCreateLocation");
+  const supplierSelect = modal.querySelector<HTMLSelectElement>("#equipmentCreateSupplier");
+  if (articleSelect) articleSelect.innerHTML = articles.filter((article) => article.trackingMode === "INDIVIDUAL").map((article) => option(article.id, article.code + " - " + article.designation)).join("") || "<option value=\"\">Aucun article en suivi individuel</option>";
+  if (locationSelect) locationSelect.innerHTML = locationOptions(locations);
+  if (supplierSelect) supplierSelect.innerHTML = suppliers.map((supplier) => option(supplier.id, supplier.name)).join("") || "<option value=\"\">Aucun fournisseur</option>";
+}
+
+async function submitEquipmentCreation(root: HTMLElement) {
+  const articleId = root.querySelector<HTMLSelectElement>("#equipmentCreateArticle")?.value;
+  if (!articleId) {
+    showToast(root, "Selectionne un article en suivi individuel.", "error");
+    return;
+  }
+  try {
+    await createEquipment({
+      articleId,
+      serialNumber: root.querySelector<HTMLInputElement>("#equipmentCreateSerial")?.value.trim() || undefined,
+      state: root.querySelector<HTMLSelectElement>("#equipmentCreateState")?.value || "GOOD",
+      locationId: root.querySelector<HTMLSelectElement>("#equipmentCreateLocation")?.value || undefined,
+      supplierId: root.querySelector<HTMLSelectElement>("#equipmentCreateSupplier")?.value || undefined,
+      entryDate: root.querySelector<HTMLInputElement>("#equipmentCreateEntryDate")?.value || undefined,
+      origin: root.querySelector<HTMLInputElement>("#equipmentCreateOrigin")?.value.trim() || undefined,
+      notes: root.querySelector<HTMLTextAreaElement>("#equipmentCreateNotes")?.value.trim() || undefined
+    });
+    closeModal(root, "equipmentCreateModal");
+    updateApiBackedViews(root);
+    showToast(root, "Equipement cree et disponible.");
+  } catch (error) {
+    showToast(root, error instanceof Error ? error.message : "Creation equipement impossible.", "error");
+  }
 }
 
 async function submitEquipmentAssignment(root: HTMLElement) {
@@ -852,8 +922,38 @@ function entryMovementRow(movement: StockMovement) {
     + "<td class=\"px-5 py-4 text-right\">" + formatNumber(delta) + "</td>"
     + "<td class=\"px-5 py-4\">" + escapeHtml(movement.handledBy ?? movement.receivedBy ?? "-") + "</td>"
     + "<td class=\"px-5 py-4\">" + movementStatus(movement) + "</td>"
-    + "<td class=\"px-5 py-4 text-right\"><button class=\"text-accent-600 font-semibold\" data-action=\"openModal('entryModal')\">Voir</button></td>"
+    + "<td class=\"px-5 py-4 text-right\"><button data-action=\"openEntryDetail('" + escapeHtml(movement.id) + "')\" class=\"inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-accent-600 hover:bg-accent-50\" title=\"Voir la fiche\"><i data-lucide=\"eye\" class=\"w-4 h-4\"></i></button></td>"
     + "</tr>";
+}
+
+function openEntryDetail(root: HTMLElement, id: string) {
+  const movement = latestMovements.find((item) => item.id === id);
+  if (!movement) {
+    showToast(root, "Entree stock introuvable dans le registre charge.", "error");
+    return;
+  }
+  const first = movement.lines[0];
+  const expected = first?.expectedQuantity ?? 0;
+  const completed = first?.completedQuantity ?? 0;
+  const origin = movement.notes?.match(/^Origine entree:\s*([^\-]+)/i)?.[1]?.trim() ?? "Reception directe";
+  setText(root, "#entryDetailTitle", movement.reference);
+  setText(root, "#entryDetailSubtitle", "Fiche lecture seule de l'entree stock recue.");
+  const fields = root.querySelector<HTMLElement>("#entryDetailFields");
+  if (fields) fields.innerHTML = [
+    ["Bon d'entree", movement.reference],
+    ["Date", formatDate(movement.date)],
+    ["Article", first?.article ? first.article.code + " - " + first.article.designation : "-"],
+    ["Fournisseur", movement.supplier?.name ?? "-"],
+    ["Origine", origin],
+    ["Magasin de reception", movement.toLocation?.name ?? "-"],
+    ["Quantite attendue", formatNumber(expected)],
+    ["Quantite recue", formatNumber(completed)],
+    ["Ecart", formatNumber(completed - expected)],
+    ["Responsable", movement.handledBy ?? movement.receivedBy ?? "-"],
+    ["Statut", completed >= expected ? "Recue" : "Partielle"],
+    ["Observation", movement.notes ?? "-"]
+  ].map(([label, value]) => "<div><span class=\"text-gray-500\">" + escapeHtml(label) + "</span><div class=\"font-semibold mt-1\">" + escapeHtml(value) + "</div></div>").join("");
+  openModal(root, "entryDetailModal");
 }
 
 function movementStatusLabel(movement: StockMovement) {
@@ -2272,24 +2372,21 @@ function prepareVehicleModal(root: HTMLElement) {
 }
 
 async function submitVehicle(root: HTMLElement) {
-  const code = root.querySelector<HTMLInputElement>("#vehicleCode")?.value.trim() ?? "";
   const name = root.querySelector<HTMLInputElement>("#vehicleName")?.value.trim() ?? "";
-  const type = root.querySelector<HTMLSelectElement>("#vehicleType")?.value ?? "Voiture";
+  const type = root.querySelector<HTMLSelectElement>("#vehicleType")?.value ?? "";
   const plateNumber = root.querySelector<HTMLInputElement>("#vehiclePlate")?.value.trim() ?? "";
-  if (!name || !plateNumber) {
-    showToast(root, "Nom du vehicule et immatriculation sont requis.", "error");
+  if (!type || !plateNumber) {
+    showToast(root, "Type et immatriculation sont requis.", "error");
     return;
   }
   try {
     await createVehicle({
-      code,
       name,
       type,
       plateNumber,
       assignment: root.querySelector<HTMLInputElement>("#vehicleAssignment")?.value.trim() || undefined,
       driverName: root.querySelector<HTMLInputElement>("#vehicleDriver")?.value.trim() || undefined,
       apprenticeName: root.querySelector<HTMLInputElement>("#vehicleApprentice")?.value.trim() || undefined,
-      status: root.querySelector<HTMLSelectElement>("#vehicleStatus")?.value || "AVAILABLE",
       insuranceExpiresAt: root.querySelector<HTMLInputElement>("#vehicleInsurance")?.value.trim() || undefined,
       technicalVisitAt: root.querySelector<HTMLInputElement>("#vehicleVisit")?.value.trim() || undefined,
       notes: root.querySelector<HTMLTextAreaElement>("#vehicleNotes")?.value.trim() || undefined
@@ -2803,6 +2900,9 @@ function openModal(root: HTMLElement, id: string) {
   }
   if (id === "equipmentModal") {
     void populateEquipmentModal(root);
+  }
+  if (id === "equipmentCreateModal") {
+    void populateEquipmentCreateModal(root);
   }
   window.lucide?.createIcons();
 }
@@ -3442,6 +3542,7 @@ function parseAction(action: string) {
   if (action === "submitStockTransfer") return { type: "submit-stock-transfer" } as const;
   if (action === "submitInventoryCount") return { type: "submit-inventory-count" } as const;
   if (action === "submitEquipmentAssignment") return { type: "submit-equipment-assignment" } as const;
+  if (action === "submitEquipmentCreation") return { type: "submit-equipment-creation" } as const;
   if (action === "submitVehicle") return { type: "submit-vehicle" } as const;
   if (action === "submitUser") return { type: "submit-user" } as const;
   if (action === "toggleVehicleHistory") return { type: "toggle-vehicle-history" } as const;
@@ -3461,6 +3562,10 @@ function parseAction(action: string) {
   if (viewProofMatch) return { type: "view-signed-material-proof", id: viewProofMatch[1] } as const;
   const vehicleDetailMatch = action.match(/^openVehicleDetail\('([^']+)'\)/);
   if (vehicleDetailMatch) return { type: "vehicle-detail", id: vehicleDetailMatch[1] } as const;
+  const entryDetailMatch = action.match(/^openEntryDetail\('([^']+)'\)/);
+  if (entryDetailMatch) return { type: "entry-detail", id: entryDetailMatch[1] } as const;
+  const equipmentDetailMatch = action.match(/^openEquipmentDetail\('([^']+)'\)/);
+  if (equipmentDetailMatch) return { type: "equipment-detail", id: equipmentDetailMatch[1] } as const;
   const refMatch = action.match(/^showRef\('([^']+)'/);
   if (refMatch) return { type: "ref", id: refMatch[1] } as const;
   return { type: "unknown" } as const;
@@ -3527,6 +3632,7 @@ function StockHubTemplate() {
       if (parsed.type === "submit-stock-transfer") void submitStockTransfer(root);
       if (parsed.type === "submit-inventory-count") void submitInventoryCount(root);
       if (parsed.type === "submit-equipment-assignment") void submitEquipmentAssignment(root);
+      if (parsed.type === "submit-equipment-creation") void submitEquipmentCreation(root);
       if (parsed.type === "submit-vehicle") void submitVehicle(root);
       if (parsed.type === "submit-user") void submitUser(root);
       if (parsed.type === "user-detail") openUserDetail(root, parsed.id);
@@ -3537,6 +3643,8 @@ function StockHubTemplate() {
       if (parsed.type === "upload-signed-material-proof") void uploadSignedMaterialProof(root, parsed.id);
       if (parsed.type === "view-signed-material-proof") viewSignedMaterialProof(root, parsed.id);
       if (parsed.type === "vehicle-detail") openVehicleDetail(root, parsed.id);
+      if (parsed.type === "entry-detail") openEntryDetail(root, parsed.id);
+      if (parsed.type === "equipment-detail") openEquipmentDetail(root, parsed.id);
       if (parsed.type === "toggle-vehicle-history") toggleVehicleHistory(root);
       if (parsed.type === "exit-filter") {
         currentExitFilter = parsed.filter;
