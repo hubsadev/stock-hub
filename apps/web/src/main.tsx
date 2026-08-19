@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import ReactDOM from "react-dom/client";
 import { StockHubShell } from "./components/StockHubShell";
-import { createArticle, createClient, createEmployee, createEquipment, createExitRequest, createInventoryAdjustment, createLocation, createProject, createStockEntry, createStockExit, createStockReturn, createStockTransfer, createSupplier, createTeamService, createUser, getArticles, getAuditAlerts, getAuditLogs, getClients, getDashboardSummary, getEmployees, getEquipments, getLocations, getProjects, getStockLevels, getStockMovements, getSuppliers, getTeamServices, getUsers, getVehicles, loginUser, prepareExitRequest, uploadExitRequestProof, createVehicle, updateArticle, updateClient, updateEmployee, updateEquipment, updateLocation, updateProject, updateSupplier, updateTeamService, updateUser, type Article, type AuditAlert, type AuditLog, type Client, type Employee, type Equipment, type StockLevel, type StockLocation, type StockMovement, type StockProject, type StockUser, type Supplier, type TeamService, type Vehicle } from "./api";
+import { createArticle, createClient, createEmployee, createEquipment, createExitRequest, createInventoryAdjustment, createLocation, createProject, createStockEntry, createStockExit, createStockReturn, createStockTransfer, createSupplier, createTeamService, createUser, getArticles, getAuditAlerts, getAuditLogs, getClients, getDashboardSummary, getEmployees, getEquipments, getLocations, getProjects, getStockLevels, getStockMovements, getSuppliers, getTeamServices, getUsers, getVehicles, loginUser, prepareExitRequest, uploadExitRequestProof, createVehicle, unassignEquipment, updateArticle, updateClient, updateEmployee, updateEquipment, updateLocation, updateProject, updateSupplier, updateTeamService, updateUser, updateVehicle, type Article, type AuditAlert, type AuditLog, type Client, type Employee, type Equipment, type StockLevel, type StockLocation, type StockMovement, type StockProject, type StockUser, type Supplier, type TeamService, type Vehicle } from "./api";
 import "./template.css";
 
 declare global {
@@ -16,6 +16,8 @@ let latestStockLevels: StockLevel[] = [];
 let latestAuditLogs: AuditLog[] = [];
 let latestEquipments: Equipment[] = [];
 let latestVehicles: Vehicle[] = [];
+let selectedEquipmentId: string | null = null;
+let selectedVehicleId: string | null = null;
 let latestClients: Client[] = [];
 let latestEmployees: Employee[] = [];
 let latestTeamServices: TeamService[] = [];
@@ -480,6 +482,72 @@ function equipmentStatusTone(status: string): "success" | "warning" | "error" | 
   return "gray";
 }
 
+function equipmentHistoryLabel(action: string) {
+  const labels: Record<string, string> = {
+    CREATED: "Equipement cree",
+    ASSIGNED: "Affectation",
+    UNASSIGNED: "Desaffectation",
+    RETURNED: "Retour au stock",
+    LOCATION_CHANGED: "Emplacement modifie",
+    STATUS_CHANGED: "Statut modifie",
+    MAINTENANCE: "Maintenance",
+    UPDATED: "Equipement mis a jour"
+  };
+  return labels[action] ?? action;
+}
+
+function equipmentHistoryIcon(action: string) {
+  const icons: Record<string, string> = {
+    CREATED: "package-plus",
+    ASSIGNED: "user-round-check",
+    UNASSIGNED: "user-round-minus",
+    RETURNED: "rotate-ccw",
+    LOCATION_CHANGED: "map-pin",
+    STATUS_CHANGED: "refresh-cw",
+    MAINTENANCE: "wrench",
+    UPDATED: "pencil"
+  };
+  return icons[action] ?? "history";
+}
+
+function equipmentHistoryTone(action: string) {
+  if (action === "CREATED") return "bg-accent-50 text-accent-600";
+  if (action === "ASSIGNED") return "bg-success-50 text-success-700";
+  if (action === "UNASSIGNED") return "bg-warning-50 text-warning-700";
+  if (action === "RETURNED") return "bg-success-50 text-success-700";
+  if (action === "MAINTENANCE" || action === "STATUS_CHANGED") return "bg-warning-50 text-warning-700";
+  return "bg-gray-100 text-gray-600";
+}
+
+function equipmentHistoryTimeline(equipment: Equipment) {
+  const events = equipment.history.length ? equipment.history : [{
+    id: "created-" + equipment.id,
+    action: "CREATED",
+    status: equipment.status,
+    state: equipment.state,
+    assignedTo: equipment.assignedTo,
+    locationId: equipment.locationId,
+    observation: null,
+    createdAt: equipment.createdAt
+  }];
+  return events.map((event, index) => {
+    const eventDate = formatDate(event.createdAt);
+    const detail = event.action === "CREATED"
+      ? "Cree le " + eventDate
+      : event.action === "ASSIGNED" && event.assignedTo
+      ? "Affecte a " + event.assignedTo
+      : event.action === "LOCATION_CHANGED" && event.locationId
+        ? "Emplacement mis a jour"
+        : event.action === "STATUS_CHANGED" && event.status
+          ? "Nouveau statut : " + equipmentStatusLabel(event.status)
+          : event.observation ?? "";
+    return "<div class=\"relative flex gap-4 pb-6 last:pb-0\">"
+      + (index < events.length - 1 ? "<div class=\"absolute left-5 top-10 bottom-0 w-px bg-gray-200\"></div>" : "")
+      + "<div class=\"relative z-10 w-10 h-10 shrink-0 rounded-full flex items-center justify-center " + equipmentHistoryTone(event.action) + "\"><i data-lucide=\"" + equipmentHistoryIcon(event.action) + "\" class=\"w-4 h-4\"></i></div>"
+      + "<div class=\"min-w-0 pt-1\"><div class=\"font-bold\">" + escapeHtml(equipmentHistoryLabel(event.action)) + "</div><div class=\"text-sm text-gray-600 mt-1\">" + escapeHtml(eventDate) + "</div>" + (detail ? "<div class=\"text-sm text-gray-700 mt-1\">" + escapeHtml(detail) + "</div>" : "") + "</div></div>";
+  }).join("");
+}
+
 function equipmentRow(equipment: Equipment) {
   const article = equipment.article ? equipment.article.code + " - " + equipment.article.designation : "Article non renseigne";
   const location = equipment.location?.name ?? (equipment.locationId ? "Emplacement non charge" : "Non localise");
@@ -501,6 +569,7 @@ function openEquipmentDetail(root: HTMLElement, id: string) {
     showToast(root, "Equipement introuvable dans la liste chargee.", "error");
     return;
   }
+  selectedEquipmentId = id;
   const detailModal = root.querySelector<HTMLElement>("#equipmentDetailModal");
   const title = detailModal?.querySelector<HTMLElement>("h2");
   const subtitle = detailModal?.querySelector<HTMLElement>("h2 + p");
@@ -523,9 +592,92 @@ function openEquipmentDetail(root: HTMLElement, id: string) {
     ["Observation", equipment.notes ?? "-"]
   ].map(([label, value]) => "<div><span class=\"text-gray-500\">" + escapeHtml(label) + "</span><div class=\"font-semibold\">" + escapeHtml(value) + "</div></div>").join("");
   const history = detailModal?.querySelector<HTMLElement>("#equipmentHistory");
-  if (history) history.innerHTML = equipment.history.length ? equipment.history.map((event) => "<div class=\"flex gap-4\"><div class=\"w-10 h-10 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center\"><i data-lucide=\"history\" class=\"w-4 h-4\"></i></div><div><div class=\"font-bold\">" + escapeHtml(event.action) + "</div><div class=\"text-sm text-gray-600\">" + escapeHtml(formatDate(event.createdAt)) + " - " + escapeHtml(event.observation ?? "Aucune observation") + "</div></div></div>").join("") : "<div class=\"text-sm text-gray-500\">Aucun historique.</div>";
+  if (history) history.innerHTML = equipmentHistoryTimeline(equipment);
+  window.lucide?.createIcons();
   history?.classList.add("hidden");
   openModal(root, "equipmentDetailModal");
+  window.lucide?.createIcons();
+}
+
+async function openEquipmentEdit(root: HTMLElement) {
+  const equipment = latestEquipments.find((item) => item.id === selectedEquipmentId);
+  if (!equipment) {
+    showToast(root, "Equipement introuvable dans la liste chargee.", "error");
+    return;
+  }
+  const modal = root.querySelector<HTMLElement>("#equipmentEditModal");
+  if (!modal) return;
+  const [articles, locations, suppliers] = await Promise.all([getArticles().catch(() => []), getLocations().catch(() => []), getSuppliers().catch(() => [])]);
+  const articleSelect = modal.querySelector<HTMLSelectElement>("#equipmentEditArticle");
+  const locationSelect = modal.querySelector<HTMLSelectElement>("#equipmentEditLocation");
+  const supplierSelect = modal.querySelector<HTMLSelectElement>("#equipmentEditSupplier");
+  if (articleSelect) {
+    articleSelect.innerHTML = articles.filter((article) => article.trackingMode === "INDIVIDUAL").map((article) => option(article.id, article.code + " - " + article.designation)).join("");
+    articleSelect.value = equipment.articleId;
+  }
+  if (locationSelect) {
+    locationSelect.innerHTML = locationOptions(locations);
+    locationSelect.value = equipment.locationId ?? "";
+  }
+  if (supplierSelect) {
+    supplierSelect.innerHTML = option("", "Aucun fournisseur") + suppliers.map((supplier) => option(supplier.id, supplier.name)).join("");
+    supplierSelect.value = equipment.supplierId ?? "";
+  }
+  const code = modal.querySelector<HTMLInputElement>("#equipmentEditCode");
+  const serial = modal.querySelector<HTMLInputElement>("#equipmentEditSerial");
+  const state = modal.querySelector<HTMLSelectElement>("#equipmentEditState");
+  const entryDate = modal.querySelector<HTMLInputElement>("#equipmentEditEntryDate");
+  const origin = modal.querySelector<HTMLInputElement>("#equipmentEditOrigin");
+  const notes = modal.querySelector<HTMLTextAreaElement>("#equipmentEditNotes");
+  if (code) code.value = equipment.code;
+  if (serial) serial.value = equipment.serialNumber ?? "";
+  if (state) state.value = equipment.state;
+  if (entryDate) entryDate.value = equipment.entryDate.slice(0, 10);
+  if (origin) origin.value = equipment.origin ?? "";
+  if (notes) notes.value = equipment.notes ?? "";
+  openModal(root, "equipmentEditModal");
+}
+
+async function submitEquipmentEdit(root: HTMLElement) {
+  if (!selectedEquipmentId) return;
+  const modal = root.querySelector<HTMLElement>("#equipmentEditModal");
+  if (!modal) return;
+  try {
+    const updated = await updateEquipment(selectedEquipmentId, {
+      articleId: modal.querySelector<HTMLSelectElement>("#equipmentEditArticle")?.value,
+      serialNumber: modal.querySelector<HTMLInputElement>("#equipmentEditSerial")?.value.trim() || undefined,
+      state: modal.querySelector<HTMLSelectElement>("#equipmentEditState")?.value,
+      locationId: modal.querySelector<HTMLSelectElement>("#equipmentEditLocation")?.value || null,
+      supplierId: modal.querySelector<HTMLSelectElement>("#equipmentEditSupplier")?.value || null,
+      entryDate: modal.querySelector<HTMLInputElement>("#equipmentEditEntryDate")?.value || undefined,
+      origin: modal.querySelector<HTMLInputElement>("#equipmentEditOrigin")?.value.trim() || null,
+      notes: modal.querySelector<HTMLTextAreaElement>("#equipmentEditNotes")?.value.trim() || null
+    });
+    latestEquipments = latestEquipments.map((item) => item.id === updated.id ? updated : item);
+    closeModal(root, "equipmentEditModal");
+    openEquipmentDetail(root, updated.id);
+    showToast(root, "Equipement mis a jour.");
+  } catch (error) {
+    showToast(root, error instanceof Error ? error.message : "Modification equipement impossible.", "error");
+  }
+}
+
+async function unassignSelectedEquipment(root: HTMLElement) {
+  if (!selectedEquipmentId) return;
+  const equipment = latestEquipments.find((item) => item.id === selectedEquipmentId);
+  if (!equipment?.assignedTo) {
+    showToast(root, "Cet equipement n'est pas affecte.", "error");
+    return;
+  }
+  if (!window.confirm("Supprimer l'affectation de cet equipement ?")) return;
+  try {
+    const updated = await unassignEquipment(selectedEquipmentId);
+    latestEquipments = latestEquipments.map((item) => item.id === updated.id ? updated : item);
+    openEquipmentDetail(root, updated.id);
+    showToast(root, "Affectation supprimee et historisee.");
+  } catch (error) {
+    showToast(root, error instanceof Error ? error.message : "Desaffectation impossible.", "error");
+  }
 }
 
 function equipmentOptions(equipments: Equipment[]) {
@@ -2335,6 +2487,31 @@ function vehicleRow(vehicle: Vehicle) {
     + "</tr>";
 }
 
+function vehicleHistoryLabel(action: string) {
+  return ({
+    CREATED: "Vehicule cree",
+    ASSIGNED: "Affectation",
+    UNASSIGNED: "Desaffectation",
+    DRIVER_CHANGED: "Chauffeur change",
+    APPRENTICE_CHANGED: "Apprenti modifie",
+    STATUS_CHANGED: "Statut modifie",
+    MAINTENANCE: "Maintenance",
+    UPDATED: "Vehicule mis a jour"
+  } as Record<string, string>)[action] ?? action;
+}
+
+function vehicleHistoryIcon(action: string) {
+  return ({ CREATED: "car-front", ASSIGNED: "map-pin", UNASSIGNED: "map-pin-off", DRIVER_CHANGED: "user-round-cog", APPRENTICE_CHANGED: "user-round", STATUS_CHANGED: "refresh-cw", MAINTENANCE: "wrench", UPDATED: "pencil" } as Record<string, string>)[action] ?? "history";
+}
+
+function vehicleHistoryTimeline(vehicle: Vehicle) {
+  const events = vehicle.history?.length ? vehicle.history : [{ id: "created-" + vehicle.id, action: "CREATED", assignment: vehicle.assignment, previousAssignment: null, driverName: vehicle.driverName, previousDriverName: null, apprenticeName: vehicle.apprenticeName, previousApprenticeName: null, status: vehicle.status, previousStatus: null, observation: vehicle.notes, createdAt: vehicle.createdAt }];
+  return events.map((event, index) => {
+    const detail = event.action === "DRIVER_CHANGED" ? "Chauffeur : " + (event.previousDriverName ?? "-") + " -> " + (event.driverName ?? "-") : event.action === "ASSIGNED" ? "Affecte a " + (event.assignment ?? "-") : event.action === "UNASSIGNED" ? "Affectation retiree" : event.action === "STATUS_CHANGED" || event.action === "MAINTENANCE" ? "Statut : " + vehicleStatusLabel(event.previousStatus ?? "-") + " -> " + vehicleStatusLabel(event.status ?? "-") : event.action === "CREATED" ? "Cree le " + formatDate(event.createdAt) : event.observation ?? "";
+    return "<div class=\"relative flex gap-4 pb-6 last:pb-0\">" + (index < events.length - 1 ? "<div class=\"absolute left-5 top-10 bottom-0 w-px bg-gray-200\"></div>" : "") + "<div class=\"relative z-10 w-10 h-10 shrink-0 rounded-full bg-accent-50 text-accent-600 flex items-center justify-center\"><i data-lucide=\"" + vehicleHistoryIcon(event.action) + "\" class=\"w-4 h-4\"></i></div><div class=\"min-w-0 pt-1\"><div class=\"font-bold\">" + escapeHtml(vehicleHistoryLabel(event.action)) + "</div><div class=\"text-sm text-gray-600 mt-1\">" + escapeHtml(formatDate(event.createdAt)) + "</div><div class=\"text-sm text-gray-700 mt-1\">" + escapeHtml(detail) + "</div></div></div>";
+  }).join("");
+}
+
 function setVehicleKpi(root: HTMLElement, key: string, value: number) {
   const target = root.querySelector<HTMLElement>(`[data-vehicle-kpi="${key}"]`);
   if (target) target.textContent = formatNumber(value);
@@ -2405,6 +2582,7 @@ function openVehicleDetail(root: HTMLElement, id: string) {
     showToast(root, "Vehicule introuvable dans la liste chargee.", "error");
     return;
   }
+  selectedVehicleId = id;
   const title = root.querySelector<HTMLElement>("#vehicleDetailTitle");
   const subtitle = root.querySelector<HTMLElement>("#vehicleDetailSubtitle");
   const cards = root.querySelector<HTMLElement>("#vehicleDetailCards");
@@ -2426,12 +2604,42 @@ function openVehicleDetail(root: HTMLElement, id: string) {
     ["Derniere mise a jour", formatDate(vehicle.updatedAt)]
   ].map(([label, value]) => "<div><span class=\"text-gray-500\">" + escapeHtml(label) + "</span><div class=\"font-semibold\">" + escapeHtml(value) + "</div></div>").join("");
   const history = root.querySelector<HTMLElement>("#vehicleHistoryPanel");
-  if (history) history.classList.add("hidden");
+  if (history) {
+    history.innerHTML = vehicleHistoryTimeline(vehicle);
+    history.classList.add("hidden");
+  }
+  window.lucide?.createIcons();
   openModal(root, "vehicleDetailModal");
 }
 
 function toggleVehicleHistory(root: HTMLElement) {
   root.querySelector<HTMLElement>("#vehicleHistoryPanel")?.classList.toggle("hidden");
+  window.lucide?.createIcons();
+}
+
+async function openVehicleEdit(root: HTMLElement, focusDriver = false) {
+  const vehicle = latestVehicles.find((item) => item.id === selectedVehicleId);
+  const modal = root.querySelector<HTMLElement>("#vehicleEditModal");
+  if (!vehicle || !modal) return;
+  const values: Record<string, string> = { vehicleEditCode: vehicle.code, vehicleEditName: vehicle.name, vehicleEditType: vehicle.type, vehicleEditPlate: vehicle.plateNumber, vehicleEditDriver: vehicle.driverName ?? "", vehicleEditApprentice: vehicle.apprenticeName ?? "", vehicleEditAssignment: vehicle.assignment ?? "", vehicleEditStatus: vehicle.status, vehicleEditInsurance: vehicle.insuranceExpiresAt?.slice(0, 10) ?? "", vehicleEditVisit: vehicle.technicalVisitAt?.slice(0, 10) ?? "", vehicleEditNotes: vehicle.notes ?? "" };
+  Object.entries(values).forEach(([id, value]) => { const field = modal.querySelector<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>("#" + id); if (field) field.value = value; });
+  openModal(root, "vehicleEditModal");
+  if (focusDriver) modal.querySelector<HTMLInputElement>("#vehicleEditDriver")?.focus();
+}
+
+async function submitVehicleEdit(root: HTMLElement) {
+  if (!selectedVehicleId) return;
+  const modal = root.querySelector<HTMLElement>("#vehicleEditModal");
+  if (!modal) return;
+  try {
+    const updated = await updateVehicle(selectedVehicleId, { name: modal.querySelector<HTMLInputElement>("#vehicleEditName")?.value.trim(), type: modal.querySelector<HTMLSelectElement>("#vehicleEditType")?.value, plateNumber: modal.querySelector<HTMLInputElement>("#vehicleEditPlate")?.value.trim(), driverName: modal.querySelector<HTMLInputElement>("#vehicleEditDriver")?.value.trim() || null, apprenticeName: modal.querySelector<HTMLInputElement>("#vehicleEditApprentice")?.value.trim() || null, assignment: modal.querySelector<HTMLInputElement>("#vehicleEditAssignment")?.value.trim() || null, status: modal.querySelector<HTMLSelectElement>("#vehicleEditStatus")?.value, insuranceExpiresAt: modal.querySelector<HTMLInputElement>("#vehicleEditInsurance")?.value || null, technicalVisitAt: modal.querySelector<HTMLInputElement>("#vehicleEditVisit")?.value || null, notes: modal.querySelector<HTMLTextAreaElement>("#vehicleEditNotes")?.value.trim() || null });
+    latestVehicles = latestVehicles.map((item) => item.id === updated.id ? updated : item);
+    closeModal(root, "vehicleEditModal");
+    openVehicleDetail(root, updated.id);
+    showToast(root, "Vehicule mis a jour.");
+  } catch (error) {
+    showToast(root, error instanceof Error ? error.message : "Modification vehicule impossible.", "error");
+  }
 }
 function roleLabel(role: string) {
   return ({
@@ -3521,6 +3729,8 @@ function parseAction(action: string) {
   if (exitFilterMatch) return { type: "exit-filter", filter: exitFilterMatch[1] } as const;
   const exitActionsMatch = action.match(/^toggleExitActions\('([^']+)'\)/);
   if (exitActionsMatch) return { type: "toggle-exit-actions", id: exitActionsMatch[1] } as const;
+  const panelMatch = action.match(/^togglePanel\('([^']+)'\)/);
+  if (panelMatch) return { type: "toggle-panel", id: panelMatch[1] } as const;
   if (action === "refreshHistory") return { type: "refresh-history" } as const;
   if (action.includes("toggleLoginPassword")) return { type: "toggle-password" } as const;
   if (action.includes("toggleUserPassword")) return { type: "toggle-user-password" } as const;
@@ -3543,7 +3753,11 @@ function parseAction(action: string) {
   if (action === "submitInventoryCount") return { type: "submit-inventory-count" } as const;
   if (action === "submitEquipmentAssignment") return { type: "submit-equipment-assignment" } as const;
   if (action === "submitEquipmentCreation") return { type: "submit-equipment-creation" } as const;
+  if (action === "openEquipmentEdit") return { type: "equipment-edit" } as const;
+  if (action === "submitEquipmentEdit") return { type: "submit-equipment-edit" } as const;
+  if (action === "unassignEquipment") return { type: "unassign-equipment" } as const;
   if (action === "submitVehicle") return { type: "submit-vehicle" } as const;
+  if (action === "submitVehicleEdit") return { type: "submit-vehicle-edit" } as const;
   if (action === "submitUser") return { type: "submit-user" } as const;
   if (action === "toggleVehicleHistory") return { type: "toggle-vehicle-history" } as const;
   const userDetailMatch = action.match(/^openUserDetail\('([^']+)'\)/);
@@ -3592,13 +3806,44 @@ function StockHubTemplate() {
     window.lucide?.createIcons();
 
     const onClick = (event: MouseEvent) => {
-      const target = (event.target as HTMLElement).closest<HTMLElement>("[data-action]");
+      const clicked = event.target as HTMLElement;
+      const vehicleActionButton = clicked.closest<HTMLElement>("#vehicleDetailModal button[title]");
+      const vehicleActionTitle = vehicleActionButton?.getAttribute("title");
+      if (vehicleActionButton && vehicleActionTitle === "Modifier") {
+        void openVehicleEdit(root);
+        return;
+      }
+      if (vehicleActionButton && vehicleActionTitle === "Changer chauffeur") {
+        void openVehicleEdit(root, true);
+        return;
+      }
+      if (vehicleActionButton && vehicleActionTitle === "Planifier maintenance") {
+        const vehicle = latestVehicles.find((item) => item.id === selectedVehicleId);
+        if (vehicle) {
+          void updateVehicle(vehicle.id, { status: "MAINTENANCE" }).then((updated) => {
+            latestVehicles = latestVehicles.map((item) => item.id === updated.id ? updated : item);
+            openVehicleDetail(root, updated.id);
+            showToast(root, "Vehicule passe en maintenance.");
+          }).catch((error) => showToast(root, error instanceof Error ? error.message : "Mise en maintenance impossible.", "error"));
+        }
+        return;
+      }
+      const legacyEditButton = clicked.closest<HTMLElement>("#equipmentDetailModal button[title='Modifier']");
+      if (legacyEditButton && root.contains(legacyEditButton)) {
+        void openEquipmentEdit(root);
+        return;
+      }
+      const target = clicked.closest<HTMLElement>("[data-action]");
       if (!target || !root.contains(target)) return;
       const action = target.dataset.action;
       if (!action) return;
       const parsed = parseAction(action);
       if (parsed.type === "toggle-exit-actions") {
         toggleFloatingExitActions(root, parsed.id, target);
+        return;
+      }
+      if (parsed.type === "toggle-panel") {
+        root.querySelector<HTMLElement>(`#${CSS.escape(parsed.id)}`)?.classList.toggle("hidden");
         return;
       }
       closeFloatingExitActions(root);
@@ -3633,7 +3878,11 @@ function StockHubTemplate() {
       if (parsed.type === "submit-inventory-count") void submitInventoryCount(root);
       if (parsed.type === "submit-equipment-assignment") void submitEquipmentAssignment(root);
       if (parsed.type === "submit-equipment-creation") void submitEquipmentCreation(root);
+      if (parsed.type === "equipment-edit") void openEquipmentEdit(root);
+      if (parsed.type === "submit-equipment-edit") void submitEquipmentEdit(root);
+      if (parsed.type === "unassign-equipment") void unassignSelectedEquipment(root);
       if (parsed.type === "submit-vehicle") void submitVehicle(root);
+      if (parsed.type === "submit-vehicle-edit") void submitVehicleEdit(root);
       if (parsed.type === "submit-user") void submitUser(root);
       if (parsed.type === "user-detail") openUserDetail(root, parsed.id);
       if (parsed.type === "exit-detail") openExitRequestDetail(root, parsed.id);

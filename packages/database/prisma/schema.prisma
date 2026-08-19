@@ -291,6 +291,27 @@ model Vehicle {
   active             Boolean  @default(true)
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
+
+  history VehicleHistory[]
+}
+
+model VehicleHistory {
+  id               String   @id @default(cuid())
+  vehicleId        String
+  vehicle          Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  action           String
+  assignment       String?
+  previousAssignment String?
+  driverName       String?
+  previousDriverName String?
+  apprenticeName   String?
+  previousApprenticeName String?
+  status           String?
+  previousStatus   String?
+  observation      String?
+  createdAt        DateTime @default(now())
+
+  @@index([vehicleId, createdAt])
 }
 
 

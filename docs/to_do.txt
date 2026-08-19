@@ -1,3 +1,18 @@
-1. reduire la taille des kpis dans demande stock et les rendre cohérents
-2. enlever les cartes demandeur - gestionnaire stock - fiche finale
-3. 
+1. Volet historique dans Equipement : le bouton + pour dérouler l'historique ne réagit pas, on doit voir dans historique la création -> les différentes affectations comme un flux de suivi de manière stylées 
+2. Les boutons modifier - historique dans la fiche détails Equipement ne réagissent pas, modifier doit pouvoir de modifier TOUS les champs qu'on a rempli à la création de l'équipement  et on doit ajouter un bouton pour supprimer l'affectation de ce équipement tout en gardant ça dans l'historique plus tard
+3. Dans historique véhicule aussi on doit le flux création -> affectations aussi de manière stylée
+4. Les boutons modifier - Changer chauffeur et autres aussi ne réagissent pas 
+5. Dans Vue Stock : select emplacement utilise encore des données fictifs, champ de recherche ne réagit pas et doit être dynamique, on a pas le nombre initial - entrées - sorties qui se mettent à jour dynamiquement en fonction des différents mouvements     
+6. Dans referentiel : 
+ - au niveau de article enlever les fournisseurs dispo et stock mini et prix indicatif 
+ - au niveau de fournisseurs enlever familles habituels
+ - au niveau de employees enlever departement 
+
+7. Rendre les filtres cliquables et effectifs : 
+    - au niveau de Parc auto tableau registre filtre Tous - Disponibles - Affectes - Alertes 
+    - au niveau de Entrées stock tableau registre filtre Toutes - Recues - Litiges - Annulees
+    - au niveau de Sorties Stocks tableau registres filtres Toutes - Demandees - Preparees - Sorties - Bloquees - Annulees
+    - au niveau d'Audit & alertes tableau filtre Toutes - Critique - A verifier - Inventaire
+     
+
+pnpm --dir packages/database exec prisma migrate deploy

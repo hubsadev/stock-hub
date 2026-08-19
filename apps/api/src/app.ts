@@ -558,14 +558,22 @@ export function buildApp() {
     if (!before) {
       return reply.code(404).send({ message: "Equipement introuvable." });
     }
+    const requestedArticleId = asString(body.articleId);
+    if (requestedArticleId && requestedArticleId !== before.articleId) {
+      const article = await prisma.article.findUnique({ where: { id: requestedArticleId } });
+      if (!article || article.trackingMode !== "INDIVIDUAL") {
+        return reply.code(400).send({ message: "L'article modele doit etre en suivi individuel." });
+      }
+    }
     const equipment = await prisma.equipment.update({
       where: { id: params.id },
       data: {
+        articleId: requestedArticleId ?? before.articleId,
         serialNumber: asString(body.serialNumber) ?? before.serialNumber,
         supplierId: body.supplierId === null ? null : asString(body.supplierId) ?? before.supplierId,
         state: asString(body.state) ?? before.state,
         status: asString(body.status) ?? before.status,
-        assignedTo: asString(body.assignedTo) ?? before.assignedTo,
+        assignedTo: body.assignedTo === null ? null : asString(body.assignedTo) ?? before.assignedTo,
         locationId: body.locationId === null ? null : asString(body.locationId) ?? before.locationId,
         entryDate: body.entryDate ? parseDate(body.entryDate) : before.entryDate,
         origin: body.origin === null ? null : asString(body.origin) ?? before.origin,
@@ -598,9 +606,48 @@ export function buildApp() {
     return { ...equipment, location, history };
   });
 
+  app.post("/equipments/:id/unassign", async (request, reply) => {
+    const params = request.params as { id: string };
+    const before = await prisma.equipment.findUnique({ where: { id: params.id }, include: { article: true, supplier: true } });
+    if (!before) {
+      return reply.code(404).send({ message: "Equipement introuvable." });
+    }
+    if (!before.assignedTo && before.status === "AVAILABLE") {
+      return reply.code(400).send({ message: "Cet equipement n'est pas affecte." });
+    }
+    const equipment = await prisma.equipment.update({
+      where: { id: params.id },
+      data: { assignedTo: null, status: "AVAILABLE" },
+      include: { article: true, supplier: true }
+    });
+    await prisma.equipmentHistory.create({
+      data: {
+        equipmentId: equipment.id,
+        action: "UNASSIGNED",
+        status: equipment.status,
+        state: equipment.state,
+        assignedTo: null,
+        locationId: equipment.locationId,
+        observation: "Desaffecte de " + (before.assignedTo ?? "l'affectation courante")
+      }
+    });
+    await prisma.auditLog.create({
+      data: {
+        action: "UNASSIGN_EQUIPMENT",
+        entity: "Equipment",
+        entityId: equipment.id,
+        before: before as any,
+        after: equipment as any
+      }
+    });
+    const location = equipment.locationId ? await prisma.location.findUnique({ where: { id: equipment.locationId } }) : null;
+    const history = await prisma.equipmentHistory.findMany({ where: { equipmentId: equipment.id }, orderBy: { createdAt: "desc" } });
+    return { ...equipment, location, history };
+  });
+
 
   app.get("/vehicles", async () => {
-    return prisma.vehicle.findMany({ orderBy: { code: "asc" } });
+    return prisma.vehicle.findMany({ include: { history: { orderBy: { createdAt: "desc" } } }, orderBy: { code: "asc" } });
   });
 
   app.post("/vehicles", async (request, reply) => {
@@ -627,6 +674,17 @@ export function buildApp() {
         insuranceExpiresAt: body.insuranceExpiresAt ? parseDate(body.insuranceExpiresAt) : undefined,
         technicalVisitAt: body.technicalVisitAt ? parseDate(body.technicalVisitAt) : undefined,
         notes: asString(body.notes)
+      }
+    });
+    await prisma.vehicleHistory.create({
+      data: {
+        vehicleId: vehicle.id,
+        action: "CREATED",
+        assignment: vehicle.assignment,
+        driverName: vehicle.driverName,
+        apprenticeName: vehicle.apprenticeName,
+        status: vehicle.status,
+        observation: vehicle.notes
       }
     });
     await prisma.auditLog.create({
@@ -661,6 +719,30 @@ export function buildApp() {
         active: body.active === undefined ? before.active : body.active !== false
       }
     });
+    const action = before.assignment !== vehicle.assignment
+      ? (vehicle.assignment ? "ASSIGNED" : "UNASSIGNED")
+      : before.driverName !== vehicle.driverName
+        ? "DRIVER_CHANGED"
+        : before.apprenticeName !== vehicle.apprenticeName
+          ? "APPRENTICE_CHANGED"
+          : before.status !== vehicle.status
+            ? (vehicle.status === "MAINTENANCE" ? "MAINTENANCE" : "STATUS_CHANGED")
+            : "UPDATED";
+    await prisma.vehicleHistory.create({
+      data: {
+        vehicleId: vehicle.id,
+        action,
+        assignment: vehicle.assignment,
+        previousAssignment: before.assignment,
+        driverName: vehicle.driverName,
+        previousDriverName: before.driverName,
+        apprenticeName: vehicle.apprenticeName,
+        previousApprenticeName: before.apprenticeName,
+        status: vehicle.status,
+        previousStatus: before.status,
+        observation: vehicle.notes
+      }
+    });
     await prisma.auditLog.create({
       data: {
         action: "UPDATE_VEHICLE",
@@ -670,7 +752,8 @@ export function buildApp() {
         after: vehicle as any
       }
     });
-    return vehicle;
+    const history = await prisma.vehicleHistory.findMany({ where: { vehicleId: vehicle.id }, orderBy: { createdAt: "desc" } });
+    return { ...vehicle, history };
   });
   app.patch("/locations/:id", async (request, reply) => {
     const { id } = request.params as { id: string };

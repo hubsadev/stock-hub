@@ -165,6 +165,22 @@ export type Vehicle = {
   active: boolean;
   createdAt: string;
   updatedAt: string;
+  history: VehicleHistory[];
+};
+
+export type VehicleHistory = {
+  id: string;
+  action: string;
+  assignment: string | null;
+  previousAssignment: string | null;
+  driverName: string | null;
+  previousDriverName: string | null;
+  apprenticeName: string | null;
+  previousApprenticeName: string | null;
+  status: string | null;
+  previousStatus: string | null;
+  observation: string | null;
+  createdAt: string;
 };
 export type StockMovementLine = {
   id: string;
@@ -470,10 +486,11 @@ export function createEquipment(body: {
 }
 
 export function updateEquipment(id: string, body: {
+  articleId?: string;
   serialNumber?: string;
   state?: string;
   status?: string;
-  assignedTo?: string;
+  assignedTo?: string | null;
   locationId?: string | null;
   supplierId?: string | null;
   entryDate?: string;
@@ -481,6 +498,10 @@ export function updateEquipment(id: string, body: {
   notes?: string | null;
 }) {
   return patch<Equipment>("/equipments/" + encodeURIComponent(id), body);
+}
+
+export function unassignEquipment(id: string) {
+  return post<Equipment>("/equipments/" + encodeURIComponent(id) + "/unassign", {});
 }
 
 
