@@ -7199,7 +7199,7 @@ function StockHubTemplate() {
         showAuditTab(root, parsed.id, target);
       }
       if (parsed.type === "refresh-history") renderHistory(root);
-i      if (parsed.type === "export") exportData(root, parsed.kind);
+      if (parsed.type === "export") exportData(root, parsed.kind);
       if (parsed.type === "stock-filter") renderStock(root);
       if (parsed.type === "stock-location") {
         navigateToView(root, "stock");
