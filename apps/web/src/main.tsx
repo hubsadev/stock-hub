@@ -382,7 +382,7 @@ function articleRow(article: Article) {
     article.trackingMode === "INDIVIDUAL"
       ? "Suivi individuel"
       : "Article en quantite";
-  return `<tr><td class="px-5 py-4 font-bold">${escapeHtml(article.code)}</td><td class="px-5 py-4">${escapeHtml(article.designation)}</td><td class="px-5 py-4">${escapeHtml(article.category)}</td><td class="px-5 py-4">${escapeHtml(article.unit)}</td><td class="px-5 py-4">${badge(tracking)}</td><td class="px-5 py-4 text-gray-500">A definir</td><td class="px-5 py-4 text-right">${formatNumber(article.minimumStock)}</td><td class="px-5 py-4 text-right">${formatNumber(article.referencePrice)}</td><td class="px-5 py-4">${badge(article.active ? "Actif" : "Inactif", article.active ? "success" : "gray")}</td><td class="px-5 py-4 text-right">${actionEyeFor(`openReferentialDetail('article','${article.id}')`)}</td></tr>`;
+  return `<tr><td class="px-5 py-4 font-bold">${escapeHtml(article.code)}</td><td class="px-5 py-4">${escapeHtml(article.designation)}</td><td class="px-5 py-4">${escapeHtml(article.category)}</td><td class="px-5 py-4">${escapeHtml(article.unit)}</td><td class="px-5 py-4">${badge(tracking)}</td><td class="px-5 py-4">${badge(article.active ? "Actif" : "Inactif", article.active ? "success" : "gray")}</td><td class="px-5 py-4 text-right">${actionEyeFor(`openReferentialDetail('article','${article.id}')`)}</td></tr>`;
 }
 
 function emptyRow(colspan: number, message: string) {
@@ -397,7 +397,7 @@ function actionEyeFor(action: string) {
   return `<button data-action="${escapeHtml(action)}" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-accent-600 hover:bg-accent-50" title="Voir la fiche"><i data-lucide="eye" class="w-4 h-4"></i></button>`;
 }
 function supplierRow(supplier: Supplier) {
-  return `<tr><td class="px-5 py-4 font-bold">${escapeHtml(supplier.code)}</td><td class="px-5 py-4">${escapeHtml(supplier.name)}</td><td class="px-5 py-4">${escapeHtml(supplier.contact ?? "-")}</td><td class="px-5 py-4">${escapeHtml(supplier.phone ?? "-")}</td><td class="px-5 py-4">${escapeHtml(supplier.email ?? "-")}</td><td class="px-5 py-4 text-gray-500">A definir</td><td class="px-5 py-4">${badge(supplier.active ? "Actif" : "Inactif", supplier.active ? "success" : "gray")}</td><td class="px-5 py-4 text-right">${actionEyeFor(`openReferentialDetail('supplier','${supplier.id}')`)}</td></tr>`;
+  return `<tr><td class="px-5 py-4 font-bold">${escapeHtml(supplier.code)}</td><td class="px-5 py-4">${escapeHtml(supplier.name)}</td><td class="px-5 py-4">${escapeHtml(supplier.contact ?? "-")}</td><td class="px-5 py-4">${escapeHtml(supplier.phone ?? "-")}</td><td class="px-5 py-4">${escapeHtml(supplier.email ?? "-")}</td><td class="px-5 py-4">${badge(supplier.active ? "Actif" : "Inactif", supplier.active ? "success" : "gray")}</td><td class="px-5 py-4 text-right">${actionEyeFor(`openReferentialDetail('supplier','${supplier.id}')`)}</td></tr>`;
 }
 
 function projectRow(project: StockProject) {
@@ -415,7 +415,7 @@ function siteRow(location: StockLocation) {
 }
 
 function employeeRefRow(employee: Employee) {
-  return `<tr><td class="px-5 py-4 font-bold">${escapeHtml(employee.matricule)}</td><td class="px-5 py-4">${escapeHtml(employee.lastName)}</td><td class="px-5 py-4">${escapeHtml(employee.firstName)}</td><td class="px-5 py-4">${escapeHtml(employee.role ?? "-")}</td><td class="px-5 py-4">${escapeHtml(employee.department ?? "-")}</td><td class="px-5 py-4">${badge(employee.active ? "Actif" : "Inactif", employee.active ? "success" : "gray")}</td><td class="px-5 py-4 text-right">${actionEyeFor(`openReferentialDetail('employee','${employee.id}')`)}</td></tr>`;
+  return `<tr><td class="px-5 py-4 font-bold">${escapeHtml(employee.matricule)}</td><td class="px-5 py-4">${escapeHtml(employee.lastName)}</td><td class="px-5 py-4">${escapeHtml(employee.firstName)}</td><td class="px-5 py-4">${escapeHtml(employee.role ?? "-")}</td><td class="px-5 py-4">${badge(employee.active ? "Actif" : "Inactif", employee.active ? "success" : "gray")}</td><td class="px-5 py-4 text-right">${actionEyeFor(`openReferentialDetail('employee','${employee.id}')`)}</td></tr>`;
 }
 
 function stockStatus(level: StockLevel) {
@@ -4889,7 +4889,7 @@ function updateApiBackedViews(root: HTMLElement) {
       if (articleBody)
         articleBody.innerHTML = articles.length
           ? articles.map(articleRow).join("")
-          : emptyRow(10, "Aucun article en base pour le moment.");
+          : emptyRow(7, "Aucun article en base pour le moment.");
       setText(root, "#refArticlesCount", articles.length);
       renderInventory(root);
       window.lucide?.createIcons();
@@ -4905,7 +4905,7 @@ function updateApiBackedViews(root: HTMLElement) {
       if (suppliersBody)
         suppliersBody.innerHTML = suppliers.length
           ? suppliers.map(supplierRow).join("")
-          : emptyRow(8, "Aucun fournisseur en base pour le moment.");
+          : emptyRow(7, "Aucun fournisseur en base pour le moment.");
       setText(root, "#refSuppliersCount", suppliers.length);
       window.lucide?.createIcons();
     })
@@ -4948,7 +4948,7 @@ function updateApiBackedViews(root: HTMLElement) {
       if (employeesBody)
         employeesBody.innerHTML = employees.length
           ? employees.map(employeeRefRow).join("")
-          : emptyRow(7, "Aucun employe en base pour le moment.");
+          : emptyRow(6, "Aucun employe en base pour le moment.");
       setText(root, "#refEmployeesCount", employees.length);
       window.lucide?.createIcons();
     })
