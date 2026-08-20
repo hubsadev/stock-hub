@@ -406,7 +406,7 @@ function projectRow(project: StockProject) {
 
 function locationRow(location: StockLocation) {
   const type = location.type.replace(/_/g, " ");
-  return `<tr><td class="px-5 py-4 font-bold">${escapeHtml(location.code)}</td><td class="px-5 py-4">${escapeHtml(location.name)}</td><td class="px-5 py-4">${escapeHtml(type)}</td><td class="px-5 py-4">${escapeHtml(location.address ?? "-")}</td><td class="px-5 py-4">${escapeHtml(location.responsible ?? "-")}</td><td class="px-5 py-4">${badge(location.active ? "Actif" : "Inactif", location.active ? "success" : "gray")}</td><td class="px-5 py-4 text-right">${actionEyeFor(`openReferentialDetail('location','${location.id}')`)}</td></tr>`;
+  return `<tr><td class="px-5 py-4 font-bold">${escapeHtml(location.code)}</td><td class="px-5 py-4">${escapeHtml(location.name)}</td><td class="px-5 py-4">${escapeHtml(type)}</td><td class="px-5 py-4">${escapeHtml(location.address ?? "-")}</td><td class="px-5 py-4">${escapeHtml(location.responsible ?? "-")}</td><td class="px-5 py-4">${badge(location.active ? "Actif" : "Inactif", location.active ? "success" : "gray")}</td><td class="px-5 py-4 text-right"><div class="flex items-center justify-end gap-2"><button data-action="filterStockByLocation('${location.id}')" class="text-accent-600 font-semibold">Voir stock</button>${actionEyeFor(`openReferentialDetail('location','${location.id}')`)}</div></td></tr>`;
 }
 
 function siteRow(location: StockLocation) {
@@ -425,8 +425,59 @@ function stockStatus(level: StockLevel) {
   return badge("Disponible", "success");
 }
 
+function stockMovementMetrics(level: StockLevel) {
+  let entries = 0;
+  let exits = 0;
+  for (const movement of latestMovements) {
+    if (movement.status === "CANCELLED" || movement.status === "DRAFT") continue;
+    for (const line of movement.lines) {
+      if (line.articleId !== level.article.id) continue;
+      const quantity = Number(line.completedQuantity ?? line.expectedQuantity ?? line.requestedQuantity ?? 0);
+      if (quantity <= 0) continue;
+      if ((movement.type === "ENTRY" || movement.type === "RETURN") && movement.toLocationId === level.location.id) entries += quantity;
+      if (movement.type === "EXIT" && movement.fromLocationId === level.location.id) exits += quantity;
+      if (movement.type === "TRANSFER") {
+        if (movement.toLocationId === level.location.id) entries += quantity;
+        if (movement.fromLocationId === level.location.id) exits += quantity;
+      }
+    }
+  }
+  return { entries, exits, initial: Math.max(0, Number(level.quantity) - entries + exits) };
+}
+
 function stockRow(level: StockLevel) {
-  return `<tr><td class="px-5 py-4 font-bold">${escapeHtml(level.article.designation)}</td><td class="px-5 py-4">${escapeHtml(level.article.category)}</td><td class="px-5 py-4">${escapeHtml(level.location.name)}</td><td class="px-5 py-4 text-right text-gray-400">-</td><td class="px-5 py-4 text-right text-gray-400">-</td><td class="px-5 py-4 text-right text-gray-400">-</td><td class="px-5 py-4 text-right font-bold">${formatNumber(level.quantity)}</td><td class="px-5 py-4">${stockStatus(level)}</td></tr>`;
+  const metrics = stockMovementMetrics(level);
+  return `<tr><td class="px-5 py-4"><div class="font-bold">${escapeHtml(level.article.designation)}</div><div class="text-xs text-gray-500">${escapeHtml(level.article.code)}</div></td><td class="px-5 py-4">${escapeHtml(level.article.category)}</td><td class="px-5 py-4">${escapeHtml(level.location.name)}</td><td class="px-5 py-4 text-right">${formatNumber(metrics.initial)}</td><td class="px-5 py-4 text-right text-success-700">${formatNumber(metrics.entries)}</td><td class="px-5 py-4 text-right text-error-700">${formatNumber(metrics.exits)}</td><td class="px-5 py-4 text-right font-bold">${formatNumber(level.quantity)}</td><td class="px-5 py-4">${stockStatus(level)}</td></tr>`;
+}
+
+function renderStock(root: HTMLElement) {
+  const body = root.querySelector<HTMLElement>("#stock tbody");
+  if (!body) return;
+  const location = root.querySelector<HTMLSelectElement>("#stockLocationSelect")?.value ?? "";
+  const category = root.querySelector<HTMLSelectElement>("#stockCategorySelect")?.value ?? "";
+  const search = root.querySelector<HTMLInputElement>("#stockSearchInput")?.value.trim().toLowerCase() ?? "";
+  const levels = latestStockLevels.filter((level) => {
+    const haystack = `${level.article.code} ${level.article.designation} ${level.location.name}`.toLowerCase();
+    return (!location || level.location.id === location) && (!category || level.article.category === category) && (!search || haystack.includes(search));
+  });
+  body.innerHTML = levels.length ? levels.map(stockRow).join("") : emptyRow(8, "Aucun stock ne correspond aux critères.");
+  window.lucide?.createIcons();
+}
+
+function populateStockFilters(root: HTMLElement) {
+  const locationSelect = root.querySelector<HTMLSelectElement>("#stockLocationSelect");
+  if (locationSelect) {
+    const previous = locationSelect.value;
+    locationSelect.innerHTML = '<option value="">Tous les emplacements</option>' + latestLocations.map((location) => option(location.id, `${location.code} - ${location.name}`)).join("");
+    if (latestLocations.some((location) => location.id === previous)) locationSelect.value = previous;
+  }
+  const categorySelect = root.querySelector<HTMLSelectElement>("#stockCategorySelect");
+  if (categorySelect) {
+    const previous = categorySelect.value;
+    const categories = [...new Set(latestStockLevels.map((level) => level.article.category))].sort();
+    categorySelect.innerHTML = '<option value="">Toutes familles</option>' + categories.map((category) => option(category, category)).join("");
+    if (categories.includes(previous)) categorySelect.value = previous;
+  }
 }
 
 function reapproLevels() {
@@ -4988,6 +5039,8 @@ function updateApiBackedViews(root: HTMLElement) {
           ? sites.map(siteRow).join("")
           : emptyRow(7, "Aucun site ou chantier en base pour le moment.");
       setText(root, "#refSitesCount", sites.length);
+      populateStockFilters(root);
+      renderStock(root);
       renderInventory(root);
       window.lucide?.createIcons();
     })
@@ -4996,6 +5049,7 @@ function updateApiBackedViews(root: HTMLElement) {
   getStockMovements()
     .then((movements) => {
       latestMovements = movements;
+      renderStock(root);
       renderEntriesRegistry(root);
       const exits = visibleExitMovements(movements);
       const pendingExits = exits.filter(
@@ -5075,12 +5129,9 @@ function updateApiBackedViews(root: HTMLElement) {
 
   getStockLevels()
     .then((levels) => {
-      const stockBody = root.querySelector<HTMLElement>("#stock tbody");
-      if (stockBody)
-        stockBody.innerHTML = levels.length
-          ? levels.map(stockRow).join("")
-          : emptyRow(8, "Aucun stock disponible pour le moment.");
       latestStockLevels = levels;
+      populateStockFilters(root);
+      renderStock(root);
       renderInventory(root);
       renderExitRegistry(root);
       renderReappro(root);
@@ -6867,6 +6918,9 @@ function parseAction(action: string) {
     } as const;
   const exportMatch = action.match(/^exportData\('([^']+)'\)/);
   if (exportMatch) return { type: "export", kind: exportMatch[1] } as const;
+  const stockLocationMatch = action.match(/^filterStockByLocation\('([^']+)'\)/);
+  if (stockLocationMatch) return { type: "stock-location", id: stockLocationMatch[1] } as const;
+  if (action === "filterStock") return { type: "stock-filter" } as const;
   const inventoryModeMatch = action.match(/^showInventoryMode\('([^']+)'\)/);
   if (inventoryModeMatch)
     return { type: "inventory-mode", mode: inventoryModeMatch[1] } as const;
@@ -7145,7 +7199,15 @@ function StockHubTemplate() {
         showAuditTab(root, parsed.id, target);
       }
       if (parsed.type === "refresh-history") renderHistory(root);
-      if (parsed.type === "export") exportData(root, parsed.kind);
+i      if (parsed.type === "export") exportData(root, parsed.kind);
+      if (parsed.type === "stock-filter") renderStock(root);
+      if (parsed.type === "stock-location") {
+        navigateToView(root, "stock");
+        populateStockFilters(root);
+        const select = root.querySelector<HTMLSelectElement>("#stockLocationSelect");
+        if (select) select.value = parsed.id;
+        renderStock(root);
+      }
       if (parsed.type === "inventory-mode")
         showInventoryMode(root, parsed.mode);
     };
@@ -7157,12 +7219,16 @@ function StockHubTemplate() {
       if (target.id === "inventoryLocationSelect") {
         renderInventory(root);
       }
+      if (["stockLocationSelect", "stockCategorySelect"].includes(target.id)) {
+        renderStock(root);
+      }
       if (target.closest("#materialRequestLines")) {
         syncMaterialPreparationState(root);
       }
     };
     const onInput = (event: Event) => {
       const target = event.target as HTMLElement;
+      if (target.id === "stockSearchInput") renderStock(root);
       if (target.closest("#materialRequestLines")) {
         syncMaterialPreparationState(root);
       }

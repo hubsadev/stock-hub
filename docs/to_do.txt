@@ -1,11 +1,14 @@
 2. Les boutons modifier - historique dans la fiche détails Equipement ne réagissent pas, modifier doit pouvoir de modifier TOUS les champs qu'on a rempli à la création de l'équipement  et on doit ajouter un bouton pour supprimer l'affectation de ce équipement tout en gardant ça dans l'historique plus tard
 3. Dans historique véhicule aussi on doit le flux création -> affectations aussi de manière stylée
 4. Les boutons modifier - Changer chauffeur et autres aussi ne réagissent pas 
-5. Dans Vue Stock : select emplacement utilise encore des données fictifs, champ de recherche ne réagit pas et doit être dynamique, on a pas le nombre initial - entrées - sorties qui se mettent à jour dynamiquement en fonction des différents mouvements     
+5. Dans Vue Stock : select emplacement utilise encore des données fictifs, champ de recherche ne réagit pas et doit être dynamique, dans le data table on a pas les nombres initial - entrées - sorties qui se mettent à jour dynamiquement en fonction des différents mouvements     
 6. Dans referentiel : 
  - au niveau de article enlever les fournisseurs dispo et stock mini et prix indicatif 
  - au niveau de fournisseurs enlever familles habituels
  - au niveau de employees enlever departement 
+
+Dans réferentiel Site projet rattache - region - ville sont absents alors que dans la fiche détail on a toutes les infos présentes 
+Vue stock initial - entrees - sorties ne donnent pas de données  
 
  
 
