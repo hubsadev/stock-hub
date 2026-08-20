@@ -96,11 +96,10 @@
                   <p class="text-sm text-gray-500 mt-1">Le stock augmente avec la quantite recue, pas avec la quantite attendue.</p>
                 </div>
                 <div class="flex flex-wrap gap-2 text-xs font-semibold">
-                  <button data-exit-filter="ALL" data-action="setExitFilter('ALL')" class="px-3 py-2 rounded-lg bg-accent-50 text-accent-600">Toutes</button>
-                  <button class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Recues</button>
-                  <button class="px-3 py-2 rounded-lg bg-warning-50 text-warning-700">Partielles</button>
-                  <button class="px-3 py-2 rounded-lg bg-error-50 text-error-700">Litiges</button>
-                  <button data-exit-filter="CANCELLED" data-action="setExitFilter('CANCELLED')" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Annulees</button>
+                  <button data-entry-filter="ALL" data-action="setEntryFilter('ALL')" class="px-3 py-2 rounded-lg bg-accent-50 text-accent-600">Toutes</button>
+                  <button data-entry-filter="RECEIVED" data-action="setEntryFilter('RECEIVED')" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Recues</button>
+                  <button data-entry-filter="DISPUTES" data-action="setEntryFilter('DISPUTES')" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Litiges</button>
+                  <button data-entry-filter="CANCELLED" data-action="setEntryFilter('CANCELLED')" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Annulees</button>
                 </div>
               </div>
               <div class="grid grid-cols-1 lg:grid-cols-[1fr_180px_180px] gap-3">
@@ -268,7 +267,7 @@
                   <button data-exit-filter="REQUESTED" data-action="setExitFilter('REQUESTED')" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Demandees</button>
                   <button data-exit-filter="PREPARED" data-action="setExitFilter('PREPARED')" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Preparees</button>
                   <button data-exit-filter="EXIT" data-action="setExitFilter('EXIT')" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Sorties</button>
-                  <button data-exit-filter="BLOCKED" data-action="setExitFilter('BLOCKED')" class="px-3 py-2 rounded-lg bg-error-50 text-error-700">Bloquees</button>
+                  <button data-exit-filter="BLOCKED" data-action="setExitFilter('BLOCKED')" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Bloquees</button>
                   <button data-exit-filter="CANCELLED" data-action="setExitFilter('CANCELLED')" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Annulees</button>
                 </div>
               </div>
@@ -418,7 +417,7 @@
             <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Maintenance</div><div class="text-3xl font-bold mt-3 text-error-700" data-vehicle-kpi="maintenance">0</div><div class="text-xs text-error-700 mt-1">A planifier</div></div>
           </div>
           <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-            <div class="p-5 border-b border-gray-200 flex flex-col xl:flex-row xl:items-center justify-between gap-4"><h2 class="text-lg font-bold">Registre vehicules</h2><div class="flex gap-2 flex-wrap"><span class="px-3 py-1 rounded-full text-xs font-semibold bg-accent-50 text-accent-600">Tous</span><span class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600">Disponibles</span><span class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600">Affectes</span><span class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600">Alertes</span></div></div>
+            <div class="p-5 border-b border-gray-200 flex flex-col xl:flex-row xl:items-center justify-between gap-4"><h2 class="text-lg font-bold">Registre vehicules</h2><div class="flex gap-2 flex-wrap"><button data-vehicle-filter="ALL" data-action="setVehicleFilter('ALL')" class="px-3 py-2 rounded-lg text-xs font-semibold bg-accent-50 text-accent-600">Tous</button><button data-vehicle-filter="AVAILABLE" data-action="setVehicleFilter('AVAILABLE')" class="px-3 py-2 rounded-lg text-xs font-semibold bg-gray-100 text-gray-600">Disponibles</button><button data-vehicle-filter="ASSIGNED" data-action="setVehicleFilter('ASSIGNED')" class="px-3 py-2 rounded-lg text-xs font-semibold bg-gray-100 text-gray-600">Affectes</button><button data-vehicle-filter="ALERTS" data-action="setVehicleFilter('ALERTS')" class="px-3 py-2 rounded-lg text-xs font-semibold bg-gray-100 text-gray-600">Alertes</button></div></div>
             <div class="overflow-x-auto"><table id="vehicles-table" class="w-full text-sm min-w-[1050px]"><thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Vehicule</th><th class="px-5 py-3 text-left">Immatriculation</th><th class="px-5 py-3 text-left">Type</th><th class="px-5 py-3 text-left">Affectation</th><th class="px-5 py-3 text-left">Chauffeur</th><th class="px-5 py-3 text-left">Apprenti</th><th class="px-5 py-3 text-left">Statut</th><th class="px-5 py-3 text-right">Action</th></tr></thead><tbody class="divide-y"><tr><td class="px-5 py-8 text-center text-gray-500" colspan="8">Chargement des vehicules...</td></tr></tbody></table></div>
           </div>
         </section>        <section id="audit" class="view">
@@ -452,7 +451,7 @@
             <div id="audit-alerts" class="audit-view">
               <div class="p-4 border-b bg-gray-50 flex flex-col lg:flex-row gap-3 lg:items-center justify-between">
                 <div class="relative w-full lg:w-96"><i data-lucide="search" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400"></i><input class="w-full h-10 rounded-lg border border-gray-300 pl-10 pr-3" placeholder="Article, equipement, emplacement"></div>
-                <div class="flex gap-2 text-xs font-semibold flex-wrap"><span class="px-3 py-1 rounded-full bg-accent-50 text-accent-600">Toutes</span><span class="px-3 py-1 rounded-full bg-error-50 text-error-700">Critique</span><span class="px-3 py-1 rounded-full bg-warning-50 text-warning-700">A verifier</span><span class="px-3 py-1 rounded-full bg-gray-100 text-gray-600">Inventaire</span></div>
+                <div class="flex gap-2 text-xs font-semibold flex-wrap"><button data-audit-filter="ALL" data-action="setAuditFilter('ALL')" class="px-3 py-2 rounded-lg bg-accent-50 text-accent-600">Toutes</button><button data-audit-filter="CRITICAL" data-action="setAuditFilter('CRITICAL')" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Critique</button><button data-audit-filter="TO_VERIFY" data-action="setAuditFilter('TO_VERIFY')" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">A verifier</button><button data-audit-filter="INVENTORY" data-action="setAuditFilter('INVENTORY')" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Inventaire</button></div>
               </div>
               <div class="overflow-x-auto">
                 <table class="w-full text-sm min-w-[1100px]">
