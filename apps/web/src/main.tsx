@@ -861,170 +861,281 @@ function equipmentRow(equipment: Equipment) {
   );
 }
 
-function openEquipmentDetail(root: HTMLElement, id: string) {
+async function renderEquipmentDetail(
+  root: HTMLElement,
+  id: string,
+  editing = false,
+) {
   const equipment = latestEquipments.find((item) => item.id === id);
   if (!equipment) {
     showToast(root, "Equipement introuvable dans la liste chargee.", "error");
-    return;
+    return false;
   }
   selectedEquipmentId = id;
   const detailModal = root.querySelector<HTMLElement>("#equipmentDetailModal");
-  const title = detailModal?.querySelector<HTMLElement>("h2");
-  const subtitle = detailModal?.querySelector<HTMLElement>("h2 + p");
-  if (title)
-    title.textContent =
-      equipment.code + " - " + (equipment.article?.designation ?? "Equipement");
-  if (subtitle)
-    subtitle.textContent =
-      "Piece suivie individuellement. Affectation separee de la creation.";
-  const cards = detailModal?.querySelector<HTMLElement>(".p-6 > .grid");
-  if (cards)
-    cards.innerHTML = [
-      ["Numero serie", equipment.serialNumber ?? "-"],
-      ["Etat", equipmentStateLabel(equipment.state)],
-      ["Affecte a", equipment.assignedTo ?? "-"],
-      ["Statut", equipmentStatusLabel(equipment.status)],
-    ]
-      .map(
-        ([label, value]) =>
-          '<div class="p-4 rounded-xl bg-gray-50 border"><div class="text-xs font-semibold text-gray-500">' +
-          escapeHtml(label) +
-          '</div><div class="font-bold mt-1">' +
-          escapeHtml(value) +
-          "</div></div>",
-      )
-      .join("");
-  const tracking = detailModal?.querySelector<HTMLElement>(
-    ".p-6 > .border .p-5.grid",
+  if (!detailModal) return false;
+
+  const title = detailModal.querySelector<HTMLElement>("#equipmentDetailTitle");
+  const subtitle = detailModal.querySelector<HTMLElement>(
+    "#equipmentDetailSubtitle",
   );
-  if (tracking)
-    tracking.innerHTML = [
-      [
-        "Article modele",
-        equipment.article
-          ? equipment.article.code + " - " + equipment.article.designation
-          : "-",
-      ],
-      ["Emplacement", equipment.location?.name ?? "Non localise"],
-      ["Date d'entree", formatDate(equipment.entryDate)],
-      ["Fournisseur", equipment.supplier?.name ?? "-"],
-      ["Origine", equipment.origin ?? "-"],
-      ["Observation", equipment.notes ?? "-"],
-    ]
-      .map(
-        ([label, value]) =>
-          '<div><span class="text-gray-500">' +
-          escapeHtml(label) +
-          '</span><div class="font-semibold">' +
-          escapeHtml(value) +
-          "</div></div>",
-      )
-      .join("");
-  const history = detailModal?.querySelector<HTMLElement>("#equipmentHistory");
-  if (history) history.innerHTML = equipmentHistoryTimeline(equipment);
+  const actions = detailModal.querySelector<HTMLElement>(
+    "#equipmentDetailActions",
+  );
+  const cards = detailModal.querySelector<HTMLElement>("#equipmentDetailCards");
+  const contentTitle = detailModal.querySelector<HTMLElement>(
+    "#equipmentDetailContentTitle",
+  );
+  const fields = detailModal.querySelector<HTMLElement>(
+    "#equipmentDetailFields",
+  );
+  const history = detailModal.querySelector<HTMLElement>("#equipmentHistory");
+  const historyWrapper = detailModal.querySelector<HTMLElement>(
+    "#equipmentHistoryPanelWrapper",
+  );
+
+  if (editing) {
+    if (title) title.textContent = `${equipment.code} - Modifier l'equipement`;
+    if (subtitle)
+      subtitle.textContent =
+        "Modifier directement les donnees saisies pour cet equipement.";
+    if (contentTitle) contentTitle.textContent = "Modifier les informations";
+
+    const [articles, locations, suppliers] = await Promise.all([
+      latestArticles.length ? latestArticles : getArticles().catch(() => []),
+      latestLocations.length ? latestLocations : getLocations().catch(() => []),
+      latestSuppliers.length ? latestSuppliers : getSuppliers().catch(() => []),
+    ]);
+    latestArticles = articles;
+    latestLocations = locations;
+    latestSuppliers = suppliers;
+
+    const individualArticles = articles.filter(
+      (article) => article.trackingMode === "INDIVIDUAL",
+    );
+    const articleOptionsHtml =
+      individualArticles
+        .map((article) =>
+          option(article.id, `${article.code} - ${article.designation}`),
+        )
+        .join("") || option("", "Aucun article en suivi individuel");
+
+    const supplierOptionsHtml =
+      option("", "Aucun fournisseur") +
+      suppliers.map((supplier) => option(supplier.id, supplier.name)).join("");
+
+    const locationOptionsHtml =
+      option("", "Non localise") + locationOptions(locations);
+
+    const stateOptionsHtml =
+      option("GOOD", "Bon") +
+      option("DAMAGED", "Abime") +
+      option("REPAIR", "A reparer") +
+      option("LOST", "Perdu");
+
+    if (cards) {
+      cards.innerHTML = "";
+      cards.classList.add("hidden");
+    }
+    if (historyWrapper) historyWrapper.classList.add("hidden");
+
+    if (fields) {
+      fields.innerHTML = `
+        <form id="equipmentDetailEditForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <label>
+            <span class="text-sm font-semibold">Article modele</span>
+            <select name="articleId" class="mt-2 w-full h-11 border rounded-lg px-3 bg-white">
+              ${articleOptionsHtml}
+            </select>
+          </label>
+          <label>
+            <span class="text-sm font-semibold">Numero de serie</span>
+            <input name="serialNumber" value="${escapeHtml(equipment.serialNumber ?? "")}" placeholder="Ex: SN-12345" class="mt-2 w-full h-11 border rounded-lg px-3">
+          </label>
+          <label>
+            <span class="text-sm font-semibold">Etat</span>
+            <select name="state" class="mt-2 w-full h-11 border rounded-lg px-3 bg-white">
+              ${stateOptionsHtml}
+            </select>
+          </label>
+          <label>
+            <span class="text-sm font-semibold">Emplacement</span>
+            <select name="locationId" class="mt-2 w-full h-11 border rounded-lg px-3 bg-white">
+              ${locationOptionsHtml}
+            </select>
+          </label>
+          <label>
+            <span class="text-sm font-semibold">Date d'entree</span>
+            <input name="entryDate" type="date" value="${escapeHtml(equipment.entryDate.slice(0, 10))}" class="mt-2 w-full h-11 border rounded-lg px-3">
+          </label>
+          <label>
+            <span class="text-sm font-semibold">Fournisseur</span>
+            <select name="supplierId" class="mt-2 w-full h-11 border rounded-lg px-3 bg-white">
+              ${supplierOptionsHtml}
+            </select>
+          </label>
+          <label class="md:col-span-2">
+            <span class="text-sm font-semibold">Origine</span>
+            <input name="origin" value="${escapeHtml(equipment.origin ?? "")}" placeholder="Ex: Reception commande, Transfert..." class="mt-2 w-full h-11 border rounded-lg px-3">
+          </label>
+          <label class="md:col-span-2">
+            <span class="text-sm font-semibold">Observation</span>
+            <textarea name="notes" placeholder="Notes ou observations..." class="mt-2 w-full min-h-20 border rounded-lg px-3 py-2">${escapeHtml(equipment.notes ?? "")}</textarea>
+          </label>
+        </form>
+      `;
+      const form = fields.querySelector<HTMLFormElement>(
+        "#equipmentDetailEditForm",
+      );
+      if (form) {
+        const articleSelect = form.querySelector<HTMLSelectElement>(
+          'select[name="articleId"]',
+        );
+        const stateSelect = form.querySelector<HTMLSelectElement>(
+          'select[name="state"]',
+        );
+        const locationSelect = form.querySelector<HTMLSelectElement>(
+          'select[name="locationId"]',
+        );
+        const supplierSelect = form.querySelector<HTMLSelectElement>(
+          'select[name="supplierId"]',
+        );
+        if (articleSelect) articleSelect.value = equipment.articleId;
+        if (stateSelect) stateSelect.value = equipment.state;
+        if (locationSelect) locationSelect.value = equipment.locationId ?? "";
+        if (supplierSelect) supplierSelect.value = equipment.supplierId ?? "";
+      }
+    }
+
+    if (actions) {
+      actions.innerHTML = `
+        <button title="Annuler" data-action="cancelEquipmentEdit" class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-white border text-gray-700 hover:bg-gray-50"><i data-lucide="x" class="w-4 h-4"></i></button>
+        <button title="Enregistrer" data-action="submitEquipmentEdit" class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-accent-600 text-white hover:bg-accent-500"><i data-lucide="save" class="w-4 h-4"></i></button>
+      `;
+    }
+  } else {
+    if (title) {
+      title.textContent = `${equipment.code} - ${equipment.article?.designation ?? "Equipement"}`;
+    }
+    if (subtitle) {
+      subtitle.textContent =
+        "Piece suivie individuellement. Affectation separee de la creation.";
+    }
+    if (contentTitle) contentTitle.textContent = "Informations et tracabilite";
+
+    if (cards) {
+      cards.classList.remove("hidden");
+      cards.innerHTML = [
+        ["Numero serie", equipment.serialNumber ?? "-"],
+        ["Etat", equipmentStateLabel(equipment.state)],
+        ["Affecte a", equipment.assignedTo ?? "-"],
+        ["Statut", equipmentStatusLabel(equipment.status)],
+      ]
+        .map(
+          ([label, value]) =>
+            '<div class="p-4 rounded-xl bg-gray-50 border"><div class="text-xs font-semibold text-gray-500">' +
+            escapeHtml(label) +
+            '</div><div class="font-bold mt-1">' +
+            escapeHtml(value) +
+            "</div></div>",
+        )
+        .join("");
+    }
+
+    if (fields) {
+      fields.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+          ${[
+            [
+              "Article modele",
+              equipment.article
+                ? equipment.article.code + " - " + equipment.article.designation
+                : "-",
+            ],
+            ["Emplacement", equipment.location?.name ?? "Non localise"],
+            ["Date d'entree", formatDate(equipment.entryDate)],
+            ["Fournisseur", equipment.supplier?.name ?? "-"],
+            ["Origine", equipment.origin ?? "-"],
+            ["Observation", equipment.notes ?? "-"],
+          ]
+            .map(
+              ([label, value]) =>
+                '<div><span class="text-gray-500">' +
+                escapeHtml(label) +
+                '</span><div class="font-semibold mt-1">' +
+                escapeHtml(value) +
+                "</div></div>",
+            )
+            .join("")}
+        </div>
+      `;
+    }
+
+    if (history) {
+      history.innerHTML = equipmentHistoryTimeline(equipment);
+      history.classList.add("hidden");
+    }
+    if (historyWrapper) historyWrapper.classList.remove("hidden");
+
+    if (actions) {
+      actions.innerHTML = `
+        <button title="Enregistrer retour" data-action="closeModal('equipmentDetailModal'); openModal('returnModal')" class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-accent-600 text-white hover:bg-accent-500"><i data-lucide="rotate-ccw" class="w-4 h-4"></i></button>
+        <button title="Modifier" data-action="editEquipmentDetail" class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-white border text-gray-700 hover:bg-gray-50"><i data-lucide="pencil" class="w-4 h-4"></i></button>
+        <button title="Afficher l'historique" data-action="togglePanel('equipmentHistory')" class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-white border text-gray-700 hover:bg-gray-50"><i data-lucide="history" class="w-4 h-4"></i></button>
+        ${equipment.assignedTo ? '<button title="Supprimer l\'affectation" data-action="unassignEquipment" class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-white border text-gray-700 hover:bg-gray-50"><i data-lucide="user-round-minus" class="w-4 h-4"></i></button>' : ""}
+        <button title="Fermer" class="inline-flex items-center justify-center w-10 h-10 rounded-lg border text-gray-500 hover:text-gray-900" data-action="closeModal('equipmentDetailModal')"><i data-lucide="x" class="w-5 h-5"></i></button>
+      `;
+    }
+  }
+
   window.lucide?.createIcons();
-  history?.classList.add("hidden");
-  openModal(root, "equipmentDetailModal");
-  window.lucide?.createIcons();
+  return true;
+}
+
+function openEquipmentDetail(root: HTMLElement, id: string) {
+  selectedEquipmentId = id;
+  void renderEquipmentDetail(root, id, false).then((ok) => {
+    if (ok) openModal(root, "equipmentDetailModal");
+  });
+}
+
+function editEquipmentDetail(root: HTMLElement) {
+  if (selectedEquipmentId) {
+    void renderEquipmentDetail(root, selectedEquipmentId, true);
+  }
+}
+
+function cancelEquipmentEdit(root: HTMLElement) {
+  if (selectedEquipmentId) {
+    void renderEquipmentDetail(root, selectedEquipmentId, false);
+  }
 }
 
 async function openEquipmentEdit(root: HTMLElement) {
-  const equipment = latestEquipments.find(
-    (item) => item.id === selectedEquipmentId,
-  );
-  if (!equipment) {
-    showToast(root, "Equipement introuvable dans la liste chargee.", "error");
-    return;
-  }
-  const modal = root.querySelector<HTMLElement>("#equipmentEditModal");
-  if (!modal) return;
-  const [articles, locations, suppliers] = await Promise.all([
-    getArticles().catch(() => []),
-    getLocations().catch(() => []),
-    getSuppliers().catch(() => []),
-  ]);
-  const articleSelect = modal.querySelector<HTMLSelectElement>(
-    "#equipmentEditArticle",
-  );
-  const locationSelect = modal.querySelector<HTMLSelectElement>(
-    "#equipmentEditLocation",
-  );
-  const supplierSelect = modal.querySelector<HTMLSelectElement>(
-    "#equipmentEditSupplier",
-  );
-  if (articleSelect) {
-    articleSelect.innerHTML = articles
-      .filter((article) => article.trackingMode === "INDIVIDUAL")
-      .map((article) =>
-        option(article.id, article.code + " - " + article.designation),
-      )
-      .join("");
-    articleSelect.value = equipment.articleId;
-  }
-  if (locationSelect) {
-    locationSelect.innerHTML = locationOptions(locations);
-    locationSelect.value = equipment.locationId ?? "";
-  }
-  if (supplierSelect) {
-    supplierSelect.innerHTML =
-      option("", "Aucun fournisseur") +
-      suppliers.map((supplier) => option(supplier.id, supplier.name)).join("");
-    supplierSelect.value = equipment.supplierId ?? "";
-  }
-  const code = modal.querySelector<HTMLInputElement>("#equipmentEditCode");
-  const serial = modal.querySelector<HTMLInputElement>("#equipmentEditSerial");
-  const state = modal.querySelector<HTMLSelectElement>("#equipmentEditState");
-  const entryDate = modal.querySelector<HTMLInputElement>(
-    "#equipmentEditEntryDate",
-  );
-  const origin = modal.querySelector<HTMLInputElement>("#equipmentEditOrigin");
-  const notes = modal.querySelector<HTMLTextAreaElement>("#equipmentEditNotes");
-  if (code) code.value = equipment.code;
-  if (serial) serial.value = equipment.serialNumber ?? "";
-  if (state) state.value = equipment.state;
-  if (entryDate) entryDate.value = equipment.entryDate.slice(0, 10);
-  if (origin) origin.value = equipment.origin ?? "";
-  if (notes) notes.value = equipment.notes ?? "";
-  openModal(root, "equipmentEditModal");
+  editEquipmentDetail(root);
 }
 
 async function submitEquipmentEdit(root: HTMLElement) {
   if (!selectedEquipmentId) return;
-  const modal = root.querySelector<HTMLElement>("#equipmentEditModal");
-  if (!modal) return;
+  const form = root.querySelector<HTMLFormElement>("#equipmentDetailEditForm");
+  if (!form) return;
+  const data = Object.fromEntries(new FormData(form).entries());
   try {
     const updated = await updateEquipment(selectedEquipmentId, {
-      articleId: modal.querySelector<HTMLSelectElement>("#equipmentEditArticle")
-        ?.value,
-      serialNumber:
-        modal
-          .querySelector<HTMLInputElement>("#equipmentEditSerial")
-          ?.value.trim() || undefined,
-      state: modal.querySelector<HTMLSelectElement>("#equipmentEditState")
-        ?.value,
-      locationId:
-        modal.querySelector<HTMLSelectElement>("#equipmentEditLocation")
-          ?.value || null,
-      supplierId:
-        modal.querySelector<HTMLSelectElement>("#equipmentEditSupplier")
-          ?.value || null,
-      entryDate:
-        modal.querySelector<HTMLInputElement>("#equipmentEditEntryDate")
-          ?.value || undefined,
-      origin:
-        modal
-          .querySelector<HTMLInputElement>("#equipmentEditOrigin")
-          ?.value.trim() || null,
-      notes:
-        modal
-          .querySelector<HTMLTextAreaElement>("#equipmentEditNotes")
-          ?.value.trim() || null,
+      articleId: String(data.articleId || ""),
+      serialNumber: String(data.serialNumber ?? "").trim() || undefined,
+      state: String(data.state || "GOOD"),
+      locationId: data.locationId ? String(data.locationId) : null,
+      supplierId: data.supplierId ? String(data.supplierId) : null,
+      entryDate: data.entryDate ? String(data.entryDate) : undefined,
+      origin: String(data.origin ?? "").trim() || null,
+      notes: String(data.notes ?? "").trim() || null,
     });
     latestEquipments = latestEquipments.map((item) =>
       item.id === updated.id ? updated : item,
     );
-    closeModal(root, "equipmentEditModal");
-    openEquipmentDetail(root, updated.id);
+    await renderEquipmentDetail(root, updated.id, false);
+    updateApiBackedViews(root);
     showToast(root, "Equipement mis a jour.");
   } catch (error) {
     showToast(
@@ -1052,7 +1163,8 @@ async function unassignSelectedEquipment(root: HTMLElement) {
     latestEquipments = latestEquipments.map((item) =>
       item.id === updated.id ? updated : item,
     );
-    openEquipmentDetail(root, updated.id);
+    await renderEquipmentDetail(root, updated.id, false);
+    updateApiBackedViews(root);
     showToast(root, "Affectation supprimee et historisee.");
   } catch (error) {
     showToast(
@@ -4394,73 +4506,284 @@ async function submitVehicle(root: HTMLElement) {
   }
 }
 
-function openVehicleDetail(root: HTMLElement, id: string) {
+function renderVehicleDetail(
+  root: HTMLElement,
+  id: string,
+  editing = false,
+  focusField?: string,
+) {
   const vehicle = latestVehicles.find((item) => item.id === id);
   if (!vehicle) {
     showToast(root, "Vehicule introuvable dans la liste chargee.", "error");
-    return;
+    return false;
   }
   selectedVehicleId = id;
-  const title = root.querySelector<HTMLElement>("#vehicleDetailTitle");
-  const subtitle = root.querySelector<HTMLElement>("#vehicleDetailSubtitle");
-  const cards = root.querySelector<HTMLElement>("#vehicleDetailCards");
-  const tracking = root.querySelector<HTMLElement>("#vehicleDetailTracking");
-  if (title) title.textContent = vehicle.code + " - " + vehicle.name;
-  if (subtitle)
-    subtitle.textContent = vehicle.assignment
-      ? "Vehicule rattache a " + vehicle.assignment + "."
-      : "Vehicule disponible ou sans affectation renseignee.";
-  if (cards)
-    cards.innerHTML = [
-      ["Immatriculation", vehicle.plateNumber],
-      ["Type", vehicle.type],
-      ["Chauffeur", vehicle.driverName ?? "-"],
-      ["Apprenti", vehicle.apprenticeName ?? "-"],
-    ]
-      .map(
-        ([label, value]) =>
-          '<div class="p-4 rounded-xl bg-gray-50 border"><div class="text-xs font-semibold text-gray-500">' +
-          escapeHtml(label) +
-          '</div><div class="font-bold mt-1">' +
-          escapeHtml(value) +
-          "</div></div>",
-      )
+  const detailModal = root.querySelector<HTMLElement>("#vehicleDetailModal");
+  if (!detailModal) return false;
+
+  const title = detailModal.querySelector<HTMLElement>("#vehicleDetailTitle");
+  const subtitle = detailModal.querySelector<HTMLElement>(
+    "#vehicleDetailSubtitle",
+  );
+  const actions = detailModal.querySelector<HTMLElement>(
+    "#vehicleDetailActions",
+  );
+  const cards = detailModal.querySelector<HTMLElement>("#vehicleDetailCards");
+  const contentTitle = detailModal.querySelector<HTMLElement>(
+    "#vehicleDetailContentTitle",
+  );
+  const fields = detailModal.querySelector<HTMLElement>("#vehicleDetailFields");
+  const history = detailModal.querySelector<HTMLElement>(
+    "#vehicleHistoryPanel",
+  );
+  const historyWrapper = detailModal.querySelector<HTMLElement>(
+    "#vehicleHistoryPanelWrapper",
+  );
+
+  if (editing) {
+    if (title) title.textContent = `${vehicle.code} - Modifier le vehicule`;
+    if (subtitle) {
+      subtitle.textContent =
+        focusField === "driver"
+          ? "Modification directe du chauffeur et de l'apprenti."
+          : "Modifier directement les caracteristiques et le suivi du vehicule.";
+    }
+    if (contentTitle) {
+      contentTitle.textContent =
+        focusField === "driver"
+          ? "Changer le chauffeur et l'apprenti"
+          : "Modifier les informations du vehicule";
+    }
+
+    if (cards) {
+      cards.innerHTML = "";
+      cards.classList.add("hidden");
+    }
+    if (historyWrapper) historyWrapper.classList.add("hidden");
+
+    const typeOptionsHtml = ["Voiture", "Pick-up", "Moto", "Camion", "Engin"]
+      .map((t) => option(t, t))
       .join("");
-  if (tracking)
-    tracking.innerHTML = [
-      ["Affectation", vehicle.assignment ?? "Disponible"],
-      [
-        "Assurance",
-        vehicle.insuranceExpiresAt
-          ? formatDate(vehicle.insuranceExpiresAt)
-          : "Non renseignee",
-      ],
-      [
-        "Visite technique",
-        vehicle.technicalVisitAt
-          ? formatDate(vehicle.technicalVisitAt)
-          : "Non renseignee",
-      ],
-      ["Statut", vehicleStatusLabel(vehicle.status)],
-      ["Observation", vehicle.notes ?? "-"],
-      ["Derniere mise a jour", formatDate(vehicle.updatedAt)],
-    ]
-      .map(
-        ([label, value]) =>
-          '<div><span class="text-gray-500">' +
-          escapeHtml(label) +
-          '</span><div class="font-semibold">' +
-          escapeHtml(value) +
-          "</div></div>",
-      )
-      .join("");
-  const history = root.querySelector<HTMLElement>("#vehicleHistoryPanel");
-  if (history) {
-    history.innerHTML = vehicleHistoryTimeline(vehicle);
-    history.classList.add("hidden");
+
+    const statusOptionsHtml =
+      option("AVAILABLE", "Disponible") +
+      option("ASSIGNED", "Affecte") +
+      option("MAINTENANCE", "Maintenance") +
+      option("OUT_OF_SERVICE", "Hors service");
+
+    const driverHighlightClass =
+      focusField === "driver"
+        ? " ring-2 ring-accent-500 border-accent-500 bg-accent-50/30 rounded-xl"
+        : "";
+
+    if (fields) {
+      fields.innerHTML = `
+        <form id="vehicleDetailEditForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <label>
+            <span class="text-sm font-semibold">Nom / modele</span>
+            <input name="name" value="${escapeHtml(vehicle.name)}" placeholder="Ex: Toyota Hilux" class="mt-2 w-full h-11 border rounded-lg px-3">
+          </label>
+          <label>
+            <span class="text-sm font-semibold">Type</span>
+            <select name="type" class="mt-2 w-full h-11 border rounded-lg px-3 bg-white">
+              ${typeOptionsHtml}
+            </select>
+          </label>
+          <label>
+            <span class="text-sm font-semibold">Immatriculation</span>
+            <input name="plateNumber" value="${escapeHtml(vehicle.plateNumber)}" placeholder="Ex: 1234 AB 01" class="mt-2 w-full h-11 border rounded-lg px-3">
+          </label>
+          <label class="p-2 border border-transparent${driverHighlightClass}">
+            <span class="text-sm font-semibold text-accent-700">Chauffeur</span>
+            <input name="driverName" id="vehicleInlineDriverInput" value="${escapeHtml(vehicle.driverName ?? "")}" placeholder="Nom du chauffeur" class="mt-2 w-full h-11 border rounded-lg px-3 bg-white">
+          </label>
+          <label class="p-2 border border-transparent${driverHighlightClass}">
+            <span class="text-sm font-semibold text-accent-700">Apprenti</span>
+            <input name="apprenticeName" id="vehicleInlineApprenticeInput" value="${escapeHtml(vehicle.apprenticeName ?? "")}" placeholder="Nom de l'apprenti" class="mt-2 w-full h-11 border rounded-lg px-3 bg-white">
+          </label>
+          <label class="p-2">
+            <span class="text-sm font-semibold">Affectation</span>
+            <input name="assignment" value="${escapeHtml(vehicle.assignment ?? "")}" placeholder="Ex: Projet Riviera, Direction..." class="mt-2 w-full h-11 border rounded-lg px-3">
+          </label>
+          <label>
+            <span class="text-sm font-semibold">Statut</span>
+            <select name="status" class="mt-2 w-full h-11 border rounded-lg px-3 bg-white">
+              ${statusOptionsHtml}
+            </select>
+          </label>
+          <label>
+            <span class="text-sm font-semibold">Assurance expire le</span>
+            <input name="insuranceExpiresAt" type="date" value="${escapeHtml(vehicle.insuranceExpiresAt?.slice(0, 10) ?? "")}" class="mt-2 w-full h-11 border rounded-lg px-3">
+          </label>
+          <label>
+            <span class="text-sm font-semibold">Visite technique</span>
+            <input name="technicalVisitAt" type="date" value="${escapeHtml(vehicle.technicalVisitAt?.slice(0, 10) ?? "")}" class="mt-2 w-full h-11 border rounded-lg px-3">
+          </label>
+          <label class="md:col-span-3">
+            <span class="text-sm font-semibold">Observation</span>
+            <textarea name="notes" placeholder="Notes ou observations..." class="mt-2 w-full min-h-20 border rounded-lg px-3 py-2">${escapeHtml(vehicle.notes ?? "")}</textarea>
+          </label>
+        </form>
+      `;
+
+      const form = fields.querySelector<HTMLFormElement>(
+        "#vehicleDetailEditForm",
+      );
+      if (form) {
+        const typeSelect = form.querySelector<HTMLSelectElement>(
+          'select[name="type"]',
+        );
+        const statusSelect = form.querySelector<HTMLSelectElement>(
+          'select[name="status"]',
+        );
+        if (typeSelect) typeSelect.value = vehicle.type;
+        if (statusSelect) statusSelect.value = vehicle.status;
+      }
+      if (focusField === "driver") {
+        setTimeout(() => {
+          const driverInput = fields.querySelector<HTMLInputElement>(
+            "#vehicleInlineDriverInput",
+          );
+          driverInput?.focus();
+          driverInput?.select();
+        }, 50);
+      }
+    }
+
+    if (actions) {
+      actions.innerHTML = `
+        <button title="Annuler" data-action="cancelVehicleEdit" class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-white border text-gray-700 hover:bg-gray-50"><i data-lucide="x" class="w-4 h-4"></i></button>
+        <button title="Enregistrer" data-action="submitVehicleEdit" class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-accent-600 text-white hover:bg-accent-500"><i data-lucide="save" class="w-4 h-4"></i></button>
+      `;
+    }
+  } else {
+    if (title) title.textContent = `${vehicle.code} - ${vehicle.name}`;
+    if (subtitle) {
+      subtitle.textContent = vehicle.assignment
+        ? "Vehicule rattache a " + vehicle.assignment + "."
+        : "Vehicule disponible ou sans affectation renseignee.";
+    }
+    if (contentTitle) contentTitle.textContent = "Suivi & Affectation";
+
+    if (cards) {
+      cards.classList.remove("hidden");
+      cards.innerHTML = [
+        ["Immatriculation", vehicle.plateNumber],
+        ["Type", vehicle.type],
+        ["Chauffeur", vehicle.driverName ?? "-"],
+        ["Apprenti", vehicle.apprenticeName ?? "-"],
+      ]
+        .map(
+          ([label, value]) =>
+            '<div class="p-4 rounded-xl bg-gray-50 border"><div class="text-xs font-semibold text-gray-500">' +
+            escapeHtml(label) +
+            '</div><div class="font-bold mt-1">' +
+            escapeHtml(value) +
+            "</div></div>",
+        )
+        .join("");
+    }
+
+    if (fields) {
+      fields.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+          ${[
+            ["Affectation", vehicle.assignment ?? "Disponible"],
+            [
+              "Assurance",
+              vehicle.insuranceExpiresAt
+                ? formatDate(vehicle.insuranceExpiresAt)
+                : "Non renseignee",
+            ],
+            [
+              "Visite technique",
+              vehicle.technicalVisitAt
+                ? formatDate(vehicle.technicalVisitAt)
+                : "Non renseignee",
+            ],
+            ["Statut", vehicleStatusLabel(vehicle.status)],
+            ["Observation", vehicle.notes ?? "-"],
+            ["Derniere mise a jour", formatDate(vehicle.updatedAt)],
+          ]
+            .map(
+              ([label, value]) =>
+                '<div><span class="text-gray-500">' +
+                escapeHtml(label) +
+                '</span><div class="font-semibold mt-1">' +
+                escapeHtml(value) +
+                "</div></div>",
+            )
+            .join("")}
+        </div>
+      `;
+    }
+
+    if (history) {
+      history.innerHTML = vehicleHistoryTimeline(vehicle);
+      history.classList.add("hidden");
+    }
+    if (historyWrapper) historyWrapper.classList.remove("hidden");
+
+    if (actions) {
+      actions.innerHTML = `
+        <button title="Modifier" data-action="editVehicleDetail" class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-accent-600 text-white hover:bg-accent-500"><i data-lucide="pencil" class="w-4 h-4"></i></button>
+        <button title="Changer chauffeur" data-action="changeVehicleDriver" class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-white border text-gray-700 hover:bg-gray-50"><i data-lucide="user-round-cog" class="w-4 h-4"></i></button>
+        <button title="Planifier maintenance" data-action="setVehicleMaintenance" class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-white border text-gray-700 hover:bg-gray-50"><i data-lucide="wrench" class="w-4 h-4"></i></button>
+        <button title="Fermer" class="inline-flex items-center justify-center w-10 h-10 rounded-lg border text-gray-500 hover:text-gray-900" data-action="closeModal('vehicleDetailModal')"><i data-lucide="x" class="w-5 h-5"></i></button>
+      `;
+    }
   }
+
   window.lucide?.createIcons();
-  openModal(root, "vehicleDetailModal");
+  return true;
+}
+
+function openVehicleDetail(root: HTMLElement, id: string) {
+  selectedVehicleId = id;
+  if (renderVehicleDetail(root, id, false)) {
+    openModal(root, "vehicleDetailModal");
+  }
+}
+
+function editVehicleDetail(root: HTMLElement) {
+  if (selectedVehicleId) {
+    renderVehicleDetail(root, selectedVehicleId, true);
+  }
+}
+
+function changeVehicleDriver(root: HTMLElement) {
+  if (selectedVehicleId) {
+    renderVehicleDetail(root, selectedVehicleId, true, "driver");
+  }
+}
+
+function cancelVehicleEdit(root: HTMLElement) {
+  if (selectedVehicleId) {
+    renderVehicleDetail(root, selectedVehicleId, false);
+  }
+}
+
+async function setVehicleMaintenance(root: HTMLElement) {
+  if (!selectedVehicleId) return;
+  const vehicle = latestVehicles.find((item) => item.id === selectedVehicleId);
+  if (!vehicle) return;
+  try {
+    const updated = await updateVehicle(vehicle.id, { status: "MAINTENANCE" });
+    latestVehicles = latestVehicles.map((item) =>
+      item.id === updated.id ? updated : item,
+    );
+    renderVehicleDetail(root, updated.id, false);
+    renderVehicles(root);
+    showToast(root, "Vehicule passe en maintenance.");
+  } catch (error) {
+    showToast(
+      root,
+      error instanceof Error
+        ? error.message
+        : "Mise en maintenance impossible.",
+      "error",
+    );
+  }
 }
 
 function toggleVehicleHistory(root: HTMLElement) {
@@ -4471,76 +4794,37 @@ function toggleVehicleHistory(root: HTMLElement) {
 }
 
 async function openVehicleEdit(root: HTMLElement, focusDriver = false) {
-  const vehicle = latestVehicles.find((item) => item.id === selectedVehicleId);
-  const modal = root.querySelector<HTMLElement>("#vehicleEditModal");
-  if (!vehicle || !modal) return;
-  const values: Record<string, string> = {
-    vehicleEditCode: vehicle.code,
-    vehicleEditName: vehicle.name,
-    vehicleEditType: vehicle.type,
-    vehicleEditPlate: vehicle.plateNumber,
-    vehicleEditDriver: vehicle.driverName ?? "",
-    vehicleEditApprentice: vehicle.apprenticeName ?? "",
-    vehicleEditAssignment: vehicle.assignment ?? "",
-    vehicleEditStatus: vehicle.status,
-    vehicleEditInsurance: vehicle.insuranceExpiresAt?.slice(0, 10) ?? "",
-    vehicleEditVisit: vehicle.technicalVisitAt?.slice(0, 10) ?? "",
-    vehicleEditNotes: vehicle.notes ?? "",
-  };
-  Object.entries(values).forEach(([id, value]) => {
-    const field = modal.querySelector<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >("#" + id);
-    if (field) field.value = value;
-  });
-  openModal(root, "vehicleEditModal");
-  if (focusDriver)
-    modal.querySelector<HTMLInputElement>("#vehicleEditDriver")?.focus();
+  if (focusDriver) changeVehicleDriver(root);
+  else editVehicleDetail(root);
 }
 
 async function submitVehicleEdit(root: HTMLElement) {
   if (!selectedVehicleId) return;
-  const modal = root.querySelector<HTMLElement>("#vehicleEditModal");
-  if (!modal) return;
+  const form = root.querySelector<HTMLFormElement>("#vehicleDetailEditForm");
+  if (!form) return;
+  const data = Object.fromEntries(new FormData(form).entries());
   try {
     const updated = await updateVehicle(selectedVehicleId, {
-      name: modal
-        .querySelector<HTMLInputElement>("#vehicleEditName")
-        ?.value.trim(),
-      type: modal.querySelector<HTMLSelectElement>("#vehicleEditType")?.value,
-      plateNumber: modal
-        .querySelector<HTMLInputElement>("#vehicleEditPlate")
-        ?.value.trim(),
-      driverName:
-        modal
-          .querySelector<HTMLInputElement>("#vehicleEditDriver")
-          ?.value.trim() || null,
-      apprenticeName:
-        modal
-          .querySelector<HTMLInputElement>("#vehicleEditApprentice")
-          ?.value.trim() || null,
-      assignment:
-        modal
-          .querySelector<HTMLInputElement>("#vehicleEditAssignment")
-          ?.value.trim() || null,
-      status:
-        modal.querySelector<HTMLSelectElement>("#vehicleEditStatus")?.value,
-      insuranceExpiresAt:
-        modal.querySelector<HTMLInputElement>("#vehicleEditInsurance")?.value ||
-        null,
-      technicalVisitAt:
-        modal.querySelector<HTMLInputElement>("#vehicleEditVisit")?.value ||
-        null,
-      notes:
-        modal
-          .querySelector<HTMLTextAreaElement>("#vehicleEditNotes")
-          ?.value.trim() || null,
+      name: String(data.name ?? "").trim() || undefined,
+      type: String(data.type ?? "") || undefined,
+      plateNumber: String(data.plateNumber ?? "").trim() || undefined,
+      driverName: String(data.driverName ?? "").trim() || null,
+      apprenticeName: String(data.apprenticeName ?? "").trim() || null,
+      assignment: String(data.assignment ?? "").trim() || null,
+      status: String(data.status ?? "AVAILABLE"),
+      insuranceExpiresAt: data.insuranceExpiresAt
+        ? String(data.insuranceExpiresAt)
+        : null,
+      technicalVisitAt: data.technicalVisitAt
+        ? String(data.technicalVisitAt)
+        : null,
+      notes: String(data.notes ?? "").trim() || null,
     });
     latestVehicles = latestVehicles.map((item) =>
       item.id === updated.id ? updated : item,
     );
-    closeModal(root, "vehicleEditModal");
-    openVehicleDetail(root, updated.id);
+    renderVehicleDetail(root, updated.id, false);
+    renderVehicles(root);
     showToast(root, "Vehicule mis a jour.");
   } catch (error) {
     showToast(
@@ -6648,15 +6932,25 @@ function parseAction(action: string) {
     return { type: "submit-equipment-assignment" } as const;
   if (action === "submitEquipmentCreation")
     return { type: "submit-equipment-creation" } as const;
-  if (action === "openEquipmentEdit")
-    return { type: "equipment-edit" } as const;
+  if (action === "editEquipmentDetail" || action === "openEquipmentEdit")
+    return { type: "edit-equipment-detail" } as const;
+  if (action === "cancelEquipmentEdit")
+    return { type: "cancel-equipment-edit" } as const;
   if (action === "submitEquipmentEdit")
     return { type: "submit-equipment-edit" } as const;
   if (action === "unassignEquipment")
     return { type: "unassign-equipment" } as const;
   if (action === "submitVehicle") return { type: "submit-vehicle" } as const;
+  if (action === "editVehicleDetail" || action === "openVehicleEdit")
+    return { type: "edit-vehicle-detail" } as const;
+  if (action === "changeVehicleDriver")
+    return { type: "change-vehicle-driver" } as const;
+  if (action === "cancelVehicleEdit")
+    return { type: "cancel-vehicle-edit" } as const;
   if (action === "submitVehicleEdit")
     return { type: "submit-vehicle-edit" } as const;
+  if (action === "setVehicleMaintenance")
+    return { type: "set-vehicle-maintenance" } as const;
   if (action === "submitUser") return { type: "submit-user" } as const;
   if (action === "toggleVehicleHistory")
     return { type: "toggle-vehicle-history" } as const;
@@ -6740,53 +7034,6 @@ function StockHubTemplate() {
 
     const onClick = (event: MouseEvent) => {
       const clicked = event.target as HTMLElement;
-      const vehicleActionButton = clicked.closest<HTMLElement>(
-        "#vehicleDetailModal button[title]",
-      );
-      const vehicleActionTitle = vehicleActionButton?.getAttribute("title");
-      if (vehicleActionButton && vehicleActionTitle === "Modifier") {
-        void openVehicleEdit(root);
-        return;
-      }
-      if (vehicleActionButton && vehicleActionTitle === "Changer chauffeur") {
-        void openVehicleEdit(root, true);
-        return;
-      }
-      if (
-        vehicleActionButton &&
-        vehicleActionTitle === "Planifier maintenance"
-      ) {
-        const vehicle = latestVehicles.find(
-          (item) => item.id === selectedVehicleId,
-        );
-        if (vehicle) {
-          void updateVehicle(vehicle.id, { status: "MAINTENANCE" })
-            .then((updated) => {
-              latestVehicles = latestVehicles.map((item) =>
-                item.id === updated.id ? updated : item,
-              );
-              openVehicleDetail(root, updated.id);
-              showToast(root, "Vehicule passe en maintenance.");
-            })
-            .catch((error) =>
-              showToast(
-                root,
-                error instanceof Error
-                  ? error.message
-                  : "Mise en maintenance impossible.",
-                "error",
-              ),
-            );
-        }
-        return;
-      }
-      const legacyEditButton = clicked.closest<HTMLElement>(
-        "#equipmentDetailModal button[title='Modifier']",
-      );
-      if (legacyEditButton && root.contains(legacyEditButton)) {
-        void openEquipmentEdit(root);
-        return;
-      }
       const target = clicked.closest<HTMLElement>("[data-action]");
       if (!target || !root.contains(target)) return;
       const action = target.dataset.action;
@@ -6847,13 +7094,19 @@ function StockHubTemplate() {
         void submitEquipmentAssignment(root);
       if (parsed.type === "submit-equipment-creation")
         void submitEquipmentCreation(root);
-      if (parsed.type === "equipment-edit") void openEquipmentEdit(root);
+      if (parsed.type === "edit-equipment-detail") editEquipmentDetail(root);
+      if (parsed.type === "cancel-equipment-edit") cancelEquipmentEdit(root);
       if (parsed.type === "submit-equipment-edit")
         void submitEquipmentEdit(root);
       if (parsed.type === "unassign-equipment")
         void unassignSelectedEquipment(root);
       if (parsed.type === "submit-vehicle") void submitVehicle(root);
+      if (parsed.type === "edit-vehicle-detail") editVehicleDetail(root);
+      if (parsed.type === "change-vehicle-driver") changeVehicleDriver(root);
+      if (parsed.type === "cancel-vehicle-edit") cancelVehicleEdit(root);
       if (parsed.type === "submit-vehicle-edit") void submitVehicleEdit(root);
+      if (parsed.type === "set-vehicle-maintenance")
+        void setVehicleMaintenance(root);
       if (parsed.type === "submit-user") void submitUser(root);
       if (parsed.type === "user-detail") openUserDetail(root, parsed.id);
       if (parsed.type === "exit-detail") openExitRequestDetail(root, parsed.id);
