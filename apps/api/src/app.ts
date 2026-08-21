@@ -797,7 +797,7 @@ export function buildApp() {
           handledBy: asString(body.handledBy),
           receivedBy: asString(body.receivedBy),
           deliveredBy: asString(body.deliveredBy),
-          notes: asString(body.notes),
+          notes: [asString(body.notes), asString(body.attachmentFileName) ? "Piece jointe: " + asString(body.attachmentFileName) : undefined].filter(Boolean).join(" - ") || undefined,
           lines: {
             create: lines.map((line) => ({
               articleId: String(line.articleId ?? ""),

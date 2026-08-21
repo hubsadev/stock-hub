@@ -652,6 +652,7 @@ export function createStockReturn(body: {
   deliveredBy?: string;
   notes?: string;
   reintegrate?: boolean;
+  attachmentFileName?: string;
   lines: Array<{
     articleId: string;
     completedQuantity: number;

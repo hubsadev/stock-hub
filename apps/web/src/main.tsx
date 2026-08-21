@@ -429,20 +429,38 @@ function stockMovementMetrics(level: StockLevel) {
   let entries = 0;
   let exits = 0;
   for (const movement of latestMovements) {
-    if (movement.status === "CANCELLED" || movement.status === "DRAFT") continue;
+    if (movement.status === "CANCELLED" || movement.status === "DRAFT")
+      continue;
     for (const line of movement.lines) {
       if (line.articleId !== level.article.id) continue;
-      const quantity = Number(line.completedQuantity ?? line.expectedQuantity ?? line.requestedQuantity ?? 0);
+      const quantity = Number(
+        line.completedQuantity ??
+          line.expectedQuantity ??
+          line.requestedQuantity ??
+          0,
+      );
       if (quantity <= 0) continue;
-      if ((movement.type === "ENTRY" || movement.type === "RETURN") && movement.toLocationId === level.location.id) entries += quantity;
-      if (movement.type === "EXIT" && movement.fromLocationId === level.location.id) exits += quantity;
+      if (
+        (movement.type === "ENTRY" || movement.type === "RETURN") &&
+        movement.toLocationId === level.location.id
+      )
+        entries += quantity;
+      if (
+        movement.type === "EXIT" &&
+        movement.fromLocationId === level.location.id
+      )
+        exits += quantity;
       if (movement.type === "TRANSFER") {
         if (movement.toLocationId === level.location.id) entries += quantity;
         if (movement.fromLocationId === level.location.id) exits += quantity;
       }
     }
   }
-  return { entries, exits, initial: Math.max(0, Number(level.quantity) - entries + exits) };
+  return {
+    entries,
+    exits,
+    initial: Math.max(0, Number(level.quantity) - entries + exits),
+  };
 }
 
 function stockRow(level: StockLevel) {
@@ -453,29 +471,57 @@ function stockRow(level: StockLevel) {
 function renderStock(root: HTMLElement) {
   const body = root.querySelector<HTMLElement>("#stock tbody");
   if (!body) return;
-  const location = root.querySelector<HTMLSelectElement>("#stockLocationSelect")?.value ?? "";
-  const category = root.querySelector<HTMLSelectElement>("#stockCategorySelect")?.value ?? "";
-  const search = root.querySelector<HTMLInputElement>("#stockSearchInput")?.value.trim().toLowerCase() ?? "";
+  const location =
+    root.querySelector<HTMLSelectElement>("#stockLocationSelect")?.value ?? "";
+  const category =
+    root.querySelector<HTMLSelectElement>("#stockCategorySelect")?.value ?? "";
+  const search =
+    root
+      .querySelector<HTMLInputElement>("#stockSearchInput")
+      ?.value.trim()
+      .toLowerCase() ?? "";
   const levels = latestStockLevels.filter((level) => {
-    const haystack = `${level.article.code} ${level.article.designation} ${level.location.name}`.toLowerCase();
-    return (!location || level.location.id === location) && (!category || level.article.category === category) && (!search || haystack.includes(search));
+    const haystack =
+      `${level.article.code} ${level.article.designation} ${level.location.name}`.toLowerCase();
+    return (
+      (!location || level.location.id === location) &&
+      (!category || level.article.category === category) &&
+      (!search || haystack.includes(search))
+    );
   });
-  body.innerHTML = levels.length ? levels.map(stockRow).join("") : emptyRow(8, "Aucun stock ne correspond aux critères.");
+  body.innerHTML = levels.length
+    ? levels.map(stockRow).join("")
+    : emptyRow(8, "Aucun stock ne correspond aux critères.");
   window.lucide?.createIcons();
 }
 
 function populateStockFilters(root: HTMLElement) {
-  const locationSelect = root.querySelector<HTMLSelectElement>("#stockLocationSelect");
+  const locationSelect = root.querySelector<HTMLSelectElement>(
+    "#stockLocationSelect",
+  );
   if (locationSelect) {
     const previous = locationSelect.value;
-    locationSelect.innerHTML = '<option value="">Tous les emplacements</option>' + latestLocations.map((location) => option(location.id, `${location.code} - ${location.name}`)).join("");
-    if (latestLocations.some((location) => location.id === previous)) locationSelect.value = previous;
+    locationSelect.innerHTML =
+      '<option value="">Tous les emplacements</option>' +
+      latestLocations
+        .map((location) =>
+          option(location.id, `${location.code} - ${location.name}`),
+        )
+        .join("");
+    if (latestLocations.some((location) => location.id === previous))
+      locationSelect.value = previous;
   }
-  const categorySelect = root.querySelector<HTMLSelectElement>("#stockCategorySelect");
+  const categorySelect = root.querySelector<HTMLSelectElement>(
+    "#stockCategorySelect",
+  );
   if (categorySelect) {
     const previous = categorySelect.value;
-    const categories = [...new Set(latestStockLevels.map((level) => level.article.category))].sort();
-    categorySelect.innerHTML = '<option value="">Toutes familles</option>' + categories.map((category) => option(category, category)).join("");
+    const categories = [
+      ...new Set(latestStockLevels.map((level) => level.article.category)),
+    ].sort();
+    categorySelect.innerHTML =
+      '<option value="">Toutes familles</option>' +
+      categories.map((category) => option(category, category)).join("");
     if (categories.includes(previous)) categorySelect.value = previous;
   }
 }
@@ -3759,6 +3805,37 @@ async function submitMaterialRequestPreparation(root: HTMLElement) {
     );
   }
 }
+function addTransferLine(root: HTMLElement) {
+  const body = root.querySelector<HTMLTableSectionElement>("#transferLines");
+  const first = body?.querySelector<HTMLElement>(".transfer-line");
+  if (!body || !first) return;
+  const row = first.cloneNode(true) as HTMLElement;
+  row.querySelectorAll<HTMLInputElement>("input").forEach((input) => {
+    input.value = input.classList.contains("transfer-available") ? "0" : "";
+  });
+  row.querySelectorAll<HTMLSelectElement>("select").forEach((select) => {
+    select.innerHTML =
+      first.querySelector<HTMLSelectElement>("select")?.innerHTML ?? "";
+    select.selectedIndex = 0;
+  });
+  body.appendChild(row);
+  void populateReturnTransferModals(root, "transferModal");
+}
+
+function removeTransferLine(root: HTMLElement, trigger: HTMLElement) {
+  const body = root.querySelector<HTMLTableSectionElement>("#transferLines");
+  const row = trigger.closest<HTMLElement>(".transfer-line");
+  if (!body || !row) return;
+  const rows = body.querySelectorAll(".transfer-line");
+  if (rows.length > 1) row.remove();
+  body
+    .querySelectorAll<HTMLElement>(".transfer-line")
+    .forEach((item, index) => {
+      const number = item.querySelector<HTMLElement>(".transfer-line-number");
+      if (number) number.textContent = String(index + 1);
+    });
+}
+
 function refreshMaterialRequestLines(root: HTMLElement) {
   root
     .querySelectorAll<HTMLElement>("#materialRequestLines tr")
@@ -3925,6 +4002,77 @@ async function submitDirectExit(root: HTMLElement) {
   }
 }
 
+function returnLineQuantity(movement: StockMovement, articleId: string) {
+  return movement.lines
+    .filter((line) => line.articleId === articleId)
+    .reduce((sum, line) => sum + Number(line.completedQuantity ?? 0), 0);
+}
+
+function updateReturnSelection(root: HTMLElement, movements: StockMovement[]) {
+  const modal = root.querySelector<HTMLElement>("#returnModal");
+  const select = modal?.querySelector<HTMLSelectElement>("#returnSourceSelect");
+  if (!modal || !select) return;
+  const movement = movements.find((item) => item.id === select.value);
+  const values: Record<string, string> = {
+    bon: movement?.reference ?? "-",
+    article: movement?.lines.length
+      ? movement.lines
+          .map((line) => line.article?.designation ?? "-")
+          .join(", ")
+      : "-",
+    beneficiary: movement?.requestedBy ?? movement?.receivedBy ?? "-",
+    destination: movement?.toLocation?.name ?? movement?.project?.name ?? "-",
+    quantity: movement
+      ? formatNumber(
+          movement.lines.reduce(
+            (sum, line) => sum + Number(line.completedQuantity ?? 0),
+            0,
+          ),
+        )
+      : "-",
+    returned: movement
+      ? formatNumber(
+          movements
+            .filter((item) => item.type === "RETURN")
+            .reduce(
+              (sum, item) =>
+                sum +
+                movement.lines.reduce(
+                  (lineSum, line) =>
+                    lineSum + returnLineQuantity(item, line.articleId),
+                  0,
+                ),
+              0,
+            ),
+        )
+      : "-",
+  };
+  Object.entries(values).forEach(([key, value]) => {
+    const node = modal.querySelector<HTMLElement>(
+      `[data-return-kpi="${key}"] .font-bold`,
+    );
+    if (node) node.textContent = value;
+  });
+  modal.dataset.returnSourceMovementId = movement?.id ?? "";
+  modal.dataset.returnArticleId = movement?.lines[0]?.articleId ?? "";
+  const quantityInput =
+    modal.querySelector<HTMLInputElement>("#returnQuantity");
+  if (quantityInput) {
+    const total =
+      movement?.lines.reduce(
+        (sum, line) => sum + Number(line.completedQuantity ?? 0),
+        0,
+      ) ?? 0;
+    quantityInput.max = String(Math.max(total, 0));
+    quantityInput.value = total ? String(total) : "";
+  }
+  const summary = modal.querySelector<HTMLElement>("#returnSelectionSummary");
+  if (summary)
+    summary.innerHTML = movement
+      ? `<div><div class="text-sm font-bold">${escapeHtml(movement.reference)} - sortie selectionnee</div><div class="text-xs text-gray-600">${escapeHtml(values.article)}</div></div>`
+      : `<div><div class="text-sm font-bold">Aucune sortie selectionnee</div><div class="text-xs text-gray-600">Selectionne une sortie pour pre-remplir le formulaire.</div></div>`;
+}
+
 async function populateReturnTransferModals(
   root: HTMLElement,
   modalId: "returnModal" | "transferModal",
@@ -3942,51 +4090,137 @@ async function populateReturnTransferModals(
   );
   const userChoices = userOptions(users);
   if (modalId === "transferModal") {
-    fillSelect(selects[0], articleOptions(articles));
-    fillSelect(selects[1], locationOptions(locations));
-    fillSelect(selects[2], locationOptions(locations));
-    fillSelect(selects[4], userChoices);
-    fillSelect(selects[5], userChoices);
-    fillSelect(selects[6], userChoices);
+    const reference = root.querySelector<HTMLElement>("#transferReference");
+    const transferNumber =
+      latestMovements.filter((item) => item.type === "TRANSFER").length + 1;
+    if (reference)
+      reference.textContent = `TRF-${new Date().getFullYear()}-${String(transferNumber).padStart(3, "0")}`;
+    const articleChoices =
+      option("", "Selectionner article") + articleOptions(articles);
+    const locationChoices =
+      option("", "Selectionner emplacement") + locationOptions(locations);
+    const fillTransferLine = (row: HTMLElement) => {
+      const article = row.querySelector<HTMLSelectElement>(".transfer-article");
+      const source = row.querySelector<HTMLSelectElement>(".transfer-source");
+      const destination = row.querySelector<HTMLSelectElement>(
+        ".transfer-destination",
+      );
+      if (article) article.innerHTML = articleChoices;
+      if (source) source.innerHTML = locationChoices;
+      if (destination) destination.innerHTML = locationChoices;
+      const refresh = () => {
+        const available = row.querySelector<HTMLInputElement>(
+          ".transfer-available",
+        );
+        if (available)
+          available.value =
+            article?.value && source?.value
+              ? String(articleStockAtLocation(article.value, source.value))
+              : "0";
+      };
+      article?.addEventListener("change", refresh);
+      source?.addEventListener("change", refresh);
+      refresh();
+    };
+    modal
+      .querySelectorAll<HTMLElement>("#transferLines .transfer-line")
+      .forEach(fillTransferLine);
+    modal.dataset.transferLineSetup = "1";
+    fillSelect(
+      modal.querySelector<HTMLSelectElement>("#transferHandledBy") ?? undefined,
+      userChoices,
+    );
+    fillSelect(
+      modal.querySelector<HTMLSelectElement>("#transferDeliveredBy") ??
+        undefined,
+      userChoices,
+    );
+    fillSelect(
+      modal.querySelector<HTMLSelectElement>("#transferReceivedBy") ??
+        undefined,
+      userChoices,
+    );
     return;
   }
   const exits = movements.filter(
     (movement) => movement.type === "EXIT" && movement.lines.length > 0,
   );
-  const inputs = Array.from(modal.querySelectorAll<HTMLInputElement>("input"));
-  const firstExit = exits[0];
-  modal.dataset.returnArticleId = firstExit?.lines[0]?.articleId ?? "";
-  modal.dataset.returnSourceMovementId = firstExit?.id ?? "";
-  if (inputs[0]) {
-    inputs[0].value = firstExit
-      ? firstExit.reference +
-        " - " +
-        (firstExit.lines[0]?.article?.designation ?? "Article")
-      : "Aucune sortie reelle disponible";
+  const sourceSelect = modal.querySelector<HTMLSelectElement>(
+    "#returnSourceSelect",
+  );
+  if (sourceSelect) {
+    sourceSelect.innerHTML =
+      option("", "Selectionner une sortie") +
+      exits
+        .map((movement) => {
+          const articles = movement.lines
+            .map((line) => line.article?.designation ?? "Article")
+            .join(", ");
+          const destination =
+            movement.toLocation?.name ??
+            movement.project?.name ??
+            "Destination inconnue";
+          return option(
+            movement.id,
+            `${movement.reference} - ${articles} - ${destination}`,
+          );
+        })
+        .join("");
+    sourceSelect.onchange = () => updateReturnSelection(root, movements);
   }
   fillSelect(selects[2], locationOptions(locations));
   fillSelect(selects[3], userChoices);
   fillSelect(selects[4], userChoices);
   fillSelect(selects[5], userChoices);
+  updateReturnSelection(root, movements);
 }
 
 async function submitStockReturn(root: HTMLElement) {
   const modal = root.querySelector<HTMLElement>("#returnModal");
   if (!modal) return;
-  const selects = Array.from(
-    modal.querySelectorAll<HTMLSelectElement>("select"),
-  );
-  const inputs = Array.from(modal.querySelectorAll<HTMLInputElement>("input"));
   const notes = modal
     .querySelector<HTMLTextAreaElement>("textarea")
     ?.value.trim();
-  const articleId = modal.dataset.returnArticleId;
-  const quantity = toNumber(inputs[2]?.value ?? "0");
-  const toLocationId = selects[2]?.value;
-  const decision = selectedText(selects[1])?.toLowerCase() ?? "";
+  const sourceMovementId = modal.dataset.returnSourceMovementId;
+  const sourceMovement = latestMovements.find(
+    (item) => item.id === sourceMovementId,
+  );
+  const lineRows = Array.from(
+    modal.querySelectorAll<HTMLTableRowElement>(
+      "#returnLines tr[data-article-id]",
+    ),
+  );
+  const lines = lineRows
+    .map((row) => ({
+      articleId: row.dataset.articleId ?? "",
+      completedQuantity: toNumber(
+        row.querySelector<HTMLInputElement>(".return-line-quantity")?.value ??
+          "0",
+      ),
+      remaining: Number(row.dataset.remaining ?? "0"),
+      observation:
+        selectedText(
+          row.querySelector<HTMLSelectElement>(".return-line-state") ??
+            undefined,
+        ) || notes,
+    }))
+    .filter((line) => line.completedQuantity > 0);
+  const attachmentFileName =
+    root.querySelector<HTMLInputElement>("#returnAttachment")?.files?.[0]?.name;
+  const toLocationId =
+    modal.querySelector<HTMLSelectElement>("#returnLocation")?.value;
+  const decision =
+    selectedText(
+      modal.querySelector<HTMLSelectElement>("#returnDecision") ?? undefined,
+    )?.toLowerCase() ?? "";
   const reintegrate =
     decision.includes("reintegrer") || decision.includes("stock");
-  if (!articleId || !toLocationId || quantity <= 0) {
+  if (
+    !sourceMovement ||
+    !toLocationId ||
+    !lines.length ||
+    lines.some((line) => line.completedQuantity > line.remaining)
+  ) {
     showToast(
       root,
       "Sortie concernee, emplacement retour et quantite sont requis.",
@@ -3997,20 +4231,33 @@ async function submitStockReturn(root: HTMLElement) {
   try {
     await createStockReturn({
       reference: "RET-" + Date.now(),
-      date: inputs[1]?.value.trim() || new Date().toISOString(),
+      date:
+        root.querySelector<HTMLInputElement>("#returnDate")?.value ||
+        new Date().toISOString(),
       toLocationId,
-      handledBy: selectedText(selects[3]),
-      deliveredBy: selectedText(selects[4]),
-      receivedBy: selectedText(selects[5]),
-      notes,
+      handledBy: selectedText(
+        modal.querySelector<HTMLSelectElement>("#returnHandledBy") ?? undefined,
+      ),
+      deliveredBy: selectedText(
+        modal.querySelector<HTMLSelectElement>("#returnDeliveredBy") ??
+          undefined,
+      ),
+      receivedBy: selectedText(
+        modal.querySelector<HTMLSelectElement>("#returnReceivedBy") ??
+          undefined,
+      ),
+      notes:
+        [
+          notes,
+          attachmentFileName
+            ? `Piece jointe: ${attachmentFileName}`
+            : undefined,
+        ]
+          .filter(Boolean)
+          .join(" - ") || undefined,
       reintegrate,
-      lines: [
-        {
-          articleId,
-          completedQuantity: quantity,
-          observation: selectedText(selects[0]) || notes,
-        },
-      ],
+      attachmentFileName,
+      lines,
     });
     closeModal(root, "returnModal");
     updateApiBackedViews(root);
@@ -4032,36 +4279,92 @@ async function submitStockReturn(root: HTMLElement) {
 async function submitStockTransfer(root: HTMLElement) {
   const modal = root.querySelector<HTMLElement>("#transferModal");
   if (!modal) return;
-  const selects = Array.from(
-    modal.querySelectorAll<HTMLSelectElement>("select"),
-  );
-  const inputs = Array.from(modal.querySelectorAll<HTMLInputElement>("input"));
   const notes = modal
     .querySelector<HTMLTextAreaElement>("textarea")
     ?.value.trim();
-  const articleId = selects[0]?.value;
-  const fromLocationId = selects[1]?.value;
-  const toLocationId = selects[2]?.value;
-  const quantity = toNumber(inputs[1]?.value ?? "0");
-  if (!articleId || !fromLocationId || !toLocationId || quantity <= 0) {
+  const lines = Array.from(
+    modal.querySelectorAll<HTMLElement>("#transferLines .transfer-line"),
+  )
+    .map((row) => {
+      const articleId =
+        row.querySelector<HTMLSelectElement>(".transfer-article")?.value ?? "";
+      const fromLocationId =
+        row.querySelector<HTMLSelectElement>(".transfer-source")?.value ?? "";
+      const toLocationId =
+        row.querySelector<HTMLSelectElement>(".transfer-destination")?.value ??
+        "";
+      const quantity = toNumber(
+        row.querySelector<HTMLInputElement>(".transfer-quantity")?.value ?? "0",
+      );
+      const available = articleStockAtLocation(articleId, fromLocationId);
+      return { articleId, fromLocationId, toLocationId, quantity, available };
+    })
+    .filter(
+      (line) =>
+        line.articleId ||
+        line.fromLocationId ||
+        line.toLocationId ||
+        line.quantity > 0,
+    );
+  if (
+    !lines.length ||
+    lines.some(
+      (line) =>
+        !line.articleId ||
+        !line.fromLocationId ||
+        !line.toLocationId ||
+        line.quantity <= 0 ||
+        line.quantity > line.available,
+    )
+  ) {
     showToast(
       root,
-      "Article, source, destination et quantite sont requis.",
+      "Chaque ligne doit avoir un article, une source, une destination et une quantite disponible.",
+      "error",
+    );
+    return;
+  }
+  if (
+    new Set(lines.map((line) => line.fromLocationId)).size > 1 ||
+    new Set(lines.map((line) => line.toLocationId)).size > 1
+  ) {
+    showToast(
+      root,
+      "Les articles d'un meme transfert doivent partager la source et la destination.",
       "error",
     );
     return;
   }
   try {
     await createStockTransfer({
-      reference: "TRF-" + Date.now(),
-      date: inputs[0]?.value.trim() || new Date().toISOString(),
-      fromLocationId,
-      toLocationId,
-      handledBy: selectedText(selects[4]),
-      deliveredBy: selectedText(selects[5]),
-      receivedBy: selectedText(selects[6]),
+      reference:
+        root
+          .querySelector<HTMLElement>("#transferReference")
+          ?.textContent?.trim() ||
+        `TRF-${new Date().getFullYear()}-${Date.now()}`,
+      date:
+        root.querySelector<HTMLInputElement>("#transferDate")?.value ||
+        new Date().toISOString(),
+      fromLocationId: lines[0].fromLocationId,
+      toLocationId: lines[0].toLocationId,
+      handledBy: selectedText(
+        modal.querySelector<HTMLSelectElement>("#transferHandledBy") ??
+          undefined,
+      ),
+      deliveredBy: selectedText(
+        modal.querySelector<HTMLSelectElement>("#transferDeliveredBy") ??
+          undefined,
+      ),
+      receivedBy: selectedText(
+        modal.querySelector<HTMLSelectElement>("#transferReceivedBy") ??
+          undefined,
+      ),
       notes,
-      lines: [{ articleId, completedQuantity: quantity, observation: notes }],
+      lines: lines.map(({ articleId, quantity }) => ({
+        articleId,
+        completedQuantity: quantity,
+        observation: notes,
+      })),
     });
     closeModal(root, "transferModal");
     updateApiBackedViews(root);
@@ -6918,8 +7221,11 @@ function parseAction(action: string) {
     } as const;
   const exportMatch = action.match(/^exportData\('([^']+)'\)/);
   if (exportMatch) return { type: "export", kind: exportMatch[1] } as const;
-  const stockLocationMatch = action.match(/^filterStockByLocation\('([^']+)'\)/);
-  if (stockLocationMatch) return { type: "stock-location", id: stockLocationMatch[1] } as const;
+  const stockLocationMatch = action.match(
+    /^filterStockByLocation\('([^']+)'\)/,
+  );
+  if (stockLocationMatch)
+    return { type: "stock-location", id: stockLocationMatch[1] } as const;
   if (action === "filterStock") return { type: "stock-filter" } as const;
   const inventoryModeMatch = action.match(/^showInventoryMode\('([^']+)'\)/);
   if (inventoryModeMatch)
@@ -6980,6 +7286,10 @@ function parseAction(action: string) {
     return { type: "submit-stock-return" } as const;
   if (action === "submitStockTransfer")
     return { type: "submit-stock-transfer" } as const;
+  if (action === "addTransferLine")
+    return { type: "add-transfer-line" } as const;
+  if (action === "removeTransferLine")
+    return { type: "remove-transfer-line" } as const;
   if (action === "submitInventoryCount")
     return { type: "submit-inventory-count" } as const;
   if (action === "submitEquipmentAssignment")
@@ -7142,6 +7452,9 @@ function StockHubTemplate() {
       if (parsed.type === "submit-stock-return") void submitStockReturn(root);
       if (parsed.type === "submit-stock-transfer")
         void submitStockTransfer(root);
+      if (parsed.type === "add-transfer-line") addTransferLine(root);
+      if (parsed.type === "remove-transfer-line")
+        removeTransferLine(root, target);
       if (parsed.type === "submit-inventory-count")
         void submitInventoryCount(root);
       if (parsed.type === "submit-equipment-assignment")
@@ -7204,7 +7517,9 @@ function StockHubTemplate() {
       if (parsed.type === "stock-location") {
         navigateToView(root, "stock");
         populateStockFilters(root);
-        const select = root.querySelector<HTMLSelectElement>("#stockLocationSelect");
+        const select = root.querySelector<HTMLSelectElement>(
+          "#stockLocationSelect",
+        );
         if (select) select.value = parsed.id;
         renderStock(root);
       }
