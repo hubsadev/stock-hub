@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import ReactDOM from "react-dom/client";
+import * as XLSX from "xlsx";
 import { StockHubShell } from "./components/StockHubShell";
 import {
   createArticle,
@@ -93,6 +94,98 @@ let latestUsers: StockUser[] = [];
 let selectedUserId: string | null = null;
 let selectedExitRequestId: string | null = null;
 let currentUser: StockUser | null = readStoredUser();
+
+type ReferentialImportType =
+  | "article"
+  | "supplier"
+  | "client"
+  | "project"
+  | "site"
+  | "employee"
+  | "location"
+  | "teamService";
+type ReferentialImportRow = Record<string, any> & { errors: string[] };
+type ArticleImportRow = ReferentialImportRow;
+let referentialImportType: ReferentialImportType = "article";
+let referentialImportRows: ReferentialImportRow[] = [];
+let articleImportRows: ArticleImportRow[] = [];
+const referentialImportFields: Record<
+  ReferentialImportType,
+  Array<[string, string]>
+> = {
+  article: [
+    ["code", "Code"],
+    ["designation", "Designation"],
+    ["category", "Famille"],
+    ["unit", "Unite"],
+    ["trackingMode", "Mode de suivi"],
+    ["minimumStock", "Stock minimum"],
+    ["securityStock", "Stock securite"],
+    ["initialStock", "Stock de depart"],
+    ["referencePrice", "Prix indicatif"],
+    ["supplier", "Fournisseur habituel"],
+    ["location", "Emplacement de depart"],
+  ],
+  supplier: [
+    ["code", "Code"],
+    ["name", "Raison sociale"],
+    ["fiscalId", "ID fiscal / NCC"],
+    ["category", "Categorie"],
+    ["contact", "Contact"],
+    ["phone", "Telephone"],
+    ["email", "Email"],
+    ["address", "Adresse"],
+  ],
+  client: [
+    ["code", "Code"],
+    ["name", "Raison sociale"],
+    ["contact", "Contact"],
+    ["phone", "Telephone"],
+    ["email", "Email"],
+  ],
+  project: [
+    ["code", "Code"],
+    ["name", "Nom projet"],
+    ["client", "Client"],
+    ["projectManager", "Chef de projet"],
+    ["region", "Region"],
+    ["city", "Ville"],
+    ["startDate", "Date debut"],
+    ["endDate", "Date fin prevue"],
+  ],
+  site: [
+    ["code", "Code"],
+    ["name", "Nom du site"],
+    ["project", "Projet rattache"],
+    ["responsible", "Responsable site"],
+    ["region", "Region"],
+    ["city", "Ville"],
+    ["address", "Adresse / repere"],
+  ],
+  employee: [
+    ["code", "Matricule"],
+    ["lastName", "Nom"],
+    ["firstName", "Prenom"],
+    ["department", "Departement"],
+    ["role", "Role"],
+    ["phone", "Telephone"],
+  ],
+  location: [
+    ["code", "Code"],
+    ["name", "Nom emplacement"],
+    ["type", "Type"],
+    ["responsible", "Responsable"],
+    ["project", "Projet rattache"],
+    ["city", "Ville"],
+    ["address", "Adresse / zone"],
+  ],
+  teamService: [
+    ["code", "Code"],
+    ["name", "Nom equipe / service"],
+    ["type", "Type"],
+    ["manager", "Responsable"],
+  ],
+};
 
 function readStoredUser(): StockUser | null {
   const raw = localStorage.getItem("stock-hub.user");
@@ -418,10 +511,24 @@ function employeeRefRow(employee: Employee) {
   return `<tr><td class="px-5 py-4 font-bold">${escapeHtml(employee.matricule)}</td><td class="px-5 py-4">${escapeHtml(employee.lastName)}</td><td class="px-5 py-4">${escapeHtml(employee.firstName)}</td><td class="px-5 py-4">${escapeHtml(employee.role ?? "-")}</td><td class="px-5 py-4">${badge(employee.active ? "Actif" : "Inactif", employee.active ? "success" : "gray")}</td><td class="px-5 py-4 text-right">${actionEyeFor(`openReferentialDetail('employee','${employee.id}')`)}</td></tr>`;
 }
 
+// --- Stock view enrichment state ---
+let stockSortKey = "";
+let stockSortDir: "asc" | "desc" = "asc";
+let stockStatusFilter = "";
+let openStockLevelId: string | null = null;
+
+function stockStatusCategory(
+  level: StockLevel,
+): "rupture" | "sous-seuil" | "disponible" {
+  if (level.quantity <= 0) return "rupture";
+  if (level.quantity <= level.article.minimumStock) return "sous-seuil";
+  return "disponible";
+}
+
 function stockStatus(level: StockLevel) {
-  if (level.quantity <= 0) return badge("Rupture", "error");
-  if (level.quantity <= level.article.minimumStock)
-    return badge("Rupture proche", "warning");
+  const cat = stockStatusCategory(level);
+  if (cat === "rupture") return badge("Rupture", "error");
+  if (cat === "sous-seuil") return badge("Sous seuil", "warning");
   return badge("Disponible", "success");
 }
 
@@ -463,9 +570,107 @@ function stockMovementMetrics(level: StockLevel) {
   };
 }
 
+function stockLastMovementDate(level: StockLevel): string {
+  let latest = "";
+  for (const movement of latestMovements) {
+    if (movement.status === "CANCELLED" || movement.status === "DRAFT")
+      continue;
+    const hasArticle = movement.lines.some(
+      (l) => l.articleId === level.article.id,
+    );
+    const hasLocation =
+      movement.fromLocationId === level.location.id ||
+      movement.toLocationId === level.location.id;
+    if (hasArticle && hasLocation) {
+      if (!latest || movement.date > latest) latest = movement.date;
+    }
+  }
+  return latest ? formatDate(latest) : "-";
+}
+
+function stockDisponibleCell(level: StockLevel): string {
+  return `<div class="font-bold">${formatNumber(Number(level.quantity))}</div>`;
+}
+
 function stockRow(level: StockLevel) {
   const metrics = stockMovementMetrics(level);
-  return `<tr><td class="px-5 py-4"><div class="font-bold">${escapeHtml(level.article.designation)}</div><div class="text-xs text-gray-500">${escapeHtml(level.article.code)}</div></td><td class="px-5 py-4">${escapeHtml(level.article.category)}</td><td class="px-5 py-4">${escapeHtml(level.location.name)}</td><td class="px-5 py-4 text-right">${formatNumber(metrics.initial)}</td><td class="px-5 py-4 text-right text-success-700">${formatNumber(metrics.entries)}</td><td class="px-5 py-4 text-right text-error-700">${formatNumber(metrics.exits)}</td><td class="px-5 py-4 text-right font-bold">${formatNumber(level.quantity)}</td><td class="px-5 py-4">${stockStatus(level)}</td></tr>`;
+  const lastMvt = stockLastMovementDate(level);
+  const levelId = escapeHtml(level.id);
+  return (
+    `<tr class="cursor-pointer hover:bg-gray-50 transition-colors" data-action="openStockDrawer('${levelId}')">` +
+    `<td class="px-5 py-4"><div class="font-bold">${escapeHtml(level.article.designation)}</div><div class="text-xs text-gray-500">${escapeHtml(level.article.code)}</div></td>` +
+    `<td class="px-5 py-4">${escapeHtml(level.article.category)}</td>` +
+    `<td class="px-5 py-4">${escapeHtml(level.location.name)}</td>` +
+    `<td class="px-5 py-4 text-right">${formatNumber(metrics.initial)}</td>` +
+    `<td class="px-5 py-4 text-right text-success-700">${formatNumber(metrics.entries)}</td>` +
+    `<td class="px-5 py-4 text-right text-error-700">${formatNumber(metrics.exits)}</td>` +
+    `<td class="px-5 py-4">${stockDisponibleCell(level)}</td>` +
+    `<td class="px-5 py-4">${stockStatus(level)}</td>` +
+    `<td class="px-5 py-4 text-sm text-gray-500">${lastMvt}</td>` +
+    `</tr>`
+  );
+}
+
+function stockSortIconHtml(key: string) {
+  if (stockSortKey !== key)
+    return `<i data-lucide="chevrons-up-down" class="w-3 h-3 ml-1 inline opacity-40"></i>`;
+  return stockSortDir === "asc"
+    ? `<i data-lucide="chevron-up" class="w-3 h-3 ml-1 inline text-accent-600"></i>`
+    : `<i data-lucide="chevron-down" class="w-3 h-3 ml-1 inline text-accent-600"></i>`;
+}
+
+function renderStockKpis(root: HTMLElement, levels: StockLevel[]) {
+  const totalValue = levels.reduce(
+    (sum, l) =>
+      sum + Number(l.quantity) * Number(l.article.referencePrice ?? 0),
+    0,
+  );
+  const belowThreshold = levels.filter(
+    (l) =>
+      stockStatusCategory(l) === "rupture" ||
+      stockStatusCategory(l) === "sous-seuil",
+  ).length;
+  // count movements that touch any of the filtered levels in the last 30 days
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const filteredArticleIds = new Set(levels.map((l) => l.article.id));
+  const filteredLocationIds = new Set(levels.map((l) => l.location.id));
+  const mvtCount = latestMovements.filter((m) => {
+    if (m.status === "CANCELLED" || m.status === "DRAFT") return false;
+    const hasArticle = m.lines.some((line) =>
+      filteredArticleIds.has(line.articleId),
+    );
+    const hasLocation =
+      filteredLocationIds.has(m.fromLocationId ?? "") ||
+      filteredLocationIds.has(m.toLocationId ?? "");
+    const isRecent = new Date(m.date) >= thirtyDaysAgo;
+    return hasArticle && hasLocation && isRecent;
+  }).length;
+  const kpiValueEl = root.querySelector<HTMLElement>("#stockKpiValue");
+  const kpiRuptureEl = root.querySelector<HTMLElement>("#stockKpiRupture");
+  const kpiMvtEl = root.querySelector<HTMLElement>("#stockKpiMvt");
+  if (kpiValueEl) kpiValueEl.textContent = formatNumber(Math.round(totalValue));
+  if (kpiRuptureEl) kpiRuptureEl.textContent = formatNumber(belowThreshold);
+  if (kpiMvtEl) kpiMvtEl.textContent = formatNumber(mvtCount);
+}
+
+function renderStockSortHeaders(root: HTMLElement) {
+  const headers = root.querySelectorAll<HTMLElement>(
+    "#stockTableHead th[data-sort]",
+  );
+  headers.forEach((th) => {
+    const key = th.dataset.sort ?? "";
+    const icon = th.querySelector<HTMLElement>(".sort-icon");
+    if (!icon) return;
+    if (stockSortKey !== key) {
+      icon.innerHTML = `<i data-lucide="chevrons-up-down" class="w-3 h-3 ml-1 inline opacity-40"></i>`;
+    } else {
+      icon.innerHTML =
+        stockSortDir === "asc"
+          ? `<i data-lucide="chevron-up" class="w-3 h-3 ml-1 inline text-accent-600"></i>`
+          : `<i data-lucide="chevron-down" class="w-3 h-3 ml-1 inline text-accent-600"></i>`;
+    }
+  });
 }
 
 function renderStock(root: HTMLElement) {
@@ -480,18 +685,53 @@ function renderStock(root: HTMLElement) {
       .querySelector<HTMLInputElement>("#stockSearchInput")
       ?.value.trim()
       .toLowerCase() ?? "";
-  const levels = latestStockLevels.filter((level) => {
+  const statusFilter =
+    root.querySelector<HTMLSelectElement>("#stockStatusSelect")?.value ?? "";
+  let levels = latestStockLevels.filter((level) => {
     const haystack =
       `${level.article.code} ${level.article.designation} ${level.location.name}`.toLowerCase();
+    const statusOk =
+      !statusFilter || stockStatusCategory(level) === statusFilter;
     return (
       (!location || level.location.id === location) &&
       (!category || level.article.category === category) &&
-      (!search || haystack.includes(search))
+      (!search || haystack.includes(search)) &&
+      statusOk
     );
   });
+  // Sort
+  if (stockSortKey) {
+    levels = [...levels].sort((a, b) => {
+      let va: number | string = 0;
+      let vb: number | string = 0;
+      if (stockSortKey === "designation") {
+        va = a.article.designation;
+        vb = b.article.designation;
+      } else if (stockSortKey === "category") {
+        va = a.article.category;
+        vb = b.article.category;
+      } else if (stockSortKey === "location") {
+        va = a.location.name;
+        vb = b.location.name;
+      } else if (stockSortKey === "quantity") {
+        va = Number(a.quantity);
+        vb = Number(b.quantity);
+      } else if (stockSortKey === "status") {
+        va = stockStatusCategory(a);
+        vb = stockStatusCategory(b);
+      }
+      const cmp =
+        typeof va === "number" && typeof vb === "number"
+          ? va - vb
+          : String(va).localeCompare(String(vb));
+      return stockSortDir === "asc" ? cmp : -cmp;
+    });
+  }
   body.innerHTML = levels.length
     ? levels.map(stockRow).join("")
-    : emptyRow(8, "Aucun stock ne correspond aux critères.");
+    : emptyRow(9, "Aucun stock ne correspond aux critères.");
+  renderStockKpis(root, levels);
+  renderStockSortHeaders(root);
   window.lucide?.createIcons();
 }
 
@@ -524,6 +764,188 @@ function populateStockFilters(root: HTMLElement) {
       categories.map((category) => option(category, category)).join("");
     if (categories.includes(previous)) categorySelect.value = previous;
   }
+}
+
+// ---- Stock Drawer ----
+function openStockDrawer(root: HTMLElement, levelId: string) {
+  openStockLevelId = levelId;
+  renderStockDrawer(root);
+}
+
+function closeStockDrawer(root: HTMLElement) {
+  openStockLevelId = null;
+  const drawers = root.querySelectorAll<HTMLElement>(
+    "#stockDrawer, .stock-drawer",
+  );
+  const backdrops = root.querySelectorAll<HTMLElement>("#stockDrawerBackdrop");
+  drawers.forEach((drawer) => {
+    drawer.classList.remove("translate-x-0");
+    drawer.classList.add("translate-x-full");
+    drawer.classList.remove("stock-drawer--open");
+  });
+  backdrops.forEach((backdrop) => backdrop.classList.add("hidden"));
+}
+
+function movementTypeBadge(type: StockMovement["type"]) {
+  const labels: Record<StockMovement["type"], string> = {
+    ENTRY: "Entrée",
+    EXIT_REQUEST: "Dem. sortie",
+    EXIT: "Sortie",
+    RETURN: "Retour",
+    TRANSFER: "Transfert",
+    ADJUSTMENT: "Inventaire",
+  };
+  const tones: Record<StockMovement["type"], string> = {
+    ENTRY: "bg-success-50 text-success-700",
+    EXIT_REQUEST: "bg-gray-100 text-gray-600",
+    EXIT: "bg-error-50 text-error-700",
+    RETURN: "bg-success-50 text-success-700",
+    TRANSFER: "bg-accent-50 text-accent-600",
+    ADJUSTMENT: "bg-warning-50 text-warning-700",
+  };
+  return `<span class="px-2 py-0.5 rounded-full text-xs font-bold ${tones[type]}">${escapeHtml(labels[type] ?? type)}</span>`;
+}
+
+function renderStockDrawer(root: HTMLElement) {
+  const drawer = root.querySelector<HTMLElement>("#stockDrawer");
+  const backdrop = root.querySelector<HTMLElement>("#stockDrawerBackdrop");
+  if (!drawer || !backdrop) return;
+  const level = latestStockLevels.find((l) => l.id === openStockLevelId);
+  if (!level) return;
+
+  backdrop.classList.remove("hidden");
+  drawer.classList.remove("translate-x-full");
+  drawer.classList.add("translate-x-0");
+  drawer.classList.add("stock-drawer--open");
+
+  // Header
+  const header = drawer.querySelector<HTMLElement>("#stockDrawerHeader");
+  if (header) {
+    header.innerHTML = `
+      <div class="min-w-0 flex-1">
+        <div class="font-bold text-lg truncate">${escapeHtml(level.article.designation)}</div>
+        <div class="text-sm text-gray-500">${escapeHtml(level.article.code)} &bull; ${escapeHtml(level.location.name)}</div>
+      </div>
+    `;
+  }
+
+  // Infos complementaires
+  const infoEl = drawer.querySelector<HTMLElement>("#stockDrawerInfo");
+  if (infoEl) {
+    const supplier = latestSuppliers.find(
+      (s) => s.id === level.article.defaultSupplierId,
+    );
+    const secondaryLocations = latestStockLevels.filter(
+      (l) =>
+        l.article.id === level.article.id &&
+        l.location.id !== level.location.id,
+    );
+    const cat = stockStatusCategory(level);
+    const statusColors: Record<string, string> = {
+      rupture: "bg-error-50 text-error-700 border border-error-100",
+      "sous-seuil": "bg-warning-50 text-warning-700 border border-warning-100",
+      disponible: "bg-success-50 text-success-700 border border-success-100",
+    };
+    const statusLabels: Record<string, string> = {
+      rupture: "Rupture",
+      "sous-seuil": "Sous seuil",
+      disponible: "Disponible",
+    };
+    infoEl.innerHTML = `
+      <div class="grid grid-cols-2 gap-3 text-sm">
+        <div class="p-3 rounded-xl bg-gray-50 border border-gray-100">
+          <div class="text-xs font-semibold text-gray-500 mb-1">Statut actuel</div>
+          <span class="px-2 py-0.5 rounded-full text-xs font-bold ${statusColors[cat]}">${statusLabels[cat]}</span>
+        </div>
+        <div class="p-3 rounded-xl bg-gray-50 border border-gray-100">
+          <div class="text-xs font-semibold text-gray-500 mb-1">Disponible</div>
+          <div class="font-bold text-base">${formatNumber(level.quantity)} <span class="text-xs font-normal text-gray-400">${escapeHtml(level.article.unit)}</span></div>
+        </div>
+        <div class="p-3 rounded-xl bg-gray-50 border border-gray-100">
+          <div class="text-xs font-semibold text-gray-500 mb-1">Seuil minimum</div>
+          <div class="font-semibold">${formatNumber(level.article.minimumStock)} ${escapeHtml(level.article.unit)}</div>
+        </div>
+        <div class="p-3 rounded-xl bg-gray-50 border border-gray-100">
+          <div class="text-xs font-semibold text-gray-500 mb-1">Stock securite</div>
+          <div class="font-semibold">${level.article.securityStock > 0 ? formatNumber(level.article.securityStock) + " " + escapeHtml(level.article.unit) : "-"}</div>
+        </div>
+        <div class="p-3 rounded-xl bg-gray-50 border border-gray-100">
+          <div class="text-xs font-semibold text-gray-500 mb-1">Fournisseur principal</div>
+          <div class="font-semibold">${escapeHtml(supplier?.name ?? "-")}</div>
+        </div>
+        <div class="p-3 rounded-xl bg-gray-50 border border-gray-100">
+          <div class="text-xs font-semibold text-gray-500 mb-1">Emplacements secondaires</div>
+          <div class="font-semibold text-xs">${secondaryLocations.length > 0 ? secondaryLocations.map((l) => escapeHtml(l.location.name) + " (" + formatNumber(l.quantity) + ")").join(", ") : "Aucun"}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Historique mouvements
+  const histEl = drawer.querySelector<HTMLElement>("#stockDrawerHistory");
+  if (histEl) {
+    const dateFrom =
+      drawer.querySelector<HTMLInputElement>("#stockDrawerDateFrom")?.value ??
+      "";
+    const dateTo =
+      drawer.querySelector<HTMLInputElement>("#stockDrawerDateTo")?.value ?? "";
+    const movements = latestMovements
+      .filter((m) => {
+        if (m.status === "CANCELLED" || m.status === "DRAFT") return false;
+        const hasArticle = m.lines.some(
+          (l) => l.articleId === level.article.id,
+        );
+        const hasLocation =
+          m.fromLocationId === level.location.id ||
+          m.toLocationId === level.location.id;
+        if (!hasArticle || !hasLocation) return false;
+        if (dateFrom && m.date < dateFrom) return false;
+        if (dateTo && m.date > dateTo + "T23:59:59") return false;
+        return true;
+      })
+      .sort((a, b) => b.date.localeCompare(a.date));
+
+    if (!movements.length) {
+      histEl.innerHTML = `<p class="text-sm text-gray-500 text-center py-6">Aucun mouvement trouvé pour cette période.</p>`;
+    } else {
+      histEl.innerHTML = movements
+        .map((m) => {
+          const lineForArticle = m.lines.find(
+            (l) => l.articleId === level.article.id,
+          );
+          const qty = Number(
+            lineForArticle?.completedQuantity ??
+              lineForArticle?.requestedQuantity ??
+              lineForArticle?.expectedQuantity ??
+              0,
+          );
+          const isOut =
+            m.type === "EXIT" ||
+            (m.type === "TRANSFER" && m.fromLocationId === level.location.id);
+          const qtyClass = isOut ? "text-error-700" : "text-success-700";
+          const qtySign = isOut ? "-" : "+";
+          const actor =
+            m.handledBy ??
+            m.receivedBy ??
+            m.requestedBy ??
+            m.deliveredBy ??
+            "-";
+          return `<div class="flex items-start gap-3 py-3 border-b border-gray-100 last:border-0">
+          <div class="shrink-0 mt-0.5">${movementTypeBadge(m.type)}</div>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-xs text-gray-500">${escapeHtml(formatDate(m.date))}</span>
+              <span class="font-bold text-sm ${qtyClass}">${qtySign}${formatNumber(qty)}</span>
+            </div>
+            <div class="text-xs text-gray-600 mt-0.5 truncate">${escapeHtml(m.reference)} &bull; ${escapeHtml(actor)}</div>
+          </div>
+        </div>`;
+        })
+        .join("");
+    }
+  }
+
+  window.lucide?.createIcons();
 }
 
 function reapproLevels() {
@@ -5636,6 +6058,12 @@ function setViewActions(root: HTMLElement, view: string) {
     ],
     referentiels: [
       {
+        label: "Importer Excel",
+        icon: "upload",
+        modal: "importModal",
+        variant: "secondary",
+      },
+      {
         label: "Nouvel element",
         icon: "plus",
         modal: "referentialModal",
@@ -5736,6 +6164,7 @@ function setViewActions(root: HTMLElement, view: string) {
 }
 
 function showView(root: HTMLElement, view: string, navButton?: HTMLElement) {
+  closeStockDrawer(root);
   root
     .querySelectorAll(".view")
     .forEach((section) => setVisible(section, section.id === view));
@@ -5915,8 +6344,574 @@ function openUserDetail(root: HTMLElement, id: string) {
   openModal(root, "userModal");
   fillUserModal(root, user);
 }
+function articleImportKey(value: unknown) {
+  return String(value ?? "")
+    .replace(/^\uFEFF/, "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\u00a0/g, " ")
+    .replace(/\s+/g, " ");
+}
+function articleImportHeaderKey(value: unknown) {
+  return articleImportKey(value).replace(/[^a-z0-9]+/g, "");
+}
+function articleImportNumber(value: string) {
+  return value.trim() === ""
+    ? 0
+    : Number(value.replace(/\s/g, "").replace(",", "."));
+}
+function validateArticleImportRow(row: ArticleImportRow, index: number) {
+  const errors: string[] = [];
+  if (!row.code.trim()) errors.push("Code obligatoire");
+  if (!row.designation.trim()) errors.push("Designation obligatoire");
+  const category = articleImportHeaderKey(row.category);
+  if (!["fo", "gsm", "blr"].includes(category))
+    errors.push("Famille invalide (FO, GSM ou BLR)");
+  if (!articleImportKey(row.unit)) errors.push("Unite obligatoire");
+  const tracking = articleImportHeaderKey(row.trackingMode);
+  if (
+    !(
+      tracking === "quantity" ||
+      tracking === "articleenquantite" ||
+      tracking === "individual" ||
+      tracking === "materielidentifie"
+    )
+  )
+    errors.push("Mode de suivi invalide");
+  (
+    ["minimumStock", "securityStock", "initialStock", "referencePrice"] as const
+  ).forEach((field) => {
+    if (
+      row[field].trim() !== "" &&
+      (!Number.isFinite(articleImportNumber(row[field])) ||
+        articleImportNumber(row[field]) < 0)
+    )
+      errors.push(field + " doit etre un nombre positif");
+  });
+  if (Number.isFinite(index) && row.code.trim()) {
+    const codeKey = articleImportKey(row.code);
+    const occurrences = articleImportRows.filter(
+      (other) => articleImportKey(other.code) === codeKey,
+    ).length;
+    if (occurrences > 1) errors.push("Code en doublon dans le fichier");
+  }
+  const existing =
+    Boolean(row.code.trim()) &&
+    latestArticles.some(
+      (article) =>
+        articleImportKey(article.code) === articleImportKey(row.code),
+    );
+  if (existing) errors.push("Code deja present dans le referentiel");
+  if (articleImportNumber(row.initialStock) > 0 && !row.location.trim())
+    errors.push("Emplacement requis si stock de depart renseigne");
+  if (
+    row.supplier.trim() &&
+    !latestSuppliers.some(
+      (item) =>
+        articleImportKey(item.name) === articleImportKey(row.supplier) ||
+        articleImportKey(item.id) === articleImportKey(row.supplier),
+    )
+  )
+    errors.push("Fournisseur introuvable");
+  if (
+    row.location.trim() &&
+    !latestLocations.some(
+      (item) =>
+        articleImportKey(item.name) === articleImportKey(row.location) ||
+        articleImportKey(item.code) === articleImportKey(row.location) ||
+        item.id === row.location,
+    )
+  )
+    errors.push("Emplacement introuvable");
+  return errors;
+}
+function renderArticleImport(root: HTMLElement) {
+  const table = root.querySelector<HTMLElement>("#articleImportTable");
+  const summary = root.querySelector<HTMLElement>("#articleImportSummary");
+  const save = root.querySelector<HTMLButtonElement>(
+    "#articleImportSaveButton",
+  );
+  if (!table || !summary) return;
+  articleImportRows.forEach(
+    (row, index) => (row.errors = validateArticleImportRow(row, index)),
+  );
+  const valid = articleImportRows.filter((row) => !row.errors.length).length;
+  summary.classList.remove("hidden");
+  summary.classList.add("grid");
+  summary.innerHTML =
+    detailCard("Total lignes", articleImportRows.length) +
+    detailCard("Lignes valides", valid, "success") +
+    detailCard("Lignes invalides", articleImportRows.length - valid, "gray") +
+    detailCard("A enregistrer", valid, "accent");
+  const fields: Array<[keyof ArticleImportRow, string]> = [
+    ["code", "Code"],
+    ["designation", "Designation"],
+    ["category", "Famille"],
+    ["unit", "Unite"],
+    ["trackingMode", "Mode de suivi"],
+    ["minimumStock", "Stock min."],
+    ["securityStock", "Stock securite"],
+    ["initialStock", "Stock depart"],
+    ["referencePrice", "Prix indicatif"],
+    ["supplier", "Fournisseur"],
+    ["location", "Emplacement"],
+  ];
+  table.classList.remove("hidden");
+  table.innerHTML = `<div class="overflow-auto border rounded-xl"><table class="w-full min-w-[1250px] text-sm"><thead class="bg-gray-50"><tr><th class="p-3 text-left">Ligne</th>${fields.map(([, label]) => `<th class="p-3 text-left">${label}</th>`).join("")}<th class="p-3 text-left">Validation</th></tr></thead><tbody class="divide-y">${articleImportRows.map((row, index) => `<tr class="${row.errors.length ? "bg-error-50/40" : "bg-success-50/20"}"><td class="p-2 font-bold">${index + 2}</td>${fields.map(([field]) => `<td class="p-2"><input data-import-row="${index}" data-import-field="${field}" value="${escapeHtml(row[field])}" class="w-32 h-9 border rounded px-2 bg-white"></td>`).join("")}<td class="p-2 ${row.errors.length ? "text-error-700" : "text-success-700"} font-semibold">${row.errors.length ? escapeHtml(row.errors.join(" • ")) : "Valide"}</td></tr>`).join("")}</tbody></table></div>`;
+  if (save) {
+    save.disabled = valid === 0;
+    save.classList.toggle("opacity-50", !valid);
+    save.classList.toggle("cursor-not-allowed", !valid);
+  }
+  window.lucide?.createIcons();
+}
+async function readArticleImportFile(root: HTMLElement, file: File) {
+  try {
+    const data = await file.arrayBuffer();
+    const workbook = XLSX.read(data, { type: "array" });
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const records = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, {
+      defval: "",
+    });
+    const aliases: Record<string, keyof ArticleImportRow> = {
+      code: "code",
+      designation: "designation",
+      famille: "category",
+      category: "category",
+      unite: "unit",
+      unit: "unit",
+      "mode de suivi": "trackingMode",
+      trackingmode: "trackingMode",
+      "stock minimum": "minimumStock",
+      minimumstock: "minimumStock",
+      "stock securite": "securityStock",
+      securitystock: "securityStock",
+      "stock depart": "initialStock",
+      "stock de depart": "initialStock",
+      initialstock: "initialStock",
+      "prix indicatif": "referencePrice",
+      referenceprice: "referencePrice",
+      fournisseur: "supplier",
+      "fournisseur habituel": "supplier",
+      emplacement: "location",
+      "emplacement de depart": "location",
+    };
+    articleImportRows = records.map((record) => {
+      const row: ArticleImportRow = {
+        code: "",
+        designation: "",
+        category: "",
+        unit: "",
+        trackingMode: "QUANTITY",
+        minimumStock: "",
+        securityStock: "",
+        initialStock: "",
+        referencePrice: "",
+        supplier: "",
+        location: "",
+        errors: [],
+      };
+      Object.entries(record).forEach(([key, value]) => {
+        const normalizedHeader = articleImportKey(key);
+        const field =
+          aliases[normalizedHeader] ?? aliases[articleImportHeaderKey(key)];
+        if (field && field !== "errors")
+          (row as unknown as Record<string, string>)[field] = String(
+            value ?? "",
+          ).trim();
+      });
+      return row;
+    });
+    if (!articleImportRows.length)
+      throw new Error("Le fichier ne contient aucune ligne.");
+    renderArticleImport(root);
+  } catch (error) {
+    showToast(
+      root,
+      error instanceof Error ? error.message : "Lecture du fichier impossible.",
+      "error",
+    );
+  }
+}
+async function importArticles(root: HTMLElement) {
+  articleImportRows.forEach(
+    (row, index) => (row.errors = validateArticleImportRow(row, index)),
+  );
+  const validRows = articleImportRows.filter((row) => !row.errors.length);
+  if (!validRows.length) {
+    renderArticleImport(root);
+    showToast(root, "Aucune ligne valide a enregistrer.", "error");
+    return;
+  }
+  try {
+    for (const row of validRows) {
+      const tracking = articleImportHeaderKey(row.trackingMode);
+      const supplier = latestSuppliers.find(
+        (item) =>
+          articleImportKey(item.name) === articleImportKey(row.supplier) ||
+          articleImportKey(item.id) === articleImportKey(row.supplier),
+      );
+      const location = latestLocations.find(
+        (item) =>
+          articleImportKey(item.name) === articleImportKey(row.location) ||
+          articleImportKey(item.code) === articleImportKey(row.location) ||
+          item.id === row.location,
+      );
+      await createArticle({
+        code: row.code.trim(),
+        designation: row.designation.trim(),
+        category: row.category.trim().toUpperCase(),
+        unit: row.unit.trim(),
+        trackingMode:
+          tracking === "individual" || tracking === "materielidentifie"
+            ? "INDIVIDUAL"
+            : "QUANTITY",
+        minimumStock: articleImportNumber(row.minimumStock),
+        securityStock: articleImportNumber(row.securityStock),
+        referencePrice: row.referencePrice.trim()
+          ? articleImportNumber(row.referencePrice)
+          : null,
+        defaultSupplierId: supplier?.id,
+        defaultLocationId: location?.id,
+        initialStock: articleImportNumber(row.initialStock),
+        initialLocationId: location?.id,
+      });
+    }
+    closeModal(root, "importModal");
+    articleImportRows = [];
+    updateApiBackedViews(root);
+    showToast(
+      root,
+      `${validRows.length} article(s) importe(s). Les lignes invalides n'ont pas ete enregistrees.`,
+    );
+  } catch (error) {
+    showToast(
+      root,
+      error instanceof Error ? error.message : "Import impossible.",
+      "error",
+    );
+  }
+}
+
+function referentialImportDefaults(
+  type: ReferentialImportType,
+): ReferentialImportRow {
+  return Object.fromEntries([
+    ...referentialImportFields[type].map(([field]) => [field, ""]),
+    ["errors", []],
+  ]) as ReferentialImportRow;
+}
+function referentialImportValid(row: ReferentialImportRow, index: number) {
+  const values = referentialImportFields[referentialImportType].map(
+    ([field]) => row[field] ?? "",
+  );
+  const errors: string[] = [];
+  if (!values[0]?.trim()) errors.push("Code ou identifiant obligatoire");
+  const required =
+    referentialImportType === "supplier" ||
+    referentialImportType === "client" ||
+    referentialImportType === "project" ||
+    referentialImportType === "site" ||
+    referentialImportType === "location" ||
+    referentialImportType === "teamService"
+      ? values[1]
+      : values[0];
+  if (!required?.trim()) errors.push("Nom ou designation obligatoire");
+  const key = articleImportKey(values[0]);
+  if (
+    key &&
+    referentialImportRows.filter(
+      (item) =>
+        articleImportKey(
+          item[referentialImportFields[referentialImportType][0][0]],
+        ) === key,
+    ).length > 1
+  )
+    errors.push("Code en doublon dans le fichier");
+  const collections: Record<string, unknown[]> = {
+    supplier: latestSuppliers,
+    client: latestClients,
+    project: latestProjects,
+    site: latestLocations.filter((item) =>
+      ["SITE", "CHANTIER"].includes(item.type.toUpperCase()),
+    ),
+    location: latestLocations,
+    teamService: latestTeamServices,
+    employee: latestEmployees,
+  };
+  const existing = (collections[referentialImportType] ?? []).some(
+    (item) =>
+      articleImportKey(
+        (item as { code?: string; matricule?: string }).code ??
+          (item as { matricule?: string }).matricule,
+      ) === key,
+  );
+  if (key && existing) errors.push("Code deja present dans le referentiel");
+  return errors;
+}
+function renderReferentialImport(root: HTMLElement) {
+  const table = root.querySelector<HTMLElement>("#articleImportTable");
+  const summary = root.querySelector<HTMLElement>("#articleImportSummary");
+  const save = root.querySelector<HTMLButtonElement>(
+    "#articleImportSaveButton",
+  );
+  if (!table || !summary) return;
+  referentialImportRows.forEach(
+    (row, index) => (row.errors = referentialImportValid(row, index)),
+  );
+  const valid = referentialImportRows.filter(
+    (row) => !row.errors.length,
+  ).length;
+  summary.classList.remove("hidden");
+  summary.classList.add("grid");
+  summary.innerHTML =
+    detailCard("Total lignes", referentialImportRows.length) +
+    detailCard("Lignes valides", valid, "success") +
+    detailCard(
+      "Lignes invalides",
+      referentialImportRows.length - valid,
+      "gray",
+    );
+  const fields = referentialImportFields[referentialImportType];
+  table.classList.remove("hidden");
+  table.innerHTML = `<div class="overflow-auto border rounded-xl"><table class="w-full min-w-[900px] text-sm"><thead class="bg-gray-50"><tr><th class="p-3 text-left">Ligne</th>${fields.map(([, label]) => `<th class="p-3 text-left">${label}</th>`).join("")}<th class="p-3 text-left">Validation</th></tr></thead><tbody class="divide-y">${referentialImportRows.map((row, index) => `<tr class="${row.errors.length ? "bg-error-50/40" : "bg-success-50/20"}"><td class="p-2 font-bold">${index + 2}</td>${fields.map(([field]) => `<td class="p-2"><input data-import-row="${index}" data-import-field="${field}" value="${escapeHtml(row[field] ?? "")}" class="w-32 h-9 border rounded px-2 bg-white"></td>`).join("")}<td class="p-2 font-semibold ${row.errors.length ? "text-error-700" : "text-success-700"}">${row.errors.length ? escapeHtml(row.errors.join(" • ")) : "Valide"}</td></tr>`).join("")}</tbody></table></div>`;
+  if (save) {
+    save.disabled = valid === 0;
+    save.classList.toggle("opacity-50", !valid);
+    save.classList.toggle("cursor-not-allowed", !valid);
+  }
+  window.lucide?.createIcons();
+}
+function referentialCodeExample(type: ReferentialImportType) {
+  const examples: Record<ReferentialImportType, string> = {
+    article: "FO-0001",
+    supplier: "FRN-001",
+    client: "CLI-001",
+    project: "PROJ-2026-001",
+    site: "SITE-001",
+    employee: "EMP-001",
+    location: "MAG-001",
+    teamService: "SRV-001",
+  };
+  return examples[type];
+}
+function downloadReferentialTemplate(root: HTMLElement) {
+  const fields = referentialImportFields[referentialImportType];
+  const worksheet = XLSX.utils.aoa_to_sheet([
+    fields.map(([, label]) => label),
+    fields.map(([field]) =>
+      field === "code"
+        ? referentialCodeExample(referentialImportType)
+        : field === "category"
+          ? "Exemple"
+          : "",
+    ),
+  ]);
+  worksheet["!cols"] = fields.map(([, label]) => ({
+    wch: Math.max(18, label.length + 2),
+  }));
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Import");
+  XLSX.writeFile(
+    workbook,
+    `modele-import-${referentialImportType}-stock-hub.xlsx`,
+  );
+  showToast(root, "Modele Excel telecharge.");
+}
+async function readReferentialImportFile(root: HTMLElement, file: File) {
+  try {
+    const workbook = XLSX.read(await file.arrayBuffer(), { type: "array" });
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const records = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, {
+      defval: "",
+    });
+    const fields = referentialImportFields[referentialImportType];
+    referentialImportRows = records.map((record) => {
+      const row = referentialImportDefaults(referentialImportType);
+      Object.entries(record).forEach(([key, value]) => {
+        const normalized = articleImportHeaderKey(key);
+        const field = fields.find(
+          ([name, label]) =>
+            articleImportHeaderKey(name) === normalized ||
+            articleImportHeaderKey(label) === normalized,
+        )?.[0];
+        if (field) row[field] = String(value ?? "").trim();
+      });
+      return row;
+    });
+    if (!referentialImportRows.length)
+      throw new Error("Le fichier ne contient aucune ligne.");
+    renderReferentialImport(root);
+  } catch (error) {
+    showToast(
+      root,
+      error instanceof Error ? error.message : "Lecture du fichier impossible.",
+      "error",
+    );
+  }
+}
+async function importReferentialElements(root: HTMLElement) {
+  referentialImportRows.forEach(
+    (row, index) => (row.errors = referentialImportValid(row, index)),
+  );
+  const rows = referentialImportRows.filter((row) => !row.errors.length);
+  if (!rows.length) {
+    renderReferentialImport(root);
+    showToast(root, "Aucune ligne valide a enregistrer.", "error");
+    return;
+  }
+  try {
+    for (const row of rows) {
+      const value = (field: string) =>
+        String(row[field] ?? "").trim() || undefined;
+      const type = referentialImportType;
+      if (type === "supplier")
+        await createSupplier({
+          code: value("code")!,
+          name: value("name")!,
+          fiscalId: value("fiscalId"),
+          category: value("category"),
+          contact: value("contact"),
+          phone: value("phone"),
+          email: value("email"),
+          address: value("address"),
+        });
+      else if (type === "client")
+        await createClient({
+          code: value("code")!,
+          name: value("name")!,
+          contact: value("contact"),
+          phone: value("phone"),
+          email: value("email"),
+        });
+      else if (type === "employee")
+        await createEmployee({
+          matricule: value("code")!,
+          lastName: value("lastName")!,
+          firstName: value("firstName")!,
+          department: value("department"),
+          role: value("role"),
+          phone: value("phone"),
+        });
+      else if (type === "teamService")
+        await createTeamService({
+          code: value("code")!,
+          name: value("name")!,
+          type: value("type"),
+          manager: value("manager"),
+        });
+      else if (type === "project")
+        await createProject({
+          code: value("code")!,
+          name: value("name")!,
+          client: value("client"),
+          region: value("region"),
+          city: value("city"),
+          startDate: value("startDate"),
+          endDate: value("endDate"),
+        });
+      else if (type === "site" || type === "location") {
+        const projectValue = value("project");
+        const project = projectValue
+          ? latestProjects.find(
+              (item) =>
+                articleImportKey(item.id) === articleImportKey(projectValue) ||
+                articleImportKey(item.code) ===
+                  articleImportKey(projectValue) ||
+                articleImportKey(item.name) === articleImportKey(projectValue),
+            )
+          : undefined;
+        await createLocation({
+          code: value("code")!,
+          name: value("name")!,
+          type: type === "site" ? "CHANTIER" : (value("type") ?? "MAGASIN"),
+          projectId: project?.id,
+          responsible: value("responsible"),
+          region: value("region"),
+          city: value("city"),
+          address: value("address"),
+        });
+      }
+    }
+    closeModal(root, "importModal");
+    referentialImportRows = [];
+    updateApiBackedViews(root);
+    showToast(root, `${rows.length} element(s) importe(s).`);
+  } catch (error) {
+    showToast(
+      root,
+      error instanceof Error ? error.message : "Import impossible.",
+      "error",
+    );
+  }
+}
+
+function downloadArticleImportTemplate(root: HTMLElement) {
+  const headers = [
+    "Code",
+    "Designation",
+    "Famille",
+    "Unite",
+    "Mode de suivi",
+    "Stock minimum",
+    "Stock securite",
+    "Stock de depart",
+    "Prix indicatif",
+    "Fournisseur habituel",
+    "Emplacement de depart",
+  ];
+  const example = [
+    "FO-0001",
+    "Cable reseau Cat6",
+    "FO",
+    "Piece",
+    "Article en quantite",
+    "10",
+    "20",
+    "0",
+    "1500",
+    "",
+    "",
+  ];
+  const worksheet = XLSX.utils.aoa_to_sheet([headers, example]);
+  worksheet["!cols"] = headers.map((header) => ({
+    wch: Math.max(header.length + 2, 18),
+  }));
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Articles");
+  XLSX.writeFile(workbook, "modele-import-articles-stock-hub.xlsx");
+  showToast(
+    root,
+    "Modele Excel telecharge. Complete-le sans modifier les noms de colonnes.",
+  );
+}
+
 function openModal(root: HTMLElement, id: string) {
   setVisible(root.querySelector(`#${CSS.escape(id)}`), true);
+  if (id === "importModal") {
+    articleImportRows = [];
+    referentialImportRows = [];
+    referentialImportType =
+      (root.querySelector<HTMLSelectElement>("#referentialImportType")
+        ?.value as ReferentialImportType) || "article";
+    const file = root.querySelector<HTMLInputElement>("#articleImportFile");
+    if (file) file.value = "";
+    root
+      .querySelector<HTMLElement>("#articleImportSummary")
+      ?.classList.add("hidden");
+    root
+      .querySelector<HTMLElement>("#articleImportTable")
+      ?.classList.add("hidden");
+    const save = root.querySelector<HTMLButtonElement>(
+      "#articleImportSaveButton",
+    );
+    if (save) {
+      save.disabled = true;
+      save.classList.add("opacity-50", "cursor-not-allowed");
+    }
+  }
   if (id === "userModal") {
     prepareUserModal(root);
   }
@@ -7258,6 +8253,9 @@ function parseAction(action: string) {
   if (action.includes("loginMock") || action.includes("loginUser"))
     return { type: "login" } as const;
   if (action.includes("logoutMock")) return { type: "logout" } as const;
+  if (action === "downloadArticleImportTemplate")
+    return { type: "download-article-import-template" } as const;
+  if (action === "importArticles") return { type: "import-articles" } as const;
   if (action === "submitReferential")
     return { type: "submit-referential" } as const;
   if (action === "editReferentialDetail")
@@ -7368,6 +8366,16 @@ function parseAction(action: string) {
   );
   if (equipmentDetailMatch)
     return { type: "equipment-detail", id: equipmentDetailMatch[1] } as const;
+  const stockDrawerMatch = action.match(/^openStockDrawer\('([^']+)'\)/);
+  if (stockDrawerMatch)
+    return { type: "stock-drawer-open", id: stockDrawerMatch[1] } as const;
+  if (action === "closeStockDrawer")
+    return { type: "stock-drawer-close" } as const;
+  if (action === "refreshStockDrawer")
+    return { type: "stock-drawer-refresh" } as const;
+  const stockSortMatch = action.match(/^sortStock\('([^']+)'\)/);
+  if (stockSortMatch)
+    return { type: "stock-sort", key: stockSortMatch[1] } as const;
   const refMatch = action.match(/^showRef\('([^']+)'/);
   if (refMatch) return { type: "ref", id: refMatch[1] } as const;
   return { type: "unknown" } as const;
@@ -7416,6 +8424,14 @@ function StockHubTemplate() {
       closeFloatingExitActions(root);
       if (parsed.type === "view") navigateToView(root, parsed.id, target);
       if (parsed.type === "open") openModal(root, parsed.id);
+      if (parsed.type === "download-article-import-template")
+        referentialImportType === "article"
+          ? downloadArticleImportTemplate(root)
+          : downloadReferentialTemplate(root);
+      if (parsed.type === "import-articles")
+        void (referentialImportType === "article"
+          ? importArticles(root)
+          : importReferentialElements(root));
       if (parsed.type === "count") {
         openModal(root, "countModal");
         void populateCountModal(root, parsed.articleId, parsed.locationId);
@@ -7514,6 +8530,18 @@ function StockHubTemplate() {
       if (parsed.type === "refresh-history") renderHistory(root);
       if (parsed.type === "export") exportData(root, parsed.kind);
       if (parsed.type === "stock-filter") renderStock(root);
+      if (parsed.type === "stock-drawer-open") openStockDrawer(root, parsed.id);
+      if (parsed.type === "stock-drawer-close") closeStockDrawer(root);
+      if (parsed.type === "stock-drawer-refresh") renderStockDrawer(root);
+      if (parsed.type === "stock-sort") {
+        if (stockSortKey === parsed.key) {
+          stockSortDir = stockSortDir === "asc" ? "desc" : "asc";
+        } else {
+          stockSortKey = parsed.key;
+          stockSortDir = "asc";
+        }
+        renderStock(root);
+      }
       if (parsed.type === "stock-location") {
         navigateToView(root, "stock");
         populateStockFilters(root);
@@ -7526,15 +8554,67 @@ function StockHubTemplate() {
       if (parsed.type === "inventory-mode")
         showInventoryMode(root, parsed.mode);
     };
+    const importFile =
+      root.querySelector<HTMLInputElement>("#articleImportFile");
+    importFile?.addEventListener("change", () => {
+      const file = importFile.files?.[0];
+      if (!file) return;
+      if (referentialImportType === "article")
+        void readArticleImportFile(root, file);
+      else void readReferentialImportFile(root, file);
+    });
+    root
+      .querySelector<HTMLSelectElement>("#referentialImportType")
+      ?.addEventListener("change", (event) => {
+        referentialImportType = (event.target as HTMLSelectElement)
+          .value as ReferentialImportType;
+        referentialImportRows = [];
+        articleImportRows = [];
+        const fileInput =
+          root.querySelector<HTMLInputElement>("#articleImportFile");
+        if (fileInput) fileInput.value = "";
+        root
+          .querySelector<HTMLElement>("#articleImportSummary")
+          ?.classList.add("hidden");
+        root
+          .querySelector<HTMLElement>("#articleImportTable")
+          ?.classList.add("hidden");
+      });
     const onChange = (event: Event) => {
       const target = event.target as HTMLElement;
+      const importField = target as HTMLInputElement;
+      if (importField.dataset.importRow && importField.dataset.importField) {
+        const rowIndex = Number(importField.dataset.importRow);
+        if (referentialImportType === "article") {
+          const row = articleImportRows[rowIndex];
+          if (row) {
+            (row as unknown as Record<string, string>)[
+              importField.dataset.importField
+            ] = importField.value;
+            renderArticleImport(root);
+          }
+        } else {
+          const row = referentialImportRows[rowIndex];
+          if (row) {
+            row[importField.dataset.importField] = importField.value;
+            renderReferentialImport(root);
+          }
+        }
+        return;
+      }
       if (target.id === "referentialType") {
         updateReferentialForm(root, (target as HTMLSelectElement).value);
       }
       if (target.id === "inventoryLocationSelect") {
         renderInventory(root);
       }
-      if (["stockLocationSelect", "stockCategorySelect"].includes(target.id)) {
+      if (
+        [
+          "stockLocationSelect",
+          "stockCategorySelect",
+          "stockStatusSelect",
+        ].includes(target.id)
+      ) {
         renderStock(root);
       }
       if (target.closest("#materialRequestLines")) {

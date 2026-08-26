@@ -332,10 +332,156 @@
           </div>
         </section>
 <section id="stock" class="view">
-          <div class="flex justify-between items-start gap-4 mb-6"><div><h1 class="text-3xl font-bold">Vue Stock par emplacement</h1><p class="text-sm text-gray-500 mt-2">Consulter le stock disponible par magasin, depot, chantier ou vehicule.</p></div><button class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold flex items-center gap-2"><i data-lucide="download" class="w-4 h-4"></i>Exporter CSV</button></div>
-          <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm mb-6"><div class="grid grid-cols-1 md:grid-cols-4 gap-4"><select class="h-11 rounded-lg border border-gray-300 px-3"><option value="">Selectionner</option><option>Magasin principal</option><option>Depot Cocody</option></select><select class="h-11 rounded-lg border border-gray-300 px-3"><option value="">Selectionner</option><option>Toutes familles</option><option>FO</option><option>GSM</option><option>BLR</option></select><input class="h-11 rounded-lg border border-gray-300 px-3" placeholder="Rechercher article"><button class="h-11 rounded-lg bg-accent-600 text-white font-semibold">Filtrer</button></div></div>
-          <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Article</th><th class="px-5 py-3 text-left">Famille</th><th class="px-5 py-3 text-left">Emplacement</th><th class="px-5 py-3 text-right">Initial</th><th class="px-5 py-3 text-right">Entrees</th><th class="px-5 py-3 text-right">Sorties</th><th class="px-5 py-3 text-right">Disponible</th><th class="px-5 py-3 text-left">Statut</th></tr></thead><tbody class="divide-y divide-gray-200"><tr><td class="px-5 py-4 font-bold">Cable reseau Cat6</td><td class="px-5 py-4">FO</td><td class="px-5 py-4">Magasin principal</td><td class="px-5 py-4 text-right">40</td><td class="px-5 py-4 text-right">120</td><td class="px-5 py-4 text-right">156</td><td class="px-5 py-4 text-right font-bold">4</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full bg-error-50 text-error-700 text-xs font-bold">Rupture proche</span></td></tr></tbody></table></div></div>
+          <!-- Page header -->
+          <div class="flex justify-between items-start gap-4 mb-6">
+            <div>
+              <h1 class="text-3xl font-bold">Vue Stock par emplacement</h1>
+              <p class="text-sm text-gray-500 mt-2">Consulter le stock disponible par magasin, depot, chantier ou vehicule. Cliquez sur une ligne pour voir le detail.</p>
+            </div>
+            <button class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold flex items-center gap-2"><i data-lucide="download" class="w-4 h-4"></i>Exporter CSV</button>
+          </div>
+
+          <!-- KPI Banner -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm flex items-start gap-4">
+              <div class="w-10 h-10 rounded-xl bg-accent-50 text-accent-600 flex items-center justify-center shrink-0"><i data-lucide="coins" class="w-5 h-5"></i></div>
+              <div class="min-w-0">
+                <div class="text-sm font-semibold text-gray-500">Valeur totale du stock</div>
+                <div id="stockKpiValue" class="text-2xl font-bold mt-1">—</div>
+                <div class="text-xs text-gray-400 mt-0.5">Stock filtre (prix ref.)</div>
+              </div>
+            </div>
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm flex items-start gap-4">
+              <div class="w-10 h-10 rounded-xl bg-error-50 text-error-600 flex items-center justify-center shrink-0"><i data-lucide="triangle-alert" class="w-5 h-5"></i></div>
+              <div class="min-w-0">
+                <div class="text-sm font-semibold text-gray-500">Ruptures / Sous seuil</div>
+                <div id="stockKpiRupture" class="text-2xl font-bold mt-1">—</div>
+                <div class="text-xs text-gray-400 mt-0.5">Articles critiques</div>
+              </div>
+            </div>
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm flex items-start gap-4">
+              <div class="w-10 h-10 rounded-xl bg-success-50 text-success-700 flex items-center justify-center shrink-0"><i data-lucide="activity" class="w-5 h-5"></i></div>
+              <div class="min-w-0">
+                <div class="text-sm font-semibold text-gray-500">Mouvements (30 jours)</div>
+                <div id="stockKpiMvt" class="text-2xl font-bold mt-1">—</div>
+                <div class="text-xs text-gray-400 mt-0.5">Entrees, sorties, retours</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filters -->
+          <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm mb-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+              <select id="stockLocationSelect" class="h-11 rounded-lg border border-gray-300 px-3 text-sm"><option value="">Tous les emplacements</option></select>
+              <select id="stockCategorySelect" class="h-11 rounded-lg border border-gray-300 px-3 text-sm"><option value="">Toutes familles</option></select>
+              <select id="stockStatusSelect" class="h-11 rounded-lg border border-gray-300 px-3 text-sm">
+                <option value="">Tous les statuts</option>
+                <option value="disponible">Disponible</option>
+                <option value="sous-seuil">Sous seuil</option>
+                <option value="rupture">Rupture</option>
+              </select>
+              <div class="relative lg:col-span-1">
+                <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-3.5 pointer-events-none"></i>
+                <input id="stockSearchInput" class="w-full h-11 rounded-lg border border-gray-300 pl-9 pr-3 text-sm" placeholder="Rechercher article, code…">
+              </div>
+              <button data-action="filterStock" class="h-11 rounded-lg bg-accent-600 text-white font-semibold text-sm px-4 flex items-center justify-center gap-2">
+                <i data-lucide="filter" class="w-4 h-4"></i>Filtrer
+              </button>
+            </div>
+          </div>
+
+          <!-- Table -->
+          <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm min-w-[900px]">
+                <thead id="stockTableHead" class="bg-gray-50 text-xs uppercase text-gray-500 border-b border-gray-200">
+                  <tr>
+                    <th class="px-5 py-3 text-left cursor-pointer select-none hover:bg-gray-100" data-action="sortStock('designation')">
+                      Article<span class="sort-icon"></span>
+                    </th>
+                    <th class="px-5 py-3 text-left cursor-pointer select-none hover:bg-gray-100" data-action="sortStock('category')">
+                      Famille<span class="sort-icon"></span>
+                    </th>
+                    <th class="px-5 py-3 text-left cursor-pointer select-none hover:bg-gray-100" data-action="sortStock('location')">
+                      Emplacement<span class="sort-icon"></span>
+                    </th>
+                    <th class="px-5 py-3 text-right">Initial</th>
+                    <th class="px-5 py-3 text-right">Entrees</th>
+                    <th class="px-5 py-3 text-right">Sorties</th>
+                    <th class="px-5 py-3 text-left cursor-pointer select-none hover:bg-gray-100" data-action="sortStock('quantity')">
+                      Disponible<span class="sort-icon"></span>
+                    </th>
+                    <th class="px-5 py-3 text-left cursor-pointer select-none hover:bg-gray-100" data-action="sortStock('status')">
+                      Statut<span class="sort-icon"></span>
+                    </th>
+                    <th class="px-5 py-3 text-left">Dernier mvt</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  <tr><td colspan="9" class="px-5 py-8 text-center text-gray-500">Chargement du stock en cours…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </section>
+
+        <!-- Stock Drawer Backdrop -->
+        <div id="stockDrawerBackdrop" class="hidden fixed inset-0 bg-gray-900/30 z-40 backdrop-blur-sm" data-action="closeStockDrawer"></div>
+
+        <!-- Stock Drawer -->
+        <aside id="stockDrawer" class="stock-drawer fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl z-50 flex flex-col border-l border-gray-200">
+          <!-- Drawer Header -->
+          <div class="flex items-start gap-3 p-5 border-b border-gray-100 shrink-0">
+            <div id="stockDrawerHeader" class="min-w-0 flex-1">
+              <div class="font-bold text-lg">—</div>
+              <div class="text-sm text-gray-500">—</div>
+            </div>
+            <button data-action="closeStockDrawer" class="shrink-0 w-9 h-9 rounded-lg border border-gray-200 text-gray-500 hover:text-gray-900 hover:bg-gray-50 flex items-center justify-center" title="Fermer">
+              <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+          <!-- Scrollable content -->
+          <div class="flex-1 overflow-y-auto p-5 space-y-6">
+
+            <!-- Infos complementaires -->
+            <div>
+              <h2 class="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2"><i data-lucide="info" class="w-4 h-4 text-accent-600"></i>Informations article</h2>
+              <div id="stockDrawerInfo">
+                <div class="grid grid-cols-2 gap-3 text-sm animate-pulse">
+                  <div class="h-16 rounded-xl bg-gray-100"></div>
+                  <div class="h-16 rounded-xl bg-gray-100"></div>
+                  <div class="h-16 rounded-xl bg-gray-100"></div>
+                  <div class="h-16 rounded-xl bg-gray-100"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Historique mouvements -->
+            <div>
+              <h2 class="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2"><i data-lucide="history" class="w-4 h-4 text-accent-600"></i>Historique des mouvements</h2>
+              <!-- Date range filters -->
+              <div class="flex items-center gap-2 mb-3">
+                <div class="flex-1">
+                  <label class="text-xs text-gray-500 font-semibold block mb-1">Du</label>
+                  <input id="stockDrawerDateFrom" type="date" class="w-full h-9 rounded-lg border border-gray-300 px-2 text-sm">
+                </div>
+                <div class="flex-1">
+                  <label class="text-xs text-gray-500 font-semibold block mb-1">Au</label>
+                  <input id="stockDrawerDateTo" type="date" class="w-full h-9 rounded-lg border border-gray-300 px-2 text-sm">
+                </div>
+                <div class="pt-5">
+                  <button data-action="refreshStockDrawer" class="h-9 px-3 rounded-lg bg-accent-600 text-white text-xs font-semibold flex items-center gap-1.5">
+                    <i data-lucide="filter" class="w-3.5 h-3.5"></i>Filtrer
+                  </button>
+                </div>
+              </div>
+              <div id="stockDrawerHistory" class="space-y-0">
+                <p class="text-sm text-gray-400 text-center py-6">Chargement…</p>
+              </div>
+            </div>
+          </div>
+        </aside>
 
         <section id="sortie" class="view">
           <div class="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-4 mb-6">

@@ -24,3 +24,14 @@
   line-height: 1.35;
   word-break: break-word;
 }
+
+/* ---- Stock Drawer ---- */
+.stock-drawer {
+  transform: translateX(100%);
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+.stock-drawer--open {
+  transform: translateX(0);
+}
+
