@@ -6,3 +6,5 @@ dist
 build
 coverage
 .prisma
+apps/api/uploads/
+docs/retours-reunion.txt

@@ -118,12 +118,12 @@
         </section>
 
                 <section id="referentiels" class="view">
-          <div class="flex justify-between items-start gap-4 mb-6">
-            <div>
+          <div class="flex items-start justify-between gap-4 mb-6">
+            <div class="min-w-0">
               <h1 class="text-3xl font-bold">Referentiels Stock Hub</h1>
               <p class="text-sm text-gray-500 mt-2">Base interne separee par type de donnee. Les fournisseurs, projets, sites, employes et emplacements ne sont pas melanges.</p>
             </div>
-            <div class="flex flex-wrap items-center justify-end gap-2"><button data-action="openModal('importModal')" class="px-4 py-2 bg-white border-gray-300 text-gray-700 rounded-lg text-sm font-semibold flex items-center gap-2"><i data-lucide="upload" class="w-4 h-4"></i>Importer Excel</button><button data-action="openModal('referentialModal')" class="px-4 py-2 bg-accent-600 text-white rounded-lg text-sm font-semibold flex items-center gap-2"><i data-lucide="plus" class="w-4 h-4"></i>Nouvel element</button></div>
+            <div class="flex shrink-0 items-center gap-3 whitespace-nowrap"><button data-action="openModal('importModal')" class="inline-flex items-center gap-2 rounded-lg border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"><i data-lucide="upload" class="w-4 h-4"></i>Importer Excel</button><button data-action="openModal('referentialModal')" class="inline-flex items-center gap-2 rounded-lg bg-accent-600 px-4 py-2 text-sm font-semibold text-white hover:bg-accent-500"><i data-lucide="plus" class="w-4 h-4"></i>Nouvel element</button></div>
           </div>
 
           <div class="grid grid-flow-col auto-cols-[minmax(160px,1fr)] gap-4 mb-6 overflow-x-auto pb-1">
@@ -401,7 +401,7 @@
             </div>
           </div>
 
-          <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
             <div class="p-5 border-b border-gray-200 space-y-4">
               <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
                 <div>
@@ -456,7 +456,7 @@
             <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Transferts en cours</div><div id="transfersOpenCount" class="text-3xl font-bold mt-3">0</div><div class="text-xs text-gray-500 mt-1">Entre magasins et sites</div></div>
             <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">A controler</div><div id="returnsReviewCount" class="text-3xl font-bold mt-3">0</div><div class="text-xs text-warning-700 mt-1">Abime, perdu ou a reparer</div></div>
           </div>
-          <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden"><div class="p-5 border-b border-gray-200"><h2 class="text-lg font-bold">Registre retours et transferts</h2></div><div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Reference</th><th class="px-5 py-3 text-left">Type</th><th class="px-5 py-3 text-left">Article / equipement</th><th class="px-5 py-3 text-left">Origine</th><th class="px-5 py-3 text-left">Destination</th><th class="px-5 py-3 text-left">Etat</th><th class="px-5 py-3 text-left">Statut</th></tr></thead><tbody class="divide-y"><tr><td class="px-5 py-8 text-center text-gray-500" colspan="7">Aucun retour ou transfert en base pour le moment.</td></tr></tbody></table></div></div>
+          <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden"><div class="p-5 border-b border-gray-200"><h2 class="text-lg font-bold">Registre retours et transferts</h2></div><div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Reference</th><th class="px-5 py-3 text-left">Type</th><th class="px-5 py-3 text-left">Article / equipement</th><th class="px-5 py-3 text-left">Origine</th><th class="px-5 py-3 text-left">Destination</th><th class="px-5 py-3 text-left">Etat</th><th class="px-5 py-3 text-left">Statut</th><th class="px-5 py-3 text-right">Action</th></tr></thead><tbody class="divide-y"><tr><td class="px-5 py-8 text-center text-gray-500" colspan="8">Aucun retour ou transfert en base pour le moment.</td></tr></tbody></table></div></div>
         </section>
 
         <section id="reappro" class="view">

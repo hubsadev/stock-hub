@@ -19,6 +19,7 @@ export type Article = {
   referencePrice: string | number | null;
   defaultSupplierId: string | null;
   defaultLocationId: string | null;
+  initialStock: number | null;
   active: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -196,7 +197,7 @@ export type StockMovementLine = {
 export type StockMovement = {
   id: string;
   reference: string;
-  type: "ENTRY" | "EXIT_REQUEST" | "EXIT" | "RETURN" | "TRANSFER" | "ADJUSTMENT";
+  type: "INITIAL" | "ENTRY" | "EXIT_REQUEST" | "EXIT" | "RETURN" | "TRANSFER" | "ADJUSTMENT";
   status: string;
   date: string;
   supplierId: string | null;
@@ -212,8 +213,14 @@ export type StockMovement = {
   deliveredBy: string | null;
   sourceRequestId: string | null;
   proofFileName: string | null;
+  proofFileKey: string | null;
+  proofMimeType: string | null;
+  proofSizeBytes: number | null;
   proofUploadedAt: string | null;
   proofUploadedBy: string | null;
+  rejectionReason: string | null;
+  rejectedAt: string | null;
+  rejectedBy: string | null;
   notes: string | null;
   supplier?: Supplier | null;
   client?: Client | null;
@@ -261,11 +268,12 @@ export type AuditLog = {
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let response: Response;
+  const isFormData = init?.body instanceof FormData;
   try {
     response = await fetch(API_URL + path, {
       ...init,
       headers: {
-        ...(init?.body ? { "Content-Type": "application/json" } : {}),
+        ...(init?.body && !isFormData ? { "Content-Type": "application/json" } : {}),
         ...(init?.headers ?? {})
       }
     });
@@ -580,6 +588,22 @@ export function createStockEntry(body: {
   return post<StockMovement>("/stock-movements/entries", body);
 }
 
+export function resolveStockEntryDispute(id: string, body: {
+  handledBy?: string;
+  notes?: string;
+  lines: Array<{
+    lineId: string;
+    action: "COMPLETE_MISSING" | "ACCEPT_SURPLUS" | "RETURN_SURPLUS";
+    quantity?: number;
+    observation?: string;
+  }>;
+}) {
+  return post<StockMovement>(
+    "/stock-movements/entries/" + encodeURIComponent(id) + "/resolve",
+    body,
+  );
+}
+
 export function createExitRequest(body: {
   reference: string;
   date: string;
@@ -638,14 +662,31 @@ export function prepareExitRequest(id: string, body: {
   return post<StockMovement>("/stock-movements/exit-requests/" + encodeURIComponent(id) + "/prepare", body);
 }
 
-export function uploadExitRequestProof(id: string, body: { fileName: string; uploadedBy?: string }) {
-  return post<StockMovement>("/stock-movements/exit-requests/" + encodeURIComponent(id) + "/proof", body);
+export function rejectExitRequest(id: string, body: { reason: string; rejectedBy?: string }) {
+  return post<StockMovement>("/stock-movements/exit-requests/" + encodeURIComponent(id) + "/reject", body);
+}
+
+export function uploadExitRequestProof(id: string, body: { file: File; uploadedBy?: string }) {
+  const form = new FormData();
+  form.append("file", body.file);
+  if (body.uploadedBy) form.append("uploadedBy", body.uploadedBy);
+  return request<StockMovement>("/stock-movements/exit-requests/" + encodeURIComponent(id) + "/proof", {
+    method: "POST",
+    body: form
+  });
+}
+
+export function getExitRequestProof(id: string) {
+  return request<{ url: string; fileName: string | null; mimeType: string | null; expiresIn: number }>(
+    "/stock-movements/exit-requests/" + encodeURIComponent(id) + "/proof"
+  );
 }
 
 
 export function createStockReturn(body: {
   reference: string;
   date: string;
+  sourceMovementId: string;
   toLocationId: string;
   handledBy?: string;
   receivedBy?: string;
@@ -656,10 +697,27 @@ export function createStockReturn(body: {
   lines: Array<{
     articleId: string;
     completedQuantity: number;
+    goodQuantity?: number;
+    damagedQuantity?: number;
+    scrapQuantity?: number;
+    pendingControlQuantity?: number;
     observation?: string;
   }>;
 }) {
   return post<StockMovement>("/stock-movements/returns", body);
+}
+
+export function controlStockReturn(id: string, body: {
+  handledBy?: string;
+  notes?: string;
+  lines: Array<{
+    lineId: string;
+    decision: "REINTEGRATE" | "DISCARD" | "REPAIR";
+    acceptedQuantity?: number;
+    observation?: string;
+  }>;
+}) {
+  return post<StockMovement>("/stock-movements/returns/" + encodeURIComponent(id) + "/control", body);
 }
 
 export function createStockTransfer(body: {

@@ -31,35 +31,43 @@
           </div>
           <div class="p-5 space-y-5">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <label class="block"><span class="text-sm font-semibold">Date</span><input type="date" class="mt-2 w-full h-11 border rounded-lg px-3"></label>
-              <label class="block"><span class="text-sm font-semibold">N bon entree</span><input readonly class="mt-2 w-full h-11 border rounded-lg px-3 bg-gray-50 text-gray-700" placeholder="Genere automatiquement"><span class="text-xs text-gray-500 mt-2 block">Numero genere automatiquement</span></label>
-              <label class="block"><span class="text-sm font-semibold">Fournisseur</span><select class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner fournisseur</option></select></label>
+              <label class="block"><span class="text-sm font-semibold">Date</span><input id="entryDateInput" type="date" class="mt-2 w-full h-11 border rounded-lg px-3"></label>
+              <label class="block"><span class="text-sm font-semibold">N bon entree</span><input id="entryReferenceInput" readonly class="mt-2 w-full h-11 border rounded-lg px-3 bg-gray-50 text-gray-700" placeholder="Genere automatiquement"><span class="text-xs text-gray-500 mt-2 block">Numero genere automatiquement</span></label>
+              <label class="block"><span class="text-sm font-semibold">Fournisseur</span><select id="entrySupplierSelect" class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner fournisseur</option></select></label>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <label class="block"><span class="text-sm font-semibold">Article</span><select class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner article</option></select><button type="button" data-action="openModal('articleModal')" class="mt-2 text-sm font-semibold text-accent-600">+ Article introuvable ? Creer article</button></label>
-              <label class="block"><span class="text-sm font-semibold">Origine entree</span><select class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner origine</option><option value="SUPPLIER">Fournisseur</option><option value="RETURN">Retour chantier</option><option value="TRANSFER">Transfert interne</option><option value="INVENTORY_ADJUSTMENT">Correction inventaire</option><option value="OTHER">Autre origine</option></select></label>
+              <label class="block"><span class="text-sm font-semibold">Origine entree</span><select id="entryOriginSelect" class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner origine</option><option value="SUPPLIER">Fournisseur</option><option value="RETURN">Retour chantier</option><option value="TRANSFER">Transfert interne</option><option value="INVENTORY_ADJUSTMENT">Correction inventaire</option><option value="OTHER">Autre origine</option></select></label>
+              <label class="block"><span class="text-sm font-semibold">Magasin de reception</span><select id="entryLocationSelect" class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner magasin</option></select></label>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-3"><div class="p-3 rounded-lg bg-gray-50 border"><div class="text-xs font-semibold text-gray-500">Code article</div><div id="entryPreviewCode" class="font-bold mt-1 text-gray-400">-</div></div><div class="p-3 rounded-lg bg-gray-50 border"><div class="text-xs font-semibold text-gray-500">Designation</div><div id="entryPreviewDesignation" class="font-bold mt-1 text-gray-400">Selectionner article</div></div><div class="p-3 rounded-lg bg-success-50 border border-success-50"><div class="text-xs font-semibold text-success-700">Type de gestion</div><div id="entryPreviewTracking" class="font-bold mt-1 text-gray-400">-</div></div><div class="p-3 rounded-lg bg-gray-50 border"><div class="text-xs font-semibold text-gray-500">Origine</div><div id="entryPreviewOrigin" class="font-bold mt-1 text-gray-400">Selectionner origine</div></div><div class="p-3 rounded-lg bg-gray-50 border"><div class="text-xs font-semibold text-gray-500">Destination stock</div><div id="entryPreviewDestination" class="font-bold mt-1 text-gray-400">Selectionner magasin</div></div></div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3"><div class="p-3 rounded-lg bg-gray-50 border"><div class="text-xs font-semibold text-gray-500">Lignes</div><div id="entryLineCount" class="font-bold mt-1 text-gray-900">1</div></div><div class="p-3 rounded-lg bg-gray-50 border"><div class="text-xs font-semibold text-gray-500">Total attendu</div><div id="entryTotalExpected" class="font-bold mt-1 text-gray-900">0</div></div><div class="p-3 rounded-lg bg-success-50 border border-success-50"><div class="text-xs font-semibold text-success-700">Total recu</div><div id="entryTotalReceived" class="font-bold mt-1 text-gray-900">0</div></div><div><span class="text-sm font-semibold">Statut calcule</span><div id="entryComputedStatus" class="mt-2 h-11 rounded-lg border border-gray-200 bg-gray-50 px-3 flex items-center font-semibold text-gray-500">A calculer</div><span class="text-xs text-gray-500 mt-2 block">Compare attendu et recu</span></div></div>
 
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <label class="block"><span class="text-sm font-semibold">Magasin de reception</span><select class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner magasin</option></select></label>
-
-              <label class="block"><span class="text-sm font-semibold">Quantite attendue</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="0"><span class="text-xs text-gray-500 mt-2 block">Reference fournisseur ou bon interne</span></label><label class="block"><span class="text-sm font-semibold">Quantite recue</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="0"><span class="text-xs text-gray-500 mt-2 block">Stock augmente avec cette quantite</span></label><div><span class="text-sm font-semibold">Statut calcule</span><div id="entryComputedStatus" class="mt-2 h-11 rounded-lg border border-gray-200 bg-gray-50 px-3 flex items-center font-semibold text-gray-500">A calculer</div><span class="text-xs text-gray-500 mt-2 block">Compare attendu et recu</span></div>
-              <label class="block"><span class="text-sm font-semibold">Prix unitaire</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="0"><span class="text-xs text-gray-500 mt-2 block">Montant calcule automatiquement</span></label>
+            <div class="border border-gray-200 rounded-xl overflow-hidden">
+              <div class="px-5 py-4 bg-gray-50 border-b flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+                <div><h3 class="font-bold">Articles recus</h3><p class="text-sm text-gray-500 mt-1">Plusieurs articles peuvent etre receptionnes dans le meme bon.</p></div>
+                <div class="flex flex-wrap gap-2"><button type="button" data-action="openModal('articleModal')" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-gray-300 text-sm font-semibold text-accent-600"><i data-lucide="plus" class="w-4 h-4"></i>Article introuvable ? Creer article</button><button id="entryAddLineButton" type="button" data-action="addEntryLine" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-gray-300 text-sm font-semibold"><i data-lucide="plus" class="w-4 h-4"></i>Ajouter ligne</button></div>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full min-w-[1180px] text-sm">
+                  <thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left w-12">N</th><th class="px-5 py-3 text-left">Article</th><th class="px-5 py-3 text-left">Code / unite</th><th class="px-5 py-3 text-right">Attendue</th><th class="px-5 py-3 text-right">Recue</th><th class="px-5 py-3 text-right">Prix unitaire</th><th class="px-5 py-3 text-right">Ecart</th><th class="px-5 py-3 text-left">Observation</th><th class="px-5 py-3 text-right">Action</th></tr></thead>
+                  <tbody id="entryLines" class="divide-y divide-gray-200">
+                    <tr class="entry-line"><td class="px-5 py-4 font-bold text-gray-400 entry-line-number">1</td><td class="px-5 py-4"><select class="entry-article w-full h-10 border rounded-lg px-3"><option value="">Selectionner article</option></select></td><td class="px-5 py-4"><div class="entry-line-code font-semibold text-gray-500">-</div><div class="entry-line-unit text-xs text-gray-400">-</div></td><td class="px-5 py-4 text-right"><input class="entry-expected w-24 h-10 border rounded-lg px-3 text-right" placeholder="0"></td><td class="px-5 py-4 text-right"><input class="entry-received w-24 h-10 border rounded-lg px-3 text-right" placeholder="0"></td><td class="px-5 py-4 text-right"><input class="entry-unit-price w-28 h-10 border rounded-lg px-3 text-right" placeholder="0"></td><td class="px-5 py-4 text-right"><div class="entry-line-delta font-bold text-gray-400">0</div><div class="entry-line-status text-xs font-semibold text-gray-400">A calculer</div></td><td class="px-5 py-4"><input class="entry-observation w-full h-10 border rounded-lg px-3" placeholder="Observation ligne"></td><td class="px-5 py-4 text-right"><button type="button" data-action="removeEntryLine" title="Retirer la ligne" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-error-700 hover:bg-error-50"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td></tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             <div class="border border-gray-200 rounded-xl overflow-hidden">
               <div class="px-5 py-4 bg-gray-50 border-b"><h3 class="font-bold">Tracabilite</h3><p class="text-sm text-gray-500 mt-1">Qui livre, qui receptionne et qui enregistre l'entree.</p></div>
               <div class="p-5 grid grid-cols-1 md:grid-cols-3 gap-4">
-                <label><span class="text-sm font-semibold">Responsable stock</span><select class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner</option></select></label>
-                <label><span class="text-sm font-semibold">Livre par</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Nom du livreur ou transporteur"></label>
-                <label><span class="text-sm font-semibold">Receptionne par</span><select class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner</option></select></label>
+                <label><span class="text-sm font-semibold">Responsable stock</span><select id="entryHandledBySelect" class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner</option></select></label>
+                <label><span class="text-sm font-semibold">Livre par</span><input id="entryDeliveredByInput" class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Nom du livreur ou transporteur"></label>
+                <label><span class="text-sm font-semibold">Receptionne par</span><select id="entryReceivedBySelect" class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner</option></select></label>
               </div>
             </div>
 
-            <label class="block"><span class="text-sm font-semibold">Observation</span><textarea class="mt-2 w-full min-h-24 border rounded-lg px-3 py-3" placeholder="Ajouter une remarque sur la reception"></textarea></label>
+            <label class="block"><span class="text-sm font-semibold">Observation</span><textarea id="entryNotesInput" class="mt-2 w-full min-h-24 border rounded-lg px-3 py-3" placeholder="Ajouter une remarque sur la reception"></textarea></label>
           </div>
         </div>
       </div>
@@ -204,7 +212,27 @@
       <div id="exitRequestDetailBody" class="p-6 overflow-y-auto flex-1 min-h-0 space-y-5"></div>
       <div class="px-6 py-4 border-t bg-white flex flex-wrap justify-end gap-3">
         <button data-action="closeModal('exitRequestDetailModal')" class="px-4 py-2 bg-white border rounded-lg font-semibold">Fermer</button>
+        <button id="exitRequestRejectButton" class="hidden px-4 py-2 bg-white border border-error-200 text-error-700 rounded-lg font-semibold">Refuser</button>
         <button id="exitRequestPrepareButton" class="px-4 py-2 bg-accent-600 text-white rounded-lg font-semibold">Preparer la sortie</button>
+      </div>
+    </div>
+  </div>
+  <div id="exitRequestRejectModal" class="modal fixed inset-0 bg-gray-900/50 items-center justify-center p-6 z-[60]">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden">
+      <div class="px-6 py-5 border-b flex justify-between items-start gap-4">
+        <div>
+          <div class="text-xs font-semibold text-gray-500">Demande materiel</div>
+          <h2 class="text-xl font-bold">Refuser la demande</h2>
+          <p class="text-sm text-gray-500 mt-1">Le motif sera visible dans la fiche et le journal audit.</p>
+        </div>
+        <button data-action="closeModal('exitRequestRejectModal')" title="Fermer" class="inline-flex items-center justify-center w-10 h-10 rounded-lg border text-gray-500 hover:text-gray-900"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div class="p-6 space-y-4">
+        <label class="block"><span class="text-sm font-semibold">Motif du refus</span><textarea id="exitRequestRejectReason" class="mt-2 w-full min-h-28 border rounded-lg px-3 py-3" placeholder="Ex : Stock insuffisant"></textarea></label>
+      </div>
+      <div class="px-6 py-4 border-t bg-white flex justify-end gap-3">
+        <button data-action="closeModal('exitRequestRejectModal')" class="px-4 py-2 bg-white border rounded-lg font-semibold">Annuler</button>
+        <button data-action="submitExitRequestRejection" class="px-4 py-2 bg-error-50 border border-error-100 text-error-700 rounded-lg font-semibold">Confirmer le refus</button>
       </div>
     </div>
   </div>
@@ -401,19 +429,19 @@
       <div class="p-6 overflow-y-auto flex-1 min-h-0 space-y-5">
         <div class="p-4 rounded-xl bg-accent-50 border border-accent-100 text-sm text-gray-700">L'article cree ici est ajoute au referentiel, puis selectionne dans l'entree stock. Le code article est propose par le systeme pour eviter les doublons.</div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <label><span class="text-sm font-semibold">Designation</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Ex : Cable HDMI 5m"></label>
-          <label><span class="text-sm font-semibold">Famille</span><select class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner</option><option>FO</option><option>GSM</option><option>BLR</option></select></label>
-          <label><span class="text-sm font-semibold">Unite</span><select class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner</option><option>Piece</option><option>Metre</option><option>Boite</option></select></label><label><span class="text-sm font-semibold">Type de gestion</span><select class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner</option><option>Article en quantite</option><option>Materiel identifie</option></select><span class="text-xs text-gray-500 mt-2 block">Article en quantite = suivi par nombre total. Materiel identifie = suivi piece par piece.</span></label>
-          <label><span class="text-sm font-semibold">Code propose</span><div class="mt-2 h-11 border rounded-lg px-3 bg-gray-50 flex items-center font-semibold">FO-0001</div></label>
-          <label><span class="text-sm font-semibold">Stock minimum</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Ex : 10"></label>
-          <label><span class="text-sm font-semibold">Stock de depart</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Quantite trouvee au demarrage"></label>
-          <label><span class="text-sm font-semibold">Prix indicatif</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Ex : 3500"></label>
-          <label><span class="text-sm font-semibold">Fournisseur habituel</span><select class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner</option><option>Non renseigne</option></select></label>
-          <label><span class="text-sm font-semibold">Emplacement de depart</span><select class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner emplacement</option></select></label>
-          <label><span class="text-sm font-semibold">Statut</span><select class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner</option><option>Actif</option><option>A verifier</option></select></label>
+          <label><span class="text-sm font-semibold">Designation</span><input id="quickArticleDesignationInput" class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Ex : Cable HDMI 5m"></label>
+          <label><span class="text-sm font-semibold">Famille</span><select id="quickArticleFamilySelect" class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner</option><option value="FO">FO</option><option value="GSM">GSM</option><option value="BLR">BLR</option></select></label>
+          <label><span class="text-sm font-semibold">Unite</span><select id="quickArticleUnitSelect" class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner</option><option value="Piece">Piece</option><option value="Metre">Metre</option><option value="Boite">Boite</option></select></label><label><span class="text-sm font-semibold">Type de gestion</span><select id="quickArticleTrackingSelect" class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner</option><option value="QUANTITY">Article en quantite</option><option value="INDIVIDUAL">Materiel identifie</option></select><span class="text-xs text-gray-500 mt-2 block">Article en quantite = suivi par nombre total. Materiel identifie = suivi piece par piece.</span></label>
+          <label><span class="text-sm font-semibold">Code propose</span><div id="quickArticleCodePreview" class="mt-2 h-11 border rounded-lg px-3 bg-gray-50 flex items-center font-semibold">FO-0001</div></label>
+          <label><span class="text-sm font-semibold">Stock minimum</span><input id="quickArticleMinimumStockInput" class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Ex : 10"></label>
+          <label><span class="text-sm font-semibold">Stock de depart</span><input id="quickArticleInitialStockInput" class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Quantite trouvee au demarrage"></label>
+          <label><span class="text-sm font-semibold">Prix indicatif</span><input id="quickArticleReferencePriceInput" class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Ex : 3500"></label>
+          <label><span class="text-sm font-semibold">Fournisseur habituel</span><select id="quickArticleSupplierSelect" class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner fournisseur</option></select></label>
+          <label><span class="text-sm font-semibold">Emplacement de depart</span><select id="quickArticleInitialLocationSelect" class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner emplacement</option></select></label>
+          <label><span class="text-sm font-semibold">Statut</span><select id="quickArticleStatusSelect" class="mt-2 w-full h-11 border rounded-lg px-3"><option value="ACTIVE">Actif</option><option value="CHECK">A verifier</option></select></label>
         </div>
       </div>
-      <div class="px-6 py-4 border-t flex justify-end gap-3"><button data-action="closeModal('articleModal')" class="px-4 py-2 bg-white border rounded-lg font-semibold">Annuler</button><button class="px-4 py-2 bg-accent-600 text-white rounded-lg font-semibold">Creer et selectionner</button></div>
+      <div class="px-6 py-4 border-t flex justify-end gap-3"><button data-action="closeModal('articleModal')" class="px-4 py-2 bg-white border rounded-lg font-semibold">Annuler</button><button data-action="submitQuickArticle" class="px-4 py-2 bg-accent-600 text-white rounded-lg font-semibold">Creer et selectionner</button></div>
     </div>
   </div>
   <div id="returnModal" class="modal fixed inset-0 bg-gray-900/50 items-center justify-center p-6 z-50">
@@ -441,14 +469,13 @@
 
             <div class="md:col-span-3 grid grid-cols-2 md:grid-cols-6 gap-3">
               <div data-return-kpi="bon" class="p-3 rounded-lg bg-gray-50 border"><div class="text-xs font-semibold text-gray-500">Bon sortie</div><div class="font-bold mt-1">-</div></div>
-              <div data-return-kpi="article" class="p-3 rounded-lg bg-gray-50 border"><div class="text-xs font-semibold text-gray-500">Article</div><div class="font-bold mt-1">-</div></div>
+              <div data-return-kpi="article" class="p-3 rounded-lg bg-gray-50 border"><div class="text-xs font-semibold text-gray-500">Articles</div><div class="font-bold mt-1">-</div></div>
               <div data-return-kpi="beneficiary" class="p-3 rounded-lg bg-gray-50 border"><div class="text-xs font-semibold text-gray-500">Beneficiaire</div><div class="font-bold mt-1">-</div></div>
               <div data-return-kpi="destination" class="p-3 rounded-lg bg-gray-50 border"><div class="text-xs font-semibold text-gray-500">Destination</div><div class="font-bold mt-1">-</div></div>
-              <div data-return-kpi="quantity" class="p-3 rounded-lg bg-gray-50 border"><div class="text-xs font-semibold text-gray-500">Sortie</div><div class="font-bold mt-1">-</div></div>
               <div data-return-kpi="returned" class="p-3 rounded-lg bg-gray-50 border"><div class="text-xs font-semibold text-gray-500">Deja retournee</div><div class="font-bold mt-1">-</div></div>
+              <div data-return-kpi="quantity" class="p-3 rounded-lg bg-gray-50 border"><div class="text-xs font-semibold text-gray-500">Encore dehors</div><div class="font-bold mt-1">-</div></div>
             </div>
-            <div class="md:col-span-3 border-gray-200 rounded-xl overflow-hidden"><div class="px-5 py-4 bg-gray-50 border-b"><h3 class="font-bold">Articles retournes</h3><p class="text-sm text-gray-500 mt-1">Selectionne les quantites retournees pour chaque article de la sortie.</p></div><div class="overflow-x-auto"><table class="w-full min-w-[760px] text-sm"><thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">N</th><th class="px-5 py-3 text-left">Article</th><th class="px-5 py-3 text-right">Sortie</th><th class="px-5 py-3 text-right">Deja retournee</th><th class="px-5 py-3 text-right">Quantite retournee</th><th class="px-5 py-3 text-left">Etat</th></tr></thead><tbody id="returnLines" class="divide-y"><tr><td colspan="6" class="px-5 py-6 text-center text-gray-500">Selectionne une sortie pour afficher ses articles.</td></tr></tbody></table></div></div>
-            <label><span class="text-sm font-semibold">Decision</span><select id="returnDecision" class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner</option><option>Reintegrer au stock</option><option>Bloquer pour controle</option><option>Sortir definitivement</option></select></label>
+            <div class="md:col-span-3 border-gray-200 rounded-xl overflow-hidden"><div class="px-5 py-4 bg-gray-50 border-b flex items-start justify-between gap-4"><div><h3 class="font-bold">Articles retournes</h3><p class="text-sm text-gray-500 mt-1">Repartis chaque retour entre bon etat, endommage, rebut et a controler.</p></div><button type="button" data-action="addReturnLine" class="px-3 py-2 bg-white border rounded-lg text-sm font-semibold text-accent-600">+ Ajouter un article</button></div><div class="overflow-x-auto"><table class="w-full min-w-[1280px] text-sm"><thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">N</th><th class="px-5 py-3 text-left">Article</th><th class="px-5 py-3 text-right">Deja retournee</th><th class="px-5 py-3 text-right">Reste a retourner</th><th class="px-5 py-3 text-right">Bon etat</th><th class="px-5 py-3 text-right">Endommage</th><th class="px-5 py-3 text-right">Rebut</th><th class="px-5 py-3 text-right">A controler</th><th class="px-5 py-3 text-right">Total retour</th><th class="px-5 py-3 text-left">Observation</th><th class="px-5 py-3 text-right">Action</th></tr></thead><tbody id="returnLines" class="divide-y"><tr><td colspan="11" class="px-5 py-6 text-center text-gray-500">Selectionne une sortie pour afficher ses articles.</td></tr></tbody></table></div></div>
             <label><span class="text-sm font-semibold">Emplacement retour</span><select id="returnLocation" class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner</option></select></label>
             <label><span class="text-sm font-semibold">Piece jointe</span><input id="returnAttachment" type="file" accept=".pdf,image/*" class="mt-2 w-full h-11 border rounded-lg px-3 py-2 bg-white"><span class="text-xs text-gray-500 mt-2 block">Bon retour signe, photo ou autre justificatif.</span></label>
             <div class="md:col-span-3 border border-gray-200 rounded-xl overflow-hidden">
@@ -501,6 +528,47 @@
     </div>
   </div>
 
+  <div id="returnTransferDetailModal" class="modal fixed inset-0 bg-gray-900/50 items-center justify-center p-6 z-50">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[92vh] flex flex-col overflow-hidden">
+      <div class="px-6 py-5 border-b flex justify-between items-start gap-4">
+        <div>
+          <div id="returnTransferDetailKind" class="text-xs text-gray-500 font-semibold">Fiche retour</div>
+          <h2 id="returnTransferDetailTitle" class="text-xl font-bold">Retour stock</h2>
+          <p id="returnTransferDetailSubtitle" class="text-sm text-gray-500 mt-1">Fiche lecture seule.</p>
+        </div>
+        <button data-action="closeModal('returnTransferDetailModal')" class="inline-flex items-center justify-center w-10 h-10 rounded-lg border text-gray-500 hover:text-gray-900" title="Fermer"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div id="returnTransferDetailBody" class="p-6 overflow-y-auto flex-1 min-h-0 space-y-5"></div>
+      <div class="px-6 py-4 border-t flex justify-end gap-3"><button id="returnControlButton" data-action="openReturnControl" class="hidden px-4 py-2 bg-warning-50 border border-warning-100 text-warning-700 rounded-lg font-semibold">Controler le retour</button><button data-action="closeModal('returnTransferDetailModal')" class="px-4 py-2 bg-white border rounded-lg font-semibold">Fermer</button></div>
+    </div>
+  </div>
+
+  <div id="returnControlModal" class="modal fixed inset-0 bg-gray-900/50 items-center justify-center p-6 z-50">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[92vh] flex flex-col overflow-hidden">
+      <div class="px-6 py-5 border-b flex justify-between items-start gap-4">
+        <div>
+          <div class="text-xs text-gray-500 font-semibold">Controle retour</div>
+          <h2 id="returnControlTitle" class="text-xl font-bold">Controler le retour</h2>
+          <p id="returnControlSubtitle" class="text-sm text-gray-500 mt-1">Decide ce qui est reintegre au stock ou traite hors stock.</p>
+        </div>
+        <button data-action="closeModal('returnControlModal')" class="inline-flex items-center justify-center w-10 h-10 rounded-lg border text-gray-500 hover:text-gray-900" title="Fermer"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div class="p-6 overflow-y-auto flex-1 min-h-0 space-y-5">
+        <div class="overflow-x-auto rounded-xl border border-gray-200">
+          <table class="w-full min-w-[1040px] text-sm">
+            <thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Article</th><th class="px-5 py-3 text-right">Quantite sortie</th><th class="px-5 py-3 text-right">A controler</th><th class="px-5 py-3 text-left">Decision</th><th class="px-5 py-3 text-right">Acceptee stock</th><th class="px-5 py-3 text-left">Observation</th></tr></thead>
+            <tbody id="returnControlLines" class="divide-y divide-gray-200"></tbody>
+          </table>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <label><span class="text-sm font-semibold">Controle par</span><input id="returnControlHandledBy" class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Nom du responsable"></label>
+          <label><span class="text-sm font-semibold">Note generale</span><input id="returnControlNotes" class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Ex : Controle effectue apres verification"></label>
+        </div>
+      </div>
+      <div class="px-6 py-4 border-t flex justify-end gap-3"><button data-action="closeModal('returnControlModal')" class="px-4 py-2 bg-white border rounded-lg font-semibold">Annuler</button><button data-action="submitReturnControl" class="px-4 py-2 bg-accent-600 text-white rounded-lg font-semibold">Valider controle</button></div>
+    </div>
+  </div>
+
   <div id="referentialDetailModal" class="modal fixed inset-0 bg-gray-900/50 items-center justify-center p-6 z-50">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden">
       <div class="px-6 py-5 border-b flex justify-between items-start gap-4">
@@ -522,7 +590,26 @@
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden">
       <div class="px-6 py-5 border-b flex justify-between items-start gap-4"><div><div class="text-xs text-gray-500 font-semibold">Fiche entree stock</div><h2 id="entryDetailTitle" class="text-xl font-bold">Bon d'entree</h2><p id="entryDetailSubtitle" class="text-sm text-gray-500 mt-1">Fiche lecture seule.</p></div><button data-action="closeModal('entryDetailModal')" class="inline-flex items-center justify-center w-10 h-10 rounded-lg border text-gray-500 hover:text-gray-900" title="Fermer"><i data-lucide="x" class="w-5 h-5"></i></button></div>
       <div class="p-6 overflow-y-auto flex-1 min-h-0"><div id="entryDetailFields" class="grid grid-cols-1 md:grid-cols-2 gap-5 text-sm"></div></div>
-      <div class="px-6 py-4 border-t flex justify-end"><button data-action="closeModal('entryDetailModal')" class="px-4 py-2 bg-white border rounded-lg font-semibold">Fermer</button></div>
+      <div class="px-6 py-4 border-t flex justify-end gap-3"><button id="entryResolveButton" data-action="openEntryResolution" class="hidden px-4 py-2 bg-warning-50 border border-warning-100 text-warning-700 rounded-lg font-semibold">Resoudre litige</button><button data-action="closeModal('entryDetailModal')" class="px-4 py-2 bg-white border rounded-lg font-semibold">Fermer</button></div>
+    </div>
+  </div>
+
+  <div id="entryResolutionModal" class="modal fixed inset-0 bg-gray-900/50 items-center justify-center p-6 z-50">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[92vh] flex flex-col overflow-hidden">
+      <div class="px-6 py-5 border-b flex justify-between items-start gap-4"><div><div class="text-xs text-gray-500 font-semibold">Resolution entree stock</div><h2 id="entryResolutionTitle" class="text-xl font-bold">Resoudre litige</h2><p id="entryResolutionSubtitle" class="text-sm text-gray-500 mt-1">Completer un manquant ou accepter un surplus deja receptionne.</p></div><button data-action="closeModal('entryResolutionModal')" class="inline-flex items-center justify-center w-10 h-10 rounded-lg border text-gray-500 hover:text-gray-900" title="Fermer"><i data-lucide="x" class="w-5 h-5"></i></button></div>
+      <div class="p-6 overflow-y-auto flex-1 min-h-0 space-y-5">
+        <div class="overflow-x-auto rounded-xl border border-gray-200">
+          <table class="w-full min-w-[980px] text-sm">
+            <thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Article</th><th class="px-5 py-3 text-right">Attendue</th><th class="px-5 py-3 text-right">Recue</th><th class="px-5 py-3 text-right">Ecart</th><th class="px-5 py-3 text-left">Action</th><th class="px-5 py-3 text-right">Quantite</th><th class="px-5 py-3 text-left">Observation</th></tr></thead>
+            <tbody id="entryResolutionLines" class="divide-y divide-gray-200"></tbody>
+          </table>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <label><span class="text-sm font-semibold">Responsable</span><input id="entryResolutionHandledBy" class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Nom du responsable"></label>
+          <label><span class="text-sm font-semibold">Note generale</span><input id="entryResolutionNotes" class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Ex : Livraison complementaire recue"></label>
+        </div>
+      </div>
+      <div class="px-6 py-4 border-t flex justify-end gap-3"><button data-action="closeModal('entryResolutionModal')" class="px-4 py-2 bg-white border rounded-lg font-semibold">Annuler</button><button data-action="submitEntryResolution" class="px-4 py-2 bg-accent-600 text-white rounded-lg font-semibold">Valider resolution</button></div>
     </div>
   </div>
 
@@ -582,7 +669,7 @@
         </div>
       </div>
     </div>
-  </div>  <div id="importModal" class="modal fixed inset-0 bg-gray-900/50 items-center justify-center p-6 z-50"><div class="flex flex-col bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[92vh] overflow-hidden"><div class="px-6 py-5 border-b flex justify-between"><div><div class="text-xs text-gray-500 font-semibold">Reprise Excel</div><h2 class="text-xl font-bold">Créer des articles en masse</h2><p class="text-sm text-gray-500 mt-1">Colonnes obligatoires : Code, Désignation, Famille, Unité, Mode de suivi. Les autres champs sont optionnels.</p></div><button data-action="closeModal('importModal')"><i data-lucide="x"></i></button></div><div class="p-6 space-y-4 overflow-y-auto flex-1 min-h-0"><label class="block"><span class="text-sm font-semibold">Type d'élément à importer</span><select id="referentialImportType" class="mt-2 w-full h-11 border rounded-lg px-3 bg-white"><option value="article">Articles</option><option value="supplier">Fournisseurs</option><option value="client">Clients</option><option value="project">Projets</option><option value="site">Sites / chantiers</option><option value="employee">Employés</option><option value="location">Emplacements</option><option value="teamService">Équipes / services</option></select></label><div class="p-4 bg-accent-50 border border-accent-100 rounded-xl text-sm text-gray-700">L'import initialise les articles et leurs stocks de départ. Utilise le modèle pour respecter exactement les colonnes attendues.</div><div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border-dashed border-accent-200 bg-accent-50/40 p-4"><div><div class="font-bold text-gray-900">1. Télécharger le modèle</div><div class="text-sm text-gray-600">Le fichier contient les colonnes et une ligne d'exemple.</div></div><button type="button" data-action="downloadArticleImportTemplate" class="px-3 py-2 bg-white border-accent-200 text-accent-700 rounded-lg font-semibold flex items-center gap-2"><i data-lucide="download" class="w-4 h-4"></i>Télécharger le modèle</button></div><div><div class="font-bold text-gray-900 mb-2">2. Importer le fichier complété</div><input id="articleImportFile" type="file" accept=".xlsx,.xls,.csv" class="w-full h-11 border rounded-lg px-3 py-2"><div id="articleImportSummary" class="hidden grid-cols-2 gap-3 md:grid-cols-4"></div><div id="articleImportTable" class="hidden"></div></div><div class="shrink-0 px-6 py-4 border-t flex justify-end gap-3"><button data-action="closeModal('importModal')" class="px-4 py-2 bg-white border rounded-lg font-semibold">Annuler</button><button id="articleImportSaveButton" data-action="importArticles" disabled class="px-4 py-2 bg-accent-600 text-white rounded-lg font-semibold opacity-50 cursor-not-allowed">Enregistrer les lignes valides</button></div></div></div>
+  </div>  <div id="importModal" class="modal fixed inset-0 bg-gray-900/50 items-center justify-center p-6 z-50"><div class="flex flex-col bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[92vh] overflow-hidden"><div class="px-6 py-5 border-b flex justify-between"><div><div class="text-xs text-gray-500 font-semibold">Reprise Excel</div><h2 class="text-xl font-bold">Créer des articles en masse</h2><p class="text-sm text-gray-500 mt-1">Colonnes obligatoires : Code, Désignation, Famille, Unité, Mode de suivi. Les autres champs sont optionnels.</p></div><button data-action="closeModal('importModal')"><i data-lucide="x"></i></button></div><div class="p-6 space-y-4 overflow-y-auto flex-1 min-h-0"><label class="block"><span class="text-sm font-semibold">Type d'élément à importer</span><select id="referentialImportType" class="mt-2 w-full h-11 border rounded-lg px-3 bg-white"><option value="article">Articles</option><option value="supplier">Fournisseurs</option><option value="client">Clients</option><option value="project">Projets</option><option value="site">Sites / chantiers</option><option value="employee">Employés</option><option value="location">Emplacements</option><option value="teamService">Équipes / services</option></select></label><div class="p-4 bg-accent-50 border border-accent-100 rounded-xl text-sm text-gray-700">L'import initialise les articles et leurs stocks de départ. Utilise le modèle pour respecter exactement les colonnes attendues.</div><div class="flex flex-wrap items-center justify-between gap-4 rounded-xl border-2 border-accent-300 bg-accent-50 p-5 shadow-sm"><div class="flex items-center gap-3"><div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent-600 text-white shadow-sm"><i data-lucide="file-down" class="w-5 h-5"></i></div><div><div class="text-xs font-bold uppercase tracking-wide text-accent-700">Étape 1 — indispensable</div><div class="mt-0.5 font-bold text-gray-900">Télécharger le modèle Excel</div><div class="text-sm text-gray-700">Le fichier contient les colonnes attendues et une ligne d'exemple.</div></div></div><button type="button" data-action="downloadArticleImportTemplate" class="inline-flex items-center gap-2 rounded-lg bg-accent-600 px-4 py-2.5 font-semibold text-white shadow-sm transition hover:bg-accent-700 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2"><i data-lucide="download" class="w-4 h-4"></i>Télécharger le modèle</button></div><div class="rounded-xl border-2 border-accent-300 bg-white p-5 shadow-sm"><div class="mb-3 flex items-center gap-3"><div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent-600 text-white shadow-sm"><i data-lucide="file-up" class="w-5 h-5"></i></div><div><div class="text-xs font-bold uppercase tracking-wide text-accent-700">Étape 2 — à effectuer ensuite</div><div class="mt-0.5 font-bold text-gray-900">Importer le fichier complété</div><div class="text-sm text-gray-700">Sélectionne le modèle Excel rempli pour vérifier les données avant l'enregistrement.</div></div></div><label for="articleImportFile" class="flex min-h-24 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-accent-300 bg-accent-50/50 px-4 py-4 text-center transition hover:border-accent-500 hover:bg-accent-50"><i data-lucide="upload-cloud" class="mb-1 h-6 w-6 text-accent-600"></i><span class="font-semibold text-accent-700">Choisir un fichier Excel</span><span class="mt-1 text-xs text-gray-600">Formats acceptés : .xlsx, .xls ou .csv</span><input id="articleImportFile" type="file" accept=".xlsx,.xls,.csv" class="sr-only"></label><div id="articleImportSummary" class="hidden grid-cols-2 gap-3 md:grid-cols-4"></div><div id="articleImportTable" class="hidden"></div></div><div class="shrink-0 px-6 py-4 border-t flex justify-end gap-3"><button data-action="closeModal('importModal')" class="px-4 py-2 bg-white border rounded-lg font-semibold">Annuler</button><button id="articleImportSaveButton" data-action="importArticles" disabled class="px-4 py-2 bg-accent-600 text-white rounded-lg font-semibold opacity-50 cursor-not-allowed">Enregistrer les lignes valides</button></div></div></div>
   <script>
     const labels = { home:'Tableau de bord', entrees:'Entrees stock', referentiels:'Referentiels', stock:'Vue Stock', sortie:'Sorties stock', retours:'Retours & transferts', reappro:'Reapprovisionnement', inventaire:'Inventaire', equipements:'Equipements', parcAuto:'Parc auto', audit:'Audit & alertes', users:'Utilisateurs & roles', historique:'Historique & exports' };
     const headerActions = {

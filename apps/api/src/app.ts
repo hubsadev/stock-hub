@@ -1,5 +1,12 @@
 import { scryptSync, timingSafeEqual } from "node:crypto";
+import { createReadStream } from "node:fs";
+import { mkdir, stat, writeFile } from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import cors from "@fastify/cors";
+import multipart from "@fastify/multipart";
 import Fastify from "fastify";
 import { prisma } from "@stock-hub/database";
 import { canCreateStockEntry } from "@stock-hub/domain";
@@ -35,6 +42,10 @@ function toNumber(value: unknown): number | undefined {
   return Number.isFinite(parsed) ? parsed : undefined;
 }
 
+function sameQuantity(left: number, right: number) {
+  return Math.abs(left - right) < 0.000001;
+}
+
 function parseDate(value: unknown): Date {
   if (typeof value === "string") {
     const french = value.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
@@ -52,6 +63,100 @@ function asString(value: unknown): string | undefined {
 
 function asBody(requestBody: unknown): Record<string, unknown> {
   return requestBody && typeof requestBody === "object" ? requestBody as Record<string, unknown> : {};
+}
+
+function requiredEnv(name: string) {
+  const value = process.env[name];
+  if (!value) throw new Error("R2_NOT_CONFIGURED");
+  return value;
+}
+
+function storageDriver() {
+  const driver = (process.env.STORAGE_DRIVER ?? (process.env.NODE_ENV === "production" ? "r2" : "local")).trim().toLowerCase();
+  if (driver !== "local" && driver !== "r2") throw new Error("STORAGE_DRIVER_INVALID");
+  return driver as "local" | "r2";
+}
+
+const apiRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const workspaceRoot = path.resolve(apiRoot, "../..");
+
+function localUploadRoot() {
+  const configured = process.env.LOCAL_UPLOAD_DIR;
+  if (configured && path.isAbsolute(configured)) return path.resolve(configured);
+  return path.resolve(workspaceRoot, configured ?? "apps/api/uploads");
+}
+
+function r2Client() {
+  const accountId = requiredEnv("R2_ACCOUNT_ID");
+  return new S3Client({
+    region: "auto",
+    endpoint: "https://" + accountId + ".r2.cloudflarestorage.com",
+    credentials: {
+      accessKeyId: requiredEnv("R2_ACCESS_KEY_ID"),
+      secretAccessKey: requiredEnv("R2_SECRET_ACCESS_KEY")
+    }
+  });
+}
+
+function safeFileName(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9._-]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 120) || "preuve-signee";
+}
+
+async function saveProofFile(movementId: string, fileName: string, mimeType: string, buffer: Buffer) {
+  const key = "material-requests/" + movementId + "/" + Date.now() + "-" + safeFileName(fileName);
+  if (storageDriver() === "r2") {
+    const bucket = requiredEnv("R2_BUCKET");
+    await r2Client().send(new PutObjectCommand({
+      Bucket: bucket,
+      Key: key,
+      Body: buffer,
+      ContentType: mimeType || "application/octet-stream"
+    }));
+    return key;
+  }
+  const filePath = path.resolve(localUploadRoot(), key);
+  if (!filePath.startsWith(localUploadRoot() + path.sep)) {
+    throw new Error("LOCAL_UPLOAD_PATH_INVALID");
+  }
+  await mkdir(path.dirname(filePath), { recursive: true });
+  await writeFile(filePath, buffer);
+  return key;
+}
+
+async function signedProofUrl(key: string) {
+  return getSignedUrl(
+    r2Client(),
+    new GetObjectCommand({ Bucket: requiredEnv("R2_BUCKET"), Key: key }),
+    { expiresIn: 60 * 5 }
+  );
+}
+
+function localProofPath(key: string) {
+  const filePath = path.resolve(localUploadRoot(), key);
+  if (!filePath.startsWith(localUploadRoot() + path.sep)) {
+    throw new Error("LOCAL_UPLOAD_PATH_INVALID");
+  }
+  return filePath;
+}
+
+function returnBreakdownFromObservation(observation: string | null | undefined) {
+  const text = observation ?? "";
+  const read = (label: string) => {
+    const match = text.match(new RegExp(label + "\\s+(\\d+(?:[.,]\\d+)?)", "i"));
+    return match ? Number(match[1].replace(",", ".")) : 0;
+  };
+  const structured = /Retour:\s*total/i.test(text);
+  const total = read("total");
+  const good = read("bon etat");
+  const damaged = read("endommage");
+  const scrap = read("rebut");
+  const pending = read("a controler");
+  return { total, good, damaged, scrap, pending, structured };
 }
 
 function articleFamily(value: unknown) {
@@ -79,6 +184,12 @@ export function buildApp() {
     origin: true,
     methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"]
+  });
+  app.register(multipart, {
+    limits: {
+      fileSize: 12 * 1024 * 1024,
+      files: 1
+    }
   });
 
   app.get("/health", async () => ({ status: "ok" }));
@@ -145,25 +256,49 @@ export function buildApp() {
     if (initialStock > 0 && !initialLocationId) {
       return reply.code(400).send({ message: "Emplacement de depart requis pour initialiser le stock." });
     }
-    const article = await prisma.article.create({
-      data: {
-        code,
-        designation: String(body.designation ?? ""),
-        category,
-        unit: String(body.unit ?? "U"),
-        trackingMode: body.trackingMode === "INDIVIDUAL" ? "INDIVIDUAL" : "QUANTITY",
-        minimumStock: toNumber(body.minimumStock) ?? 0,
-        securityStock: toNumber(body.securityStock) ?? 0,
-        referencePrice: toNumber(body.referencePrice),
-        defaultSupplierId: asString(body.defaultSupplierId),
-        defaultLocationId,
-        stockLevels: initialStock > 0 && initialLocationId ? {
-          create: {
-            locationId: initialLocationId,
-            quantity: initialStock
+    const article = await prisma.$transaction(async (tx) => {
+      const created = await tx.article.create({
+        data: {
+          code,
+          designation: String(body.designation ?? ""),
+          category,
+          unit: String(body.unit ?? "U"),
+          trackingMode: body.trackingMode === "INDIVIDUAL" ? "INDIVIDUAL" : "QUANTITY",
+          minimumStock: toNumber(body.minimumStock) ?? 0,
+          securityStock: toNumber(body.securityStock) ?? 0,
+          referencePrice: toNumber(body.referencePrice),
+          defaultSupplierId: asString(body.defaultSupplierId),
+          defaultLocationId,
+          initialStock,
+          stockLevels: initialStock > 0 && initialLocationId ? {
+            create: {
+              locationId: initialLocationId,
+              quantity: initialStock
+            }
+          } : undefined
+        }
+      });
+      if (initialStock > 0 && initialLocationId) {
+        await tx.stockMovement.create({
+          data: {
+            reference: "INIT-" + created.code,
+            type: "INITIAL",
+            status: "COMPLETED",
+            date: created.createdAt,
+            fromLocationId: initialLocationId,
+            toLocationId: initialLocationId,
+            lines: {
+              create: {
+                articleId: created.id,
+                expectedQuantity: initialStock,
+                completedQuantity: initialStock,
+                observation: "Stock initial au demarrage"
+              }
+            }
           }
-        } : undefined
+        });
       }
+      return created;
     });
     return reply.code(201).send(article);
   });
@@ -840,6 +975,155 @@ export function buildApp() {
     return reply.code(201).send(movement);
   });
 
+  app.post("/stock-movements/entries/:id/resolve", async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const body = asBody(request.body);
+    const inputLines = Array.isArray(body.lines) ? body.lines as Array<Record<string, unknown>> : [];
+    if (!inputLines.length) {
+      return reply.code(400).send({ message: "Au moins une ligne de resolution est requise." });
+    }
+
+    const movement = await prisma.$transaction(async (tx) => {
+      const before = await tx.stockMovement.findUnique({
+        where: { id },
+        include: {
+          lines: { include: { article: true } },
+          sourceRequest: { include: { lines: { include: { article: true } } } }
+        }
+      });
+      if (!before) {
+        return reply.code(404).send({ message: "Entree stock introuvable." });
+      }
+      if (before.type !== "ENTRY") {
+        return reply.code(400).send({ message: "Seules les entrees stock peuvent etre resolues ici." });
+      }
+      if (before.status === "CANCELLED") {
+        return reply.code(400).send({ message: "Une entree annulee ne peut pas etre resolue." });
+      }
+
+      const lineById = new Map(before.lines.map((line) => [line.id, line]));
+      let changed = false;
+      const resolutionNotes: string[] = [];
+
+      for (const input of inputLines) {
+        const lineId = asString(input.lineId);
+        const action = asString(input.action);
+        if (!lineId || !action) continue;
+        const line = lineById.get(lineId);
+        if (!line) {
+          return reply.code(400).send({ message: "Ligne d'entree introuvable dans ce bon." });
+        }
+
+        const expected = line.expectedQuantity ?? 0;
+        const completed = line.completedQuantity ?? 0;
+        const observation = asString(input.observation);
+
+        if (action === "COMPLETE_MISSING") {
+          const missing = expected - completed;
+          const quantity = toNumber(input.quantity) ?? 0;
+          if (missing <= 0) {
+            return reply.code(400).send({ message: "Cette ligne n'a pas de manquant a completer." });
+          }
+          if (quantity <= 0 || quantity > missing) {
+            return reply.code(400).send({ message: "La quantite complementaire doit etre positive et inferieure ou egale au manquant." });
+          }
+          await tx.stockMovementLine.update({
+            where: { id: line.id },
+            data: {
+              completedQuantity: completed + quantity,
+              observation: [line.observation, observation].filter(Boolean).join(" - ") || undefined
+            }
+          });
+          if (before.toLocationId) {
+            await tx.stockLevel.upsert({
+              where: { articleId_locationId: { articleId: line.articleId, locationId: before.toLocationId } },
+              update: { quantity: { increment: quantity } },
+              create: { articleId: line.articleId, locationId: before.toLocationId, quantity }
+            });
+          }
+          resolutionNotes.push(`Complete ${line.article.code}: +${quantity}`);
+          changed = true;
+        } else if (action === "ACCEPT_SURPLUS") {
+          if (completed <= expected) {
+            return reply.code(400).send({ message: "Cette ligne n'a pas de surplus a accepter." });
+          }
+          await tx.stockMovementLine.update({
+            where: { id: line.id },
+            data: {
+              expectedQuantity: completed,
+              observation: [line.observation, observation].filter(Boolean).join(" - ") || undefined
+            }
+          });
+          resolutionNotes.push(`Surplus accepte ${line.article.code}: ${completed - expected}`);
+          changed = true;
+        } else if (action === "RETURN_SURPLUS") {
+          const surplus = completed - expected;
+          const quantity = toNumber(input.quantity) ?? 0;
+          if (surplus <= 0) {
+            return reply.code(400).send({ message: "Cette ligne n'a pas de surplus a retourner." });
+          }
+          if (quantity <= 0 || quantity > surplus) {
+            return reply.code(400).send({ message: "La quantite retournee doit etre positive et inferieure ou egale au surplus." });
+          }
+          if (!before.toLocationId) {
+            return reply.code(400).send({ message: "Impossible de retourner un surplus sans emplacement de reception." });
+          }
+          const stock = await tx.stockLevel.findUnique({
+            where: { articleId_locationId: { articleId: line.articleId, locationId: before.toLocationId } }
+          });
+          if (!stock || stock.quantity < quantity) {
+            return reply.code(400).send({ message: "Stock disponible insuffisant pour retourner ce surplus." });
+          }
+          await tx.stockMovementLine.update({
+            where: { id: line.id },
+            data: {
+              completedQuantity: completed - quantity,
+              observation: [line.observation, observation].filter(Boolean).join(" - ") || undefined
+            }
+          });
+          await tx.stockLevel.update({
+            where: { articleId_locationId: { articleId: line.articleId, locationId: before.toLocationId } },
+            data: { quantity: { decrement: quantity } }
+          });
+          resolutionNotes.push(`Surplus retourne ${line.article.code}: -${quantity}`);
+          changed = true;
+        } else {
+          return reply.code(400).send({ message: "Action de resolution inconnue." });
+        }
+      }
+
+      if (!changed) {
+        return reply.code(400).send({ message: "Aucune resolution valide n'a ete fournie." });
+      }
+
+      const after = await tx.stockMovement.update({
+        where: { id },
+        data: {
+          handledBy: asString(body.handledBy) ?? before.handledBy,
+          notes: [before.notes, asString(body.notes), resolutionNotes.join(" / ")].filter(Boolean).join(" - ") || undefined
+        },
+        include: {
+          lines: { include: { article: true } }
+        }
+      });
+
+      await tx.auditLog.create({
+        data: {
+          action: "RESOLVE_STOCK_ENTRY_DISPUTE",
+          entity: "StockMovement",
+          entityId: after.id,
+          before: before as any,
+          after: after as any
+        }
+      });
+
+      return after;
+    });
+
+    if (reply.sent) return;
+    return reply.send(movement);
+  });
+
 
   app.post("/stock-movements/exit-requests", async (request, reply) => {
     const body = asBody(request.body);
@@ -1041,12 +1325,82 @@ export function buildApp() {
     return reply.send(movement);
   });
 
-  app.post("/stock-movements/exit-requests/:id/proof", async (request, reply) => {
+  app.post("/stock-movements/exit-requests/:id/reject", async (request, reply) => {
     const params = request.params as { id: string };
     const body = asBody(request.body);
-    const fileName = asString(body.fileName);
-    if (!fileName) {
-      return reply.code(400).send({ message: "Ajoute le nom de la fiche signee." });
+    const reason = asString(body.reason)?.trim();
+    if (!reason) {
+      return reply.code(400).send({ message: "Le motif du refus est obligatoire." });
+    }
+
+    const movement = await prisma.$transaction(async (tx) => {
+      const before = await tx.stockMovement.findUnique({
+        where: { id: params.id },
+        include: {
+          lines: { include: { article: true } },
+          generatedExits: { include: { lines: { include: { article: true } } } }
+        }
+      });
+      if (!before || before.type !== "EXIT_REQUEST") {
+        throw new Error("EXIT_REQUEST_NOT_FOUND");
+      }
+      if (before.status !== "SUBMITTED" || before.generatedExits.length > 0) {
+        throw new Error("EXIT_REQUEST_NOT_REJECTABLE");
+      }
+
+      const updated = await tx.stockMovement.update({
+        where: { id: before.id },
+        data: {
+          status: "REJECTED",
+          rejectionReason: reason,
+          rejectedAt: new Date(),
+          rejectedBy: asString(body.rejectedBy)
+        },
+        include: {
+          lines: { include: { article: true } },
+          generatedExits: { include: { lines: { include: { article: true } } } }
+        }
+      });
+
+      await tx.auditLog.create({
+        data: {
+          action: "REJECT_EXIT_REQUEST",
+          entity: "StockMovement",
+          entityId: updated.id,
+          before: before as any,
+          after: updated as any
+        }
+      });
+
+      return updated;
+    }).catch((error) => {
+      if (error instanceof Error && error.message === "EXIT_REQUEST_NOT_FOUND") {
+        return reply.code(404).send({ message: "Demande materiel introuvable." });
+      }
+      if (error instanceof Error && error.message === "EXIT_REQUEST_NOT_REJECTABLE") {
+        return reply.code(409).send({ message: "Cette demande est deja preparee ou terminee. Elle ne peut plus etre refusee." });
+      }
+      throw error;
+    });
+
+    if (reply.sent) return;
+    return reply.send(movement);
+  });
+
+  app.post("/stock-movements/exit-requests/:id/proof", async (request, reply) => {
+    const params = request.params as { id: string };
+    if (!request.isMultipart()) {
+      return reply.code(400).send({ message: "Ajoute le fichier signe en multipart/form-data." });
+    }
+
+    const uploaded = await request.file();
+    if (!uploaded) {
+      return reply.code(400).send({ message: "Ajoute la fiche signee." });
+    }
+    const fileName = uploaded.filename || "preuve-signee";
+    const mimeType = uploaded.mimetype || "application/octet-stream";
+    if (!mimeType.startsWith("application/pdf") && !mimeType.startsWith("image/")) {
+      return reply.code(400).send({ message: "La preuve doit etre un PDF ou une image." });
     }
 
     const existing = await prisma.stockMovement.findUnique({ where: { id: params.id } });
@@ -1057,13 +1411,30 @@ export function buildApp() {
       return reply.code(400).send({ message: "La demande doit etre preparee avant de joindre la fiche signee." });
     }
 
+    const buffer = await uploaded.toBuffer();
+    let proofFileKey = "";
+    try {
+      proofFileKey = await saveProofFile(existing.id, fileName, mimeType, buffer);
+    } catch (error) {
+      if (error instanceof Error && error.message === "R2_NOT_CONFIGURED") {
+        return reply.code(500).send({ message: "Stockage Cloudflare R2 non configure." });
+      }
+      if (error instanceof Error && error.message === "STORAGE_DRIVER_INVALID") {
+        return reply.code(500).send({ message: "Driver de stockage invalide." });
+      }
+      throw error;
+    }
+    const uploadedByField = uploaded.fields.uploadedBy as { value?: unknown } | undefined;
     const updated = await prisma.stockMovement.update({
       where: { id: params.id },
       data: {
         status: "COMPLETED",
+        proofFileKey,
         proofFileName: fileName,
+        proofMimeType: mimeType,
+        proofSizeBytes: buffer.byteLength,
         proofUploadedAt: new Date(),
-        proofUploadedBy: asString(body.uploadedBy)
+        proofUploadedBy: asString(uploadedByField?.value)
       },
       include: {
         lines: { include: { article: true } },
@@ -1081,6 +1452,67 @@ export function buildApp() {
     });
 
     return reply.send(updated);
+  });
+
+  app.get("/stock-movements/exit-requests/:id/proof", async (request, reply) => {
+    const params = request.params as { id: string };
+    const movement = await prisma.stockMovement.findUnique({ where: { id: params.id } });
+    if (!movement || movement.type !== "EXIT_REQUEST") {
+      return reply.code(404).send({ message: "Demande materiel introuvable." });
+    }
+    if (!movement.proofFileKey) {
+      return reply.code(404).send({ message: "Aucune preuve signee jointe." });
+    }
+    try {
+      if (storageDriver() === "local") {
+        const filePath = localProofPath(movement.proofFileKey);
+        await stat(filePath);
+        const protoHeader = request.headers["x-forwarded-proto"];
+        const protocol = Array.isArray(protoHeader) ? protoHeader[0] : protoHeader ?? request.protocol;
+        return {
+          url: protocol + "://" + request.headers.host + "/stock-movements/exit-requests/" + encodeURIComponent(movement.id) + "/proof/file",
+          fileName: movement.proofFileName,
+          mimeType: movement.proofMimeType
+        };
+      }
+      return {
+        url: await signedProofUrl(movement.proofFileKey),
+        fileName: movement.proofFileName,
+        mimeType: movement.proofMimeType,
+        expiresIn: 300
+      };
+    } catch (error) {
+      if (error instanceof Error && error.message === "R2_NOT_CONFIGURED") {
+        return reply.code(500).send({ message: "Stockage Cloudflare R2 non configure." });
+      }
+      if (error instanceof Error && error.message === "STORAGE_DRIVER_INVALID") {
+        return reply.code(500).send({ message: "Driver de stockage invalide." });
+      }
+      throw error;
+    }
+  });
+
+  app.get("/stock-movements/exit-requests/:id/proof/file", async (request, reply) => {
+    const params = request.params as { id: string };
+    if (storageDriver() !== "local") {
+      return reply.code(404).send({ message: "Fichier local indisponible avec ce driver de stockage." });
+    }
+    const movement = await prisma.stockMovement.findUnique({ where: { id: params.id } });
+    if (!movement || movement.type !== "EXIT_REQUEST") {
+      return reply.code(404).send({ message: "Demande materiel introuvable." });
+    }
+    if (!movement.proofFileKey) {
+      return reply.code(404).send({ message: "Aucune preuve signee jointe." });
+    }
+    const filePath = localProofPath(movement.proofFileKey);
+    try {
+      await stat(filePath);
+    } catch {
+      return reply.code(404).send({ message: "Fichier local introuvable." });
+    }
+    reply.header("Content-Type", movement.proofMimeType ?? "application/octet-stream");
+    reply.header("Content-Disposition", "inline; filename=\"" + safeFileName(movement.proofFileName ?? "preuve-signee") + "\"");
+    return reply.send(createReadStream(filePath));
   });
 
   app.post("/stock-movements/exits", async (request, reply) => {
@@ -1190,43 +1622,127 @@ export function buildApp() {
     const body = asBody(request.body);
     const lines = Array.isArray(body.lines) ? body.lines as Array<Record<string, unknown>> : [];
     const toLocationId = asString(body.toLocationId);
+    const sourceMovementId = asString(body.sourceMovementId);
     if (!toLocationId) {
       return reply.code(400).send({ message: "Un emplacement retour est requis." });
+    }
+    if (!sourceMovementId) {
+      return reply.code(400).send({ message: "La sortie d'origine est requise pour enregistrer un retour." });
     }
     if (!lines.length) {
       return reply.code(400).send({ message: "Au moins une ligne de retour est requise." });
     }
 
-    const reintegrate = body.reintegrate !== false;
     const movement = await prisma.$transaction(async (tx) => {
+      const source = await tx.stockMovement.findUnique({
+        where: { id: sourceMovementId },
+        include: { lines: { include: { article: true } } }
+      });
+      if (!source || source.type !== "EXIT") {
+        throw new Error("RETURN_SOURCE_NOT_FOUND");
+      }
+
+      const previousReturns = await tx.stockMovement.findMany({
+        where: {
+          type: "RETURN",
+          sourceRequestId: sourceMovementId,
+          status: { not: "CANCELLED" }
+        },
+        include: { lines: true }
+      });
+      const returnedByArticle = new Map<string, number>();
+      for (const item of previousReturns) {
+        for (const line of item.lines) {
+          returnedByArticle.set(
+            line.articleId,
+            (returnedByArticle.get(line.articleId) ?? 0) + Number(line.completedQuantity ?? 0)
+          );
+        }
+      }
+      const sourceByArticle = new Map(source.lines.map((line) => [line.articleId, line]));
+      const seenArticleIds = new Set<string>();
+      const checkedLines = lines.map((line) => {
+        const articleId = String(line.articleId ?? "");
+        const quantity = toNumber(line.completedQuantity) ?? 0;
+        const goodQuantity = toNumber(line.goodQuantity) ?? 0;
+        const damagedQuantity = toNumber(line.damagedQuantity) ?? 0;
+        const scrapQuantity = toNumber(line.scrapQuantity) ?? 0;
+        const pendingControlQuantity = toNumber(line.pendingControlQuantity) ?? 0;
+        const stateTotal = goodQuantity + damagedQuantity + scrapQuantity + pendingControlQuantity;
+        const sourceLine = sourceByArticle.get(articleId);
+        if (!articleId || !sourceLine) {
+          throw new Error("RETURN_ARTICLE_NOT_IN_SOURCE|" + articleId);
+        }
+        if (seenArticleIds.has(articleId)) {
+          throw new Error("RETURN_DUPLICATE_ARTICLE|" + (sourceLine.article?.designation ?? articleId));
+        }
+        seenArticleIds.add(articleId);
+        if (quantity <= 0) {
+          throw new Error("INVALID_RETURN_QUANTITY|" + (sourceLine.article?.designation ?? articleId));
+        }
+        if ([goodQuantity, damagedQuantity, scrapQuantity, pendingControlQuantity].some((value) => value < 0)) {
+          throw new Error("INVALID_RETURN_STATE_QUANTITY|" + (sourceLine.article?.designation ?? articleId));
+        }
+        if (!sameQuantity(stateTotal, quantity)) {
+          throw new Error("RETURN_STATE_TOTAL_MISMATCH|" + (sourceLine.article?.designation ?? articleId));
+        }
+        const exited = Number(sourceLine.completedQuantity ?? 0);
+        const alreadyReturned = returnedByArticle.get(articleId) ?? 0;
+        const remaining = exited - alreadyReturned;
+        if (quantity > remaining) {
+          throw new Error("RETURN_EXCEEDS_REMAINING|" + (sourceLine.article?.designation ?? articleId) + "|" + remaining + "|" + quantity);
+        }
+        return {
+          articleId,
+          quantity,
+          goodQuantity,
+          damagedQuantity,
+          scrapQuantity,
+          pendingControlQuantity,
+          observation: asString(line.observation)
+        };
+      });
+      const hasPendingControl = checkedLines.some((line) => line.pendingControlQuantity > 0);
+
       const created = await tx.stockMovement.create({
         data: {
           reference: String(body.reference ?? "RET-" + Date.now()),
           type: "RETURN",
-          status: reintegrate ? "COMPLETED" : "PREPARED",
+          status: hasPendingControl ? "PREPARED" : "COMPLETED",
           date: parseDate(body.date),
+          sourceRequestId: sourceMovementId,
           toLocationId,
           handledBy: asString(body.handledBy),
           receivedBy: asString(body.receivedBy),
           deliveredBy: asString(body.deliveredBy),
           notes: asString(body.notes),
           lines: {
-            create: lines.map((line) => ({
-              articleId: String(line.articleId ?? ""),
-              completedQuantity: toNumber(line.completedQuantity) ?? 0,
-              observation: asString(line.observation)
+            create: checkedLines.map((line) => ({
+              articleId: line.articleId,
+              completedQuantity: line.quantity,
+              observation: [
+                "Retour: total " + line.quantity,
+                "bon etat " + line.goodQuantity,
+                "endommage " + line.damagedQuantity,
+                "rebut " + line.scrapQuantity,
+                "a controler " + line.pendingControlQuantity,
+                line.observation
+              ].filter(Boolean).join(" | ")
             }))
           }
         },
-        include: { lines: { include: { article: true } } }
+        include: {
+          lines: { include: { article: true } },
+          sourceRequest: { include: { lines: { include: { article: true } } } }
+        }
       });
 
-      if (reintegrate) {
-        for (const line of created.lines) {
+      for (const line of checkedLines) {
+        if (line.goodQuantity > 0) {
           await tx.stockLevel.upsert({
             where: { articleId_locationId: { articleId: line.articleId, locationId: toLocationId } },
-            update: { quantity: { increment: line.completedQuantity ?? 0 } },
-            create: { articleId: line.articleId, locationId: toLocationId, quantity: line.completedQuantity ?? 0 }
+            update: { quantity: { increment: line.goodQuantity } },
+            create: { articleId: line.articleId, locationId: toLocationId, quantity: line.goodQuantity }
           });
         }
       }
@@ -1235,9 +1751,197 @@ export function buildApp() {
         data: { action: "CREATE_STOCK_RETURN", entity: "StockMovement", entityId: created.id, after: created as any }
       });
       return created;
+    }).catch((error) => {
+      if (error instanceof Error && error.message === "RETURN_SOURCE_NOT_FOUND") {
+        return reply.code(404).send({ message: "Sortie d'origine introuvable." });
+      }
+      if (error instanceof Error && error.message.startsWith("RETURN_ARTICLE_NOT_IN_SOURCE|")) {
+        return reply.code(400).send({ message: "Un article retourne n'appartient pas a la sortie selectionnee." });
+      }
+      if (error instanceof Error && error.message.startsWith("RETURN_DUPLICATE_ARTICLE|")) {
+        const [, label] = error.message.split("|");
+        return reply.code(400).send({ message: "Article en double dans le retour : " + label + "." });
+      }
+      if (error instanceof Error && error.message.startsWith("INVALID_RETURN_QUANTITY|")) {
+        return reply.code(400).send({ message: "La quantite retournee doit etre superieure a 0." });
+      }
+      if (error instanceof Error && error.message.startsWith("INVALID_RETURN_STATE_QUANTITY|")) {
+        return reply.code(400).send({ message: "Les quantites par etat doivent etre positives ou nulles." });
+      }
+      if (error instanceof Error && error.message.startsWith("RETURN_STATE_TOTAL_MISMATCH|")) {
+        const [, label] = error.message.split("|");
+        return reply.code(400).send({ message: "La somme des etats doit etre egale au total retourne pour " + label + "." });
+      }
+      if (error instanceof Error && error.message.startsWith("RETURN_EXCEEDS_REMAINING|")) {
+        const [, label, remaining, quantity] = error.message.split("|");
+        return reply.code(400).send({ message: "Retour superieur au reste pour " + label + ". Reste " + remaining + ", retour " + quantity + "." });
+      }
+      throw error;
     });
 
+    if (reply.sent) return;
     return reply.code(201).send(movement);
+  });
+
+  app.post("/stock-movements/returns/:id/control", async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const body = asBody(request.body);
+    const inputLines = Array.isArray(body.lines) ? body.lines as Array<Record<string, unknown>> : [];
+    if (!inputLines.length) {
+      return reply.code(400).send({ message: "Au moins une ligne de controle est requise." });
+    }
+
+    const movement = await prisma.$transaction(async (tx) => {
+      const before = await tx.stockMovement.findUnique({
+        where: { id },
+        include: { lines: { include: { article: true } } }
+      });
+      if (!before || before.type !== "RETURN") {
+        throw new Error("RETURN_NOT_FOUND");
+      }
+      if (before.status === "COMPLETED" || before.status === "CANCELLED" || before.status !== "PREPARED") {
+        throw new Error("RETURN_NOT_CONTROLLABLE");
+      }
+      if (!before.toLocationId) {
+        throw new Error("RETURN_LOCATION_REQUIRED");
+      }
+
+      const lineById = new Map(before.lines.map((line) => [line.id, line]));
+      const pendingLineIds = new Set(
+        before.lines
+          .filter((line) => {
+            const breakdown = returnBreakdownFromObservation(line.observation);
+            return (breakdown.structured ? breakdown.pending : Number(line.completedQuantity ?? 0)) > 0;
+          })
+          .map((line) => line.id)
+      );
+      const inputLineIds = new Set(inputLines.map((line) => asString(line.lineId)).filter(Boolean) as string[]);
+      if (pendingLineIds.size === 0 || [...pendingLineIds].some((lineId) => !inputLineIds.has(lineId))) {
+        throw new Error("RETURN_CONTROL_INCOMPLETE");
+      }
+      const seenLineIds = new Set<string>();
+      const decisionLabels: Record<string, string> = {
+        REINTEGRATE: "Reintegre au stock",
+        DISCARD: "Rebut / inutilisable",
+        REPAIR: "A reparer / anomalie"
+      };
+
+      for (const input of inputLines) {
+        const lineId = asString(input.lineId);
+        const decision = asString(input.decision);
+        if (!lineId || !decision) {
+          throw new Error("INVALID_RETURN_CONTROL_LINE");
+        }
+        if (seenLineIds.has(lineId)) {
+          throw new Error("DUPLICATE_RETURN_CONTROL_LINE");
+        }
+        seenLineIds.add(lineId);
+        const line = lineById.get(lineId);
+        if (!line) {
+          throw new Error("RETURN_CONTROL_LINE_NOT_FOUND");
+        }
+        if (!["REINTEGRATE", "DISCARD", "REPAIR"].includes(decision)) {
+          throw new Error("INVALID_RETURN_CONTROL_DECISION");
+        }
+        const breakdown = returnBreakdownFromObservation(line.observation);
+        const pendingQuantity = breakdown.structured
+          ? breakdown.pending
+          : Number(line.completedQuantity ?? 0);
+        if (pendingQuantity <= 0) {
+          throw new Error("RETURN_CONTROL_NO_PENDING|" + (line.article?.designation ?? line.articleId));
+        }
+        const acceptedQuantity = decision === "REINTEGRATE" ? toNumber(input.acceptedQuantity) ?? pendingQuantity : 0;
+        if (acceptedQuantity < 0 || acceptedQuantity > pendingQuantity) {
+          throw new Error("INVALID_ACCEPTED_RETURN_QUANTITY|" + (line.article?.designation ?? line.articleId));
+        }
+        if (decision === "REINTEGRATE" && acceptedQuantity <= 0) {
+          throw new Error("INVALID_ACCEPTED_RETURN_QUANTITY|" + (line.article?.designation ?? line.articleId));
+        }
+
+        if (decision === "REINTEGRATE") {
+          await tx.stockLevel.upsert({
+            where: { articleId_locationId: { articleId: line.articleId, locationId: before.toLocationId } },
+            update: { quantity: { increment: acceptedQuantity } },
+            create: { articleId: line.articleId, locationId: before.toLocationId, quantity: acceptedQuantity }
+          });
+        }
+
+        const controlNote = [
+          "Controle retour: " + decisionLabels[decision],
+          decision === "REINTEGRATE" ? "quantite acceptee " + acceptedQuantity : undefined,
+          "sur a controler " + pendingQuantity,
+          asString(input.observation)
+        ].filter(Boolean).join(" - ");
+        await tx.stockMovementLine.update({
+          where: { id: line.id },
+          data: {
+            observation: [line.observation, controlNote].filter(Boolean).join(" | ") || undefined
+          }
+        });
+      }
+
+      const after = await tx.stockMovement.update({
+        where: { id: before.id },
+        data: {
+          status: "COMPLETED",
+          handledBy: asString(body.handledBy) ?? before.handledBy,
+          notes: [before.notes, asString(body.notes)].filter(Boolean).join(" - ") || undefined
+        },
+        include: {
+          lines: { include: { article: true } },
+          sourceRequest: { include: { lines: { include: { article: true } } } }
+        }
+      });
+
+      await tx.auditLog.create({
+        data: {
+          action: "CONTROL_STOCK_RETURN",
+          entity: "StockMovement",
+          entityId: after.id,
+          before: before as any,
+          after: after as any
+        }
+      });
+
+      return after;
+    }).catch((error) => {
+      if (error instanceof Error && error.message === "RETURN_NOT_FOUND") {
+        return reply.code(404).send({ message: "Retour stock introuvable." });
+      }
+      if (error instanceof Error && error.message === "RETURN_NOT_CONTROLLABLE") {
+        return reply.code(409).send({ message: "Ce retour est deja controle ou ne peut pas etre controle." });
+      }
+      if (error instanceof Error && error.message === "RETURN_LOCATION_REQUIRED") {
+        return reply.code(400).send({ message: "Emplacement retour manquant pour reintegrer le stock." });
+      }
+      if (error instanceof Error && error.message === "RETURN_CONTROL_INCOMPLETE") {
+        return reply.code(400).send({ message: "Toutes les quantites a controler doivent etre traitees." });
+      }
+      if (error instanceof Error && error.message.startsWith("INVALID_ACCEPTED_RETURN_QUANTITY|")) {
+        const [, label] = error.message.split("|");
+        return reply.code(400).send({ message: "Quantite acceptee invalide pour " + label + "." });
+      }
+      if (error instanceof Error && error.message.startsWith("RETURN_CONTROL_NO_PENDING|")) {
+        const [, label] = error.message.split("|");
+        return reply.code(400).send({ message: "Aucune quantite a controler pour " + label + "." });
+      }
+      if (error instanceof Error && error.message === "INVALID_RETURN_CONTROL_LINE") {
+        return reply.code(400).send({ message: "Chaque ligne controlee doit avoir une decision." });
+      }
+      if (error instanceof Error && error.message === "DUPLICATE_RETURN_CONTROL_LINE") {
+        return reply.code(400).send({ message: "Une ligne de retour ne peut etre controlee qu'une seule fois." });
+      }
+      if (error instanceof Error && error.message === "RETURN_CONTROL_LINE_NOT_FOUND") {
+        return reply.code(400).send({ message: "Une ligne controlee n'appartient pas a ce retour." });
+      }
+      if (error instanceof Error && error.message === "INVALID_RETURN_CONTROL_DECISION") {
+        return reply.code(400).send({ message: "Decision de controle inconnue." });
+      }
+      throw error;
+    });
+
+    if (reply.sent) return;
+    return reply.send(movement);
   });
 
   app.post("/stock-movements/transfers", async (request, reply) => {

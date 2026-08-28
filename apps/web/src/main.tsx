@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import * as XLSX from "xlsx";
 import { StockHubShell } from "./components/StockHubShell";
 import {
+  controlStockReturn,
   createArticle,
   createClient,
   createEmployee,
@@ -33,8 +34,11 @@ import {
   getTeamServices,
   getUsers,
   getVehicles,
+  getExitRequestProof,
   loginUser,
   prepareExitRequest,
+  rejectExitRequest,
+  resolveStockEntryDispute,
   uploadExitRequestProof,
   createVehicle,
   unassignEquipment,
@@ -93,6 +97,9 @@ let latestLocations: StockLocation[] = [];
 let latestUsers: StockUser[] = [];
 let selectedUserId: string | null = null;
 let selectedExitRequestId: string | null = null;
+let selectedRejectedExitRequestId: string | null = null;
+let selectedEntryId: string | null = null;
+let selectedReturnTransferId: string | null = null;
 let currentUser: StockUser | null = readStoredUser();
 
 type ReferentialImportType =
@@ -532,6 +539,50 @@ function stockStatus(level: StockLevel) {
   return badge("Disponible", "success");
 }
 
+function stockInitialForLevel(level: StockLevel) {
+  const explicitInitial = Number(level.article.initialStock);
+  if (Number.isFinite(explicitInitial) && explicitInitial >= 0) {
+    return explicitInitial;
+  }
+
+  const relevant = latestMovements
+    .filter(
+      (movement) =>
+        movement.status !== "CANCELLED" &&
+        movement.status !== "DRAFT" &&
+        movement.lines.some((line) => line.articleId === level.article.id) &&
+        (movement.fromLocationId === level.location.id ||
+          movement.toLocationId === level.location.id),
+    )
+    .sort((a, b) => a.date.localeCompare(b.date));
+  const initialMovement = relevant.find(
+    (movement) => movement.type === "INITIAL",
+  );
+  if (initialMovement) {
+    return initialMovement.lines
+      .filter((line) => line.articleId === level.article.id)
+      .reduce(
+        (sum, line) =>
+          sum + Number(line.completedQuantity ?? line.expectedQuantity ?? 0),
+        0,
+      );
+  }
+
+  // Compatibilite avec les anciens articles : le premier inventaire conserve
+  // le stock theorique d'avant comptage dans expectedQuantity.
+  const firstInventory = relevant.find(
+    (movement) => movement.type === "ADJUSTMENT",
+  );
+  const theoretical = firstInventory?.lines.find(
+    (line) => line.articleId === level.article.id,
+  )?.expectedQuantity;
+  if (theoretical !== null && theoretical !== undefined) {
+    return Number(theoretical);
+  }
+
+  return initialQuantityForLevel(level, latestMovements);
+}
+
 function stockMovementMetrics(level: StockLevel) {
   let entries = 0;
   let exits = 0;
@@ -566,7 +617,8 @@ function stockMovementMetrics(level: StockLevel) {
   return {
     entries,
     exits,
-    initial: Math.max(0, Number(level.quantity) - entries + exits),
+    // Le stock de depart est immuable : l'inventaire ne le remplace jamais.
+    initial: stockInitialForLevel(level),
   };
 }
 
@@ -794,8 +846,10 @@ function movementTypeBadge(type: StockMovement["type"]) {
     RETURN: "Retour",
     TRANSFER: "Transfert",
     ADJUSTMENT: "Inventaire",
+    INITIAL: "Stock de depart",
   };
   const tones: Record<StockMovement["type"], string> = {
+    INITIAL: "bg-accent-50 text-accent-600",
     ENTRY: "bg-success-50 text-success-700",
     EXIT_REQUEST: "bg-gray-100 text-gray-600",
     EXIT: "bg-error-50 text-error-700",
@@ -804,6 +858,41 @@ function movementTypeBadge(type: StockMovement["type"]) {
     ADJUSTMENT: "bg-warning-50 text-warning-700",
   };
   return `<span class="px-2 py-0.5 rounded-full text-xs font-bold ${tones[type]}">${escapeHtml(labels[type] ?? type)}</span>`;
+}
+
+function initialQuantityForLevel(
+  level: StockLevel,
+  movements: StockMovement[],
+) {
+  let quantity = Number(level.quantity ?? 0);
+  for (const movement of movements) {
+    if (
+      movement.status === "CANCELLED" ||
+      movement.status === "DRAFT" ||
+      movement.type === "INITIAL" ||
+      movement.type === "ADJUSTMENT" ||
+      movement.type === "EXIT_REQUEST"
+    )
+      continue;
+    for (const line of movement.lines) {
+      if (line.articleId !== level.article.id) continue;
+      const amount = Number(
+        line.completedQuantity ??
+          line.expectedQuantity ??
+          line.requestedQuantity ??
+          0,
+      );
+      if (movement.type === "ENTRY" || movement.type === "RETURN") {
+        if (movement.toLocationId === level.location.id) quantity -= amount;
+      } else if (movement.type === "EXIT") {
+        if (movement.fromLocationId === level.location.id) quantity += amount;
+      } else if (movement.type === "TRANSFER") {
+        if (movement.toLocationId === level.location.id) quantity -= amount;
+        if (movement.fromLocationId === level.location.id) quantity += amount;
+      }
+    }
+  }
+  return Math.max(0, quantity);
 }
 
 function renderStockDrawer(root: HTMLElement) {
@@ -892,6 +981,9 @@ function renderStockDrawer(root: HTMLElement) {
     const movements = latestMovements
       .filter((m) => {
         if (m.status === "CANCELLED" || m.status === "DRAFT") return false;
+        // Une demande préparee est ensuite materialisee par une sortie reelle.
+        // Elle ne doit pas apparaitre deux fois dans l'historique du stock.
+        if (m.type === "EXIT_REQUEST" && linkedExitForRequest(m)) return false;
         const hasArticle = m.lines.some(
           (l) => l.articleId === level.article.id,
         );
@@ -903,7 +995,76 @@ function renderStockDrawer(root: HTMLElement) {
         if (dateTo && m.date > dateTo + "T23:59:59") return false;
         return true;
       })
-      .sort((a, b) => b.date.localeCompare(a.date));
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    // Un meme comptage ne doit pas etre repete dans la fiche si le bouton a
+    // ete valide plusieurs fois avec exactement les memes valeurs.
+    const uniqueInventoryKeys = new Set<string>();
+    const deduplicatedMovements = movements.filter((movement) => {
+      if (movement.type !== "ADJUSTMENT") return true;
+      const line = movement.lines.find(
+        (item) => item.articleId === level.article.id,
+      );
+      const key = [
+        level.article.id,
+        level.location.id,
+        line?.expectedQuantity ?? "",
+        line?.completedQuantity ?? "",
+      ].join("|");
+      if (uniqueInventoryKeys.has(key)) return false;
+      uniqueInventoryKeys.add(key);
+      return true;
+    });
+    movements.splice(0, movements.length, ...deduplicatedMovements);
+
+    // Les anciens articles n'avaient pas encore de mouvement INITIAL en base.
+    // On reconstruit alors le stock de depart et on l'affiche toujours en premier.
+    if (!movements.some((m) => m.type === "INITIAL")) {
+      const initialQuantity = initialQuantityForLevel(level, latestMovements);
+      movements.unshift({
+        id: `initial-${level.article.id}-${level.location.id}`,
+        reference: `INIT-${level.article.code}`,
+        type: "INITIAL",
+        status: "COMPLETED",
+        date: level.article.createdAt ?? new Date(0).toISOString(),
+        supplierId: null,
+        clientId: null,
+        projectId: null,
+        teamServiceId: null,
+        siteLocationId: null,
+        fromLocationId: level.location.id,
+        toLocationId: level.location.id,
+        handledBy: null,
+        requestedBy: null,
+        receivedBy: null,
+        deliveredBy: null,
+        sourceRequestId: null,
+        proofFileName: null,
+        proofFileKey: null,
+        proofMimeType: null,
+        proofSizeBytes: null,
+        proofUploadedAt: null,
+        proofUploadedBy: null,
+        rejectionReason: null,
+        rejectedAt: null,
+        rejectedBy: null,
+        notes: "Stock de depart",
+        lines: [
+          {
+            id: `initial-line-${level.article.id}-${level.location.id}`,
+            articleId: level.article.id,
+            article: level.article,
+            requestedQuantity: initialQuantity,
+            expectedQuantity: initialQuantity,
+            completedQuantity: initialQuantity,
+            unitPrice: null,
+            observation: "Stock de depart",
+          },
+        ],
+      });
+    }
+    // Lecture chronologique : le stock de depart apparait avant les mouvements.
+    movements.sort((a, b) => a.date.localeCompare(b.date));
 
     if (!movements.length) {
       histEl.innerHTML = `<p class="text-sm text-gray-500 text-center py-6">Aucun mouvement trouvé pour cette période.</p>`;
@@ -921,9 +1082,16 @@ function renderStockDrawer(root: HTMLElement) {
           );
           const isOut =
             m.type === "EXIT" ||
+            m.type === "EXIT_REQUEST" ||
             (m.type === "TRANSFER" && m.fromLocationId === level.location.id);
-          const qtyClass = isOut ? "text-error-700" : "text-success-700";
-          const qtySign = isOut ? "-" : "+";
+          const displayedQuantity =
+            m.type === "ADJUSTMENT"
+              ? qty - Number(lineForArticle?.expectedQuantity ?? 0)
+              : qty;
+          const signedQuantity = isOut ? -displayedQuantity : displayedQuantity;
+          const qtyClass =
+            signedQuantity < 0 ? "text-error-700" : "text-success-700";
+          const qtySign = signedQuantity > 0 ? "+" : "";
           const actor =
             m.handledBy ??
             m.receivedBy ??
@@ -935,7 +1103,7 @@ function renderStockDrawer(root: HTMLElement) {
           <div class="min-w-0 flex-1">
             <div class="flex items-center justify-between gap-2">
               <span class="text-xs text-gray-500">${escapeHtml(formatDate(m.date))}</span>
-              <span class="font-bold text-sm ${qtyClass}">${qtySign}${formatNumber(qty)}</span>
+              <span class="font-bold text-sm ${qtyClass}">${qtySign}${formatNumber(signedQuantity)}</span>
             </div>
             <div class="text-xs text-gray-600 mt-0.5 truncate">${escapeHtml(m.reference)} &bull; ${escapeHtml(actor)}</div>
           </div>
@@ -1860,13 +2028,18 @@ function movementTypeLabel(type: StockMovement["type"]) {
     RETURN: "Retour",
     TRANSFER: "Transfert",
     ADJUSTMENT: "Inventaire",
+    INITIAL: "Stock de depart",
   };
   return labels[type] ?? type;
 }
 
 function movementQuantity(movement: StockMovement) {
   const multiplier =
-    movement.type === "EXIT" || movement.type === "TRANSFER" ? -1 : 1;
+    movement.type === "EXIT" ||
+    movement.type === "EXIT_REQUEST" ||
+    movement.type === "TRANSFER"
+      ? -1
+      : 1;
   const total = movement.lines.reduce(
     (sum, line) =>
       sum +
@@ -2137,7 +2310,7 @@ function materialRequestDocumentHtml(input: {
   <meta charset="utf-8">
   <title>Demande materiel ${escapeHtml(input.reference)}</title>
   <style>
-    @page { size: A4; margin: 10mm; }
+    @page { size: A4; margin: 0; }
     * { box-sizing: border-box; }
     body { margin: 0; background: #e9edf4; color: #0f172a; font-family: Arial, Helvetica, sans-serif; font-size: 11px; }
     .toolbar { width: 210mm; margin: 10px auto 0; display: flex; justify-content: flex-end; }
@@ -2177,7 +2350,7 @@ function materialRequestDocumentHtml(input: {
     .signature-table .name { margin-top: 3mm; font-size: 11px; font-weight: 900; }
     .signature-table .line { margin-top: 18mm; color: #475569; font-size: 9px; }
     .footer { margin-top: 6mm; color: #64748b; font-size: 8px; display: flex; justify-content: space-between; gap: 10mm; }
-    @media print { body { background: white; } .toolbar { display: none; } .page { width: auto; min-height: auto; margin: 0; padding: 0; box-shadow: none; } }
+    @media print { body { background: white; } .toolbar { display: none; } .page { width: 210mm; min-height: 297mm; margin: 0; padding: 10mm; box-shadow: none; } }
   </style>
 </head>
 <body>
@@ -2204,7 +2377,7 @@ function materialRequestDocumentHtml(input: {
       <td><div class="role">PM / Responsable</div><div class="name">${escapeHtml(input.receivedBy)}</div><div class="line">Date et signature</div></td>
       <td><div class="role">Responsable logistique</div><div class="name">${escapeHtml(input.stockManager)}</div><div class="line">Date et signature</div></td>
     </tr></tbody></table>
-    <div class="footer"><span>Fiche générée depuis Stock Hub.</span><span>La fiche signée doit être uploadée comme preuve après remise.</span></div>
+    
   </main>
 </body>
 </html>`;
@@ -2312,20 +2485,63 @@ function exportData(root: HTMLElement, kind: string) {
 }
 
 function movementStatus(movement: StockMovement) {
-  const first = movement.lines[0];
-  const expected = first?.expectedQuantity ?? 0;
-  const completed = first?.completedQuantity ?? 0;
   if (movement.status === "CANCELLED") return badge("Annulee", "gray");
-  if (expected > completed) return badge("Partielle", "warning");
-  return badge("Recue", "success");
+  return badge(entryStatusLabel(movement), entryStatusTone(movement));
+}
+
+function entryStatusLabel(movement: StockMovement) {
+  if (movement.status === "CANCELLED") return "Annulee";
+  const status = entryStatusKindFromLines(movement.lines);
+  if (status === "issue") return "Litige";
+  if (status === "partial") return "Partielle";
+  return "Recue";
+}
+
+function entryStatusTone(movement: StockMovement) {
+  if (movement.status === "CANCELLED") return "gray";
+  const status = entryStatusKindFromLines(movement.lines);
+  if (status === "issue") return "error";
+  if (status === "partial") return "warning";
+  return "success";
+}
+
+function movementLinesPreview(
+  movement: StockMovement,
+  _mode: "entry" | "exit",
+) {
+  const count = movement.lines.length;
+  if (!count) {
+    return '<div class="font-bold text-gray-500">Aucun article</div>';
+  }
+
+  const first = movement.lines[0];
+  const code = first.article?.code ?? "-";
+  const designation = first.article?.designation ?? "Article";
+  const more =
+    count > 1
+      ? '<span class="shrink-0 rounded-full bg-accent-50 px-2 py-1 text-xs font-bold text-accent-600">+' +
+        formatNumber(count - 1) +
+        " autre" +
+        (count - 1 > 1 ? "s" : "") +
+        "</span>"
+      : "";
+
+  return (
+    '<div class="flex min-w-[220px] max-w-[320px] items-center justify-between gap-3">' +
+    '<div class="min-w-0">' +
+    '<div class="truncate font-bold text-gray-900">' +
+    escapeHtml(designation) +
+    '</div><div class="truncate text-xs text-gray-500">' +
+    escapeHtml(code) +
+    "</div></div>" +
+    more +
+    "</div>"
+  );
 }
 
 function entryMovementRow(movement: StockMovement) {
-  const first = movement.lines[0];
-  const expected = first?.expectedQuantity ?? 0;
-  const completed = first?.completedQuantity ?? 0;
+  const { expected, completed } = entryMovementTotals(movement);
   const delta = completed - expected;
-  const article = first?.article;
   return (
     "<tr>" +
     '<td class="px-5 py-4 font-bold">' +
@@ -2334,11 +2550,9 @@ function entryMovementRow(movement: StockMovement) {
     '<td class="px-5 py-4">' +
     formatDate(movement.date) +
     "</td>" +
-    '<td class="px-5 py-4"><div class="font-bold">' +
-    escapeHtml(article?.designation ?? "-") +
-    '</div><div class="text-xs text-gray-500">' +
-    escapeHtml(article?.code ?? "-") +
-    "</div></td>" +
+    '<td class="px-5 py-4">' +
+    movementLinesPreview(movement, "entry") +
+    "</td>" +
     '<td class="px-5 py-4">' +
     escapeHtml(movement.supplier?.name ?? "-") +
     "</td>" +
@@ -2380,9 +2594,8 @@ function openEntryDetail(root: HTMLElement, id: string) {
     );
     return;
   }
-  const first = movement.lines[0];
-  const expected = first?.expectedQuantity ?? 0;
-  const completed = first?.completedQuantity ?? 0;
+  selectedEntryId = id;
+  const { expected, completed } = entryMovementTotals(movement);
   const origin =
     movement.notes?.match(/^Origine entree:\s*([^\-]+)/i)?.[1]?.trim() ??
     "Reception directe";
@@ -2393,51 +2606,261 @@ function openEntryDetail(root: HTMLElement, id: string) {
     "Fiche lecture seule de l'entree stock recue.",
   );
   const fields = root.querySelector<HTMLElement>("#entryDetailFields");
+  const rows = movement.lines
+    .map((line, index) => {
+      const lineExpected = Number(line.expectedQuantity ?? 0);
+      const lineCompleted = Number(line.completedQuantity ?? 0);
+      return (
+        '<div class="md:col-span-2 rounded-lg border border-gray-200 p-3">' +
+        '<div class="flex items-start justify-between gap-3"><div><div class="text-xs font-semibold text-gray-400">Ligne ' +
+        String(index + 1) +
+        '</div><div class="font-bold mt-1">' +
+        escapeHtml(line.article ? line.article.code + " - " + line.article.designation : "-") +
+        '</div></div><div class="text-right"><div class="font-bold">' +
+        formatNumber(lineCompleted) +
+        '</div><div class="text-xs text-gray-500">' +
+        escapeHtml(line.article?.unit ?? "U") +
+        "</div></div></div>" +
+        '<div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3 text-sm"><div><span class="text-gray-500">Attendue</span><div class="font-semibold">' +
+        formatNumber(lineExpected) +
+        '</div></div><div><span class="text-gray-500">Recue</span><div class="font-semibold">' +
+        formatNumber(lineCompleted) +
+        '</div></div><div><span class="text-gray-500">Ecart</span><div class="font-semibold">' +
+        formatNumber(lineCompleted - lineExpected) +
+        '</div></div><div><span class="text-gray-500">Prix unitaire</span><div class="font-semibold">' +
+        formatNumber(Number(line.unitPrice ?? 0)) +
+        "</div></div></div>" +
+        (line.observation
+          ? '<div class="mt-3 text-sm text-gray-600">' +
+            escapeHtml(line.observation) +
+            "</div>"
+          : "") +
+        "</div>"
+      );
+    })
+    .join("");
   if (fields)
-    fields.innerHTML = [
+    fields.innerHTML =
+      [
       ["Bon d'entree", movement.reference],
       ["Date", formatDate(movement.date)],
-      [
-        "Article",
-        first?.article
-          ? first.article.code + " - " + first.article.designation
-          : "-",
-      ],
+      ["Articles", movement.lines.length > 1 ? movement.lines.length + " articles" : movement.lines[0]?.article ? movement.lines[0].article.code + " - " + movement.lines[0].article.designation : "-"],
       ["Fournisseur", movement.supplier?.name ?? "-"],
       ["Origine", origin],
       ["Magasin de reception", movement.toLocation?.name ?? "-"],
-      ["Quantite attendue", formatNumber(expected)],
-      ["Quantite recue", formatNumber(completed)],
-      ["Ecart", formatNumber(completed - expected)],
+      ["Total attendu", formatNumber(expected)],
+      ["Total recu", formatNumber(completed)],
+      ["Ecart total", formatNumber(completed - expected)],
       ["Responsable", movement.handledBy ?? movement.receivedBy ?? "-"],
-      ["Statut", completed >= expected ? "Recue" : "Partielle"],
+      ["Statut", entryStatusLabel(movement)],
       ["Observation", movement.notes ?? "-"],
-    ]
-      .map(
-        ([label, value]) =>
-          '<div><span class="text-gray-500">' +
-          escapeHtml(label) +
-          '</span><div class="font-semibold mt-1">' +
-          escapeHtml(value) +
-          "</div></div>",
-      )
-      .join("");
+      ]
+        .map(
+          ([label, value]) =>
+            '<div><span class="text-gray-500">' +
+            escapeHtml(label) +
+            '</span><div class="font-semibold mt-1">' +
+            escapeHtml(value) +
+            "</div></div>",
+        )
+        .join("") + rows;
+  const resolveButton =
+    root.querySelector<HTMLButtonElement>("#entryResolveButton");
+  if (resolveButton) {
+    const canResolve =
+      movement.status !== "CANCELLED" &&
+      movement.lines.some(
+        (line) =>
+          Number(line.expectedQuantity ?? 0) > 0 &&
+          Number(line.completedQuantity ?? 0) !==
+            Number(line.expectedQuantity ?? 0),
+      );
+    resolveButton.classList.toggle("hidden", !canResolve);
+  }
   openModal(root, "entryDetailModal");
+}
+
+function entryResolutionRows(movement: StockMovement) {
+  return movement.lines.filter((line) => {
+    const expected = Number(line.expectedQuantity ?? 0);
+    const completed = Number(line.completedQuantity ?? 0);
+    return expected > 0 && completed !== expected;
+  });
+}
+
+function openEntryResolution(root: HTMLElement) {
+  const movement = selectedEntryId
+    ? latestMovements.find((item) => item.id === selectedEntryId)
+    : null;
+  if (!movement) {
+    showToast(root, "Entree stock introuvable.", "error");
+    return;
+  }
+  const modal = root.querySelector<HTMLElement>("#entryResolutionModal");
+  const body = root.querySelector<HTMLTableSectionElement>(
+    "#entryResolutionLines",
+  );
+  if (!modal || !body) return;
+  const lines = entryResolutionRows(movement);
+  if (!lines.length) {
+    showToast(root, "Cette entree n'a plus d'ecart a resoudre.");
+    return;
+  }
+  modal.dataset.entryId = movement.id;
+  setText(root, "#entryResolutionTitle", "Resoudre " + movement.reference);
+  setText(
+    root,
+    "#entryResolutionSubtitle",
+    "Completer un manquant ou accepter un surplus deja receptionne.",
+  );
+  body.innerHTML = lines
+    .map((line) => {
+      const expected = Number(line.expectedQuantity ?? 0);
+      const completed = Number(line.completedQuantity ?? 0);
+      const gap = expected - completed;
+      const isMissing = gap > 0;
+      return (
+        `<tr data-line-id="${escapeHtml(line.id)}" data-gap="${gap}">` +
+        '<td class="px-5 py-4"><div class="font-bold">' +
+        escapeHtml(line.article?.designation ?? "-") +
+        '</div><div class="text-xs text-gray-500">' +
+        escapeHtml(line.article?.code ?? "-") +
+        "</div></td>" +
+        '<td class="px-5 py-4 text-right">' +
+        formatNumber(expected) +
+        "</td>" +
+        '<td class="px-5 py-4 text-right font-bold">' +
+        formatNumber(completed) +
+        "</td>" +
+        '<td class="px-5 py-4 text-right font-bold ' +
+        (isMissing ? "text-warning-700" : "text-success-700") +
+        '">' +
+        formatNumber(completed - expected) +
+        "</td>" +
+        '<td class="px-5 py-4">' +
+        (isMissing
+          ? badge("Completer reception", "warning") +
+            '<input type="hidden" class="entry-resolution-action" value="COMPLETE_MISSING">'
+          : '<select class="entry-resolution-action h-10 rounded-lg border px-3 text-sm font-semibold"><option value="ACCEPT_SURPLUS">Accepter surplus</option><option value="RETURN_SURPLUS">Retourner surplus</option></select>') +
+        "</td>" +
+        '<td class="px-5 py-4 text-right"><input class="entry-resolution-quantity w-24 h-10 border rounded-lg px-3 text-right ' +
+        (!isMissing ? "bg-gray-50 text-gray-400" : "") +
+        `" value="${formatNumber(Math.abs(gap)).replace(/\s/g, "")}" ${isMissing ? "" : "disabled"}></td>` +
+        '<td class="px-5 py-4"><input class="entry-resolution-observation w-full h-10 border rounded-lg px-3" placeholder="Observation"></td>' +
+        "</tr>"
+      );
+    })
+    .join("");
+  body
+    .querySelectorAll<HTMLSelectElement>(".entry-resolution-action")
+    .forEach((select) => {
+      select.onchange = () => {
+        const row = select.closest<HTMLTableRowElement>("tr");
+        const quantity = row?.querySelector<HTMLInputElement>(
+          ".entry-resolution-quantity",
+        );
+        const returning = select.value === "RETURN_SURPLUS";
+        if (quantity) {
+          quantity.disabled = !returning;
+          quantity.classList.toggle("bg-gray-50", !returning);
+          quantity.classList.toggle("text-gray-400", !returning);
+        }
+      };
+    });
+  const handledBy = root.querySelector<HTMLInputElement>(
+    "#entryResolutionHandledBy",
+  );
+  if (handledBy) handledBy.value = movement.handledBy ?? movement.receivedBy ?? "";
+  const notes = root.querySelector<HTMLInputElement>("#entryResolutionNotes");
+  if (notes) notes.value = "";
+  openModal(root, "entryResolutionModal");
+}
+
+async function submitEntryResolution(root: HTMLElement) {
+  const modal = root.querySelector<HTMLElement>("#entryResolutionModal");
+  const entryId = modal?.dataset.entryId;
+  if (!modal || !entryId) return;
+  const rows = Array.from(
+    modal.querySelectorAll<HTMLTableRowElement>("#entryResolutionLines tr"),
+  );
+  const lines = rows.map((row) => {
+    const action =
+      row.querySelector<HTMLInputElement>(".entry-resolution-action")?.value ===
+      "ACCEPT_SURPLUS"
+        ? "ACCEPT_SURPLUS"
+        : "COMPLETE_MISSING";
+    return {
+      lineId: row.dataset.lineId ?? "",
+      action: action as
+        | "COMPLETE_MISSING"
+        | "ACCEPT_SURPLUS"
+        | "RETURN_SURPLUS",
+      quantity: toNumber(
+        row.querySelector<HTMLInputElement>(".entry-resolution-quantity")
+          ?.value ?? "0",
+      ),
+      observation:
+        row
+          .querySelector<HTMLInputElement>(".entry-resolution-observation")
+          ?.value.trim() || undefined,
+      gap: Number(row.dataset.gap ?? 0),
+    };
+  });
+  const invalidMissing = lines.some(
+    (line) =>
+      line.action === "COMPLETE_MISSING" &&
+      (line.quantity <= 0 || line.quantity > line.gap),
+  );
+  const invalidSurplusReturn = lines.some(
+    (line) =>
+      line.action === "RETURN_SURPLUS" &&
+      (line.quantity <= 0 || line.quantity > Math.abs(line.gap)),
+  );
+  if (!lines.length || invalidMissing || invalidSurplusReturn) {
+    showToast(
+      root,
+      "Verifie les quantites de resolution avant validation.",
+      "error",
+    );
+    return;
+  }
+  try {
+    const updated = await resolveStockEntryDispute(entryId, {
+      handledBy:
+        root.querySelector<HTMLInputElement>("#entryResolutionHandledBy")?.value.trim() ||
+        undefined,
+      notes:
+        root.querySelector<HTMLInputElement>("#entryResolutionNotes")?.value.trim() ||
+        undefined,
+      lines: lines.map(({ lineId, action, quantity, observation }) => ({
+        lineId,
+        action,
+        quantity,
+        observation,
+      })),
+    });
+    latestMovements = await getStockMovements().catch(() =>
+      latestMovements.map((item) => (item.id === updated.id ? updated : item)),
+    );
+    latestStockLevels = await getStockLevels().catch(() => latestStockLevels);
+    closeModal(root, "entryResolutionModal");
+    updateApiBackedViews(root);
+    openEntryDetail(root, entryId);
+    showToast(root, "Litige entree resolu et stock mis a jour.");
+  } catch (error) {
+    showToast(
+      root,
+      error instanceof Error ? error.message : "Resolution impossible.",
+      "error",
+    );
+  }
 }
 
 function entryFilterMatches(movement: StockMovement) {
   if (movement.type !== "ENTRY") return false;
-  const first = movement.lines[0];
-  const expected = first?.expectedQuantity ?? 0;
-  const completed = first?.completedQuantity ?? 0;
   const isCancelled = movement.status === "CANCELLED";
-  const isLitige =
-    movement.status === "REJECTED" || (expected > 0 && completed !== expected);
-  const isRecue =
-    (movement.status === "COMPLETED" ||
-      (expected > 0 && completed >= expected)) &&
-    !isCancelled &&
-    !isLitige;
+  const isLitige = entryHasDispute(movement);
+  const isRecue = entryIsReceived(movement);
 
   if (currentEntryFilter === "ALL") return true;
   if (currentEntryFilter === "RECEIVED") return isRecue;
@@ -2465,36 +2888,17 @@ function renderEntriesRegistry(root: HTMLElement) {
   setText(
     root,
     "#entriesReceivedCount",
-    entries.filter(
-      (movement) =>
-        movement.status === "COMPLETED" ||
-        (movement.lines[0] &&
-          Number(movement.lines[0].completedQuantity ?? 0) >=
-            Number(movement.lines[0].expectedQuantity ?? 0)),
-    ).length,
+    entries.filter(entryIsReceived).length,
   );
   setText(
     root,
     "#entriesPartialCount",
-    entries.filter(
-      (movement) =>
-        movement.status === "PREPARED" ||
-        (movement.lines[0] &&
-          Number(movement.lines[0].completedQuantity ?? 0) <
-            Number(movement.lines[0].expectedQuantity ?? 0) &&
-          Number(movement.lines[0].completedQuantity ?? 0) > 0),
-    ).length,
+    entries.filter(entryHasPartial).length,
   );
   setText(
     root,
     "#entriesIssueCount",
-    entries.filter(
-      (movement) =>
-        movement.status === "REJECTED" ||
-        (movement.lines[0] &&
-          Number(movement.lines[0].completedQuantity ?? 0) !==
-            Number(movement.lines[0].expectedQuantity ?? 0)),
-    ).length,
+    entries.filter(entryHasDispute).length,
   );
   root
     .querySelectorAll<HTMLElement>("#entrees [data-entry-filter]")
@@ -2513,7 +2917,7 @@ function movementStatusLabel(movement: StockMovement) {
   if (movement.status === "SUBMITTED") return "Demandee";
   if (movement.status === "PREPARED") return "Preparee";
   if (movement.status === "COMPLETED") return "Terminee";
-  if (movement.status === "REJECTED") return "Rejetee";
+  if (movement.status === "REJECTED") return "Refusee";
   if (movement.status === "CANCELLED") return "Annulee";
   return movement.status;
 }
@@ -2713,6 +3117,9 @@ function renderExitRequestDetail(root: HTMLElement, movement: StockMovement) {
   const prepareButton = root.querySelector<HTMLElement>(
     "#exitRequestPrepareButton",
   );
+  const rejectButton = root.querySelector<HTMLElement>(
+    "#exitRequestRejectButton",
+  );
   const downloadButton = root.querySelector<HTMLElement>(
     "#exitRequestDownloadButton",
   );
@@ -2761,6 +3168,7 @@ function renderExitRequestDetail(root: HTMLElement, movement: StockMovement) {
     movement.type === "EXIT_REQUEST" &&
     movement.status === "SUBMITTED" &&
     canPrepareMaterialRequests();
+  const canRejectNow = canPrepareNow;
   if (title) title.textContent = movement.reference;
   if (subtitle)
     subtitle.textContent =
@@ -2774,11 +3182,18 @@ function renderExitRequestDetail(root: HTMLElement, movement: StockMovement) {
     prepareButton.classList.toggle("hidden", !canPrepareNow);
     prepareButton.dataset.action = `prepareExitFromRequest('${movement.id}')`;
   }
+  if (rejectButton) {
+    rejectButton.classList.toggle("hidden", !canRejectNow);
+    rejectButton.dataset.action = `openExitRequestRejection('${movement.id}')`;
+  }
   const canDownloadPdf =
     movement.type === "EXIT" ||
-    (movement.type === "EXIT_REQUEST" && movement.status !== "SUBMITTED");
+    (movement.type === "EXIT_REQUEST" &&
+      movement.status !== "SUBMITTED" &&
+      movement.status !== "REJECTED" &&
+      movement.status !== "CANCELLED");
   const canUploadProof = canUploadSignedProofFor(movement);
-  const hasProof = Boolean(proofSource?.proofFileName);
+  const hasProof = Boolean(proofSource?.proofFileName || proofSource?.proofFileKey);
   if (downloadButton) {
     downloadButton.classList.toggle("hidden", !canDownloadPdf);
     downloadButton.dataset.action = `downloadPreparedMaterialPdf('${movement.id}')`;
@@ -2798,28 +3213,39 @@ function renderExitRequestDetail(root: HTMLElement, movement: StockMovement) {
       : "text-gray-500";
   const preparedPanel = canDownloadPdf
     ? `
-    <div class="rounded-xl border border-gray-200 bg-white overflow-hidden">
-      <div class="flex flex-col gap-3 border-b bg-gray-50 px-5 py-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <div class="text-xs font-bold uppercase text-gray-500">Fiche de sortie</div>
-          <div class="mt-1 font-bold text-gray-900">${linkedExit ? escapeHtml(linkedExit.reference) : escapeHtml(movement.reference)}</div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div class="rounded-xl border-2 border-accent-300 bg-accent-50 p-5 shadow-sm">
+        <div class="flex items-start gap-3">
+          <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent-600 text-white"><i data-lucide="file-down" class="w-5 h-5"></i></div>
+          <div>
+            <div class="text-xs font-bold uppercase tracking-wide text-accent-700">Etape 1 - apres preparation</div>
+            <div class="mt-1 font-bold text-gray-900">Telecharger la fiche de sortie</div>
+            <p class="mt-1 text-sm text-gray-700">Genere la fiche preparee puis imprime-la pour recueillir les signatures.</p>
+          </div>
         </div>
-        <div class="flex flex-wrap gap-2">
-          <button class="icon-button" title="Télécharger fiche" data-action="downloadPreparedMaterialPdf('${movement.id}')"><i data-lucide="download" class="h-4 w-4"></i></button>
-          ${hasProof && proofSource ? `<button class="icon-button" title="Voir preuve" data-action="viewSignedMaterialProof('${proofSource.id}')"><i data-lucide="file-check" class="h-4 w-4"></i></button>` : ""}
+        <div class="mt-4 flex flex-wrap gap-2">
+          <button type="button" data-action="downloadPreparedMaterialPdf('${movement.id}')" class="inline-flex min-w-0 flex-1 items-center justify-center gap-2 rounded-lg bg-accent-600 px-4 py-2.5 font-semibold text-white hover:bg-accent-500"><i data-lucide="download" class="w-4 h-4"></i>Telecharger la fiche</button>
+          ${hasProof && proofSource ? `<button type="button" data-action="viewSignedMaterialProof('${proofSource.id}')" class="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 font-semibold text-gray-700 hover:bg-gray-50"><i data-lucide="file-check" class="w-4 h-4"></i>Voir la preuve</button>` : ""}
         </div>
       </div>
-      <div class="grid gap-4 px-5 py-4 md:grid-cols-[1fr_auto] md:items-center">
-        <p class="text-sm text-gray-600">Télécharger la fiche, la faire signer, puis ajouter la preuve signée au retour du document.</p>
+      <div class="rounded-xl border-2 border-accent-300 bg-white p-5 shadow-sm">
+        <div class="flex items-start gap-3">
+          <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent-600 text-white"><i data-lucide="file-up" class="w-5 h-5"></i></div>
+          <div>
+            <div class="text-xs font-bold uppercase tracking-wide text-accent-700">Etape 2 - apres signature</div>
+            <div class="mt-1 font-bold text-gray-900">Uploader la fiche de sortie signee</div>
+            <p class="mt-1 text-sm text-gray-700">Ajoute le PDF ou l image signee dans la fiche pour cloturer la demande.</p>
+          </div>
+        </div>
         ${
           canUploadProof && proofSource
-            ? `<div class="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <input id="signedProof-${escapeHtml(proofSource.id)}" type="file" accept=".pdf,image/*" class="form-input max-w-xs" />
-          <button class="icon-button" title="Uploader fiche signée" data-action="uploadSignedMaterialProof('${proofSource.id}')"><i data-lucide="upload" class="h-4 w-4"></i></button>
+            ? `<div class="mt-4 space-y-2">
+          <input id="signedProof-${escapeHtml(proofSource.id)}" type="file" accept=".pdf,image/*" class="form-input w-full" />
+          <button type="button" data-action="uploadSignedMaterialProof('${proofSource.id}')" class="inline-flex w-full items-center justify-center gap-2 rounded-lg border-2 border-accent-300 bg-accent-50 px-4 py-2.5 font-semibold text-accent-700 hover:bg-accent-100"><i data-lucide="upload" class="w-4 h-4"></i>Uploader la fiche signee</button>
         </div>`
             : hasProof && proofSource
-              ? `<div class="rounded-lg border border-gray-200 bg-success-50 px-3 py-2 text-sm text-success-700">${escapeHtml(proofSource.proofFileName ?? "Preuve ajoutée")}</div>`
-              : ""
+              ? `<div class="mt-4 flex items-center gap-2 rounded-lg border border-success-100 bg-success-50 px-3 py-2 text-sm font-semibold text-success-700"><i data-lucide="check" class="w-4 h-4 shrink-0"></i><span class="min-w-0 truncate">${escapeHtml(proofSource.proofFileName ?? "Preuve ajoutee")}</span></div>`
+              : `<div class="mt-4 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-500">Fiche signee deja transmise ou action indisponible pour cette demande.</div>`
         }
       </div>
     </div>`
@@ -2851,6 +3277,7 @@ function renderExitRequestDetail(root: HTMLElement, movement: StockMovement) {
       </div>
     </div>
     ${movement.type === "EXIT_REQUEST" && movement.status === "SUBMITTED" ? `<div class="rounded-xl border border-accent-100 bg-accent-50 p-4 text-sm text-gray-700"><div class="font-bold text-accent-700 mb-1">Demande transmise au stock</div>En attente de préparation par le gestionnaire stock.</div>` : ""}
+    ${movement.type === "EXIT_REQUEST" && movement.status === "REJECTED" ? `<div class="rounded-xl border border-error-100 bg-error-50 p-4 text-sm text-gray-700"><div class="font-bold text-error-700 mb-1">Demande refusee</div><div>${escapeHtml(movement.rejectionReason ?? "Motif non renseigne")}</div><div class="mt-2 text-xs text-gray-500">${escapeHtml(movement.rejectedBy ? "Refusee par " + movement.rejectedBy : "")}${movement.rejectedAt ? " - " + escapeHtml(formatDate(movement.rejectedAt)) : ""}</div></div>` : ""}
     ${preparedPanel}
     <div class="border border-gray-200 rounded-xl overflow-hidden">
       <div class="px-5 py-4 bg-gray-50 border-b"><h3 class="font-bold">Articles demandes</h3><p class="text-sm text-gray-500 mt-1">Le stock disponible est calcule sur le magasin source de la demande.</p></div>
@@ -2858,6 +3285,28 @@ function renderExitRequestDetail(root: HTMLElement, movement: StockMovement) {
     </div>
     ${movement.notes ? `<div class="rounded-xl border bg-gray-50 p-4 text-sm text-gray-700"><div class="font-bold mb-1">Note</div>${escapeHtml(movement.notes)}</div>` : ""}`;
   window.lucide?.createIcons();
+}
+
+function openPreparedExitForAction(
+  root: HTMLElement,
+  action: "download" | "upload",
+) {
+  const movement = latestMovements.find(
+    (item) =>
+      (item.type === "EXIT" || item.status === "PREPARED") &&
+      (action === "download" || canUploadSignedProofFor(item)),
+  );
+  if (!movement) {
+    showToast(
+      root,
+      action === "download"
+        ? "Aucune sortie preparee disponible pour le moment."
+        : "Aucune fiche preparee en attente de signature.",
+      "error",
+    );
+    return;
+  }
+  openExitRequestDetail(root, movement.id);
 }
 
 function openExitRequestDetail(root: HTMLElement, id: string) {
@@ -2922,6 +3371,13 @@ function exitActionItems(movement: StockMovement) {
         "package-check",
         "Preparer",
         `prepareExitFromRequest('${movement.id}')`,
+      ),
+    );
+    actions.push(
+      exitMenuItem(
+        "ban",
+        "Refuser",
+        `openExitRequestRejection('${movement.id}')`,
       ),
     );
   }
@@ -3009,10 +3465,6 @@ function exitActionsMenu(movement: StockMovement) {
 function exitMovementRow(movement: StockMovement) {
   const first = movement.lines[0];
   const articleCount = movement.lines.length;
-  const article =
-    articleCount > 1
-      ? articleCount + " articles"
-      : (first?.article?.designation ?? "-");
   const requested = movement.lines.reduce(
     (sum, line) => sum + Number(line.requestedQuantity ?? 0),
     0,
@@ -3023,7 +3475,7 @@ function exitMovementRow(movement: StockMovement) {
   );
   const quantity =
     movement.type === "EXIT_REQUEST" ? requested : completed || requested;
-  const available = first?.articleId
+  const available = articleCount === 1 && first?.articleId
     ? latestStockLevels
         .filter(
           (level) =>
@@ -3046,7 +3498,8 @@ function exitMovementRow(movement: StockMovement) {
   const handledBy = movement.handledBy ?? movement.fromLocation?.name ?? "-";
   const transportedBy = movement.deliveredBy ?? "-";
   const deliveredTo = movement.receivedBy ?? movement.requestedBy ?? "-";
-  const availableText = available === null ? "-" : formatNumber(available);
+  const availableText =
+    articleCount > 1 ? "Voir detail" : available === null ? "-" : formatNumber(available);
   const availableClass =
     available !== null &&
     movement.status === "SUBMITTED" &&
@@ -3070,11 +3523,9 @@ function exitMovementRow(movement: StockMovement) {
     '<td class="px-5 py-4">' +
     formatDate(movement.date) +
     "</td>" +
-    '<td class="px-5 py-4"><div class="font-bold">' +
-    escapeHtml(article) +
-    '</div><div class="text-xs text-gray-500">' +
-    escapeHtml(first?.article?.code ?? "-") +
-    "</div></td>" +
+    '<td class="px-5 py-4">' +
+    movementLinesPreview(movement, "exit") +
+    "</td>" +
     '<td class="px-5 py-4 text-right font-bold">' +
     formatNumber(quantity) +
     "</td>" +
@@ -3110,7 +3561,6 @@ function exitMovementRow(movement: StockMovement) {
 
 function returnTransferRow(movement: StockMovement) {
   const first = movement.lines[0];
-  const article = first?.article?.designation ?? "-";
   const origin =
     movement.type === "RETURN"
       ? (movement.deliveredBy ?? "Sortie retournee")
@@ -3121,7 +3571,7 @@ function returnTransferRow(movement: StockMovement) {
   const statusLabel =
     movement.type === "RETURN"
       ? movement.status === "COMPLETED"
-        ? "Reintegre"
+        ? "Traite"
         : "A controler"
       : movement.status === "COMPLETED"
         ? "Transfere"
@@ -3140,11 +3590,9 @@ function returnTransferRow(movement: StockMovement) {
     '<td class="px-5 py-4">' +
     escapeHtml(label) +
     "</td>" +
-    '<td class="px-5 py-4"><div class="font-bold">' +
-    escapeHtml(article) +
-    '</div><div class="text-xs text-gray-500">' +
-    escapeHtml(first?.article?.code ?? "-") +
-    "</div></td>" +
+    '<td class="px-5 py-4">' +
+    movementLinesPreview(movement, "exit") +
+    "</td>" +
     '<td class="px-5 py-4">' +
     escapeHtml(origin) +
     "</td>" +
@@ -3157,8 +3605,334 @@ function returnTransferRow(movement: StockMovement) {
     '<td class="px-5 py-4">' +
     badge(statusLabel, tone) +
     "</td>" +
+    '<td class="px-5 py-4 text-right">' +
+    actionEyeFor(`openReturnTransferDetail('${movement.id}')`) +
+    "</td>" +
     "</tr>"
   );
+}
+
+function returnTransferDetailStatus(movement: StockMovement) {
+  if (movement.type === "RETURN") {
+    return movement.status === "COMPLETED" ? "Traite" : "A controler";
+  }
+  return movement.status === "COMPLETED" ? "Transfere" : movement.status;
+}
+
+function returnTransferDetailTone(movement: StockMovement): "success" | "warning" | "gray" {
+  if (movement.status === "COMPLETED") return "success";
+  if (movement.status === "PREPARED") return "warning";
+  return "gray";
+}
+
+function returnLineBreakdown(
+  line: StockMovement["lines"][number],
+  movement?: StockMovement,
+) {
+  const text = line.observation ?? "";
+  const readFrom = (source: string, label: string) => {
+    const match = source.match(new RegExp(label + "\\s+(\\d+(?:[.,]\\d+)?)", "i"));
+    return match ? Number(match[1].replace(",", ".")) : 0;
+  };
+  const read = (label: string) => readFrom(text, label);
+  const structured = /Retour:\s*total/i.test(text);
+  const fallbackTotal = Number(line.completedQuantity ?? 0);
+  let good = read("bon etat");
+  let damaged = read("endommage");
+  let scrap = read("rebut");
+  let pending = read("a controler");
+  const parsedTotal = read("total");
+  for (const section of text.split("|").map((part) => part.trim())) {
+    if (!/^Controle retour:/i.test(section)) continue;
+    const controlled = readFrom(section, "sur a controler");
+    const accepted = readFrom(section, "quantite acceptee");
+    if (/Reintegre au stock/i.test(section)) {
+      good += accepted || controlled;
+    } else if (/Rebut \/ inutilisable/i.test(section)) {
+      scrap += controlled;
+    } else if (/A reparer \/ anomalie/i.test(section)) {
+      damaged += controlled;
+    }
+    pending = Math.max(0, pending - controlled);
+  }
+  return {
+    total: parsedTotal || fallbackTotal,
+    good: structured ? good : movement?.status === "COMPLETED" ? fallbackTotal : 0,
+    damaged,
+    scrap,
+    pending: structured ? pending : movement?.status === "PREPARED" ? fallbackTotal : 0,
+    structured,
+  };
+}
+
+function returnLineDisplayObservation(line: StockMovement["lines"][number]) {
+  return (line.observation ?? "")
+    .split("|")
+    .map((part) => part.trim())
+    .filter((part) => part && !/^Retour:/i.test(part) && !/^(bon etat|endommage|rebut|a controler)\s+/i.test(part))
+    .join(" | ");
+}
+
+function openReturnTransferDetail(root: HTMLElement, id: string) {
+  const movement = latestMovements.find((item) => item.id === id);
+  if (!movement || (movement.type !== "RETURN" && movement.type !== "TRANSFER")) {
+    showToast(root, "Retour ou transfert introuvable dans le registre charge.", "error");
+    return;
+  }
+  selectedReturnTransferId = id;
+  const kind = movement.type === "RETURN" ? "Fiche retour" : "Fiche transfert";
+  const title = movement.type === "RETURN" ? "Retour stock" : "Transfert stock";
+  const source = movement.sourceRequest ?? latestMovements.find((item) => item.id === movement.sourceRequestId);
+  const sourceByArticle = new Map(
+    returnSourceLines(source).map((line) => [line.articleId, line]),
+  );
+  const total = movement.lines.reduce(
+    (sum, line) => sum + Number(line.completedQuantity ?? 0),
+    0,
+  );
+  const rows = movement.lines
+    .map(
+      (line, index) => {
+        const sourceQuantity = sourceByArticle.get(line.articleId)?.completedQuantity;
+        const breakdown = returnLineBreakdown(line, movement);
+        const observation = returnLineDisplayObservation(line) || movement.notes || "-";
+        return `<tr>
+          <td class="px-5 py-4 font-bold text-gray-400">${index + 1}</td>
+          <td class="px-5 py-4"><div class="font-bold">${escapeHtml(line.article?.designation ?? "-")}</div><div class="text-xs text-gray-500">${escapeHtml(line.article?.code ?? "-")} - ${escapeHtml(line.article?.unit ?? "U")}</div></td>
+          ${
+            movement.type === "RETURN"
+              ? '<td class="px-5 py-4 text-right font-semibold">' +
+                (sourceQuantity === undefined ? "-" : formatNumber(sourceQuantity)) +
+                "</td>"
+              : ""
+          }
+          <td class="px-5 py-4 text-right font-bold">${formatNumber(breakdown.total)}</td>
+          ${
+            movement.type === "RETURN"
+              ? '<td class="px-5 py-4 text-right">' +
+                formatNumber(breakdown.good) +
+                '</td><td class="px-5 py-4 text-right">' +
+                formatNumber(breakdown.damaged) +
+                '</td><td class="px-5 py-4 text-right">' +
+                formatNumber(breakdown.scrap) +
+                '</td><td class="px-5 py-4 text-right">' +
+                formatNumber(breakdown.pending) +
+                "</td>"
+              : ""
+          }
+          <td class="px-5 py-4">${escapeHtml(observation)}</td>
+        </tr>`;
+      },
+    )
+    .join("");
+  setText(root, "#returnTransferDetailKind", kind);
+  setText(root, "#returnTransferDetailTitle", movement.reference);
+  setText(
+    root,
+    "#returnTransferDetailSubtitle",
+    title + " en lecture seule.",
+  );
+  const body = root.querySelector<HTMLElement>("#returnTransferDetailBody");
+  if (body) {
+    const sourceLine =
+      movement.type === "RETURN"
+        ? `<div><span class="detail-label">Sortie source</span> <strong>${escapeHtml(source?.reference ?? "-")}</strong></div>`
+        : `<div><span class="detail-label">Origine</span> <strong>${escapeHtml(movement.fromLocation?.name ?? "-")}</strong></div>`;
+    body.innerHTML = `
+      <div class="rounded-xl border border-gray-200 bg-white overflow-hidden">
+        <div class="grid gap-0 md:grid-cols-[1.2fr_1fr]">
+          <div class="p-5">
+            <div class="flex flex-wrap items-center gap-2">
+              ${badge(returnTransferDetailStatus(movement), returnTransferDetailTone(movement))}
+              <span class="text-sm text-gray-500">${formatDate(movement.date)}</span>
+            </div>
+            <div class="mt-4 grid gap-3 text-sm md:grid-cols-2">
+              <div><span class="detail-label">Reference</span> <strong>${escapeHtml(movement.reference)}</strong></div>
+              <div><span class="detail-label">Type</span> <strong>${escapeHtml(movement.type === "RETURN" ? "Retour" : "Transfert")}</strong></div>
+              ${sourceLine}
+              <div><span class="detail-label">Destination</span> <strong>${escapeHtml(movement.toLocation?.name ?? "-")}</strong></div>
+              <div><span class="detail-label">Total articles</span> <strong>${formatNumber(movement.lines.length)} article${movement.lines.length > 1 ? "s" : ""}</strong></div>
+              <div><span class="detail-label">${movement.type === "RETURN" ? "Quantite retournee" : "Quantite totale"}</span> <strong>${formatNumber(total)}</strong></div>
+            </div>
+          </div>
+          <div class="border-t bg-gray-50 p-5 md:border-l md:border-t-0">
+            <div class="grid gap-3 text-sm">
+              <div><span class="detail-label">Responsable stock</span> <strong>${escapeHtml(movement.handledBy ?? "-")}</strong></div>
+              <div><span class="detail-label">Transporte / ramene par</span> <strong>${escapeHtml(movement.deliveredBy ?? "-")}</strong></div>
+              <div><span class="detail-label">Receptionne par</span> <strong>${escapeHtml(movement.receivedBy ?? "-")}</strong></div>
+              <div><span class="detail-label">Statut</span> <strong>${escapeHtml(returnTransferDetailStatus(movement))}</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="border border-gray-200 rounded-xl overflow-hidden">
+        <div class="px-5 py-4 bg-gray-50 border-b"><h3 class="font-bold">Articles ${movement.type === "RETURN" ? "retournes" : "transferes"}</h3><p class="text-sm text-gray-500 mt-1">Detail des lignes du bon.</p></div>
+        <div class="overflow-x-auto"><table class="w-full min-w-[1120px] text-sm"><thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">N</th><th class="px-5 py-3 text-left">Article</th>${movement.type === "RETURN" ? '<th class="px-5 py-3 text-right">Quantite sortie</th>' : ""}<th class="px-5 py-3 text-right">${movement.type === "RETURN" ? "Quantite retournee" : "Quantite"}</th>${movement.type === "RETURN" ? '<th class="px-5 py-3 text-right">Bon etat</th><th class="px-5 py-3 text-right">Endommage</th><th class="px-5 py-3 text-right">Rebut</th><th class="px-5 py-3 text-right">A controler</th>' : ""}<th class="px-5 py-3 text-left">Observation</th></tr></thead><tbody class="divide-y">${rows || emptyRow(movement.type === "RETURN" ? 9 : 4, "Aucune ligne sur ce bon.")}</tbody></table></div>
+      </div>
+      ${movement.notes ? `<div class="rounded-xl border bg-gray-50 p-4 text-sm text-gray-700"><div class="font-bold mb-1">Observation generale</div>${escapeHtml(movement.notes)}</div>` : ""}`;
+  }
+  const controlButton = root.querySelector<HTMLButtonElement>("#returnControlButton");
+  if (controlButton) {
+    const canControl =
+      movement.type === "RETURN" &&
+      movement.status === "PREPARED" &&
+      movement.lines.some((line) => returnLineBreakdown(line, movement).pending > 0);
+    controlButton.classList.toggle("hidden", !canControl);
+  }
+  openModal(root, "returnTransferDetailModal");
+}
+
+function returnControlDecisionLabel(decision: string) {
+  if (decision === "REINTEGRATE") return "Reintegrer au stock";
+  if (decision === "DISCARD") return "Rebut / inutilisable";
+  if (decision === "REPAIR") return "A reparer / anomalie";
+  return decision;
+}
+
+function refreshReturnControlLines(root: HTMLElement) {
+  const rows = Array.from(
+    root.querySelectorAll<HTMLTableRowElement>("#returnControlLines .return-control-line"),
+  );
+  rows.forEach((row) => {
+    const decision = row.querySelector<HTMLSelectElement>(".return-control-decision")?.value ?? "REINTEGRATE";
+    const quantity = row.querySelector<HTMLInputElement>(".return-control-accepted");
+    const returned = Number(row.dataset.returnedQuantity ?? "0");
+    if (!quantity) return;
+    if (decision === "REINTEGRATE") {
+      quantity.disabled = false;
+      quantity.max = String(returned);
+      if (!quantity.value || Number(quantity.value) <= 0) {
+        quantity.value = String(returned);
+      }
+      quantity.classList.remove("bg-gray-50");
+    } else {
+      quantity.value = "0";
+      quantity.disabled = true;
+      quantity.classList.add("bg-gray-50");
+    }
+  });
+}
+
+function openReturnControl(root: HTMLElement) {
+  const movement = selectedReturnTransferId
+    ? latestMovements.find((item) => item.id === selectedReturnTransferId)
+    : null;
+  if (!movement || movement.type !== "RETURN" || movement.status !== "PREPARED") {
+    showToast(root, "Ce retour ne peut pas etre controle.", "error");
+    return;
+  }
+  const source = movement.sourceRequest ?? latestMovements.find((item) => item.id === movement.sourceRequestId);
+  const sourceByArticle = new Map(
+    returnSourceLines(source).map((line) => [line.articleId, line]),
+  );
+  const body = root.querySelector<HTMLTableSectionElement>("#returnControlLines");
+  if (!body) return;
+  const pendingLines = movement.lines.filter((line) => returnLineBreakdown(line, movement).pending > 0);
+  if (!pendingLines.length) {
+    showToast(root, "Ce retour n'a plus de quantite a controler.");
+    return;
+  }
+  body.innerHTML = pendingLines
+    .map((line) => {
+      const returned = returnLineBreakdown(line, movement).pending;
+      const sourceQuantity = sourceByArticle.get(line.articleId)?.completedQuantity;
+      return `<tr class="return-control-line" data-line-id="${escapeHtml(line.id)}" data-returned-quantity="${returned}">
+        <td class="px-5 py-4"><div class="font-bold">${escapeHtml(line.article?.designation ?? "-")}</div><div class="text-xs text-gray-500">${escapeHtml(line.article?.code ?? "-")} - ${escapeHtml(line.article?.unit ?? "U")}</div></td>
+        <td class="px-5 py-4 text-right font-semibold">${sourceQuantity === undefined ? "-" : formatNumber(sourceQuantity)}</td>
+        <td class="px-5 py-4 text-right font-bold">${formatNumber(returned)}</td>
+        <td class="px-5 py-4"><select class="return-control-decision w-full h-10 border rounded-lg px-3"><option value="REINTEGRATE">Reintegrer au stock</option><option value="DISCARD">Rebut / inutilisable</option><option value="REPAIR">A reparer / anomalie</option></select></td>
+        <td class="px-5 py-4 text-right"><input type="number" min="0" max="${returned}" value="${returned}" class="return-control-accepted w-28 h-10 border rounded-lg px-3 text-right"></td>
+        <td class="px-5 py-4"><input class="return-control-observation w-full h-10 border rounded-lg px-3" placeholder="Observation de controle"></td>
+      </tr>`;
+    })
+    .join("");
+  setText(root, "#returnControlTitle", movement.reference);
+  setText(
+    root,
+    "#returnControlSubtitle",
+    "Controle du retour avant traitement final.",
+  );
+  const handledBy = root.querySelector<HTMLInputElement>("#returnControlHandledBy");
+  const notes = root.querySelector<HTMLInputElement>("#returnControlNotes");
+  if (handledBy) handledBy.value = currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : "";
+  if (notes) notes.value = "";
+  root
+    .querySelectorAll<HTMLSelectElement>("#returnControlLines .return-control-decision")
+    .forEach((select) => {
+      select.onchange = () => refreshReturnControlLines(root);
+    });
+  refreshReturnControlLines(root);
+  openModal(root, "returnControlModal");
+}
+
+async function submitReturnControl(root: HTMLElement) {
+  const movement = selectedReturnTransferId
+    ? latestMovements.find((item) => item.id === selectedReturnTransferId)
+    : null;
+  if (!movement || movement.type !== "RETURN") {
+    showToast(root, "Retour stock introuvable.", "error");
+    return;
+  }
+  const rows = Array.from(
+    root.querySelectorAll<HTMLTableRowElement>("#returnControlLines .return-control-line"),
+  );
+  const lines = rows.map((row) => {
+    const decision =
+      row.querySelector<HTMLSelectElement>(".return-control-decision")?.value ??
+      "REINTEGRATE";
+    const acceptedQuantity =
+      toNumber(row.querySelector<HTMLInputElement>(".return-control-accepted")?.value ?? "0") ?? 0;
+    return {
+      lineId: row.dataset.lineId ?? "",
+      decision: decision as "REINTEGRATE" | "DISCARD" | "REPAIR",
+      acceptedQuantity,
+      observation:
+        row.querySelector<HTMLInputElement>(".return-control-observation")?.value.trim() ||
+        undefined,
+      returnedQuantity: Number(row.dataset.returnedQuantity ?? "0"),
+    };
+  });
+  if (
+    !lines.length ||
+    lines.some(
+      (line) =>
+        !line.lineId ||
+        !["REINTEGRATE", "DISCARD", "REPAIR"].includes(line.decision) ||
+        line.acceptedQuantity < 0 ||
+        line.acceptedQuantity > line.returnedQuantity ||
+        (line.decision === "REINTEGRATE" && line.acceptedQuantity <= 0),
+    )
+  ) {
+    showToast(root, "Controle invalide : verifie les decisions et quantites acceptees.", "error");
+    return;
+  }
+  try {
+    await controlStockReturn(movement.id, {
+      handledBy:
+        root.querySelector<HTMLInputElement>("#returnControlHandledBy")?.value.trim() ||
+        undefined,
+      notes:
+        root.querySelector<HTMLInputElement>("#returnControlNotes")?.value.trim() ||
+        undefined,
+      lines: lines.map(({ returnedQuantity: _returnedQuantity, ...line }) => line),
+    });
+    const [movements, stockLevels] = await Promise.all([
+      getStockMovements(),
+      getStockLevels().catch(() => latestStockLevels),
+    ]);
+    latestMovements = movements;
+    latestStockLevels = stockLevels;
+    closeModal(root, "returnControlModal");
+    updateApiBackedViews(root);
+    openReturnTransferDetail(root, movement.id);
+    showToast(root, "Retour controle et traite.");
+  } catch (error) {
+    showToast(
+      root,
+      error instanceof Error ? error.message : "Controle du retour impossible.",
+      "error",
+    );
+  }
 }
 
 function fillSelect(
@@ -3423,138 +4197,505 @@ async function populateEntryModal(root: HTMLElement) {
     getLocations().catch(() => []),
     getUsers().catch(() => []),
   ]);
-  const selects = Array.from(
-    modal.querySelectorAll<HTMLSelectElement>("select"),
-  );
-  const inputs = Array.from(modal.querySelectorAll<HTMLInputElement>("input"));
-  const supplierSelect = selects[0];
-  const articleSelect = selects[1];
-  const originSelect = selects[2];
-  const locationSelect = selects[3];
-  const handledBySelect = selects[4];
-  const receivedBySelect = selects[5];
-  const expectedInput = inputs[2];
-  const receivedInput = inputs[3];
-  const statusBox = modal.querySelector<HTMLElement>("#entryComputedStatus");
+  latestArticles = articles;
+  latestSuppliers = suppliers;
+  latestLocations = locations;
+  const supplierSelect =
+    modal.querySelector<HTMLSelectElement>("#entrySupplierSelect");
+  const originSelect =
+    modal.querySelector<HTMLSelectElement>("#entryOriginSelect");
+  const locationSelect =
+    modal.querySelector<HTMLSelectElement>("#entryLocationSelect");
+  const handledBySelect =
+    modal.querySelector<HTMLSelectElement>("#entryHandledBySelect");
+  const receivedBySelect =
+    modal.querySelector<HTMLSelectElement>("#entryReceivedBySelect");
+  const previousSupplierId = supplierSelect?.value ?? "";
+  const previousLocationId = locationSelect?.value ?? "";
+  const previousHandledBy = handledBySelect?.value ?? "";
+  const previousReceivedBy = receivedBySelect?.value ?? "";
 
   fillSelect(
-    supplierSelect,
+    supplierSelect ?? undefined,
     suppliers.map((supplier) => option(supplier.id, supplier.name)).join(""),
     "Selectionner fournisseur",
   );
-  fillSelect(
-    articleSelect,
-    articles.map((article) => option(article.id, article.designation)).join(""),
-    "Selectionner article",
-  );
+  if (supplierSelect && previousSupplierId) supplierSelect.value = previousSupplierId;
   const stockLocations = locations.filter((location) =>
     ["MAGASIN", "DEPOT", "BUREAU", "VEHICULE"].includes(
       location.type.toUpperCase(),
     ),
   );
   fillSelect(
-    locationSelect,
+    locationSelect ?? undefined,
     stockLocations
       .map((location) => option(location.id, location.name))
       .join(""),
     "Selectionner magasin",
   );
+  if (locationSelect && previousLocationId) locationSelect.value = previousLocationId;
   const peopleOptions = users
     .map((user) => {
       const name = userDisplayName(user);
       return option(name, name);
     })
     .join("");
-  fillSelect(handledBySelect, peopleOptions, "Selectionner responsable");
-  fillSelect(receivedBySelect, peopleOptions, "Selectionner receptionnaire");
+  fillSelect(handledBySelect ?? undefined, peopleOptions, "Selectionner responsable");
+  fillSelect(receivedBySelect ?? undefined, peopleOptions, "Selectionner receptionnaire");
+  if (handledBySelect && previousHandledBy) handledBySelect.value = previousHandledBy;
+  if (receivedBySelect && previousReceivedBy) receivedBySelect.value = previousReceivedBy;
+  if (locationSelect) locationSelect.onchange = () => refreshEntryLines(root);
+  const articleChoices =
+    option("", "Selectionner article") + articleOptions(articles);
+  modal
+    .querySelectorAll<HTMLSelectElement>("#entryLines .entry-article")
+    .forEach((select) => {
+      const selected = select.value;
+      select.innerHTML = articleChoices;
+      select.value = selected;
+    });
+  modal.dataset.entryArticleChoices = articleChoices;
+  refreshEntryLines(root);
+}
 
-  const refreshEntryPreview = () => {
-    const article = articles.find((item) => item.id === articleSelect?.value);
-    const location = stockLocations.find(
-      (item) => item.id === locationSelect?.value,
-    );
-    const tracking =
-      article?.trackingMode === "INDIVIDUAL"
-        ? "Suivi individuel"
-        : article
-          ? "Article en quantite"
-          : "-";
-    const expected = toNumber(expectedInput?.value ?? "0");
-    const received = toNumber(receivedInput?.value ?? "0");
-    setText(modal, "#entryPreviewCode", article?.code ?? "-");
-    setText(
-      modal,
-      "#entryPreviewDesignation",
-      article?.designation ?? "Selectionner article",
-    );
-    setText(modal, "#entryPreviewTracking", tracking);
-    setText(
-      modal,
-      "#entryPreviewOrigin",
-      originSelect?.value
-        ? (selectedText(originSelect) ?? "Selectionner origine")
-        : "Selectionner origine",
-    );
-    setText(
-      modal,
-      "#entryPreviewDestination",
-      location?.name ?? "Selectionner magasin",
-    );
-    setText(modal, "#entryCurrentStock", "-");
-    if (statusBox) {
-      const label =
-        !expected && !received
-          ? "A calculer"
-          : expected && received < expected
-            ? "Partielle"
-            : expected && received > expected
-              ? "Litige"
-              : "Recue";
-      const tone =
-        label === "Recue"
-          ? "border-success-100 bg-success-50 text-success-700"
-          : label === "Partielle"
-            ? "border-warning-100 bg-warning-50 text-warning-700"
-            : label === "Litige"
-              ? "border-danger-100 bg-danger-50 text-danger-700"
-              : "border-gray-200 bg-gray-50 text-gray-500";
-      statusBox.className =
-        "mt-2 h-11 rounded-lg border px-3 flex items-center font-semibold " +
-        tone;
-      statusBox.textContent = label;
-    }
+function entryRows(root: HTMLElement) {
+  return Array.from(
+    root.querySelectorAll<HTMLTableRowElement>("#entryLines .entry-line"),
+  );
+}
+
+function entryLineValues(row: HTMLTableRowElement) {
+  return {
+    articleId: row.querySelector<HTMLSelectElement>(".entry-article")?.value ?? "",
+    expectedQuantity: toNumber(
+      row.querySelector<HTMLInputElement>(".entry-expected")?.value ?? "0",
+    ),
+    completedQuantity: toNumber(
+      row.querySelector<HTMLInputElement>(".entry-received")?.value ?? "0",
+    ),
+    unitPrice: toNumber(
+      row.querySelector<HTMLInputElement>(".entry-unit-price")?.value ?? "0",
+    ),
+    observation:
+      row.querySelector<HTMLInputElement>(".entry-observation")?.value.trim() ||
+      undefined,
   };
-  if (articleSelect) articleSelect.onchange = refreshEntryPreview;
-  if (originSelect) originSelect.onchange = refreshEntryPreview;
-  if (locationSelect) locationSelect.onchange = refreshEntryPreview;
-  if (expectedInput) expectedInput.oninput = refreshEntryPreview;
-  if (receivedInput) receivedInput.oninput = refreshEntryPreview;
-  refreshEntryPreview();
+}
+
+function entryMovementTotals(movement: StockMovement) {
+  return movement.lines.reduce(
+    (totals, line) => ({
+      expected: totals.expected + Number(line.expectedQuantity ?? 0),
+      completed: totals.completed + Number(line.completedQuantity ?? 0),
+    }),
+    { expected: 0, completed: 0 },
+  );
+}
+
+function entryStatusKindFromLines(
+  lines: Array<{ expectedQuantity?: number | null; completedQuantity?: number | null }>,
+) {
+  const comparable = lines.filter((line) => Number(line.expectedQuantity ?? 0) > 0);
+  if (!comparable.length) return "received";
+  if (
+    comparable.some(
+      (line) =>
+        Number(line.completedQuantity ?? 0) > Number(line.expectedQuantity ?? 0),
+    )
+  )
+    return "issue";
+  if (
+    comparable.some(
+      (line) =>
+        Number(line.completedQuantity ?? 0) < Number(line.expectedQuantity ?? 0),
+    )
+  )
+    return "partial";
+  return "received";
+}
+
+function entryHasDispute(movement: StockMovement) {
+  if (movement.status === "REJECTED") return true;
+  return movement.lines.some((line) => {
+    const expected = Number(line.expectedQuantity ?? 0);
+    if (expected <= 0) return false;
+    return Number(line.completedQuantity ?? 0) !== expected;
+  });
+}
+
+function entryHasPartial(movement: StockMovement) {
+  if (movement.status === "PREPARED") return true;
+  return movement.lines.some((line) => {
+    const expected = Number(line.expectedQuantity ?? 0);
+    return (
+      expected > 0 &&
+      Number(line.completedQuantity ?? 0) > 0 &&
+      Number(line.completedQuantity ?? 0) < expected
+    );
+  });
+}
+
+function entryIsReceived(movement: StockMovement) {
+  if (movement.status === "CANCELLED" || entryHasDispute(movement)) return false;
+  return (
+    movement.status === "COMPLETED" ||
+    entryStatusKindFromLines(movement.lines) === "received"
+  );
+}
+
+function refreshEntryLines(root: HTMLElement) {
+  const modal = root.querySelector<HTMLElement>("#entryModal");
+  if (!modal) return;
+  const rows = entryRows(modal);
+  let totalExpected = 0;
+  let totalReceived = 0;
+  const selectedLocationId =
+    modal.querySelector<HTMLSelectElement>("#entryLocationSelect")?.value;
+
+  rows.forEach((row, index) => {
+    const number = row.querySelector<HTMLElement>(".entry-line-number");
+    if (number) number.textContent = String(index + 1);
+
+    const articleSelect = row.querySelector<HTMLSelectElement>(".entry-article");
+    const article = latestArticles.find((item) => item.id === articleSelect?.value);
+    const values = entryLineValues(row);
+    const delta = values.completedQuantity - values.expectedQuantity;
+    totalExpected += values.expectedQuantity;
+    totalReceived += values.completedQuantity;
+
+    setText(row, ".entry-line-code", article?.code ?? "-");
+    setText(row, ".entry-line-unit", article?.unit ?? "-");
+    setText(row, ".entry-line-delta", formatNumber(delta));
+    const status = row.querySelector<HTMLElement>(".entry-line-status");
+    const statusLabel =
+      values.expectedQuantity <= 0 && values.completedQuantity <= 0
+        ? "A calculer"
+        : values.expectedQuantity > 0 &&
+            values.completedQuantity < values.expectedQuantity
+          ? "Partielle"
+          : values.expectedQuantity > 0 &&
+              values.completedQuantity > values.expectedQuantity
+            ? "Litige"
+            : "Recue";
+    if (status) {
+      status.textContent = statusLabel;
+      status.className =
+        "entry-line-status text-xs font-semibold " +
+        (statusLabel === "Recue"
+          ? "text-success-700"
+          : statusLabel === "Partielle"
+            ? "text-warning-700"
+            : statusLabel === "Litige"
+              ? "text-error-700"
+              : "text-gray-400");
+    }
+
+    const sync = () => refreshEntryLines(root);
+    if (articleSelect) articleSelect.onchange = sync;
+    row.querySelectorAll<HTMLInputElement>("input").forEach((input) => {
+      input.oninput = sync;
+    });
+  });
+
+  setText(modal, "#entryLineCount", String(rows.length));
+  setText(modal, "#entryTotalExpected", formatNumber(totalExpected));
+  setText(modal, "#entryTotalReceived", formatNumber(totalReceived));
+  const firstArticleId =
+    rows.find((row) => row.querySelector<HTMLSelectElement>(".entry-article")?.value)
+      ?.querySelector<HTMLSelectElement>(".entry-article")?.value ?? "";
+  const currentStock =
+    firstArticleId && selectedLocationId
+      ? stockAvailableFor(firstArticleId, selectedLocationId)
+      : null;
+  setText(
+    modal,
+    "#entryCurrentStock",
+    currentStock === null ? "-" : formatNumber(currentStock),
+  );
+  setText(modal, "#entryExpectedControl", rows.length + " ligne(s)");
+
+  const statusBox = modal.querySelector<HTMLElement>("#entryComputedStatus");
+  if (statusBox) {
+    const lineValues = rows.map(entryLineValues);
+    const hasAnyQuantity = lineValues.some(
+      (line) => line.expectedQuantity > 0 || line.completedQuantity > 0,
+    );
+    const kind = hasAnyQuantity ? entryStatusKindFromLines(lineValues) : "empty";
+    const label =
+      kind === "received"
+        ? "Recue"
+        : kind === "partial"
+          ? "Partielle"
+          : kind === "issue"
+            ? "Litige"
+            : "A calculer";
+    const tone =
+      label === "Recue"
+        ? "border-success-100 bg-success-50 text-success-700"
+        : label === "Partielle"
+          ? "border-warning-100 bg-warning-50 text-warning-700"
+          : label === "Litige"
+            ? "border-error-100 bg-error-50 text-error-700"
+            : "border-gray-200 bg-gray-50 text-gray-500";
+    statusBox.className =
+      "mt-2 h-11 rounded-lg border px-3 flex items-center font-semibold " + tone;
+    statusBox.textContent = label;
+  }
+  window.lucide?.createIcons();
+}
+
+function addEntryLine(root: HTMLElement) {
+  const body = root.querySelector<HTMLTableSectionElement>("#entryLines");
+  const first = body?.querySelector<HTMLTableRowElement>(".entry-line");
+  if (!body || !first) return;
+  const row = first.cloneNode(true) as HTMLTableRowElement;
+  row.querySelectorAll<HTMLInputElement>("input").forEach((input) => {
+    input.value = "";
+  });
+  row.querySelectorAll<HTMLSelectElement>("select").forEach((select) => {
+    select.innerHTML =
+      root.querySelector<HTMLElement>("#entryModal")?.dataset.entryArticleChoices ??
+      first.querySelector<HTMLSelectElement>("select")?.innerHTML ??
+      "";
+    select.selectedIndex = 0;
+  });
+  row.querySelectorAll<HTMLElement>(".entry-line-code,.entry-line-unit").forEach(
+    (element) => {
+      element.textContent = "-";
+    },
+  );
+  body.appendChild(row);
+  refreshEntryLines(root);
+}
+
+function removeEntryLine(root: HTMLElement, trigger: HTMLElement) {
+  const body = root.querySelector<HTMLTableSectionElement>("#entryLines");
+  const rows = Array.from(
+    body?.querySelectorAll<HTMLTableRowElement>(".entry-line") ?? [],
+  );
+  const row = trigger.closest<HTMLTableRowElement>(".entry-line");
+  if (!body || !row) return;
+  if (rows.length <= 1) {
+    row.querySelectorAll<HTMLInputElement>("input").forEach((input) => {
+      input.value = "";
+    });
+    row.querySelectorAll<HTMLSelectElement>("select").forEach((select) => {
+      select.selectedIndex = 0;
+    });
+  } else {
+    row.remove();
+  }
+  refreshEntryLines(root);
+}
+
+async function populateQuickArticleModal(root: HTMLElement) {
+  const modal = root.querySelector<HTMLElement>("#articleModal");
+  if (!modal) return;
+  const [articles, suppliers, locations] = await Promise.all([
+    getArticles().catch(() => latestArticles),
+    getSuppliers().catch(() => latestSuppliers),
+    getLocations().catch(() => latestLocations),
+  ]);
+  latestArticles = articles;
+  latestSuppliers = suppliers;
+  latestLocations = locations;
+
+  const designation = modal.querySelector<HTMLInputElement>(
+    "#quickArticleDesignationInput",
+  );
+  const family = modal.querySelector<HTMLSelectElement>(
+    "#quickArticleFamilySelect",
+  );
+  const unit = modal.querySelector<HTMLSelectElement>("#quickArticleUnitSelect");
+  const tracking = modal.querySelector<HTMLSelectElement>(
+    "#quickArticleTrackingSelect",
+  );
+  const code = modal.querySelector<HTMLElement>("#quickArticleCodePreview");
+  const minimumStock = modal.querySelector<HTMLInputElement>(
+    "#quickArticleMinimumStockInput",
+  );
+  const initialStock = modal.querySelector<HTMLInputElement>(
+    "#quickArticleInitialStockInput",
+  );
+  const referencePrice = modal.querySelector<HTMLInputElement>(
+    "#quickArticleReferencePriceInput",
+  );
+  const supplier = modal.querySelector<HTMLSelectElement>(
+    "#quickArticleSupplierSelect",
+  );
+  const location = modal.querySelector<HTMLSelectElement>(
+    "#quickArticleInitialLocationSelect",
+  );
+  const status = modal.querySelector<HTMLSelectElement>(
+    "#quickArticleStatusSelect",
+  );
+
+  if (designation) designation.value = "";
+  if (family) family.value = "FO";
+  if (unit) unit.value = "Piece";
+  if (tracking) tracking.value = "QUANTITY";
+  if (minimumStock) minimumStock.value = "";
+  if (initialStock) initialStock.value = "";
+  if (referencePrice) referencePrice.value = "";
+  if (status) status.value = "ACTIVE";
+
+  const activeSuppliers = suppliers.filter((item) => item.active);
+  fillSelect(
+    supplier ?? undefined,
+    supplierOptions(activeSuppliers),
+    activeSuppliers.length
+      ? "Selectionner fournisseur"
+      : "Aucun fournisseur en base",
+  );
+
+  const stockLocations = locations.filter(
+    (item) =>
+      item.active &&
+      ["MAGASIN", "DEPOT", "BUREAU", "VEHICULE"].includes(
+        item.type.toUpperCase(),
+      ),
+  );
+  fillSelect(
+    location ?? undefined,
+    locationOptions(stockLocations),
+    stockLocations.length
+      ? "Selectionner emplacement"
+      : "Aucun emplacement en base",
+  );
+
+  const updateCode = () => {
+    if (code) code.textContent = nextCodeFromRows(root, "article", family?.value);
+  };
+  if (family) family.onchange = updateCode;
+  updateCode();
+  window.lucide?.createIcons();
+}
+
+function selectArticleInEntry(root: HTMLElement, articleId: string) {
+  const entryModal = root.querySelector<HTMLElement>("#entryModal");
+  if (!entryModal) return;
+  let targetRow =
+    entryRows(entryModal).find(
+      (row) => !row.querySelector<HTMLSelectElement>(".entry-article")?.value,
+    ) ?? null;
+  if (!targetRow) {
+    addEntryLine(root);
+    const rows = entryRows(entryModal);
+    targetRow = rows[rows.length - 1] ?? null;
+  }
+  const select = targetRow?.querySelector<HTMLSelectElement>(".entry-article");
+  if (select) select.value = articleId;
+  refreshEntryLines(root);
+}
+
+async function submitQuickArticle(root: HTMLElement) {
+  const modal = root.querySelector<HTMLElement>("#articleModal");
+  if (!modal) return;
+  const designation =
+    modal
+      .querySelector<HTMLInputElement>("#quickArticleDesignationInput")
+      ?.value.trim() ?? "";
+  const family = normalizedArticleFamily(
+    modal.querySelector<HTMLSelectElement>("#quickArticleFamilySelect")?.value,
+  );
+  const code =
+    modal.querySelector<HTMLElement>("#quickArticleCodePreview")?.textContent?.trim() ||
+    nextCodeFromRows(root, "article", family);
+  const initialLocationId =
+    modal.querySelector<HTMLSelectElement>("#quickArticleInitialLocationSelect")
+      ?.value || undefined;
+  const initialStock = toNumber(
+    modal.querySelector<HTMLInputElement>("#quickArticleInitialStockInput")
+      ?.value ?? "0",
+  );
+
+  if (!designation) {
+    showToast(root, "La designation de l'article est obligatoire.", "error");
+    return;
+  }
+  if (initialStock > 0 && !initialLocationId) {
+    showToast(
+      root,
+      "Selectionne un emplacement de depart pour le stock initial.",
+      "error",
+    );
+    return;
+  }
+
+  try {
+    const article = await createArticle({
+      code,
+      designation,
+      category: family,
+      unit:
+        modal.querySelector<HTMLSelectElement>("#quickArticleUnitSelect")?.value ||
+        "Piece",
+      trackingMode:
+        modal.querySelector<HTMLSelectElement>("#quickArticleTrackingSelect")
+          ?.value === "INDIVIDUAL"
+          ? "INDIVIDUAL"
+          : "QUANTITY",
+      minimumStock: toNumber(
+        modal.querySelector<HTMLInputElement>("#quickArticleMinimumStockInput")
+          ?.value ?? "0",
+      ),
+      referencePrice:
+        toNumber(
+          modal.querySelector<HTMLInputElement>(
+            "#quickArticleReferencePriceInput",
+          )?.value ?? "0",
+        ) || null,
+      defaultSupplierId:
+        modal.querySelector<HTMLSelectElement>("#quickArticleSupplierSelect")
+          ?.value || undefined,
+      defaultLocationId: initialLocationId,
+      initialStock,
+      initialLocationId,
+    });
+    latestArticles = await getArticles().catch(() => [...latestArticles, article]);
+    closeModal(root, "articleModal");
+    await populateEntryModal(root);
+    selectArticleInEntry(root, article.id);
+    updateApiBackedViews(root);
+    showToast(root, "Article cree et selectionne dans l'entree.");
+  } catch (error) {
+    showToast(
+      root,
+      error instanceof Error ? error.message : "Creation article impossible.",
+      "error",
+    );
+  }
 }
 async function submitStockEntry(root: HTMLElement) {
   const modal = root.querySelector<HTMLElement>("#entryModal");
   if (!modal) return;
-  const inputs = Array.from(modal.querySelectorAll<HTMLInputElement>("input"));
-  const selects = Array.from(
-    modal.querySelectorAll<HTMLSelectElement>("select"),
-  );
-  const rawNotes = modal
-    .querySelector<HTMLTextAreaElement>("textarea")
-    ?.value.trim();
-  const originLabel = selectedText(selects[2]);
+  const rawNotes =
+    modal.querySelector<HTMLTextAreaElement>("#entryNotesInput")?.value.trim();
+  const originSelect =
+    modal.querySelector<HTMLSelectElement>("#entryOriginSelect");
+  const originLabel = selectedText(originSelect ?? undefined);
   const notes =
     [originLabel ? "Origine entree: " + originLabel : undefined, rawNotes]
       .filter(Boolean)
       .join(" - ") || undefined;
-  const reference = inputs[1]?.value.trim() || "BE-" + Date.now();
-  const articleId = selects[1]?.value;
-  const toLocationId = selects[3]?.value;
-  const expectedQuantity = toNumber(inputs[2]?.value ?? "0");
-  const completedQuantity = toNumber(inputs[3]?.value ?? "0");
-  if (!articleId || !toLocationId || completedQuantity <= 0) {
+  const reference =
+    modal.querySelector<HTMLInputElement>("#entryReferenceInput")?.value.trim() ||
+    "BE-" + Date.now();
+  const toLocationId =
+    modal.querySelector<HTMLSelectElement>("#entryLocationSelect")?.value;
+  const rows = entryRows(modal);
+  const lines = rows.map(entryLineValues);
+  const invalidLine = lines.some(
+    (line) =>
+      !line.articleId ||
+      line.completedQuantity <= 0 ||
+      line.expectedQuantity < 0 ||
+      line.unitPrice < 0,
+  );
+  if (!toLocationId || !lines.length || invalidLine) {
     showToast(
       root,
-      "Article, magasin et quantite recue sont obligatoires.",
+      "Magasin, article et quantite recue positive sont obligatoires sur chaque ligne.",
       "error",
     );
     return;
@@ -3562,22 +4703,27 @@ async function submitStockEntry(root: HTMLElement) {
   try {
     await createStockEntry({
       reference,
-      date: inputs[0]?.value || new Date().toISOString(),
-      supplierId: selects[0]?.value || undefined,
+      date:
+        modal.querySelector<HTMLInputElement>("#entryDateInput")?.value ||
+        new Date().toISOString(),
+      supplierId:
+        modal.querySelector<HTMLSelectElement>("#entrySupplierSelect")?.value ||
+        undefined,
       toLocationId,
-      handledBy: selects[4]?.value || undefined,
-      receivedBy: selects[5]?.value || undefined,
-      deliveredBy: inputs[5]?.value.trim() || undefined,
+      handledBy:
+        modal.querySelector<HTMLSelectElement>("#entryHandledBySelect")?.value ||
+        undefined,
+      receivedBy:
+        modal.querySelector<HTMLSelectElement>("#entryReceivedBySelect")?.value ||
+        undefined,
+      deliveredBy:
+        modal.querySelector<HTMLInputElement>("#entryDeliveredByInput")?.value.trim() ||
+        undefined,
       notes,
-      lines: [
-        {
-          articleId,
-          expectedQuantity,
-          completedQuantity,
-          unitPrice: toNumber(inputs[4]?.value ?? "0"),
-          observation: notes,
-        },
-      ],
+      lines: lines.map((line) => ({
+        ...line,
+        observation: line.observation ?? notes,
+      })),
     });
     closeModal(root, "entryModal");
     updateApiBackedViews(root);
@@ -4032,6 +5178,15 @@ function downloadPreparedMaterialPdf(root: HTMLElement, id: string) {
   }
   popup.document.write(preparedMaterialPdfHtml(movement));
   popup.document.close();
+  try {
+    popup.history.replaceState(
+      null,
+      "",
+      "/documents/demande-materiel/" + encodeURIComponent(movement.reference),
+    );
+  } catch {
+    // The printable document still works when the browser blocks URL replacement.
+  }
   popup.focus();
   popup.print();
 }
@@ -4047,15 +5202,16 @@ async function uploadSignedMaterialProof(root: HTMLElement, id: string) {
   }
   try {
     const updated = await uploadExitRequestProof(id, {
-      fileName: file.name,
+      file,
       uploadedBy: currentUser
         ? `${currentUser.firstName} ${currentUser.lastName}`
         : undefined,
     });
-    latestMovements = latestMovements.map((item) =>
-      item.id === updated.id ? updated : item,
+    latestMovements = await getStockMovements();
+    renderExitRequestDetail(
+      root,
+      latestMovements.find((item) => item.id === updated.id) ?? updated,
     );
-    renderExitRequestDetail(root, updated);
     updateApiBackedViews(root);
     showToast(root, "Fiche signée. Demande terminée.");
   } catch (error) {
@@ -4067,13 +5223,81 @@ async function uploadSignedMaterialProof(root: HTMLElement, id: string) {
   }
 }
 
-function viewSignedMaterialProof(root: HTMLElement, id: string) {
+async function viewSignedMaterialProof(root: HTMLElement, id: string) {
   const movement = latestMovements.find((item) => item.id === id);
-  if (!movement?.proofFileName) {
+  if (!movement?.proofFileName && !movement?.proofFileKey) {
     showToast(root, "Aucune preuve signee jointe.", "error");
     return;
   }
-  showToast(root, "Preuve signee : " + movement.proofFileName);
+  try {
+    const proof = await getExitRequestProof(id);
+    const popup = window.open(proof.url, "_blank", "noopener,noreferrer");
+    if (!popup) {
+      showToast(root, "Autorise les popups pour ouvrir la preuve.", "error");
+      return;
+    }
+    showToast(root, "Preuve signee ouverte : " + (proof.fileName ?? movement.proofFileName ?? "fichier"));
+  } catch (error) {
+    showToast(
+      root,
+      error instanceof Error ? error.message : "Preuve signee inaccessible.",
+      "error",
+    );
+  }
+}
+
+function openExitRequestRejection(root: HTMLElement, id: string, reason = "") {
+  const movement = latestMovements.find((item) => item.id === id);
+  if (
+    !movement ||
+    movement.type !== "EXIT_REQUEST" ||
+    movement.status !== "SUBMITTED" ||
+    !canPrepareMaterialRequests()
+  ) {
+    showToast(root, "Cette demande ne peut pas etre refusee.", "error");
+    return;
+  }
+  selectedRejectedExitRequestId = id;
+  const input = root.querySelector<HTMLTextAreaElement>("#exitRequestRejectReason");
+  if (input) input.value = reason;
+  openModal(root, "exitRequestRejectModal");
+}
+
+async function submitExitRequestRejection(root: HTMLElement) {
+  const id = selectedRejectedExitRequestId;
+  const input = root.querySelector<HTMLTextAreaElement>("#exitRequestRejectReason");
+  const reason = input?.value.trim() ?? "";
+  if (!id) {
+    showToast(root, "Demande introuvable.", "error");
+    return;
+  }
+  if (!reason) {
+    showToast(root, "Renseigne le motif du refus.", "error");
+    input?.focus();
+    return;
+  }
+  try {
+    const rejected = await rejectExitRequest(id, {
+      reason,
+      rejectedBy: currentUser
+        ? `${currentUser.firstName} ${currentUser.lastName}`
+        : undefined,
+    });
+    latestMovements = await getStockMovements();
+    const hydrated = latestMovements.find((item) => item.id === rejected.id) ?? rejected;
+    closeModal(root, "exitRequestRejectModal");
+    selectedRejectedExitRequestId = null;
+    updateApiBackedViews(root);
+    renderExitRequestDetail(root, hydrated);
+    openModal(root, "exitRequestDetailModal");
+    showToast(root, "Demande refusee.");
+  } catch (error) {
+    showToast(
+      root,
+      error instanceof Error ? error.message : "Refus impossible.",
+      "error",
+    );
+  }
 }
 
 async function openMaterialRequestPreparation(root: HTMLElement, id: string) {
@@ -4201,7 +5425,7 @@ async function submitMaterialRequestPreparation(root: HTMLElement) {
     });
     if (file) {
       prepared = await uploadExitRequestProof(movement.id, {
-        fileName: file.name,
+        file,
         uploadedBy: selectedText(stockManager ?? undefined),
       });
     }
@@ -4220,9 +5444,16 @@ async function submitMaterialRequestPreparation(root: HTMLElement) {
         : "Preparation validee. La fiche est prete a telecharger.",
     );
   } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Preparation impossible.";
+    if (message.toLowerCase().includes("stock insuffisant")) {
+      openExitRequestRejection(root, movement.id, message);
+      showToast(root, "Stock insuffisant : complete le motif pour refuser.", "error");
+      return;
+    }
     showToast(
       root,
-      error instanceof Error ? error.message : "Preparation impossible.",
+      message,
       "error",
     );
   }
@@ -4430,44 +5661,244 @@ function returnLineQuantity(movement: StockMovement, articleId: string) {
     .reduce((sum, line) => sum + Number(line.completedQuantity ?? 0), 0);
 }
 
+function returnSourceLines(source: StockMovement | undefined | null) {
+  if (!source) return [];
+  const linesByArticle = new Map<string, StockMovement["lines"][number]>();
+  source.lines.forEach((line) => {
+    const existing = linesByArticle.get(line.articleId);
+    if (!existing) {
+      linesByArticle.set(line.articleId, { ...line });
+      return;
+    }
+    linesByArticle.set(line.articleId, {
+      ...existing,
+      completedQuantity:
+        Number(existing.completedQuantity ?? 0) +
+        Number(line.completedQuantity ?? 0),
+    });
+  });
+  return [...linesByArticle.values()];
+}
+
+function returnedQuantityForSource(sourceMovementId: string, articleId: string) {
+  return latestMovements
+    .filter(
+      (movement) =>
+        movement.type === "RETURN" &&
+        movement.sourceRequestId === sourceMovementId &&
+        movement.status !== "CANCELLED",
+    )
+    .reduce((sum, movement) => sum + returnLineQuantity(movement, articleId), 0);
+}
+
+function remainingReturnQuantity(sourceMovementId: string, articleId: string) {
+  const source = latestMovements.find((movement) => movement.id === sourceMovementId);
+  const sourceLine = returnSourceLines(source).find(
+    (line) => line.articleId === articleId,
+  );
+  return Math.max(
+    0,
+    Number(sourceLine?.completedQuantity ?? 0) -
+      returnedQuantityForSource(sourceMovementId, articleId),
+  );
+}
+
+function returnLineRow(index: number) {
+  return `<tr class="return-line">
+    <td class="px-5 py-4 font-bold text-gray-400 return-line-number">${index + 1}</td>
+    <td class="px-5 py-4"><select class="return-line-article w-full h-10 border rounded-lg px-3"><option value="">Selectionner article</option></select><div class="return-line-initial mt-1 text-xs font-semibold text-gray-500">Sortie initiale: -</div></td>
+    <td class="px-5 py-4 text-right return-line-returned">-</td>
+    <td class="px-5 py-4 text-right font-bold return-line-remaining">-</td>
+    <td class="px-5 py-4 text-right"><input type="number" min="0" class="return-line-good w-24 h-10 border rounded-lg px-3 text-right" placeholder="0"></td>
+    <td class="px-5 py-4 text-right"><input type="number" min="0" class="return-line-damaged w-24 h-10 border rounded-lg px-3 text-right" placeholder="0"></td>
+    <td class="px-5 py-4 text-right"><input type="number" min="0" class="return-line-scrap w-24 h-10 border rounded-lg px-3 text-right" placeholder="0"></td>
+    <td class="px-5 py-4 text-right"><input type="number" min="0" class="return-line-pending w-24 h-10 border rounded-lg px-3 text-right" placeholder="0"></td>
+    <td class="px-5 py-4 text-right font-bold return-line-total">0</td>
+    <td class="px-5 py-4"><input class="return-line-observation w-full h-10 border rounded-lg px-3" placeholder="Observation"></td>
+    <td class="px-5 py-4 text-right"><button type="button" data-action="removeReturnLine" title="Retirer la ligne" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-error-700 hover:bg-error-50"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td>
+  </tr>`;
+}
+
+function returnArticleOptions(
+  sourceMovementId: string,
+  selectedArticleId = "",
+  blockedArticleIds: Set<string> = new Set(),
+) {
+  const source = latestMovements.find((movement) => movement.id === sourceMovementId);
+  return (
+    option("", "Selectionner article") +
+    returnSourceLines(source)
+      .map((line) => {
+        const remaining = remainingReturnQuantity(sourceMovementId, line.articleId);
+        const alreadySelected =
+          blockedArticleIds.has(line.articleId) &&
+          line.articleId !== selectedArticleId;
+        const remainingLabel =
+          remaining <= 0 ? "tout retourne" : "reste " + formatNumber(remaining);
+        const label =
+          (line.article?.code ?? "-") +
+          " - " +
+          (line.article?.designation ?? "Article") +
+          " (" +
+          remainingLabel +
+          ")";
+        const disabled =
+          alreadySelected || (remaining <= 0 && line.articleId !== selectedArticleId);
+        return `<option value="${escapeHtml(line.articleId)}"${line.articleId === selectedArticleId ? " selected" : ""}${disabled ? " disabled" : ""}>${escapeHtml(label)}</option>`;
+      })
+      .join("")
+  );
+}
+
+function refreshReturnLines(root: HTMLElement) {
+  const modal = root.querySelector<HTMLElement>("#returnModal");
+  const sourceMovementId = modal?.dataset.returnSourceMovementId ?? "";
+  const body = modal?.querySelector<HTMLTableSectionElement>("#returnLines");
+  if (!modal || !body || !sourceMovementId) return;
+  const source = latestMovements.find((movement) => movement.id === sourceMovementId);
+  const sourceLines = returnSourceLines(source);
+  const sourceByArticle = new Map(sourceLines.map((line) => [line.articleId, line]));
+  const rows = Array.from(body.querySelectorAll<HTMLTableRowElement>(".return-line"));
+  const selectedIds = rows
+    .map((row) => row.querySelector<HTMLSelectElement>(".return-line-article")?.value ?? "")
+    .filter(Boolean);
+
+  rows.forEach((row, index) => {
+    const select = row.querySelector<HTMLSelectElement>(".return-line-article");
+    const selectedArticleId = select?.value ?? "";
+    const number = row.querySelector<HTMLElement>(".return-line-number");
+    if (number) number.textContent = String(index + 1);
+    if (select) {
+      const selectedElsewhere = new Set(
+        selectedIds.filter((articleId) => articleId !== selectedArticleId),
+      );
+      select.innerHTML = returnArticleOptions(
+        sourceMovementId,
+        selectedArticleId,
+        selectedElsewhere,
+      );
+      select.value = selectedArticleId;
+      select.onchange = () => refreshReturnLines(root);
+    }
+    const sourceLine = sourceByArticle.get(selectedArticleId);
+    const exited = Number(sourceLine?.completedQuantity ?? 0);
+    const returned = selectedArticleId
+      ? returnedQuantityForSource(sourceMovementId, selectedArticleId)
+      : 0;
+    const remaining = selectedArticleId
+      ? remainingReturnQuantity(sourceMovementId, selectedArticleId)
+      : 0;
+    const quantityInputs = [
+      row.querySelector<HTMLInputElement>(".return-line-good"),
+      row.querySelector<HTMLInputElement>(".return-line-damaged"),
+      row.querySelector<HTMLInputElement>(".return-line-scrap"),
+      row.querySelector<HTMLInputElement>(".return-line-pending"),
+    ].filter(Boolean) as HTMLInputElement[];
+    const totalNode = row.querySelector<HTMLElement>(".return-line-total");
+    const duplicate =
+      selectedArticleId &&
+      selectedIds.filter((articleId) => articleId === selectedArticleId).length > 1;
+    row.dataset.articleId = selectedArticleId;
+    row.dataset.remaining = String(remaining);
+    row.classList.toggle("bg-error-50", Boolean(duplicate));
+    const total = quantityInputs.reduce(
+      (sum, input) => sum + (toNumber(input.value) ?? 0),
+      0,
+    );
+    quantityInputs.forEach((input) => {
+      input.max = String(remaining);
+      input.disabled = Boolean(selectedArticleId && remaining <= 0);
+      input.oninput = () => refreshReturnLines(root);
+      input.classList.toggle("text-error-700", total > remaining || Boolean(duplicate));
+      input.classList.toggle("bg-gray-50", input.disabled);
+    });
+    if (totalNode) {
+      totalNode.textContent = formatNumber(total);
+      totalNode.classList.toggle("text-error-700", total > remaining || Boolean(duplicate));
+    }
+    setText(
+      row,
+      ".return-line-initial",
+      selectedArticleId ? "Sortie initiale: " + formatNumber(exited) : "Sortie initiale: -",
+    );
+    setText(row, ".return-line-returned", selectedArticleId ? formatNumber(returned) : "-");
+    setText(row, ".return-line-remaining", selectedArticleId ? formatNumber(remaining) : "-");
+  });
+  window.lucide?.createIcons();
+}
+
+function resetReturnLines(root: HTMLElement, sourceMovementId: string) {
+  const body = root.querySelector<HTMLTableSectionElement>("#returnLines");
+  if (!body) return;
+  if (!sourceMovementId) {
+    body.innerHTML =
+      '<tr><td colspan="11" class="px-5 py-6 text-center text-gray-500">Selectionne une sortie pour afficher ses articles.</td></tr>';
+    return;
+  }
+  body.innerHTML = returnLineRow(0);
+  refreshReturnLines(root);
+}
+
+function addReturnLine(root: HTMLElement) {
+  const modal = root.querySelector<HTMLElement>("#returnModal");
+  const body = modal?.querySelector<HTMLTableSectionElement>("#returnLines");
+  const sourceMovementId = modal?.dataset.returnSourceMovementId ?? "";
+  if (!body || !sourceMovementId) {
+    showToast(root, "Selectionne d'abord une sortie.", "error");
+    return;
+  }
+  const rows = body.querySelectorAll(".return-line");
+  body.insertAdjacentHTML("beforeend", returnLineRow(rows.length));
+  refreshReturnLines(root);
+}
+
+function removeReturnLine(root: HTMLElement, trigger: HTMLElement) {
+  const body = root.querySelector<HTMLTableSectionElement>("#returnLines");
+  const row = trigger.closest<HTMLTableRowElement>(".return-line");
+  if (!body || !row) return;
+  const rows = body.querySelectorAll(".return-line");
+  if (rows.length <= 1) {
+    row.querySelectorAll<HTMLInputElement>("input").forEach((input) => {
+      input.value = "";
+    });
+    row.querySelectorAll<HTMLSelectElement>("select").forEach((select) => {
+      select.selectedIndex = 0;
+    });
+  } else {
+    row.remove();
+  }
+  refreshReturnLines(root);
+}
+
 function updateReturnSelection(root: HTMLElement, movements: StockMovement[]) {
   const modal = root.querySelector<HTMLElement>("#returnModal");
   const select = modal?.querySelector<HTMLSelectElement>("#returnSourceSelect");
   if (!modal || !select) return;
   const movement = movements.find((item) => item.id === select.value);
+  latestMovements = movements;
+  const sourceLines = returnSourceLines(movement);
+  const totalExited = sourceLines.reduce(
+    (sum, line) => sum + Number(line.completedQuantity ?? 0),
+    0,
+  );
+  const totalReturned = movement
+    ? sourceLines.reduce(
+        (sum, line) =>
+          sum + returnedQuantityForSource(movement.id, line.articleId),
+        0,
+      )
+    : 0;
   const values: Record<string, string> = {
     bon: movement?.reference ?? "-",
-    article: movement?.lines.length
-      ? movement.lines
-          .map((line) => line.article?.designation ?? "-")
-          .join(", ")
+    article: sourceLines.length
+      ? formatNumber(sourceLines.length) +
+        " article" +
+        (sourceLines.length > 1 ? "s" : "")
       : "-",
     beneficiary: movement?.requestedBy ?? movement?.receivedBy ?? "-",
     destination: movement?.toLocation?.name ?? movement?.project?.name ?? "-",
-    quantity: movement
-      ? formatNumber(
-          movement.lines.reduce(
-            (sum, line) => sum + Number(line.completedQuantity ?? 0),
-            0,
-          ),
-        )
-      : "-",
-    returned: movement
-      ? formatNumber(
-          movements
-            .filter((item) => item.type === "RETURN")
-            .reduce(
-              (sum, item) =>
-                sum +
-                movement.lines.reduce(
-                  (lineSum, line) =>
-                    lineSum + returnLineQuantity(item, line.articleId),
-                  0,
-                ),
-              0,
-            ),
-        )
-      : "-",
+    quantity: movement ? formatNumber(Math.max(0, totalExited - totalReturned)) : "-",
+    returned: movement ? formatNumber(totalReturned) : "-",
   };
   Object.entries(values).forEach(([key, value]) => {
     const node = modal.querySelector<HTMLElement>(
@@ -4476,23 +5907,12 @@ function updateReturnSelection(root: HTMLElement, movements: StockMovement[]) {
     if (node) node.textContent = value;
   });
   modal.dataset.returnSourceMovementId = movement?.id ?? "";
-  modal.dataset.returnArticleId = movement?.lines[0]?.articleId ?? "";
-  const quantityInput =
-    modal.querySelector<HTMLInputElement>("#returnQuantity");
-  if (quantityInput) {
-    const total =
-      movement?.lines.reduce(
-        (sum, line) => sum + Number(line.completedQuantity ?? 0),
-        0,
-      ) ?? 0;
-    quantityInput.max = String(Math.max(total, 0));
-    quantityInput.value = total ? String(total) : "";
-  }
   const summary = modal.querySelector<HTMLElement>("#returnSelectionSummary");
   if (summary)
     summary.innerHTML = movement
-      ? `<div><div class="text-sm font-bold">${escapeHtml(movement.reference)} - sortie selectionnee</div><div class="text-xs text-gray-600">${escapeHtml(values.article)}</div></div>`
+      ? `<div><div class="text-sm font-bold">${escapeHtml(movement.reference)} - sortie selectionnee</div><div class="text-xs text-gray-600">${escapeHtml(values.quantity)} encore dehors sur ${escapeHtml(values.article)}</div></div>`
       : `<div><div class="text-sm font-bold">Aucune sortie selectionnee</div><div class="text-xs text-gray-600">Selectionne une sortie pour pre-remplir le formulaire.</div></div>`;
+  resetReturnLines(root, movement?.id ?? "");
 }
 
 async function populateReturnTransferModals(
@@ -4588,12 +6008,12 @@ async function populateReturnTransferModals(
           );
         })
         .join("");
-    sourceSelect.onchange = () => updateReturnSelection(root, movements);
+    sourceSelect.onchange = () => updateReturnSelection(root, latestMovements);
   }
-  fillSelect(selects[2], locationOptions(locations));
+  fillSelect(selects[1], locationOptions(locations));
+  fillSelect(selects[2], userChoices);
   fillSelect(selects[3], userChoices);
   fillSelect(selects[4], userChoices);
-  fillSelect(selects[5], userChoices);
   updateReturnSelection(root, movements);
 }
 
@@ -4603,59 +6023,91 @@ async function submitStockReturn(root: HTMLElement) {
   const notes = modal
     .querySelector<HTMLTextAreaElement>("textarea")
     ?.value.trim();
-  const sourceMovementId = modal.dataset.returnSourceMovementId;
+  const sourceMovementId =
+    modal.querySelector<HTMLSelectElement>("#returnSourceSelect")?.value ?? "";
+  modal.dataset.returnSourceMovementId = sourceMovementId;
+  try {
+    latestMovements = await getStockMovements();
+    refreshReturnLines(root);
+  } catch {
+    // Keep the current modal values if the refresh is temporarily unavailable.
+  }
   const sourceMovement = latestMovements.find(
     (item) => item.id === sourceMovementId,
   );
   const lineRows = Array.from(
     modal.querySelectorAll<HTMLTableRowElement>(
-      "#returnLines tr[data-article-id]",
+      "#returnLines .return-line",
     ),
   );
   const lines = lineRows
-    .map((row) => ({
-      articleId: row.dataset.articleId ?? "",
-      completedQuantity: toNumber(
-        row.querySelector<HTMLInputElement>(".return-line-quantity")?.value ??
-          "0",
-      ),
-      remaining: Number(row.dataset.remaining ?? "0"),
-      observation:
-        selectedText(
-          row.querySelector<HTMLSelectElement>(".return-line-state") ??
-            undefined,
-        ) || notes,
-    }))
+    .map((row) => {
+      const articleId =
+        row.querySelector<HTMLSelectElement>(".return-line-article")?.value ??
+        "";
+      const goodQuantity =
+        toNumber(row.querySelector<HTMLInputElement>(".return-line-good")?.value ?? "0") ?? 0;
+      const damagedQuantity =
+        toNumber(row.querySelector<HTMLInputElement>(".return-line-damaged")?.value ?? "0") ?? 0;
+      const scrapQuantity =
+        toNumber(row.querySelector<HTMLInputElement>(".return-line-scrap")?.value ?? "0") ?? 0;
+      const pendingControlQuantity =
+        toNumber(row.querySelector<HTMLInputElement>(".return-line-pending")?.value ?? "0") ?? 0;
+      const completedQuantity =
+        goodQuantity + damagedQuantity + scrapQuantity + pendingControlQuantity;
+      return {
+        articleId,
+        completedQuantity,
+        goodQuantity,
+        damagedQuantity,
+        scrapQuantity,
+        pendingControlQuantity,
+        remaining: Number(row.dataset.remaining ?? "0"),
+        observation:
+          row
+            .querySelector<HTMLInputElement>(".return-line-observation")
+            ?.value.trim() || notes,
+      };
+    })
     .filter((line) => line.completedQuantity > 0);
+  const selectedArticleIds = lines.map((line) => line.articleId).filter(Boolean);
+  const hasDuplicateArticle =
+    new Set(selectedArticleIds).size !== selectedArticleIds.length;
   const attachmentFileName =
     root.querySelector<HTMLInputElement>("#returnAttachment")?.files?.[0]?.name;
   const toLocationId =
     modal.querySelector<HTMLSelectElement>("#returnLocation")?.value;
-  const decision =
-    selectedText(
-      modal.querySelector<HTMLSelectElement>("#returnDecision") ?? undefined,
-    )?.toLowerCase() ?? "";
-  const reintegrate =
-    decision.includes("reintegrer") || decision.includes("stock");
   if (
     !sourceMovement ||
     !toLocationId ||
     !lines.length ||
-    lines.some((line) => line.completedQuantity > line.remaining)
+    lines.some((line) => !line.articleId) ||
+    hasDuplicateArticle ||
+    lines.some(
+      (line) =>
+        line.completedQuantity > line.remaining ||
+        line.goodQuantity < 0 ||
+        line.damagedQuantity < 0 ||
+        line.scrapQuantity < 0 ||
+        line.pendingControlQuantity < 0,
+    )
   ) {
     showToast(
       root,
-      "Sortie concernee, emplacement retour et quantite sont requis.",
+      hasDuplicateArticle
+        ? "Chaque article ne peut apparaitre qu'une seule fois dans le retour."
+        : "Sortie concernee, article, emplacement retour et quantite valide sont requis.",
       "error",
     );
     return;
   }
   try {
-    await createStockReturn({
+    const createdReturn = await createStockReturn({
       reference: "RET-" + Date.now(),
       date:
         root.querySelector<HTMLInputElement>("#returnDate")?.value ||
         new Date().toISOString(),
+      sourceMovementId: sourceMovement.id,
       toLocationId,
       handledBy: selectedText(
         modal.querySelector<HTMLSelectElement>("#returnHandledBy") ?? undefined,
@@ -4677,17 +6129,25 @@ async function submitStockReturn(root: HTMLElement) {
         ]
           .filter(Boolean)
           .join(" - ") || undefined,
-      reintegrate,
       attachmentFileName,
       lines,
     });
+    if (!createdReturn.sourceRequestId) {
+      throw new Error("Le retour a ete cree sans sortie source rattachee.");
+    }
+    const [movements, stockLevels] = await Promise.all([
+      getStockMovements(),
+      getStockLevels().catch(() => latestStockLevels),
+    ]);
+    latestMovements = movements;
+    latestStockLevels = stockLevels;
     closeModal(root, "returnModal");
     updateApiBackedViews(root);
     showToast(
       root,
-      reintegrate
-        ? "Retour enregistre et stock reintegre."
-        : "Retour enregistre pour controle.",
+      lines.some((line) => line.pendingControlQuantity > 0)
+        ? "Retour enregistre avec quantites a controler."
+        : "Retour enregistre avec etat du materiel.",
     );
   } catch (error) {
     showToast(
@@ -5822,7 +7282,7 @@ function updateApiBackedViews(root: HTMLElement) {
       if (returnsBody)
         returnsBody.innerHTML = returns.length
           ? returns.map(returnTransferRow).join("")
-          : emptyRow(7, "Aucun retour ou transfert en base pour le moment.");
+          : emptyRow(8, "Aucun retour ou transfert en base pour le moment.");
       setText(
         root,
         "#returnsExpectedCount",
@@ -6920,6 +8380,9 @@ function openModal(root: HTMLElement, id: string) {
       root,
       root.querySelector<HTMLSelectElement>("#referentialType")?.value ?? "",
     );
+  }
+  if (id === "articleModal") {
+    void populateQuickArticleModal(root);
   }
   if (id === "entryModal") {
     void populateEntryModal(root);
@@ -8258,6 +9721,8 @@ function parseAction(action: string) {
   if (action === "importArticles") return { type: "import-articles" } as const;
   if (action === "submitReferential")
     return { type: "submit-referential" } as const;
+  if (action === "submitQuickArticle")
+    return { type: "submit-quick-article" } as const;
   if (action === "editReferentialDetail")
     return { type: "edit-referential-detail" } as const;
   if (action === "cancelReferentialEdit")
@@ -8268,6 +9733,13 @@ function parseAction(action: string) {
     return { type: "deactivate-referential-detail" } as const;
   if (action === "submitStockEntry")
     return { type: "submit-stock-entry" } as const;
+  if (action === "openEntryResolution")
+    return { type: "open-entry-resolution" } as const;
+  if (action === "submitEntryResolution")
+    return { type: "submit-entry-resolution" } as const;
+  if (action === "addEntryLine") return { type: "add-entry-line" } as const;
+  if (action === "removeEntryLine")
+    return { type: "remove-entry-line" } as const;
   if (action === "submitExitRequest")
     return { type: "submit-exit-request" } as const;
   if (action === "submitMaterialRequestPreparation")
@@ -8284,6 +9756,14 @@ function parseAction(action: string) {
     return { type: "submit-stock-return" } as const;
   if (action === "submitStockTransfer")
     return { type: "submit-stock-transfer" } as const;
+  if (action === "addReturnLine")
+    return { type: "add-return-line" } as const;
+  if (action === "removeReturnLine")
+    return { type: "remove-return-line" } as const;
+  if (action === "openReturnControl")
+    return { type: "open-return-control" } as const;
+  if (action === "submitReturnControl")
+    return { type: "submit-return-control" } as const;
   if (action === "addTransferLine")
     return { type: "add-transfer-line" } as const;
   if (action === "removeTransferLine")
@@ -8319,9 +9799,25 @@ function parseAction(action: string) {
   const userDetailMatch = action.match(/^openUserDetail\('([^']+)'\)/);
   if (userDetailMatch)
     return { type: "user-detail", id: userDetailMatch[1] } as const;
+  const preparedExitActionMatch = action.match(
+    /^openPreparedExitForAction\('(download|upload)'\)/,
+  );
+  if (preparedExitActionMatch)
+    return {
+      type: "prepared-exit-action",
+      action: preparedExitActionMatch[1] as "download" | "upload",
+    } as const;
   const exitDetailMatch = action.match(/^openExitRequestDetail\('([^']+)'\)/);
   if (exitDetailMatch)
     return { type: "exit-detail", id: exitDetailMatch[1] } as const;
+  const returnTransferDetailMatch = action.match(
+    /^openReturnTransferDetail\('([^']+)'\)/,
+  );
+  if (returnTransferDetailMatch)
+    return {
+      type: "return-transfer-detail",
+      id: returnTransferDetailMatch[1],
+    } as const;
   const materialPrepMatch = action.match(
     /^openMaterialRequestPreparation\('([^']+)'\)/,
   );
@@ -8355,6 +9851,16 @@ function parseAction(action: string) {
       type: "view-signed-material-proof",
       id: viewProofMatch[1],
     } as const;
+  const rejectExitRequestMatch = action.match(
+    /^openExitRequestRejection\('([^']+)'\)/,
+  );
+  if (rejectExitRequestMatch)
+    return {
+      type: "open-exit-request-rejection",
+      id: rejectExitRequestMatch[1],
+    } as const;
+  if (action === "submitExitRequestRejection")
+    return { type: "submit-exit-request-rejection" } as const;
   const vehicleDetailMatch = action.match(/^openVehicleDetail\('([^']+)'\)/);
   if (vehicleDetailMatch)
     return { type: "vehicle-detail", id: vehicleDetailMatch[1] } as const;
@@ -8446,6 +9952,7 @@ function StockHubTemplate() {
         openReferentialDetail(root, parsed.refType, parsed.id);
       if (parsed.type === "toast") showToast(root, parsed.message);
       if (parsed.type === "submit-referential") void submitReferential(root);
+      if (parsed.type === "submit-quick-article") void submitQuickArticle(root);
       if (parsed.type === "edit-referential-detail")
         editReferentialDetail(root);
       if (parsed.type === "cancel-referential-edit")
@@ -8455,6 +9962,11 @@ function StockHubTemplate() {
       if (parsed.type === "deactivate-referential-detail")
         void deactivateReferentialDetail(root);
       if (parsed.type === "submit-stock-entry") void submitStockEntry(root);
+      if (parsed.type === "open-entry-resolution") openEntryResolution(root);
+      if (parsed.type === "submit-entry-resolution")
+        void submitEntryResolution(root);
+      if (parsed.type === "add-entry-line") addEntryLine(root);
+      if (parsed.type === "remove-entry-line") removeEntryLine(root, target);
       if (parsed.type === "submit-exit-request") void submitExitRequest(root);
       if (parsed.type === "submit-material-request-preparation")
         void submitMaterialRequestPreparation(root);
@@ -8468,6 +9980,11 @@ function StockHubTemplate() {
       if (parsed.type === "submit-stock-return") void submitStockReturn(root);
       if (parsed.type === "submit-stock-transfer")
         void submitStockTransfer(root);
+      if (parsed.type === "add-return-line") addReturnLine(root);
+      if (parsed.type === "remove-return-line") removeReturnLine(root, target);
+      if (parsed.type === "open-return-control") openReturnControl(root);
+      if (parsed.type === "submit-return-control")
+        void submitReturnControl(root);
       if (parsed.type === "add-transfer-line") addTransferLine(root);
       if (parsed.type === "remove-transfer-line")
         removeTransferLine(root, target);
@@ -8493,6 +10010,10 @@ function StockHubTemplate() {
       if (parsed.type === "submit-user") void submitUser(root);
       if (parsed.type === "user-detail") openUserDetail(root, parsed.id);
       if (parsed.type === "exit-detail") openExitRequestDetail(root, parsed.id);
+      if (parsed.type === "return-transfer-detail")
+        openReturnTransferDetail(root, parsed.id);
+      if (parsed.type === "prepared-exit-action")
+        openPreparedExitForAction(root, parsed.action);
       if (parsed.type === "material-request-prep")
         openMaterialRequestPreparation(root, parsed.id);
       if (parsed.type === "prepare-exit-from-request")
@@ -8502,7 +10023,11 @@ function StockHubTemplate() {
       if (parsed.type === "upload-signed-material-proof")
         void uploadSignedMaterialProof(root, parsed.id);
       if (parsed.type === "view-signed-material-proof")
-        viewSignedMaterialProof(root, parsed.id);
+        void viewSignedMaterialProof(root, parsed.id);
+      if (parsed.type === "open-exit-request-rejection")
+        openExitRequestRejection(root, parsed.id);
+      if (parsed.type === "submit-exit-request-rejection")
+        void submitExitRequestRejection(root);
       if (parsed.type === "vehicle-detail") openVehicleDetail(root, parsed.id);
       if (parsed.type === "entry-detail") openEntryDetail(root, parsed.id);
       if (parsed.type === "equipment-detail")

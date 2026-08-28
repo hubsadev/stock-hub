@@ -22,6 +22,7 @@ enum TrackingMode {
 }
 
 enum MovementType {
+  INITIAL
   ENTRY
   EXIT_REQUEST
   EXIT
@@ -154,6 +155,7 @@ model Article {
   referencePrice    Decimal?     @db.Decimal(18, 2)
   defaultSupplierId String?
   defaultLocationId String?
+  initialStock      Int?
   active            Boolean      @default(true)
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
@@ -230,8 +232,14 @@ model StockMovement {
   deliveredBy String?
   sourceRequestId String?
   proofFileName   String?
+  proofFileKey    String?
+  proofMimeType   String?
+  proofSizeBytes  Int?
   proofUploadedAt DateTime?
   proofUploadedBy String?
+  rejectionReason String?
+  rejectedAt      DateTime?
+  rejectedBy      String?
   notes       String?
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt

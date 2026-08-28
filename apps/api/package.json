@@ -7,10 +7,14 @@
     "dev": "tsx src/server.ts",
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
+    "repair:orphan-returns": "tsx src/scripts/repair-orphan-returns.ts",
     "start": "node dist/apps/api/src/server.js"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1119.0",
+    "@aws-sdk/s3-request-presigner": "^3.1119.0",
     "@fastify/cors": "^11.0.0",
+    "@fastify/multipart": "^10.1.1",
     "@stock-hub/database": "workspace:*",
     "@stock-hub/domain": "workspace:*",
     "fastify": "^5.0.0"
