@@ -83,6 +83,8 @@ let currentAuditAlertFilter = "ALL";
 let latestAuditAlerts: AuditAlert[] = [];
 let latestStockLevels: StockLevel[] = [];
 let latestAuditLogs: AuditLog[] = [];
+let collapsedAuditLogDays = new Set<string>();
+let initializedAuditLogDays = new Set<string>();
 let latestEquipments: Equipment[] = [];
 let latestVehicles: Vehicle[] = [];
 let selectedEquipmentId: string | null = null;
@@ -113,15 +115,41 @@ type ReferentialImportType =
   | "teamService";
 type ReferentialImportRow = Record<string, any> & { errors: string[] };
 type ArticleImportRow = ReferentialImportRow;
+type InventoryImportRow = {
+  articleCode: string;
+  designation: string;
+  location: string;
+  theoretical: string;
+  counted: string;
+  good: string;
+  repair: string;
+  outOfService: string;
+  justification: string;
+  errors: string[];
+};
+type InventoryComputedLine = {
+  articleId: string;
+  article: Article;
+  locationId: string;
+  location: StockLocation;
+  theoretical: number;
+  counted: number;
+  good: number;
+  repair: number;
+  outOfService: number;
+  gap: number;
+  justification: string;
+  countedAt?: string;
+};
 let referentialImportType: ReferentialImportType = "article";
 let referentialImportRows: ReferentialImportRow[] = [];
 let articleImportRows: ArticleImportRow[] = [];
+let inventoryImportRows: InventoryImportRow[] = [];
 const referentialImportFields: Record<
   ReferentialImportType,
   Array<[string, string]>
 > = {
   article: [
-    ["code", "Code"],
     ["designation", "Designation"],
     ["category", "Famille"],
     ["unit", "Unite"],
@@ -134,7 +162,6 @@ const referentialImportFields: Record<
     ["location", "Emplacement de depart"],
   ],
   supplier: [
-    ["code", "Code"],
     ["name", "Raison sociale"],
     ["fiscalId", "ID fiscal / NCC"],
     ["category", "Categorie"],
@@ -144,14 +171,12 @@ const referentialImportFields: Record<
     ["address", "Adresse"],
   ],
   client: [
-    ["code", "Code"],
     ["name", "Raison sociale"],
     ["contact", "Contact"],
     ["phone", "Telephone"],
     ["email", "Email"],
   ],
   project: [
-    ["code", "Code"],
     ["name", "Nom projet"],
     ["client", "Client"],
     ["projectManager", "Chef de projet"],
@@ -161,7 +186,6 @@ const referentialImportFields: Record<
     ["endDate", "Date fin prevue"],
   ],
   site: [
-    ["code", "Code"],
     ["name", "Nom du site"],
     ["project", "Projet rattache"],
     ["responsible", "Responsable site"],
@@ -170,7 +194,6 @@ const referentialImportFields: Record<
     ["address", "Adresse / repere"],
   ],
   employee: [
-    ["code", "Matricule"],
     ["lastName", "Nom"],
     ["firstName", "Prenom"],
     ["department", "Departement"],
@@ -178,7 +201,6 @@ const referentialImportFields: Record<
     ["phone", "Telephone"],
   ],
   location: [
-    ["code", "Code"],
     ["name", "Nom emplacement"],
     ["type", "Type"],
     ["responsible", "Responsable"],
@@ -187,7 +209,6 @@ const referentialImportFields: Record<
     ["address", "Adresse / zone"],
   ],
   teamService: [
-    ["code", "Code"],
     ["name", "Nom equipe / service"],
     ["type", "Type"],
     ["manager", "Responsable"],
@@ -523,6 +544,9 @@ let stockSortKey = "";
 let stockSortDir: "asc" | "desc" = "asc";
 let stockStatusFilter = "";
 let openStockLevelId: string | null = null;
+let openInventoryArticleId: string | null = null;
+let openInventoryLocationId: string | null = null;
+let openInventoryScope: "local" | "global" | null = null;
 
 function stockStatusCategory(
   level: StockLevel,
@@ -820,12 +844,18 @@ function populateStockFilters(root: HTMLElement) {
 
 // ---- Stock Drawer ----
 function openStockDrawer(root: HTMLElement, levelId: string) {
+  openInventoryArticleId = null;
+  openInventoryLocationId = null;
+  openInventoryScope = null;
   openStockLevelId = levelId;
   renderStockDrawer(root);
 }
 
 function closeStockDrawer(root: HTMLElement) {
   openStockLevelId = null;
+  openInventoryArticleId = null;
+  openInventoryLocationId = null;
+  openInventoryScope = null;
   const drawers = root.querySelectorAll<HTMLElement>(
     "#stockDrawer, .stock-drawer",
   );
@@ -1238,32 +1268,157 @@ function renderReappro(root: HTMLElement) {
   window.lucide?.createIcons();
 }
 
-function inventoryRow(level: StockLevel) {
-  const good = Math.max(level.quantity, 0);
+function inventoryPairKey(articleId: string, locationId: string) {
+  return articleId + "::" + locationId;
+}
+
+function openInventoryDetail(
+  root: HTMLElement,
+  articleId: string,
+  locationId: string,
+) {
+  openStockLevelId = null;
+  openInventoryArticleId = articleId;
+  openInventoryLocationId = locationId;
+  openInventoryScope = "local";
+  renderInventoryDrawer(root);
+}
+
+function openInventoryGlobalDetail(root: HTMLElement, articleId: string) {
+  openStockLevelId = null;
+  openInventoryArticleId = articleId;
+  openInventoryLocationId = null;
+  openInventoryScope = "global";
+  renderInventoryDrawer(root);
+}
+
+function inventoryBreakdownFromObservation(observation?: string | null) {
+  const text = observation ?? "";
+  const read = (label: string) => {
+    const match = text.match(new RegExp(label + "\\s+(\\d+(?:[.,]\\d+)?)", "i"));
+    return match ? Number(match[1].replace(",", ".")) : 0;
+  };
+  const structured = /Inventaire:\s*constate/i.test(text);
+  const userNote = text
+    .split("|")
+    .map((part) => part.trim())
+    .filter(
+      (part) =>
+        part &&
+        !/^Inventaire:/i.test(part) &&
+        !/^(bon etat|a reparer|hors service)\s+/i.test(part),
+    )
+    .join(" | ");
+  return {
+    structured,
+    counted: read("constate"),
+    good: read("bon etat"),
+    repair: read("a reparer"),
+    outOfService: read("hors service"),
+    justification: userNote,
+  };
+}
+
+function latestInventoryMovementLine(articleId: string, locationId: string) {
+  return latestMovements
+    .filter(
+      (movement) =>
+        movement.type === "ADJUSTMENT" &&
+        movement.status !== "CANCELLED" &&
+        movement.lines.some((line) => line.articleId === articleId) &&
+        (movement.fromLocationId === locationId ||
+          movement.toLocationId === locationId),
+    )
+    .sort((a, b) => b.date.localeCompare(a.date))[0]
+    ?.lines.find((line) => line.articleId === articleId);
+}
+
+function inventoryComputedLine(level: StockLevel): InventoryComputedLine {
+  const lastLine = latestInventoryMovementLine(
+    level.article.id,
+    level.location.id,
+  );
+  const breakdown = inventoryBreakdownFromObservation(lastLine?.observation);
+  const hasCount = Boolean(lastLine);
+  const theoretical = Number(lastLine?.expectedQuantity ?? level.quantity ?? 0);
+  const counted = hasCount
+    ? Number(lastLine?.completedQuantity ?? breakdown.counted ?? 0)
+    : Number(level.quantity ?? 0);
+  const good = hasCount
+    ? breakdown.structured
+      ? breakdown.good
+      : counted
+    : Math.max(counted, 0);
+  const repair = hasCount && breakdown.structured ? breakdown.repair : 0;
+  const outOfService =
+    hasCount && breakdown.structured ? breakdown.outOfService : 0;
+  return {
+    articleId: level.article.id,
+    article: level.article,
+    locationId: level.location.id,
+    location: level.location,
+    theoretical,
+    counted,
+    good,
+    repair,
+    outOfService,
+    gap: counted - theoretical,
+    justification: breakdown.justification || lastLine?.observation || "",
+    countedAt: hasCount ? "1" : undefined,
+  };
+}
+
+function inventoryLineStatus(line: InventoryComputedLine) {
+  if (!line.countedAt) return { label: "A compter", tone: "gray" as const };
+  if (line.gap === 0) return { label: "Valide", tone: "success" as const };
+  return { label: "Ecart a justifier", tone: "warning" as const };
+}
+
+function inventoryLineIsValidated(line: InventoryComputedLine) {
+  return line.gap === 0;
+}
+
+function inventoryRow(line: InventoryComputedLine) {
   const action =
-    "openCount('" + level.article.id + "','" + level.location.id + "')";
+    "openCount('" + line.article.id + "','" + line.location.id + "')";
+  const detailAction =
+    "openInventoryDetail('" +
+    line.article.id +
+    "','" +
+    line.location.id +
+    "')";
+  const status = inventoryLineStatus(line);
+  const rowClass = line.gap !== 0 ? "bg-error-50/40" : "";
   return (
-    "<tr>" +
+    `<tr class="cursor-pointer hover:bg-gray-50 transition-colors ${rowClass}" data-action="${detailAction}">` +
     '<td class="px-5 py-4"><div class="font-bold">' +
-    escapeHtml(level.article.designation) +
+    escapeHtml(line.article.designation) +
     '</div><div class="text-xs text-gray-500">' +
-    escapeHtml(level.article.code) +
+    escapeHtml(line.article.code) +
     "</div></td>" +
     '<td class="px-5 py-4 text-right">' +
-    formatNumber(level.quantity) +
+    formatNumber(line.theoretical) +
     "</td>" +
     '<td class="px-5 py-4 text-right font-bold">' +
-    formatNumber(level.quantity) +
+    formatNumber(line.counted) +
     "</td>" +
     '<td class="px-5 py-4 text-right text-success-700 font-bold">' +
-    formatNumber(good) +
+    formatNumber(line.good) +
     "</td>" +
-    '<td class="px-5 py-4 text-right text-warning-700 font-bold">0</td>' +
-    '<td class="px-5 py-4 text-right text-error-700 font-bold">0</td>' +
-    '<td class="px-5 py-4 text-center">-</td>' +
-    '<td class="px-5 py-4 text-gray-600">-</td>' +
+    '<td class="px-5 py-4 text-right text-warning-700 font-bold">' +
+    formatNumber(line.repair) +
+    "</td>" +
+    '<td class="px-5 py-4 text-right text-error-700 font-bold">' +
+    formatNumber(line.outOfService) +
+    "</td>" +
+    `<td class="px-5 py-4 text-center font-bold ${line.gap !== 0 ? "text-error-700" : ""}">` +
+    (line.gap === 0 ? "-" : formatNumber(line.gap)) +
+    "</td>" +
+    '<td class="px-5 py-4 text-gray-600">' +
+    escapeHtml(line.justification || "-") +
+    "</td>" +
     '<td class="px-5 py-4">' +
-    badge("A compter", "gray") +
+    badge(status.label, status.tone) +
     "</td>" +
     '<td class="px-5 py-4 text-right"><button data-action="' +
     action +
@@ -1295,6 +1450,375 @@ function inventoryLevelsForLocation(locationId: string): StockLevel[] {
   return [...levels, ...defaultArticles].sort((a, b) =>
     a.article.code.localeCompare(b.article.code),
   );
+}
+
+function inventoryComputedLinesForLocation(locationId: string) {
+  return inventoryLevelsForLocation(locationId).map(inventoryComputedLine);
+}
+
+function allInventoryComputedLines() {
+  const locationIds = new Set(
+    latestLocations
+      .filter((location) =>
+        ["MAGASIN", "DEPOT", "BUREAU", "VEHICULE", "SITE", "CHANTIER"].includes(
+          location.type.toUpperCase(),
+        ),
+      )
+      .map((location) => location.id),
+  );
+  const pairMap = new Map<string, StockLevel>();
+  latestStockLevels.forEach((level) => {
+    if (locationIds.has(level.location.id)) {
+      pairMap.set(inventoryPairKey(level.article.id, level.location.id), level);
+    }
+  });
+  latestArticles
+    .filter(
+      (article) =>
+        article.active &&
+        article.defaultLocationId &&
+        locationIds.has(article.defaultLocationId),
+    )
+    .forEach((article) => {
+      const location = latestLocations.find(
+        (item) => item.id === article.defaultLocationId,
+      );
+      if (!location) return;
+      const key = inventoryPairKey(article.id, location.id);
+      if (!pairMap.has(key)) {
+        pairMap.set(key, {
+          id: `pending-${article.id}-${location.id}`,
+          article,
+          location,
+          quantity: 0,
+        });
+      }
+    });
+  return [...pairMap.values()].map(inventoryComputedLine);
+}
+
+function inventoryLocationsPreview(articleLines: InventoryComputedLine[]) {
+  const relevant = articleLines
+    .filter((line) => line.theoretical > 0 || line.countedAt)
+    .sort((a, b) => {
+      if (a.gap !== 0 && b.gap === 0) return -1;
+      if (a.gap === 0 && b.gap !== 0) return 1;
+      return a.location.name.localeCompare(b.location.name);
+    });
+  if (!relevant.length) return '<span class="text-gray-400">-</span>';
+  const fullTitle = relevant
+    .map((line) => line.location.name + (line.gap !== 0 ? " (ecart " + formatNumber(line.gap) + ")" : ""))
+    .join(", ");
+  const visible = relevant.slice(0, 2);
+  const hidden = relevant.length - visible.length;
+  const badges = visible
+    .map((line) => {
+      const tone =
+        line.gap !== 0
+          ? "border-error-100 bg-error-50 text-error-700"
+          : "border-gray-200 bg-gray-50 text-gray-700";
+      return `<span class="inline-flex max-w-[110px] shrink items-center truncate rounded-full border px-2 py-1 text-xs font-semibold ${tone}" title="${escapeHtml(line.location.name)}">${escapeHtml(line.location.name)}</span>`;
+    })
+    .join("");
+  const more =
+    hidden > 0
+      ? `<span class="inline-flex shrink-0 items-center rounded-full border border-accent-100 bg-accent-50 px-2 py-1 text-xs font-bold text-accent-700" title="${escapeHtml(fullTitle)}">+${formatNumber(hidden)} autre${hidden > 1 ? "s" : ""}</span>`
+      : "";
+  return `<div class="flex max-w-[260px] items-center gap-1 overflow-hidden" title="${escapeHtml(fullTitle)}">${badges}${more}</div>`;
+}
+
+function inventoryLinesForDrawer() {
+  if (!openInventoryArticleId || !openInventoryScope) return [];
+  if (openInventoryScope === "local") {
+    if (!openInventoryLocationId) return [];
+    return inventoryComputedLinesForLocation(openInventoryLocationId).filter(
+      (line) => line.articleId === openInventoryArticleId,
+    );
+  }
+  return allInventoryComputedLines().filter(
+    (line) => line.articleId === openInventoryArticleId,
+  );
+}
+
+function inventoryTotals(lines: InventoryComputedLine[]) {
+  return lines.reduce(
+    (sum, line) => ({
+      theoretical: sum.theoretical + line.theoretical,
+      counted: sum.counted + line.counted,
+      good: sum.good + line.good,
+      repair: sum.repair + line.repair,
+      outOfService: sum.outOfService + line.outOfService,
+      gap: sum.gap + line.gap,
+    }),
+    {
+      theoretical: 0,
+      counted: 0,
+      good: 0,
+      repair: 0,
+      outOfService: 0,
+      gap: 0,
+    },
+  );
+}
+
+function inventoryMovementLocation(movement: StockMovement) {
+  return (
+    latestLocations.find(
+      (location) =>
+        location.id === movement.toLocationId ||
+        location.id === movement.fromLocationId,
+    ) ?? null
+  );
+}
+
+function inventoryHistoryForDrawer(
+  articleId: string,
+  scope: "local" | "global",
+  locationId: string | null,
+  dateFrom: string,
+  dateTo: string,
+) {
+  return latestMovements
+    .filter((movement) => {
+      if (movement.type !== "ADJUSTMENT") return false;
+      if (movement.status === "CANCELLED" || movement.status === "DRAFT")
+        return false;
+      if (dateFrom && movement.date < dateFrom) return false;
+      if (dateTo && movement.date > dateTo + "T23:59:59") return false;
+      if (!movement.lines.some((line) => line.articleId === articleId))
+        return false;
+      if (scope === "local") {
+        return (
+          movement.fromLocationId === locationId ||
+          movement.toLocationId === locationId
+        );
+      }
+      return true;
+    })
+    .sort((a, b) => b.date.localeCompare(a.date));
+}
+
+function inventoryDrawerStatCard(
+  label: string,
+  value: number,
+  className = "",
+  unit = "",
+) {
+  return `
+    <div class="p-3 rounded-xl bg-gray-50 border border-gray-100 ${className}">
+      <div class="text-xs font-semibold text-gray-500 mb-1">${escapeHtml(label)}</div>
+      <div class="font-bold text-base">${formatNumber(value)}${unit ? ` <span class="text-xs font-normal text-gray-400">${escapeHtml(unit)}</span>` : ""}</div>
+    </div>
+  `;
+}
+
+function renderInventoryDrawer(root: HTMLElement) {
+  const drawer = root.querySelector<HTMLElement>("#stockDrawer");
+  const backdrop = root.querySelector<HTMLElement>("#stockDrawerBackdrop");
+  if (!drawer || !backdrop || !openInventoryArticleId || !openInventoryScope)
+    return;
+
+  const article = latestArticles.find(
+    (item) => item.id === openInventoryArticleId,
+  );
+  const lines = inventoryLinesForDrawer();
+  if (!article || !lines.length) {
+    showToast(root, "Article inventaire introuvable.");
+    return;
+  }
+
+  backdrop.classList.remove("hidden");
+  drawer.classList.remove("translate-x-full");
+  drawer.classList.add("translate-x-0");
+  drawer.classList.add("stock-drawer--open");
+
+  const totals = inventoryTotals(lines);
+  const header = drawer.querySelector<HTMLElement>("#stockDrawerHeader");
+  if (header) {
+    const locationLabel =
+      openInventoryScope === "local"
+        ? lines[0]?.location.name ?? "Emplacement"
+        : "Synthese globale inventaire";
+    header.innerHTML = `
+      <div class="min-w-0 flex-1">
+        <div class="font-bold text-lg truncate">${escapeHtml(article.designation)}</div>
+        <div class="text-sm text-gray-500">${escapeHtml(article.code)} &bull; ${escapeHtml(locationLabel)}</div>
+      </div>
+    `;
+  }
+
+  const infoEl = drawer.querySelector<HTMLElement>("#stockDrawerInfo");
+  if (infoEl) {
+    const gapClass =
+      totals.gap !== 0
+        ? "bg-error-50 border-error-100 text-error-700"
+        : "bg-success-50 border-success-100 text-success-700";
+    const locationsBlock =
+      openInventoryScope === "global"
+        ? `<div class="col-span-2 p-3 rounded-xl bg-gray-50 border border-gray-100">
+            <div class="text-xs font-semibold text-gray-500 mb-2">Emplacements concernes</div>
+            ${inventoryLocationsPreview(lines)}
+          </div>`
+        : "";
+    infoEl.innerHTML = `
+      <div class="grid grid-cols-2 gap-3 text-sm">
+        ${inventoryDrawerStatCard("Stock theorique", totals.theoretical, "", article.unit)}
+        ${inventoryDrawerStatCard("Quantite constatee", totals.counted, "", article.unit)}
+        ${inventoryDrawerStatCard("Bon etat", totals.good, "text-success-700", article.unit)}
+        ${inventoryDrawerStatCard("A reparer", totals.repair, "text-warning-700", article.unit)}
+        ${inventoryDrawerStatCard("Hors service", totals.outOfService, "text-error-700", article.unit)}
+        ${inventoryDrawerStatCard("Ecart", totals.gap, gapClass, article.unit)}
+        ${locationsBlock}
+      </div>
+    `;
+  }
+
+  const histEl = drawer.querySelector<HTMLElement>("#stockDrawerHistory");
+  if (histEl) {
+    const dateFrom =
+      drawer.querySelector<HTMLInputElement>("#stockDrawerDateFrom")?.value ??
+      "";
+    const dateTo =
+      drawer.querySelector<HTMLInputElement>("#stockDrawerDateTo")?.value ?? "";
+    const movements = inventoryHistoryForDrawer(
+      article.id,
+      openInventoryScope,
+      openInventoryLocationId,
+      dateFrom,
+      dateTo,
+    );
+    if (!movements.length) {
+      histEl.innerHTML = `<p class="text-sm text-gray-500 text-center py-6">Aucun historique inventaire pour cet article.</p>`;
+    } else {
+      histEl.innerHTML = movements
+        .map((movement) => {
+          const line = movement.lines.find((item) => item.articleId === article.id);
+          const breakdown = inventoryBreakdownFromObservation(line?.observation);
+          const theoretical = Number(line?.expectedQuantity ?? 0);
+          const counted = Number(
+            line?.completedQuantity ??
+              (breakdown.structured ? breakdown.counted : 0),
+          );
+          const good = breakdown.structured ? breakdown.good : counted;
+          const repair = breakdown.structured ? breakdown.repair : 0;
+          const outOfService = breakdown.structured
+            ? breakdown.outOfService
+            : 0;
+          const gap = counted - theoretical;
+          const location = inventoryMovementLocation(movement);
+          const locationName = location?.name ?? "-";
+          const note = breakdown.justification || line?.observation || movement.notes || "-";
+          return `
+            <div class="py-3 border-b border-gray-100 last:border-0">
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2">
+                    ${movementTypeBadge("ADJUSTMENT")}
+                    <span class="text-xs text-gray-500">${escapeHtml(formatDate(movement.date))}</span>
+                  </div>
+                  <div class="mt-1 text-sm font-bold truncate">${escapeHtml(movement.reference)}</div>
+                  <div class="text-xs text-gray-500 truncate">${escapeHtml(locationName)}</div>
+                </div>
+                <div class="text-right text-sm font-bold ${gap !== 0 ? "text-error-700" : "text-success-700"}">${gap === 0 ? "-" : formatNumber(gap)}</div>
+              </div>
+              <div class="mt-3 grid grid-cols-2 gap-2 text-xs">
+                <div class="rounded-lg bg-gray-50 px-2 py-1"><span class="text-gray-500">Theorique</span><span class="float-right font-bold">${formatNumber(theoretical)}</span></div>
+                <div class="rounded-lg bg-gray-50 px-2 py-1"><span class="text-gray-500">Constatee</span><span class="float-right font-bold">${formatNumber(counted)}</span></div>
+                <div class="rounded-lg bg-success-50 px-2 py-1 text-success-700"><span>Bon etat</span><span class="float-right font-bold">${formatNumber(good)}</span></div>
+                <div class="rounded-lg bg-warning-50 px-2 py-1 text-warning-700"><span>A reparer</span><span class="float-right font-bold">${formatNumber(repair)}</span></div>
+                <div class="rounded-lg bg-error-50 px-2 py-1 text-error-700"><span>Hors service</span><span class="float-right font-bold">${formatNumber(outOfService)}</span></div>
+              </div>
+              <div class="mt-2 text-xs text-gray-500">${escapeHtml(note)}</div>
+            </div>
+          `;
+        })
+        .join("");
+    }
+  }
+
+  window.lucide?.createIcons();
+}
+
+function renderInventoryGlobal(root: HTMLElement) {
+  const lines = allInventoryComputedLines();
+  const countedLines = lines.filter((line) => line.countedAt);
+  const countedLocationIds = new Set(countedLines.map((line) => line.locationId));
+  const gapLines = countedLines.filter((line) => line.gap !== 0);
+  const validLocationIds = new Set(
+    [...countedLocationIds].filter((locationId) => {
+      const locationLines = lines.filter((line) => line.locationId === locationId);
+      return (
+        locationLines.length > 0 &&
+        locationLines.every((line) => line.countedAt && line.gap === 0)
+      );
+    }),
+  );
+
+  setText(root, "#inventoryGlobalLocations", countedLocationIds.size);
+  setText(
+    root,
+    "#inventoryGlobalArticles",
+    new Set(countedLines.map((line) => line.articleId)).size,
+  );
+  setText(root, "#inventoryGlobalGaps", gapLines.length);
+  setText(root, "#inventoryGlobalValid", validLocationIds.size);
+  setText(
+    root,
+    "#inventoryGlobalValidHint",
+    "Sur " + formatNumber(new Set(lines.map((line) => line.locationId)).size) + " emplacements",
+  );
+
+  const byArticle = new Map<string, InventoryComputedLine[]>();
+  lines.forEach((line) => {
+    byArticle.set(line.articleId, [...(byArticle.get(line.articleId) ?? []), line]);
+  });
+  const articleRows = [...byArticle.values()]
+    .map((articleLines) => {
+      const first = articleLines[0];
+      const totals = articleLines.reduce(
+        (sum, line) => ({
+          theoretical: sum.theoretical + line.theoretical,
+          counted: sum.counted + line.counted,
+          good: sum.good + line.good,
+          repair: sum.repair + line.repair,
+          outOfService: sum.outOfService + line.outOfService,
+          gap: sum.gap + line.gap,
+        }),
+        {
+          theoretical: 0,
+          counted: 0,
+          good: 0,
+          repair: 0,
+          outOfService: 0,
+          gap: 0,
+        },
+      );
+      const counted = articleLines.some((line) => line.countedAt);
+      const status = !counted
+        ? { label: "A compter", tone: "gray" as const }
+        : totals.gap === 0
+          ? { label: "Valide", tone: "success" as const }
+          : { label: "Ecart a justifier", tone: "warning" as const };
+      return `<tr class="cursor-pointer hover:bg-gray-50 transition-colors ${totals.gap !== 0 ? "bg-error-50/40" : ""}" data-action="openInventoryGlobalDetail('${escapeHtml(first.article.id)}')">
+        <td class="px-5 py-4"><div class="font-bold">${escapeHtml(first.article.designation)}</div><div class="text-xs text-gray-500">${escapeHtml(first.article.code)}</div></td>
+        <td class="px-5 py-4 text-right">${formatNumber(totals.theoretical)}</td>
+        <td class="px-5 py-4 text-right font-bold">${formatNumber(totals.counted)}</td>
+        <td class="px-5 py-4 text-right text-success-700 font-bold">${formatNumber(totals.good)}</td>
+        <td class="px-5 py-4 text-right text-warning-700 font-bold">${formatNumber(totals.repair)}</td>
+        <td class="px-5 py-4 text-right text-error-700 font-bold">${formatNumber(totals.outOfService)}</td>
+        <td class="px-5 py-4 text-center font-bold ${totals.gap !== 0 ? "text-error-700" : ""}">${totals.gap === 0 ? "-" : formatNumber(totals.gap)}</td>
+        <td class="px-5 py-4">${inventoryLocationsPreview(articleLines)}</td>
+        <td class="px-5 py-4">${badge(status.label, status.tone)}</td>
+      </tr>`;
+    })
+    .sort((a, b) => a.localeCompare(b));
+  const globalBody = root.querySelector<HTMLElement>("#inventoryGlobalTable tbody");
+  if (globalBody) {
+    globalBody.innerHTML = articleRows.length
+      ? articleRows.join("")
+      : emptyRow(9, "Aucune synthese inventaire pour le moment.");
+  }
+
 }
 
 function renderInventory(root: HTMLElement) {
@@ -1339,9 +1863,23 @@ function renderInventory(root: HTMLElement) {
     }
   }
   const selectedLocationId = select?.value ?? "";
-  const levels = selectedLocationId
-    ? inventoryLevelsForLocation(selectedLocationId)
+  const search = articleImportKey(
+    root.querySelector<HTMLInputElement>("#inventorySearchInput")?.value ?? "",
+  );
+  const hideValidated = Boolean(
+    root.querySelector<HTMLInputElement>("#inventoryHideValidated")?.checked,
+  );
+  const allLines = selectedLocationId
+    ? inventoryComputedLinesForLocation(selectedLocationId)
     : [];
+  const levels = allLines.filter((line) => {
+    const text = articleImportKey(
+      `${line.article.code} ${line.article.designation} ${line.article.category}`,
+    );
+    if (search && !text.includes(search)) return false;
+    if (hideValidated && inventoryLineIsValidated(line)) return false;
+    return true;
+  });
   const inventoryBody = root.querySelector<HTMLElement>(
     "#inventoryTable tbody",
   );
@@ -1350,7 +1888,9 @@ function renderInventory(root: HTMLElement) {
       ? levels.map(inventoryRow).join("")
       : emptyRow(
           10,
-          selectedLocationId
+          selectedLocationId && allLines.length && (search || hideValidated)
+            ? "Aucune ligne ne correspond aux filtres."
+            : selectedLocationId
             ? "Aucun article ou stock theorique pour cet emplacement."
             : "Selectionne un emplacement pour lancer l'inventaire.",
         );
@@ -1366,7 +1906,8 @@ function renderInventory(root: HTMLElement) {
     "#inventoryLocationCount",
   );
   if (countElement)
-    countElement.innerHTML = `${formatNumber(levels.length)} <span class="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">0 saisi</span>`;
+    countElement.innerHTML = `${formatNumber(allLines.length)} <span class="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">${formatNumber(allLines.filter((line) => line.countedAt).length)} saisi</span>`;
+  renderInventoryGlobal(root);
   window.lucide?.createIcons();
 }
 function showInventoryMode(root: HTMLElement, mode: string) {
@@ -1383,6 +1924,7 @@ function showInventoryMode(root: HTMLElement, mode: string) {
   globalTab?.classList.toggle("bg-white", isGlobal);
   globalTab?.classList.toggle("shadow-sm", isGlobal);
   globalTab?.classList.toggle("text-gray-500", !isGlobal);
+  if (isGlobal) renderInventoryGlobal(root);
 }
 
 function equipmentStateLabel(state: string) {
@@ -4098,7 +4640,15 @@ async function populateCountModal(
     showToast(root, "Impossible de charger la ligne d'inventaire.", "error");
     return;
   }
-  const theoretical = Number(level?.quantity ?? 0);
+  const computed = inventoryComputedLine(
+    level ?? {
+      id: `pending-${articleId}-${locationId}`,
+      article,
+      location,
+      quantity: 0,
+    },
+  );
+  const theoretical = computed.theoretical;
   modal.dataset.articleId = articleId;
   modal.dataset.locationId = locationId;
   modal.dataset.theoretical = String(theoretical);
@@ -4110,17 +4660,17 @@ async function populateCountModal(
   if (cards[2])
     cards[2].innerHTML = `<div class="text-xs font-semibold text-accent-600">Stock theorique</div><div class="font-bold text-2xl mt-1">${formatNumber(theoretical)}</div>`;
   const inputs = Array.from(modal.querySelectorAll<HTMLInputElement>("input"));
-  if (inputs[0]) inputs[0].value = String(theoretical);
-  if (inputs[1]) inputs[1].value = String(theoretical);
-  if (inputs[2]) inputs[2].value = "0";
-  if (inputs[3]) inputs[3].value = "0";
+  if (inputs[0]) inputs[0].value = String(computed.counted);
+  if (inputs[1]) inputs[1].value = String(computed.good);
+  if (inputs[2]) inputs[2].value = String(computed.repair);
+  if (inputs[3]) inputs[3].value = String(computed.outOfService);
   inputs.slice(0, 4).forEach((input) => {
     input.type = "number";
     input.min = "0";
     input.oninput = () => updateCountSummary(modal);
   });
   const textarea = modal.querySelector<HTMLTextAreaElement>("textarea");
-  if (textarea) textarea.value = "";
+  if (textarea) textarea.value = computed.justification;
   updateCountSummary(modal);
 }
 
@@ -4145,7 +4695,7 @@ async function submitInventoryCount(root: HTMLElement) {
     showToast(root, "Aucune ligne d'inventaire selectionnee.", "error");
     return;
   }
-  if (counted !== good + repair + out) {
+  if (Math.abs(counted - (good + repair + out)) > 0.000001) {
     showToast(
       root,
       "La quantite constatee doit etre egale a bon etat + a reparer + hors service.",
@@ -4172,6 +4722,9 @@ async function submitInventoryCount(root: HTMLElement) {
           articleId,
           expectedQuantity: theoretical,
           completedQuantity: counted,
+          goodQuantity: good,
+          repairQuantity: repair,
+          outOfServiceQuantity: out,
           observation: reason + (details ? " - " + details : ""),
         },
       ],
@@ -6276,67 +6829,341 @@ function setAuditCardValue(
   if (number) number.textContent = formatNumber(value);
 }
 
+function auditSearchKey(value: unknown) {
+  return articleImportKey(String(value ?? ""));
+}
+
 function auditSeverityBadge(severity: string) {
   if (severity === "CRITIQUE") return badge("Critique", "error");
+  if (severity === "INFO") return badge("Info", "gray");
   return badge("A verifier", "warning");
 }
 
-function auditAlertRow(alert: AuditAlert) {
+function auditStatusBadge(status: string) {
+  const normalized = status.toUpperCase();
+  if (normalized === "TRAITEE" || normalized === "COMPLETED")
+    return badge("Traitee", "success");
+  if (normalized === "IGNOREE" || normalized === "CANCELLED")
+    return badge("Ignoree", "gray");
+  return badge(status === "OUVERTE" ? "Ouverte" : status, "warning");
+}
+
+function auditAlertDomain(alert: AuditAlert) {
+  const domain = (alert.domain ?? "").toUpperCase();
+  if (domain) return domain;
+  const text = auditSearchKey(alert.type + " " + alert.action);
+  if (text.includes("inventaire") || text.includes("ecart")) return "INVENTORY";
+  if (text.includes("entree")) return "ENTRY";
+  if (text.includes("retour")) return "RETURN";
+  if (text.includes("demande") || text.includes("sortie") || text.includes("preuve"))
+    return "EXIT";
+  if (text.includes("rupture") || text.includes("stock")) return "STOCK";
+  return "DATA";
+}
+
+function auditDomainLabel(domain: string) {
   return (
-    "<tr>" +
-    '<td class="px-5 py-4 font-bold">' +
-    escapeHtml(alert.type) +
+    (
+      {
+        STOCK: "Stock",
+        INVENTORY: "Inventaire",
+        ENTRY: "Entrees",
+        EXIT: "Sorties",
+        RETURN: "Retours",
+        TRANSFER: "Transferts",
+        REFERENTIAL: "Referentiel",
+        DATA: "Donnees",
+        SYSTEM: "Systeme",
+      } as Record<string, string>
+    )[domain] ?? domain
+  );
+}
+
+function auditDomainIcon(domain: string) {
+  return (
+    (
+      {
+        STOCK: "package-check",
+        INVENTORY: "clipboard-list",
+        ENTRY: "archive-restore",
+        EXIT: "send",
+        RETURN: "rotate-ccw",
+        TRANSFER: "repeat-2",
+        REFERENTIAL: "database",
+        DATA: "database-zap",
+        SYSTEM: "shield-alert",
+      } as Record<string, string>
+    )[domain] ?? "shield-alert"
+  );
+}
+
+function auditLooksLikeTechnicalId(value: unknown) {
+  const text = String(value ?? "").trim();
+  return /^c[a-z0-9]{18,}$/i.test(text) || /^[a-z0-9]{20,}$/i.test(text);
+}
+
+function auditReadableReference(value: unknown) {
+  const text = String(value ?? "").trim();
+  if (!text || auditLooksLikeTechnicalId(text)) return "";
+  if (/^(BE|BS|DS|RET|INV|TRF|INIT|FO|EQ|VH)-/i.test(text)) return text;
+  return text.length <= 80 ? text : "";
+}
+
+function safeAuditContextLabel(value: unknown, fallback: string) {
+  const readable = auditReadableReference(value);
+  return readable || fallback;
+}
+
+function auditAlertGroupKey(alert: AuditAlert) {
+  return (
+    alert.articleId ||
+    alert.articleCode ||
+    alert.movementReference ||
+    [alert.type, alert.object, alert.location].join("|")
+  );
+}
+
+function groupAuditAlerts(alerts: AuditAlert[]) {
+  const groups = new Map<string, AuditAlert[]>();
+  alerts.forEach((alert) => {
+    const key = auditAlertGroupKey(alert);
+    groups.set(key, [...(groups.get(key) ?? []), alert]);
+  });
+  return [...groups.values()].sort(
+    (left, right) =>
+      auditAlertGroupSeverityRank(right) - auditAlertGroupSeverityRank(left) ||
+      auditAlertGroupDate(right).localeCompare(auditAlertGroupDate(left)),
+  );
+}
+
+function auditAlertGroupSeverity(group: AuditAlert[]) {
+  if (group.some((alert) => alert.severity === "CRITIQUE")) return "CRITIQUE";
+  if (group.some((alert) => alert.severity === "A_VERIFIER")) return "A_VERIFIER";
+  return "INFO";
+}
+
+function auditAlertGroupSeverityRank(group: AuditAlert[]) {
+  const severity = auditAlertGroupSeverity(group);
+  if (severity === "CRITIQUE") return 3;
+  if (severity === "A_VERIFIER") return 2;
+  return 1;
+}
+
+function auditAlertGroupDate(group: AuditAlert[]) {
+  return group.reduce((latest, alert) => (alert.date > latest ? alert.date : latest), "");
+}
+
+function auditAlertGroupStatus(group: AuditAlert[]) {
+  if (group.some((alert) => alert.status === "OUVERTE")) return "OUVERTE";
+  return group[0]?.status ?? "INFO";
+}
+
+function auditAlertGroupSubject(group: AuditAlert[]) {
+  const first = group[0];
+  if (!first) return { title: "-", subtitle: "" };
+  const code = first.articleCode ?? first.objectCode;
+  const rawName = first.articleName ?? first.object;
+  const name = auditLooksLikeTechnicalId(rawName) ? "" : rawName;
+  const title = [auditReadableReference(code), name]
+    .filter(Boolean)
+    .join(" - ");
+  if (group.length === 1) {
+    return {
+      title: title || first.type,
+      subtitle: auditReadableReference(first.movementReference) || first.type,
+    };
+  }
+  const typeCounts = new Map<string, number>();
+  group.forEach((alert) => {
+    typeCounts.set(alert.type, (typeCounts.get(alert.type) ?? 0) + 1);
+  });
+  const parts = [...typeCounts.entries()]
+    .map(([type, count]) => `${formatNumber(count)} ${type.toLowerCase()}${count > 1 ? "s" : ""}`)
+    .join(", ");
+  return {
+    title: title || first.type,
+    subtitle: parts,
+  };
+}
+
+function auditAlertGroupContext(group: AuditAlert[]) {
+  const first = group[0];
+  if (!first) return "-";
+  const domain = auditDomainLabel(auditAlertDomain(first));
+  const locations = [
+    ...new Set(
+      group
+        .map((alert) =>
+          safeAuditContextLabel(
+            alert.location,
+            auditAlertDomain(alert) === "INVENTORY"
+              ? "Inventaire"
+              : "Emplacement concerne",
+          ),
+        )
+        .filter(Boolean),
+    ),
+  ];
+  const locationLabel =
+    locations.length <= 1
+      ? locations[0] ?? domain
+      : `${locations[0]} + ${formatNumber(locations.length - 1)} autre${locations.length > 2 ? "s" : ""}`;
+  return [domain, locationLabel].filter(Boolean).join(" - ");
+}
+
+function auditAlertGroupImpact(group: AuditAlert[]) {
+  const numericGaps = group
+    .map((alert) =>
+      typeof alert.gapQuantity === "number" && Number.isFinite(alert.gapQuantity)
+        ? alert.gapQuantity
+        : null,
+    )
+    .filter((value): value is number => value !== null);
+  if (numericGaps.length) {
+    const total = numericGaps.reduce((sum, value) => sum + value, 0);
+    return `Ecart total ${total > 0 ? "+" : ""}${formatNumber(total)}`;
+  }
+  const stockLocations = new Set(group.map((alert) => alert.location).filter(Boolean));
+  if (group.every((alert) => auditAlertDomain(alert) === "STOCK")) {
+    return `Stock bas sur ${formatNumber(Math.max(stockLocations.size, 1))} emplacement${stockLocations.size > 1 ? "s" : ""}`;
+  }
+  if (group.length === 1) return group[0]?.impact ?? "-";
+  return `${formatNumber(group.length)} points a verifier`;
+}
+
+function auditAlertGroupAction(group: AuditAlert[]) {
+  const actions = [...new Set(group.map((alert) => alert.action).filter(Boolean))];
+  if (actions.length === 1) return actions[0];
+  const domains = [...new Set(group.map((alert) => auditDomainLabel(auditAlertDomain(alert))))];
+  return `Verifier ${formatNumber(group.length)} alerte${group.length > 1 ? "s" : ""} ${domains.join(" / ")}`;
+}
+
+function auditAlertGroupBorderClass(group: AuditAlert[]) {
+  const severity = auditAlertGroupSeverity(group);
+  const status = auditAlertGroupStatus(group).toUpperCase();
+  if (status !== "OUVERTE" && status !== "OPEN") return "border-l-gray-300";
+  if (severity === "CRITIQUE") return "border-l-error-500";
+  if (severity === "A_VERIFIER") return "border-l-warning-500";
+  return "border-l-gray-300";
+}
+
+function auditAlertSubject(group: AuditAlert[]) {
+  const first = group[0];
+  const subject = auditAlertGroupSubject(group);
+  return `
+    <div class="flex items-start gap-3 min-w-[240px]">
+      <div class="w-9 h-9 rounded-lg bg-accent-50 text-accent-600 flex items-center justify-center shrink-0"><i data-lucide="${auditDomainIcon(auditAlertDomain(first!))}" class="w-4 h-4"></i></div>
+      <div class="min-w-0">
+        <div class="font-bold truncate">${escapeHtml(subject.title)}</div>
+        <div class="text-xs text-gray-500 truncate">${escapeHtml(subject.subtitle)}</div>
+      </div>
+    </div>
+  `;
+}
+
+function auditAlertMatchesFilters(root: HTMLElement, alert: AuditAlert) {
+  const search = auditSearchKey(
+    root.querySelector<HTMLInputElement>("#auditAlertSearchInput")?.value ?? "",
+  );
+  const selectedType =
+    root.querySelector<HTMLSelectElement>("#auditAlertTypeSelect")?.value ??
+    "ALL";
+  const selectedSeverity =
+    root.querySelector<HTMLSelectElement>("#auditAlertSeveritySelect")?.value ??
+    "ALL";
+  const selectedStatus =
+    root.querySelector<HTMLSelectElement>("#auditAlertStatusSelect")?.value ??
+    "ALL";
+  const domain = auditAlertDomain(alert);
+  const haystack = auditSearchKey(
+    [
+      alert.type,
+      alert.object,
+      alert.objectCode,
+      alert.articleCode,
+      alert.articleName,
+      alert.location,
+      alert.movementReference,
+      alert.impact,
+      alert.action,
+      alert.status,
+    ].join(" "),
+  );
+  if (currentAuditAlertFilter === "CRITICAL" && alert.severity !== "CRITIQUE")
+    return false;
+  if (currentAuditAlertFilter === "TO_VERIFY" && alert.severity !== "A_VERIFIER")
+    return false;
+  if (currentAuditAlertFilter === "INVENTORY" && domain !== "INVENTORY")
+    return false;
+  if (currentAuditAlertFilter === "STOCK" && domain !== "STOCK") return false;
+  if (selectedType !== "ALL" && domain !== selectedType) return false;
+  if (selectedSeverity !== "ALL" && alert.severity !== selectedSeverity)
+    return false;
+  if (selectedStatus !== "ALL" && alert.status !== selectedStatus) return false;
+  if (search && !haystack.includes(search)) return false;
+  return true;
+}
+
+function auditAlertRow(group: AuditAlert[]) {
+  const severity = auditAlertGroupSeverity(group);
+  const first = group[0];
+  if (!first) return "";
+  return (
+    `<tr class="border-l-4 ${auditAlertGroupBorderClass(group)} hover:bg-gray-50 transition-colors">` +
+    '<td class="px-5 py-4">' +
+    auditSeverityBadge(severity) +
     "</td>" +
     '<td class="px-5 py-4">' +
-    escapeHtml(alert.object) +
+    auditAlertSubject(group) +
+    "</td>" +
+    '<td class="px-5 py-4"><div class="font-semibold">' +
+    escapeHtml(auditAlertGroupContext(group)) +
+    '</div><div class="text-xs text-gray-500">' +
+    escapeHtml(group.length > 1 ? `${formatNumber(group.length)} alertes consolidees` : first.type) +
+    "</div></td>" +
+    '<td class="px-5 py-4 font-semibold">' +
+    escapeHtml(auditAlertGroupImpact(group)) +
+    "</td>" +
+    '<td class="px-5 py-4 text-gray-700">' +
+    escapeHtml(auditAlertGroupAction(group)) +
     "</td>" +
     '<td class="px-5 py-4">' +
-    escapeHtml(alert.location) +
+    formatDate(auditAlertGroupDate(group)) +
     "</td>" +
     '<td class="px-5 py-4">' +
-    auditSeverityBadge(alert.severity) +
+    auditStatusBadge(auditAlertGroupStatus(group)) +
     "</td>" +
-    '<td class="px-5 py-4">' +
-    formatDate(alert.date) +
-    "</td>" +
-    '<td class="px-5 py-4">' +
-    escapeHtml(alert.action) +
-    "</td>" +
-    '<td class="px-5 py-4">' +
-    badge(alert.status === "OUVERTE" ? "Ouverte" : alert.status, "warning") +
-    "</td>" +
-    '<td class="px-5 py-4 text-right"><button class="text-accent-600 font-semibold">Voir</button></td>' +
     "</tr>"
   );
 }
 
-function auditAlertFilterMatches(alert: AuditAlert) {
-  if (currentAuditAlertFilter === "ALL") return true;
-  if (currentAuditAlertFilter === "CRITICAL")
-    return alert.severity === "CRITIQUE";
-  if (currentAuditAlertFilter === "TO_VERIFY")
-    return alert.severity === "A_VERIFIER" || alert.severity !== "CRITIQUE";
-  if (currentAuditAlertFilter === "INVENTORY") {
-    const text = (
-      alert.type +
-      " " +
-      alert.object +
-      " " +
-      alert.action
-    ).toLowerCase();
-    return text.includes("inventaire") || text.includes("ecart");
-  }
-  return true;
-}
-
 function renderAuditAlerts(root: HTMLElement) {
   const alertsBody = root.querySelector<HTMLElement>("#audit-alerts tbody");
-  const visible = latestAuditAlerts.filter(auditAlertFilterMatches);
+  const visible = latestAuditAlerts.filter((alert) =>
+    auditAlertMatchesFilters(root, alert),
+  );
+  const grouped = groupAuditAlerts(visible);
   if (alertsBody) {
-    alertsBody.innerHTML = visible.length
-      ? visible.map(auditAlertRow).join("")
-      : emptyRow(8, "Aucune alerte pour ce filtre.");
+    alertsBody.innerHTML = grouped.length
+      ? grouped.map(auditAlertRow).join("")
+      : emptyRow(7, "Aucune alerte pour ce filtre.");
   }
+  setText(
+    root,
+    "#auditAlertCount",
+    `${formatNumber(grouped.length)} ligne${grouped.length > 1 ? "s" : ""} consolidee${grouped.length > 1 ? "s" : ""}`,
+  );
+  setText(
+    root,
+    "#auditAlertCriticalKpi",
+    visible.filter((alert) => alert.severity === "CRITIQUE").length,
+  );
+  setText(
+    root,
+    "#auditAlertVerifyKpi",
+    visible.filter((alert) => alert.severity === "A_VERIFIER").length,
+  );
+  setText(root, "#auditAlertTotalKpi", visible.length);
   root
     .querySelectorAll<HTMLElement>("#audit-alerts [data-audit-filter]")
     .forEach((button) => {
@@ -6374,47 +7201,620 @@ function auditActionLabel(action: string) {
         CREATE_STOCK_RETURN: "Retour stock",
         CREATE_STOCK_TRANSFER: "Transfert stock",
         CREATE_INVENTORY_ADJUSTMENT: "Comptage inventaire",
+        RESOLVE_STOCK_ENTRY_DISPUTE: "Resolution litige entree",
+        REJECT_EXIT_REQUEST: "Refus demande materiel",
+        UPLOAD_EXIT_REQUEST_PROOF: "Preuve signee ajoutee",
+        CONTROL_STOCK_RETURN: "Controle retour",
+        REPAIR_ORPHAN_RETURN_SOURCE: "Reparation rattachement retour",
       } as Record<string, string>
-    )[action] ?? action
+    )[action] ??
+    action
+      .replace(/_/g, " ")
+      .toLowerCase()
+      .replace(/\b\w/g, (char) => char.toUpperCase())
   );
 }
 
-function auditLogRow(log: AuditLog) {
-  const after =
-    log.after && typeof log.after === "object"
-      ? (log.after as Record<string, unknown>)
-      : {};
-  const reference =
-    typeof after.reference === "string"
-      ? after.reference
-      : (log.entityId ?? "-");
-  const beforeLabel = log.before ? "Donnees avant" : "-";
-  const afterLabel = reference;
+function auditActionDomain(action: string, entity: string) {
+  const value = `${action} ${entity}`.toUpperCase();
+  if (value.includes("ENTRY")) return "ENTRY";
+  if (value.includes("EXIT") || value.includes("PROOF") || value.includes("REQUEST"))
+    return "EXIT";
+  if (value.includes("RETURN")) return "RETURN";
+  if (value.includes("TRANSFER")) return "TRANSFER";
+  if (value.includes("INVENTORY") || value.includes("ADJUSTMENT"))
+    return "INVENTORY";
+  if (
+    value.includes("ARTICLE") ||
+    value.includes("SUPPLIER") ||
+    value.includes("LOCATION") ||
+    value.includes("REFERENTIAL")
+  )
+    return "REFERENTIAL";
+  return "SYSTEM";
+}
+
+function auditRecord(value: unknown) {
+  return value && typeof value === "object"
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function auditValueReference(value: unknown) {
+  const record = auditRecord(value);
+  const direct = record.reference ?? record.code ?? record.name ?? record.designation;
+  if (typeof direct === "string" && direct.trim()) return direct;
+  return "";
+}
+
+function auditDocumentLabel(log: AuditLog) {
+  const after = auditRecord(log.after);
+  const before = auditRecord(log.before);
+  const reference = auditValueReference(after) || auditValueReference(before);
+  if (reference) return reference;
+  if (log.entity === "StockMovement") return "Mouvement stock";
+  if (log.entityId) return "Trace " + log.entityId.slice(0, 8);
+  return auditDomainLabel(auditActionDomain(log.action, log.entity));
+}
+
+function auditLineContextFromRecord(record: Record<string, unknown>) {
+  const lines = Array.isArray(record.lines) ? record.lines : [];
+  const first = lines[0] as Record<string, unknown> | undefined;
+  const article = auditRecord(first?.article);
+  const articleLabel =
+    auditValueReference(article) ||
+    (typeof first?.articleId === "string"
+      ? "Article " + first.articleId.slice(0, 8)
+      : "");
+  const location =
+    auditValueReference(auditRecord(record.toLocation)) ||
+    auditValueReference(auditRecord(record.fromLocation)) ||
+    auditValueReference(auditRecord(record.location));
+  return [articleLabel, location].filter(Boolean).join(" - ");
+}
+
+function auditObjectContext(log: AuditLog) {
+  const after = auditRecord(log.after);
+  const before = auditRecord(log.before);
   return (
-    "<tr>" +
-    '<td class="px-5 py-4">' +
-    formatDate(log.createdAt) +
+    auditLineContextFromRecord(after) ||
+    auditLineContextFromRecord(before) ||
+    auditValueReference(after) ||
+    auditValueReference(before) ||
+    auditDomainLabel(auditActionDomain(log.action, log.entity))
+  );
+}
+
+function auditChangeSummary(log: AuditLog) {
+  const after = auditRecord(log.after);
+  const before = auditRecord(log.before);
+  const reference = auditValueReference(after);
+  const beforeReference = auditValueReference(before);
+  if (reference && beforeReference && reference !== beforeReference)
+    return beforeReference + " -> " + reference;
+  if (reference) return "Document " + reference;
+  if (log.before && log.after) return "Donnees modifiees";
+  if (log.after) return "Creation enregistree";
+  if (log.before) return "Etat precedent conserve";
+  return "Trace conservee";
+}
+
+function auditLogUserLabel(log: AuditLog) {
+  if (log.userId) {
+    const user = latestUsers.find((item) => item.id === log.userId);
+    return user ? `${user.firstName} ${user.lastName}`.trim() : log.userId;
+  }
+  const after = auditRecord(log.after);
+  const before = auditRecord(log.before);
+  const actor =
+    after.handledBy ??
+    after.receivedBy ??
+    after.requestedBy ??
+    after.deliveredBy ??
+    after.rejectedBy ??
+    after.proofUploadedBy ??
+    before.handledBy ??
+    before.receivedBy ??
+    before.requestedBy ??
+    before.deliveredBy ??
+    before.rejectedBy ??
+    before.proofUploadedBy;
+  return typeof actor === "string" && actor.trim() ? actor : "Systeme";
+}
+
+function auditLogMatchesFilters(root: HTMLElement, log: AuditLog) {
+  const search = auditSearchKey(
+    root.querySelector<HTMLInputElement>("#auditLogSearchInput")?.value ?? "",
+  );
+  const dateFrom =
+    root.querySelector<HTMLInputElement>("#auditLogDateFromInput")?.value ?? "";
+  const dateTo =
+    root.querySelector<HTMLInputElement>("#auditLogDateToInput")?.value ?? "";
+  const user =
+    root.querySelector<HTMLSelectElement>("#auditLogUserSelect")?.value ?? "";
+  const domain =
+    root.querySelector<HTMLSelectElement>("#auditLogDomainSelect")?.value ?? "";
+  const action =
+    root.querySelector<HTMLSelectElement>("#auditLogActionSelect")?.value ?? "";
+  const logDomain = auditActionDomain(log.action, log.entity);
+  const haystack = auditSearchKey(
+    [
+      auditActionLabel(log.action),
+      auditDocumentLabel(log),
+      auditObjectContext(log),
+      auditChangeSummary(log),
+      auditLogUserLabel(log),
+      log.entity,
+      log.entityId,
+    ].join(" "),
+  );
+  if (dateFrom && log.createdAt < dateFrom) return false;
+  if (dateTo && log.createdAt > dateTo + "T23:59:59") return false;
+  if (user && (log.userId ?? "SYSTEM") !== user) return false;
+  if (domain && logDomain !== domain) return false;
+  if (action && log.action !== action) return false;
+  if (search && !haystack.includes(search)) return false;
+  return true;
+}
+
+function auditDateInputValue(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function setAuditLogDateRange(root: HTMLElement, range: string) {
+  const today = new Date();
+  const from = new Date(today);
+  if (range === "7d") from.setDate(today.getDate() - 6);
+  if (range === "30d") from.setDate(today.getDate() - 29);
+  const fromInput = root.querySelector<HTMLInputElement>(
+    "#auditLogDateFromInput",
+  );
+  const toInput = root.querySelector<HTMLInputElement>("#auditLogDateToInput");
+  if (fromInput) fromInput.value = auditDateInputValue(from);
+  if (toInput) toInput.value = auditDateInputValue(today);
+  renderAuditLogs(root);
+}
+
+function auditLogDayKey(log: AuditLog) {
+  const date = new Date(log.createdAt);
+  if (Number.isNaN(date.getTime())) return log.createdAt.slice(0, 10) || "-";
+  return auditDateInputValue(date);
+}
+
+function auditLogDayLabel(dayKey: string) {
+  const date = new Date(dayKey + "T00:00:00");
+  if (Number.isNaN(date.getTime())) return dayKey;
+  return date.toLocaleDateString("fr-FR", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+function groupAuditLogsByDay(logs: AuditLog[]) {
+  const groups = new Map<string, AuditLog[]>();
+  logs.forEach((log) => {
+    const key = auditLogDayKey(log);
+    groups.set(key, [...(groups.get(key) ?? []), log]);
+  });
+  return [...groups.entries()]
+    .sort((a, b) => b[0].localeCompare(a[0]))
+    .map(([dayKey, items]) => ({
+      dayKey,
+      label: auditLogDayLabel(dayKey),
+      logs: items.sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+    }));
+}
+
+function auditLogResult(log: AuditLog) {
+  const text = auditSearchKey(
+    JSON.stringify({
+      action: log.action,
+      before: log.before,
+      after: log.after,
+    }),
+  );
+  if (
+    /\b(error|erreur|failed|failure|echec|failed|rejected_by_system)\b/.test(
+      text,
+    ) ||
+    text.includes("status failed") ||
+    text.includes("statut echec")
+  ) {
+    return "FAILURE";
+  }
+  if (
+    log.action.includes("REJECT") ||
+    log.action.includes("RESOLVE_STOCK_ENTRY_DISPUTE") ||
+    log.action.includes("REPAIR_ORPHAN_RETURN_SOURCE") ||
+    text.includes("litige") ||
+    text.includes("ecart") ||
+    text.includes("a controler") ||
+    text.includes("pendingcontrolquantity") ||
+    text.includes("damagedquantity") ||
+    text.includes("scrapquantity") ||
+    text.includes("endommage") ||
+    text.includes("rebut")
+  ) {
+    return "ANOMALY";
+  }
+  return "SUCCESS";
+}
+
+function auditLogResultBadge(log: AuditLog) {
+  const result = auditLogResult(log);
+  return badge(auditLogResultLabel(result), auditLogResultTone(result));
+}
+
+function auditActionIcon(action: string, domain: string) {
+  const value = action.toUpperCase();
+  if (value.includes("PROOF")) return "file-check";
+  if (value.includes("REJECT") || value.includes("REPAIR") || value.includes("DISPUTE"))
+    return "alert-triangle";
+  if (value.includes("CREATE") && domain === "REFERENTIAL") return "plus-circle";
+  if (domain === "INVENTORY") return "clipboard-list";
+  if (domain === "RETURN") return "rotate-ccw";
+  if (domain === "TRANSFER") return "repeat-2";
+  if (domain === "ENTRY") return "archive-restore";
+  if (domain === "EXIT") return "send";
+  if (value.includes("CREATE")) return "plus-circle";
+  return "activity";
+}
+
+function auditLogDayHeader(
+  dayKey: string,
+  label: string,
+  logs: AuditLog[],
+  collapsed: boolean,
+) {
+  const anomalies = logs.filter((log) => auditLogResult(log) === "ANOMALY").length;
+  const failures = logs.filter((log) => auditLogResult(log) === "FAILURE").length;
+  const resultText =
+    failures > 0
+      ? `${formatNumber(failures)} echec${failures > 1 ? "s" : ""}`
+      : anomalies > 0
+        ? `${formatNumber(anomalies)} anomalie${anomalies > 1 ? "s" : ""}`
+        : "aucune anomalie";
+  return `
+    <tr class="bg-gray-50/90 hover:bg-gray-100 cursor-pointer" data-action="toggleAuditLogDay('${dayKey}')">
+      <td colspan="7" class="px-5 py-3">
+        <div class="flex items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <i data-lucide="${collapsed ? "chevron-right" : "chevron-down"}" class="w-4 h-4 text-gray-500"></i>
+            <span class="font-bold">${escapeHtml(label)}</span>
+          </div>
+          <div class="text-xs font-semibold text-gray-500">${formatNumber(logs.length)} trace${logs.length > 1 ? "s" : ""} ce jour-la - ${escapeHtml(resultText)}</div>
+        </div>
+      </td>
+    </tr>
+  `;
+}
+
+function auditLogRow(log: AuditLog) {
+  const domain = auditActionDomain(log.action, log.entity);
+  const date = new Date(log.createdAt);
+  const time = Number.isNaN(date.getTime())
+    ? ""
+    : date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  return (
+    '<tr class="hover:bg-gray-50 transition-colors">' +
+    '<td class="px-5 py-4 font-semibold whitespace-nowrap">' +
+    escapeHtml(time || "-") +
     "</td>" +
     '<td class="px-5 py-4">' +
-    escapeHtml(log.userId ?? "Systeme") +
+    escapeHtml(auditLogUserLabel(log)) +
     "</td>" +
-    '<td class="px-5 py-4">' +
+    '<td class="px-5 py-4"><div class="flex items-start gap-3 min-w-[220px]">' +
+    `<span class="w-9 h-9 rounded-lg bg-accent-50 text-accent-600 flex items-center justify-center shrink-0"><i data-lucide="${auditActionIcon(log.action, domain)}" class="w-4 h-4"></i></span>` +
+    '<div class="min-w-0"><div class="font-bold truncate">' +
     escapeHtml(auditActionLabel(log.action)) +
+    '</div><div class="text-xs text-gray-500 truncate">' +
+    escapeHtml(auditDomainLabel(domain)) +
+    "</div></div></div></td>" +
+    '<td class="px-5 py-4 font-semibold">' +
+    escapeHtml(auditDocumentLabel(log)) +
     "</td>" +
     '<td class="px-5 py-4">' +
-    escapeHtml(log.entity) +
+    escapeHtml(auditObjectContext(log)) +
     "</td>" +
     '<td class="px-5 py-4">' +
-    escapeHtml(beforeLabel) +
+    auditLogResultBadge(log) +
     "</td>" +
-    '<td class="px-5 py-4">' +
-    escapeHtml(afterLabel) +
-    "</td>" +
-    '<td class="px-5 py-4">' +
-    badge("Trace", "success") +
+    '<td class="px-5 py-4 text-right">' +
+    actionEyeFor(`openAuditLogDetail('${log.id}')`) +
     "</td>" +
     "</tr>"
   );
+}
+
+function populateAuditLogFilters(root: HTMLElement) {
+  const userSelect = root.querySelector<HTMLSelectElement>("#auditLogUserSelect");
+  if (userSelect) {
+    const previous = userSelect.value;
+    const users = new Map<string, string>();
+    latestAuditLogs.forEach((log) => {
+      users.set(log.userId ?? "SYSTEM", auditLogUserLabel(log));
+    });
+    userSelect.innerHTML =
+      '<option value="">Tous utilisateurs</option>' +
+      [...users.entries()]
+        .sort((a, b) => a[1].localeCompare(b[1]))
+        .map(([id, label]) => option(id, label))
+        .join("");
+    userSelect.value = [...users.keys()].includes(previous) ? previous : "";
+  }
+  const actionSelect =
+    root.querySelector<HTMLSelectElement>("#auditLogActionSelect");
+  if (actionSelect) {
+    const previous = actionSelect.value;
+    const actions = [...new Set(latestAuditLogs.map((log) => log.action))].sort();
+    actionSelect.innerHTML =
+      '<option value="">Toutes actions</option>' +
+      actions.map((action) => option(action, auditActionLabel(action))).join("");
+    actionSelect.value = actions.includes(previous) ? previous : "";
+  }
+}
+
+function renderAuditLogs(root: HTMLElement) {
+  populateAuditLogFilters(root);
+  const logsBody = root.querySelector<HTMLElement>("#audit-journal tbody");
+  const visible = latestAuditLogs.filter((log) => auditLogMatchesFilters(root, log));
+  const groups = groupAuditLogsByDay(visible);
+  groups.forEach((group, index) => {
+    if (!initializedAuditLogDays.has(group.dayKey)) {
+      initializedAuditLogDays.add(group.dayKey);
+      if (index > 0) collapsedAuditLogDays.add(group.dayKey);
+    }
+  });
+  if (logsBody) {
+    logsBody.innerHTML = groups.length
+      ? groups
+          .map((group) => {
+            const collapsed = collapsedAuditLogDays.has(group.dayKey);
+            return (
+              auditLogDayHeader(group.dayKey, group.label, group.logs, collapsed) +
+              (collapsed ? "" : group.logs.map(auditLogRow).join(""))
+            );
+          })
+          .join("")
+      : emptyRow(7, "Aucune trace audit pour ce filtre.");
+  }
+  const users = new Set(visible.map((log) => auditLogUserLabel(log)).filter(Boolean));
+  const anomalies = visible.filter((log) => auditLogResult(log) === "ANOMALY").length;
+  const failures = visible.filter((log) => auditLogResult(log) === "FAILURE").length;
+  const issueText =
+    failures > 0
+      ? `${formatNumber(failures)} echec${failures > 1 ? "s" : ""}`
+      : anomalies > 0
+        ? `${formatNumber(anomalies)} anomalie${anomalies > 1 ? "s" : ""}`
+        : "aucune anomalie";
+  setText(
+    root,
+    "#auditLogCount",
+    `${formatNumber(visible.length)} trace${visible.length > 1 ? "s" : ""} - ${formatNumber(users.size)} utilisateur${users.size > 1 ? "s" : ""} - ${issueText}`,
+  );
+  window.lucide?.createIcons();
+}
+
+function toggleAuditLogDay(root: HTMLElement, dayKey: string) {
+  if (collapsedAuditLogDays.has(dayKey)) {
+    collapsedAuditLogDays.delete(dayKey);
+  } else {
+    collapsedAuditLogDays.add(dayKey);
+  }
+  initializedAuditLogDays.add(dayKey);
+  renderAuditLogs(root);
+}
+
+function auditDetailRows(rows: Array<[string, unknown]>) {
+  return rows
+    .map(
+      ([label, value]) =>
+        `<div><span class="detail-label">${escapeHtml(label)}</span> <strong>${escapeHtml(value ?? "-")}</strong></div>`,
+    )
+    .join("");
+}
+
+function auditLineQuantityLabel(line: Record<string, unknown>) {
+  const expected = Number(line.expectedQuantity ?? 0);
+  const completed = Number(line.completedQuantity ?? 0);
+  if (expected && completed && expected !== completed) {
+    return `${formatNumber(completed)} / attendu ${formatNumber(expected)}`;
+  }
+  return formatNumber(completed || expected || 0);
+}
+
+function auditLineRowsFromRecord(record: Record<string, unknown>) {
+  const lines = Array.isArray(record.lines) ? record.lines : [];
+  return lines
+    .map((raw, index) => {
+      const line = auditRecord(raw);
+      const article = auditRecord(line.article);
+      const articleLabel =
+        auditValueReference(article) ||
+        (typeof article.designation === "string" ? article.designation : "") ||
+        `Ligne ${formatNumber(index + 1)}`;
+      const code =
+        typeof article.code === "string" && article.code.trim()
+          ? article.code
+          : "";
+      const observation =
+        typeof line.observation === "string" && line.observation.trim()
+          ? line.observation
+          : "-";
+      return `
+        <tr>
+          <td class="px-5 py-4">
+            <div class="font-bold">${escapeHtml(articleLabel)}</div>
+            <div class="text-xs text-gray-500">${escapeHtml(code)}</div>
+          </td>
+          <td class="px-5 py-4 text-right font-semibold">${escapeHtml(auditLineQuantityLabel(line))}</td>
+          <td class="px-5 py-4 text-gray-600">${escapeHtml(observation)}</td>
+        </tr>
+      `;
+    })
+    .join("");
+}
+
+function auditLogBusinessNotes(log: AuditLog) {
+  const after = auditRecord(log.after);
+  const before = auditRecord(log.before);
+  const values = [
+    after.rejectionReason,
+    after.reason,
+    after.notes,
+    after.observation,
+    before.rejectionReason,
+    before.reason,
+    before.notes,
+    before.observation,
+  ];
+  const note = values.find((value) => typeof value === "string" && value.trim());
+  return typeof note === "string" ? note : "";
+}
+
+function auditLogReadableSummary(log: AuditLog) {
+  const action = auditActionLabel(log.action);
+  const document = auditDocumentLabel(log);
+  const context = auditObjectContext(log);
+  const note = auditLogBusinessNotes(log);
+  const parts = [`${action} enregistre${action.endsWith("e") ? "e" : ""}`];
+  if (document && document !== "Mouvement stock") parts.push(`sur ${document}`);
+  if (context && context !== document) parts.push(`pour ${context}`);
+  if (note) parts.push(`Motif : ${note}`);
+  return parts.join(". ");
+}
+
+function auditLogResultTone(
+  result: string,
+): "success" | "warning" | "error" | "gray" | "accent" {
+  if (result === "FAILURE") return "error";
+  if (result === "ANOMALY") return "warning";
+  return "success";
+}
+
+function auditLogResultLabel(result: string) {
+  if (result === "FAILURE") return "Echec";
+  if (result === "ANOMALY") return "Anomalie detectee";
+  return "Succes";
+}
+
+function openAuditAlertDetail(root: HTMLElement, id: string) {
+  const alert = latestAuditAlerts.find((item) => item.id === id);
+  if (!alert) {
+    showToast(root, "Alerte introuvable.", "error");
+    return;
+  }
+  setText(root, "#auditDetailKind", "Alerte stock");
+  setText(root, "#auditDetailTitle", alert.type);
+  setText(
+    root,
+    "#auditDetailSubtitle",
+    `${alert.object}${alert.movementReference ? " - " + alert.movementReference : ""}`,
+  );
+  const body = root.querySelector<HTMLElement>("#auditDetailBody");
+  const trace = alert.movementId
+    ? latestAuditLogs.find((log) => log.entityId === alert.movementId)
+    : null;
+  if (body) {
+    body.innerHTML = `
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+        ${detailCard("Priorite", alert.severity === "CRITIQUE" ? "Critique" : "A verifier", alert.severity === "CRITIQUE" ? "accent" : "gray")}
+        ${detailCard("Domaine", auditDomainLabel(auditAlertDomain(alert)), "accent")}
+        ${detailCard("Impact stock", alert.impact ?? "-", "gray")}
+        ${detailCard("Statut", alert.status === "OUVERTE" ? "Ouverte" : alert.status, "gray")}
+      </div>
+      <div class="border rounded-xl overflow-hidden">
+        <div class="px-5 py-4 bg-gray-50 border-b font-bold">Contexte</div>
+        <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          ${auditDetailRows([
+            ["Sujet", alert.object],
+            ["Code / reference", alert.articleCode ?? alert.objectCode ?? alert.movementReference ?? "-"],
+            ["Emplacement", alert.location],
+            ["Date", formatDate(alert.date)],
+            ["Quantite theorique", alert.expectedQuantity ?? "-"],
+            ["Quantite reelle", alert.completedQuantity ?? "-"],
+            ["Ecart", alert.gapQuantity ?? "-"],
+            ["Action attendue", alert.action],
+          ])}
+        </div>
+      </div>
+      <div class="border rounded-xl overflow-hidden">
+        <div class="px-5 py-4 bg-gray-50 border-b font-bold">Trace associee</div>
+        <div class="p-5 text-sm text-gray-600">${trace ? escapeHtml(auditActionLabel(trace.action) + " - " + auditChangeSummary(trace)) : "Aucune trace associee trouvee."}</div>
+      </div>
+    `;
+  }
+  openModal(root, "auditDetailModal");
+  window.lucide?.createIcons();
+}
+
+function openAuditLogDetail(root: HTMLElement, id: string) {
+  const log = latestAuditLogs.find((item) => item.id === id);
+  if (!log) {
+    showToast(root, "Trace audit introuvable.", "error");
+    return;
+  }
+  const domain = auditActionDomain(log.action, log.entity);
+  const result = auditLogResult(log);
+  const after = auditRecord(log.after);
+  const before = auditRecord(log.before);
+  const lineRows =
+    auditLineRowsFromRecord(after) || auditLineRowsFromRecord(before);
+  const date = new Date(log.createdAt);
+  const time = Number.isNaN(date.getTime())
+    ? "-"
+    : date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  const note = auditLogBusinessNotes(log);
+  setText(root, "#auditDetailKind", "Journal audit");
+  setText(root, "#auditDetailTitle", auditActionLabel(log.action));
+  setText(root, "#auditDetailSubtitle", auditDocumentLabel(log));
+  const body = root.querySelector<HTMLElement>("#auditDetailBody");
+  if (body) {
+    body.innerHTML = `
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+        ${detailCard("Domaine", auditDomainLabel(domain), "accent")}
+        ${detailCard("Utilisateur", auditLogUserLabel(log), "gray")}
+        ${detailCard("Document", auditDocumentLabel(log), "gray")}
+        ${detailCard("Resultat", auditLogResultLabel(result), result === "SUCCESS" ? "success" : "gray")}
+      </div>
+      <div class="border rounded-xl overflow-hidden">
+        <div class="px-5 py-4 bg-gray-50 border-b font-bold">Ce qui s'est passe</div>
+        <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          ${auditDetailRows([
+            ["Date", formatDate(log.createdAt)],
+            ["Heure", time],
+            ["Action", auditActionLabel(log.action)],
+            ["Document concerne", auditDocumentLabel(log)],
+            ["Article / emplacement", auditObjectContext(log)],
+            ["Resume", auditLogReadableSummary(log)],
+            ["Observation / motif", note || "-"],
+          ])}
+        </div>
+      </div>
+      ${
+        lineRows
+          ? `<div class="border rounded-xl overflow-hidden">
+              <div class="px-5 py-4 bg-gray-50 border-b font-bold">Articles concernes</div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Article</th><th class="px-5 py-3 text-right">Quantite</th><th class="px-5 py-3 text-left">Observation</th></tr></thead>
+                  <tbody class="divide-y divide-gray-200">${lineRows}</tbody>
+                </table>
+              </div>
+            </div>`
+          : `<div class="border rounded-xl overflow-hidden">
+              <div class="px-5 py-4 bg-gray-50 border-b font-bold">Detail metier</div>
+              <div class="p-5 text-sm text-gray-600">${escapeHtml(auditChangeSummary(log))}</div>
+            </div>`
+      }
+    `;
+  }
+  openModal(root, "auditDetailModal");
+  window.lucide?.createIcons();
 }
 
 function vehicleStatusLabel(status: string) {
@@ -7376,6 +8776,7 @@ function updateApiBackedViews(root: HTMLElement) {
         "#usersDirectionCount",
         users.filter((user) => user.roles.includes("DIRECTION")).length,
       );
+      renderAuditLogs(root);
       window.lucide?.createIcons();
     })
     .catch(() => undefined);
@@ -7403,12 +8804,12 @@ function updateApiBackedViews(root: HTMLElement) {
       setAuditCardValue(
         root,
         "Ruptures",
-        alerts.filter((alert) => alert.type === "Rupture").length,
+        alerts.filter((alert) => auditAlertDomain(alert) === "STOCK").length,
       );
       setAuditCardValue(
         root,
         "Ecarts inventaire",
-        alerts.filter((alert) => alert.type === "Ecart inventaire").length,
+        alerts.filter((alert) => auditAlertDomain(alert) === "INVENTORY").length,
       );
       window.lucide?.createIcons();
     })
@@ -7416,12 +8817,8 @@ function updateApiBackedViews(root: HTMLElement) {
 
   getAuditLogs()
     .then((logs) => {
-      const logsBody = root.querySelector<HTMLElement>("#audit-journal tbody");
-      if (logsBody)
-        logsBody.innerHTML = logs.length
-          ? logs.map(auditLogRow).join("")
-          : emptyRow(7, "Aucune trace audit pour le moment.");
       latestAuditLogs = logs;
+      renderAuditLogs(root);
       setAuditCardValue(root, "Actions tracees", logs.length);
       window.lucide?.createIcons();
     })
@@ -7473,7 +8870,8 @@ function canUseHeaderAction(view: string, action: HeaderAction) {
     return (
       hasRole("DIRECTION") || hasRole("AUDIT") || hasRole("GESTIONNAIRE_STOCK")
     );
-  if (action.modal === "importModal") return hasRole("GESTIONNAIRE_STOCK");
+  if (action.modal === "importModal" || action.modal === "inventoryImportModal")
+    return hasRole("GESTIONNAIRE_STOCK");
   if (view === "referentiels") return hasRole("GESTIONNAIRE_STOCK");
   if (view === "entrees") return hasRole("GESTIONNAIRE_STOCK");
   if (view === "sortie" && action.modal === "directExitModal")
@@ -7575,11 +8973,10 @@ function setViewActions(root: HTMLElement, view: string) {
       },
     ],
     inventaire: [
-      { label: "Modele Excel", icon: "download", variant: "secondary" },
       {
-        label: "Importer XLS",
+        label: "Importer Excel",
         icon: "upload",
-        modal: "importModal",
+        modal: "inventoryImportModal",
         variant: "secondary",
       },
     ],
@@ -7824,7 +9221,6 @@ function articleImportNumber(value: string) {
 }
 function validateArticleImportRow(row: ArticleImportRow, index: number) {
   const errors: string[] = [];
-  if (!row.code.trim()) errors.push("Code obligatoire");
   if (!row.designation.trim()) errors.push("Designation obligatoire");
   const category = articleImportHeaderKey(row.category);
   if (!["fo", "gsm", "blr"].includes(category))
@@ -7850,20 +9246,21 @@ function validateArticleImportRow(row: ArticleImportRow, index: number) {
     )
       errors.push(field + " doit etre un nombre positif");
   });
-  if (Number.isFinite(index) && row.code.trim()) {
-    const codeKey = articleImportKey(row.code);
+  if (Number.isFinite(index) && row.designation.trim()) {
+    const designationKey = articleImportKey(row.designation);
     const occurrences = articleImportRows.filter(
-      (other) => articleImportKey(other.code) === codeKey,
+      (other) => articleImportKey(other.designation) === designationKey,
     ).length;
-    if (occurrences > 1) errors.push("Code en doublon dans le fichier");
+    if (occurrences > 1) errors.push("Designation en doublon dans le fichier");
   }
   const existing =
-    Boolean(row.code.trim()) &&
+    Boolean(row.designation.trim()) &&
     latestArticles.some(
       (article) =>
-        articleImportKey(article.code) === articleImportKey(row.code),
+        articleImportKey(article.designation) ===
+        articleImportKey(row.designation),
     );
-  if (existing) errors.push("Code deja present dans le referentiel");
+  if (existing) errors.push("Designation deja presente dans le referentiel");
   if (articleImportNumber(row.initialStock) > 0 && !row.location.trim())
     errors.push("Emplacement requis si stock de depart renseigne");
   if (
@@ -7906,7 +9303,6 @@ function renderArticleImport(root: HTMLElement) {
     detailCard("Lignes invalides", articleImportRows.length - valid, "gray") +
     detailCard("A enregistrer", valid, "accent");
   const fields: Array<[keyof ArticleImportRow, string]> = [
-    ["code", "Code"],
     ["designation", "Designation"],
     ["category", "Famille"],
     ["unit", "Unite"],
@@ -7919,7 +9315,7 @@ function renderArticleImport(root: HTMLElement) {
     ["location", "Emplacement"],
   ];
   table.classList.remove("hidden");
-  table.innerHTML = `<div class="overflow-auto border rounded-xl"><table class="w-full min-w-[1250px] text-sm"><thead class="bg-gray-50"><tr><th class="p-3 text-left">Ligne</th>${fields.map(([, label]) => `<th class="p-3 text-left">${label}</th>`).join("")}<th class="p-3 text-left">Validation</th></tr></thead><tbody class="divide-y">${articleImportRows.map((row, index) => `<tr class="${row.errors.length ? "bg-error-50/40" : "bg-success-50/20"}"><td class="p-2 font-bold">${index + 2}</td>${fields.map(([field]) => `<td class="p-2"><input data-import-row="${index}" data-import-field="${field}" value="${escapeHtml(row[field])}" class="w-32 h-9 border rounded px-2 bg-white"></td>`).join("")}<td class="p-2 ${row.errors.length ? "text-error-700" : "text-success-700"} font-semibold">${row.errors.length ? escapeHtml(row.errors.join(" • ")) : "Valide"}</td></tr>`).join("")}</tbody></table></div>`;
+  table.innerHTML = `<div class="mb-3 rounded-xl border border-accent-100 bg-accent-50 p-3 text-sm font-semibold text-accent-700">Les codes articles seront generes automatiquement a l'enregistrement.</div><div class="overflow-auto border rounded-xl"><table class="w-full min-w-[1150px] text-sm"><thead class="bg-gray-50"><tr><th class="p-3 text-left">Ligne</th>${fields.map(([, label]) => `<th class="p-3 text-left">${label}</th>`).join("")}<th class="p-3 text-left">Validation</th></tr></thead><tbody class="divide-y">${articleImportRows.map((row, index) => `<tr class="${row.errors.length ? "bg-error-50/40" : "bg-success-50/20"}"><td class="p-2 font-bold">${index + 2}</td>${fields.map(([field]) => `<td class="p-2"><input data-import-row="${index}" data-import-field="${field}" value="${escapeHtml(row[field])}" class="w-32 h-9 border rounded px-2 bg-white"></td>`).join("")}<td class="p-2 ${row.errors.length ? "text-error-700" : "text-success-700"} font-semibold">${row.errors.length ? escapeHtml(row.errors.join(" | ")) : "Valide"}</td></tr>`).join("")}</tbody></table></div>`;
   if (save) {
     save.disabled = valid === 0;
     save.classList.toggle("opacity-50", !valid);
@@ -8020,7 +9416,6 @@ async function importArticles(root: HTMLElement) {
           item.id === row.location,
       );
       await createArticle({
-        code: row.code.trim(),
         designation: row.designation.trim(),
         category: row.category.trim().toUpperCase(),
         unit: row.unit.trim(),
@@ -8064,32 +9459,56 @@ function referentialImportDefaults(
   ]) as ReferentialImportRow;
 }
 function referentialImportValid(row: ReferentialImportRow, index: number) {
-  const values = referentialImportFields[referentialImportType].map(
-    ([field]) => row[field] ?? "",
-  );
   const errors: string[] = [];
-  if (!values[0]?.trim()) errors.push("Code ou identifiant obligatoire");
-  const required =
-    referentialImportType === "supplier" ||
-    referentialImportType === "client" ||
-    referentialImportType === "project" ||
-    referentialImportType === "site" ||
-    referentialImportType === "location" ||
-    referentialImportType === "teamService"
-      ? values[1]
-      : values[0];
-  if (!required?.trim()) errors.push("Nom ou designation obligatoire");
-  const key = articleImportKey(values[0]);
+  const primaryField =
+    referentialImportType === "employee" ? "lastName" : "name";
+  const secondaryField =
+    referentialImportType === "employee" ? "firstName" : undefined;
+  const primaryValue = String(row[primaryField] ?? "").trim();
+  const secondaryValue = secondaryField
+    ? String(row[secondaryField] ?? "").trim()
+    : "";
+  if (!primaryValue) errors.push("Nom ou designation obligatoire");
+  if (secondaryField && !secondaryValue) errors.push("Prenom obligatoire");
+  if (referentialImportType === "project") {
+    const managerValue = String(row.projectManager ?? "").trim();
+    if (!managerValue) {
+      errors.push("Chef de projet obligatoire");
+    } else if (
+      !latestUsers.some(
+        (item) =>
+          item.active &&
+          item.roles.includes("CHEF_PROJET") &&
+          (articleImportKey(item.id) === articleImportKey(managerValue) ||
+            articleImportKey(userDisplayName(item)) ===
+              articleImportKey(managerValue) ||
+            articleImportKey(item.identifier) === articleImportKey(managerValue) ||
+            articleImportKey(item.email) === articleImportKey(managerValue)),
+      )
+    ) {
+      errors.push("Chef de projet introuvable");
+    }
+  }
+  const key = articleImportKey(
+    [primaryValue, secondaryValue].filter(Boolean).join(" "),
+  );
   if (
     key &&
     referentialImportRows.filter(
-      (item) =>
-        articleImportKey(
-          item[referentialImportFields[referentialImportType][0][0]],
-        ) === key,
+      (item) => {
+        const itemPrimary = String(item[primaryField] ?? "").trim();
+        const itemSecondary = secondaryField
+          ? String(item[secondaryField] ?? "").trim()
+          : "";
+        return (
+          articleImportKey(
+            [itemPrimary, itemSecondary].filter(Boolean).join(" "),
+          ) === key
+        );
+      },
     ).length > 1
   )
-    errors.push("Code en doublon dans le fichier");
+    errors.push("Nom en doublon dans le fichier");
   const collections: Record<string, unknown[]> = {
     supplier: latestSuppliers,
     client: latestClients,
@@ -8102,13 +9521,22 @@ function referentialImportValid(row: ReferentialImportRow, index: number) {
     employee: latestEmployees,
   };
   const existing = (collections[referentialImportType] ?? []).some(
-    (item) =>
-      articleImportKey(
-        (item as { code?: string; matricule?: string }).code ??
-          (item as { matricule?: string }).matricule,
-      ) === key,
+    (item) => {
+      const record = item as {
+        name?: string;
+        lastName?: string;
+        firstName?: string;
+      };
+      return (
+        articleImportKey(
+          referentialImportType === "employee"
+            ? [record.lastName, record.firstName].filter(Boolean).join(" ")
+            : record.name,
+        ) === key
+      );
+    },
   );
-  if (key && existing) errors.push("Code deja present dans le referentiel");
+  if (key && existing) errors.push("Nom deja present dans le referentiel");
   return errors;
 }
 function renderReferentialImport(root: HTMLElement) {
@@ -8136,7 +9564,7 @@ function renderReferentialImport(root: HTMLElement) {
     );
   const fields = referentialImportFields[referentialImportType];
   table.classList.remove("hidden");
-  table.innerHTML = `<div class="overflow-auto border rounded-xl"><table class="w-full min-w-[900px] text-sm"><thead class="bg-gray-50"><tr><th class="p-3 text-left">Ligne</th>${fields.map(([, label]) => `<th class="p-3 text-left">${label}</th>`).join("")}<th class="p-3 text-left">Validation</th></tr></thead><tbody class="divide-y">${referentialImportRows.map((row, index) => `<tr class="${row.errors.length ? "bg-error-50/40" : "bg-success-50/20"}"><td class="p-2 font-bold">${index + 2}</td>${fields.map(([field]) => `<td class="p-2"><input data-import-row="${index}" data-import-field="${field}" value="${escapeHtml(row[field] ?? "")}" class="w-32 h-9 border rounded px-2 bg-white"></td>`).join("")}<td class="p-2 font-semibold ${row.errors.length ? "text-error-700" : "text-success-700"}">${row.errors.length ? escapeHtml(row.errors.join(" • ")) : "Valide"}</td></tr>`).join("")}</tbody></table></div>`;
+  table.innerHTML = `<div class="mb-3 rounded-xl border border-accent-100 bg-accent-50 p-3 text-sm font-semibold text-accent-700">Les codes seront generes automatiquement a l'enregistrement.</div><div class="overflow-auto border rounded-xl"><table class="w-full min-w-[900px] text-sm"><thead class="bg-gray-50"><tr><th class="p-3 text-left">Ligne</th>${fields.map(([, label]) => `<th class="p-3 text-left">${label}</th>`).join("")}<th class="p-3 text-left">Validation</th></tr></thead><tbody class="divide-y">${referentialImportRows.map((row, index) => `<tr class="${row.errors.length ? "bg-error-50/40" : "bg-success-50/20"}"><td class="p-2 font-bold">${index + 2}</td>${fields.map(([field]) => `<td class="p-2"><input data-import-row="${index}" data-import-field="${field}" value="${escapeHtml(row[field] ?? "")}" class="w-32 h-9 border rounded px-2 bg-white"></td>`).join("")}<td class="p-2 font-semibold ${row.errors.length ? "text-error-700" : "text-success-700"}">${row.errors.length ? escapeHtml(row.errors.join(" | ")) : "Valide"}</td></tr>`).join("")}</tbody></table></div>`;
   if (save) {
     save.disabled = valid === 0;
     save.classList.toggle("opacity-50", !valid);
@@ -8144,27 +9572,12 @@ function renderReferentialImport(root: HTMLElement) {
   }
   window.lucide?.createIcons();
 }
-function referentialCodeExample(type: ReferentialImportType) {
-  const examples: Record<ReferentialImportType, string> = {
-    article: "FO-0001",
-    supplier: "FRN-001",
-    client: "CLI-001",
-    project: "PROJ-2026-001",
-    site: "SITE-001",
-    employee: "EMP-001",
-    location: "MAG-001",
-    teamService: "SRV-001",
-  };
-  return examples[type];
-}
 function downloadReferentialTemplate(root: HTMLElement) {
   const fields = referentialImportFields[referentialImportType];
   const worksheet = XLSX.utils.aoa_to_sheet([
     fields.map(([, label]) => label),
     fields.map(([field]) =>
-      field === "code"
-        ? referentialCodeExample(referentialImportType)
-        : field === "category"
+      field === "category"
           ? "Exemple"
           : "",
     ),
@@ -8229,7 +9642,6 @@ async function importReferentialElements(root: HTMLElement) {
       const type = referentialImportType;
       if (type === "supplier")
         await createSupplier({
-          code: value("code")!,
           name: value("name")!,
           fiscalId: value("fiscalId"),
           category: value("category"),
@@ -8240,7 +9652,6 @@ async function importReferentialElements(root: HTMLElement) {
         });
       else if (type === "client")
         await createClient({
-          code: value("code")!,
           name: value("name")!,
           contact: value("contact"),
           phone: value("phone"),
@@ -8248,7 +9659,6 @@ async function importReferentialElements(root: HTMLElement) {
         });
       else if (type === "employee")
         await createEmployee({
-          matricule: value("code")!,
           lastName: value("lastName")!,
           firstName: value("firstName")!,
           department: value("department"),
@@ -8257,21 +9667,36 @@ async function importReferentialElements(root: HTMLElement) {
         });
       else if (type === "teamService")
         await createTeamService({
-          code: value("code")!,
           name: value("name")!,
           type: value("type"),
           manager: value("manager"),
         });
       else if (type === "project")
-        await createProject({
-          code: value("code")!,
-          name: value("name")!,
-          client: value("client"),
-          region: value("region"),
-          city: value("city"),
-          startDate: value("startDate"),
-          endDate: value("endDate"),
-        });
+        {
+          const managerValue = value("projectManager");
+          const manager = managerValue
+            ? latestUsers.find(
+                (item) =>
+                  item.active &&
+                  item.roles.includes("CHEF_PROJET") &&
+                  (articleImportKey(item.id) === articleImportKey(managerValue) ||
+                    articleImportKey(userDisplayName(item)) ===
+                      articleImportKey(managerValue) ||
+                    articleImportKey(item.identifier) ===
+                      articleImportKey(managerValue) ||
+                    articleImportKey(item.email) === articleImportKey(managerValue)),
+              )
+            : undefined;
+          await createProject({
+            name: value("name")!,
+            client: value("client"),
+            projectManagerId: manager?.id,
+            region: value("region"),
+            city: value("city"),
+            startDate: value("startDate"),
+            endDate: value("endDate"),
+          });
+        }
       else if (type === "site" || type === "location") {
         const projectValue = value("project");
         const project = projectValue
@@ -8284,7 +9709,6 @@ async function importReferentialElements(root: HTMLElement) {
             )
           : undefined;
         await createLocation({
-          code: value("code")!,
           name: value("name")!,
           type: type === "site" ? "CHANTIER" : (value("type") ?? "MAGASIN"),
           projectId: project?.id,
@@ -8308,9 +9732,276 @@ async function importReferentialElements(root: HTMLElement) {
   }
 }
 
+const inventoryImportFields: Array<[keyof InventoryImportRow, string]> = [
+  ["articleCode", "Code article"],
+  ["designation", "Designation"],
+  ["location", "Emplacement"],
+  ["theoretical", "Stock theorique"],
+  ["counted", "Quantite constatee"],
+  ["good", "Bon etat"],
+  ["repair", "A reparer"],
+  ["outOfService", "Hors service"],
+  ["justification", "Justification"],
+];
+
+function findInventoryImportArticle(row: InventoryImportRow) {
+  return latestArticles.find(
+    (article) =>
+      articleImportKey(article.code) === articleImportKey(row.articleCode) ||
+      (row.designation.trim() &&
+        articleImportKey(article.designation) === articleImportKey(row.designation)),
+  );
+}
+
+function findInventoryImportLocation(row: InventoryImportRow) {
+  return latestLocations.find(
+    (location) =>
+      articleImportKey(location.code) === articleImportKey(row.location) ||
+      articleImportKey(location.name) === articleImportKey(row.location) ||
+      location.id === row.location,
+  );
+}
+
+function validateInventoryImportRow(row: InventoryImportRow, index: number) {
+  const errors: string[] = [];
+  const article = findInventoryImportArticle(row);
+  const location = findInventoryImportLocation(row);
+  if (!row.articleCode.trim() && !row.designation.trim())
+    errors.push("Article obligatoire");
+  if (!article) errors.push("Article introuvable");
+  if (!row.location.trim()) errors.push("Emplacement obligatoire");
+  if (!location) errors.push("Emplacement introuvable");
+  (["theoretical", "counted", "good", "repair", "outOfService"] as const).forEach(
+    (field) => {
+      const value = articleImportNumber(row[field]);
+      if (!Number.isFinite(value) || value < 0) {
+        errors.push(inventoryImportFields.find(([name]) => name === field)?.[1] + " invalide");
+      }
+    },
+  );
+  const counted = articleImportNumber(row.counted);
+  const good = articleImportNumber(row.good);
+  const repair = articleImportNumber(row.repair);
+  const outOfService = articleImportNumber(row.outOfService);
+  if (
+    [counted, good, repair, outOfService].every(Number.isFinite) &&
+    Math.abs(counted - (good + repair + outOfService)) > 0.000001
+  ) {
+    errors.push("Somme des etats differente du constate");
+  }
+  if (
+    Number.isFinite(counted) &&
+    Number.isFinite(articleImportNumber(row.theoretical)) &&
+    counted !== articleImportNumber(row.theoretical) &&
+    !row.justification.trim()
+  ) {
+    errors.push("Justification obligatoire si ecart");
+  }
+  if (article && location) {
+    const key = inventoryPairKey(article.id, location.id);
+    const duplicateCount = inventoryImportRows.filter((other) => {
+      const otherArticle = findInventoryImportArticle(other);
+      const otherLocation = findInventoryImportLocation(other);
+      return (
+        otherArticle &&
+        otherLocation &&
+        inventoryPairKey(otherArticle.id, otherLocation.id) === key
+      );
+    }).length;
+    if (Number.isFinite(index) && duplicateCount > 1)
+      errors.push("Article/emplacement en doublon");
+  }
+  return errors;
+}
+
+function renderInventoryImport(root: HTMLElement) {
+  const table = root.querySelector<HTMLElement>("#inventoryImportTable");
+  const summary = root.querySelector<HTMLElement>("#inventoryImportSummary");
+  const save = root.querySelector<HTMLButtonElement>(
+    "#inventoryImportSaveButton",
+  );
+  if (!table || !summary) return;
+  inventoryImportRows.forEach(
+    (row, index) => (row.errors = validateInventoryImportRow(row, index)),
+  );
+  const valid = inventoryImportRows.filter((row) => !row.errors.length).length;
+  summary.classList.remove("hidden");
+  summary.classList.add("grid");
+  summary.innerHTML =
+    detailCard("Total lignes", inventoryImportRows.length) +
+    detailCard("Lignes valides", valid, "success") +
+    detailCard("Lignes invalides", inventoryImportRows.length - valid, "gray") +
+    detailCard("A enregistrer", valid, "accent");
+  table.classList.remove("hidden");
+  table.innerHTML = `<div class="overflow-auto border rounded-xl"><table class="w-full min-w-[1180px] text-sm"><thead class="bg-gray-50"><tr><th class="p-3 text-left">Ligne</th>${inventoryImportFields.map(([, label]) => `<th class="p-3 text-left">${label}</th>`).join("")}<th class="p-3 text-left">Validation</th></tr></thead><tbody class="divide-y">${inventoryImportRows.map((row, index) => `<tr class="${row.errors.length ? "bg-error-50/40" : "bg-success-50/20"}"><td class="p-2 font-bold">${index + 2}</td>${inventoryImportFields.map(([field]) => `<td class="p-2"><input data-inventory-import-row="${index}" data-inventory-import-field="${field}" value="${escapeHtml(String(row[field] ?? ""))}" class="w-32 h-9 border rounded px-2 bg-white"></td>`).join("")}<td class="p-2 font-semibold ${row.errors.length ? "text-error-700" : "text-success-700"}">${row.errors.length ? escapeHtml(row.errors.join(" | ")) : "Valide"}</td></tr>`).join("")}</tbody></table></div>`;
+  if (save) {
+    save.disabled = valid === 0;
+    save.classList.toggle("opacity-50", !valid);
+    save.classList.toggle("cursor-not-allowed", !valid);
+  }
+  window.lucide?.createIcons();
+}
+
+function downloadInventoryImportTemplate(root: HTMLElement) {
+  const lines = allInventoryComputedLines();
+  const rows = lines.map((line) => [
+    line.article.code,
+    line.article.designation,
+    line.location.code || line.location.name,
+    line.theoretical,
+    line.counted,
+    line.good,
+    line.repair,
+    line.outOfService,
+    line.justification,
+  ]);
+  const worksheet = XLSX.utils.aoa_to_sheet([
+    inventoryImportFields.map(([, label]) => label),
+    ...rows,
+  ]);
+  worksheet["!cols"] = inventoryImportFields.map(([, label]) => ({
+    wch: Math.max(label.length + 2, 18),
+  }));
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Inventaire");
+  XLSX.writeFile(workbook, "modele-inventaire-stock-hub.xlsx");
+  showToast(root, "Modele inventaire telecharge.");
+}
+
+async function readInventoryImportFile(root: HTMLElement, file: File) {
+  try {
+    const workbook = XLSX.read(await file.arrayBuffer(), { type: "array" });
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const records = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, {
+      defval: "",
+    });
+    const aliases: Record<string, keyof InventoryImportRow> = {
+      codearticle: "articleCode",
+      code: "articleCode",
+      designation: "designation",
+      article: "designation",
+      emplacement: "location",
+      location: "location",
+      stocktheorique: "theoretical",
+      stocktheoriqueemplacement: "theoretical",
+      quantiteconstatee: "counted",
+      constate: "counted",
+      bonetat: "good",
+      areparer: "repair",
+      horsservice: "outOfService",
+      justification: "justification",
+      observation: "justification",
+    };
+    inventoryImportRows = records.map((record) => {
+      const row: InventoryImportRow = {
+        articleCode: "",
+        designation: "",
+        location: "",
+        theoretical: "",
+        counted: "",
+        good: "",
+        repair: "",
+        outOfService: "",
+        justification: "",
+        errors: [],
+      };
+      Object.entries(record).forEach(([key, value]) => {
+        const field =
+          aliases[articleImportHeaderKey(key)] ?? aliases[articleImportKey(key)];
+        if (field && field !== "errors") {
+          row[field] = String(value ?? "").trim();
+        }
+      });
+      return row;
+    });
+    if (!inventoryImportRows.length)
+      throw new Error("Le fichier ne contient aucune ligne.");
+    renderInventoryImport(root);
+  } catch (error) {
+    showToast(
+      root,
+      error instanceof Error ? error.message : "Lecture du fichier impossible.",
+      "error",
+    );
+  }
+}
+
+async function importInventoryRows(root: HTMLElement) {
+  inventoryImportRows.forEach(
+    (row, index) => (row.errors = validateInventoryImportRow(row, index)),
+  );
+  const rows = inventoryImportRows.filter((row) => !row.errors.length);
+  if (!rows.length) {
+    renderInventoryImport(root);
+    showToast(root, "Aucune ligne valide a enregistrer.", "error");
+    return;
+  }
+  const grouped = new Map<
+    string,
+    Array<{
+      articleId: string;
+      expectedQuantity: number;
+      completedQuantity: number;
+      goodQuantity: number;
+      repairQuantity: number;
+      outOfServiceQuantity: number;
+      observation?: string;
+    }>
+  >();
+  rows.forEach((row) => {
+    const article = findInventoryImportArticle(row);
+    const location = findInventoryImportLocation(row);
+    if (!article || !location) return;
+    grouped.set(location.id, [
+      ...(grouped.get(location.id) ?? []),
+      {
+        articleId: article.id,
+        expectedQuantity: articleImportNumber(row.theoretical),
+        completedQuantity: articleImportNumber(row.counted),
+        goodQuantity: articleImportNumber(row.good),
+        repairQuantity: articleImportNumber(row.repair),
+        outOfServiceQuantity: articleImportNumber(row.outOfService),
+        observation: row.justification.trim() || undefined,
+      },
+    ]);
+  });
+  try {
+    let index = 0;
+    for (const [locationId, lines] of grouped.entries()) {
+      index += 1;
+      await createInventoryAdjustment({
+        reference: "INV-" + Date.now() + "-" + index,
+        date: new Date().toISOString(),
+        locationId,
+        handledBy: currentUser
+          ? `${currentUser.firstName} ${currentUser.lastName}`.trim()
+          : undefined,
+        notes: "Import Excel inventaire",
+        lines,
+      });
+    }
+    closeModal(root, "inventoryImportModal");
+    inventoryImportRows = [];
+    const [movements, stockLevels] = await Promise.all([
+      getStockMovements(),
+      getStockLevels().catch(() => latestStockLevels),
+    ]);
+    latestMovements = movements;
+    latestStockLevels = stockLevels;
+    updateApiBackedViews(root);
+    renderInventory(root);
+    showToast(root, `${rows.length} ligne(s) d'inventaire importee(s).`);
+  } catch (error) {
+    showToast(
+      root,
+      error instanceof Error ? error.message : "Import inventaire impossible.",
+      "error",
+    );
+  }
+}
+
 function downloadArticleImportTemplate(root: HTMLElement) {
   const headers = [
-    "Code",
     "Designation",
     "Famille",
     "Unite",
@@ -8323,7 +10014,6 @@ function downloadArticleImportTemplate(root: HTMLElement) {
     "Emplacement de depart",
   ];
   const example = [
-    "FO-0001",
     "Cable reseau Cat6",
     "FO",
     "Piece",
@@ -8366,6 +10056,24 @@ function openModal(root: HTMLElement, id: string) {
       ?.classList.add("hidden");
     const save = root.querySelector<HTMLButtonElement>(
       "#articleImportSaveButton",
+    );
+    if (save) {
+      save.disabled = true;
+      save.classList.add("opacity-50", "cursor-not-allowed");
+    }
+  }
+  if (id === "inventoryImportModal") {
+    inventoryImportRows = [];
+    const file = root.querySelector<HTMLInputElement>("#inventoryImportFile");
+    if (file) file.value = "";
+    root
+      .querySelector<HTMLElement>("#inventoryImportSummary")
+      ?.classList.add("hidden");
+    root
+      .querySelector<HTMLElement>("#inventoryImportTable")
+      ?.classList.add("hidden");
+    const save = root.querySelector<HTMLButtonElement>(
+      "#inventoryImportSaveButton",
     );
     if (save) {
       save.disabled = true;
@@ -9688,6 +11396,9 @@ function parseAction(action: string) {
   const inventoryModeMatch = action.match(/^showInventoryMode\('([^']+)'\)/);
   if (inventoryModeMatch)
     return { type: "inventory-mode", mode: inventoryModeMatch[1] } as const;
+  const inventoryLocationMatch = action.match(/^showInventoryLocation\('([^']+)'\)/);
+  if (inventoryLocationMatch)
+    return { type: "inventory-location", id: inventoryLocationMatch[1] } as const;
   const exitFilterMatch = action.match(/^setExitFilter\('([^']+)'\)/);
   if (exitFilterMatch)
     return { type: "exit-filter", filter: exitFilterMatch[1] } as const;
@@ -9703,6 +11414,18 @@ function parseAction(action: string) {
   const auditTabMatch = action.match(/^showAudit\('([^']+)'/);
   if (auditTabMatch)
     return { type: "audit-tab", id: auditTabMatch[1] } as const;
+  const auditAlertDetailMatch = action.match(/^openAuditAlertDetail\('([^']+)'\)/);
+  if (auditAlertDetailMatch)
+    return { type: "audit-alert-detail", id: auditAlertDetailMatch[1] } as const;
+  const auditLogDetailMatch = action.match(/^openAuditLogDetail\('([^']+)'\)/);
+  if (auditLogDetailMatch)
+    return { type: "audit-log-detail", id: auditLogDetailMatch[1] } as const;
+  const auditLogDateRangeMatch = action.match(/^setAuditLogDateRange\('([^']+)'\)/);
+  if (auditLogDateRangeMatch)
+    return { type: "audit-log-date-range", range: auditLogDateRangeMatch[1] } as const;
+  const auditLogDayMatch = action.match(/^toggleAuditLogDay\('([^']+)'\)/);
+  if (auditLogDayMatch)
+    return { type: "audit-log-day", dayKey: auditLogDayMatch[1] } as const;
   const exitActionsMatch = action.match(/^toggleExitActions\('([^']+)'\)/);
   if (exitActionsMatch)
     return { type: "toggle-exit-actions", id: exitActionsMatch[1] } as const;
@@ -9719,6 +11442,10 @@ function parseAction(action: string) {
   if (action === "downloadArticleImportTemplate")
     return { type: "download-article-import-template" } as const;
   if (action === "importArticles") return { type: "import-articles" } as const;
+  if (action === "downloadInventoryImportTemplate")
+    return { type: "download-inventory-import-template" } as const;
+  if (action === "importInventoryRows")
+    return { type: "import-inventory-rows" } as const;
   if (action === "submitReferential")
     return { type: "submit-referential" } as const;
   if (action === "submitQuickArticle")
@@ -9875,6 +11602,23 @@ function parseAction(action: string) {
   const stockDrawerMatch = action.match(/^openStockDrawer\('([^']+)'\)/);
   if (stockDrawerMatch)
     return { type: "stock-drawer-open", id: stockDrawerMatch[1] } as const;
+  const inventoryDetailMatch = action.match(
+    /^openInventoryDetail\('([^']+)','([^']+)'\)/,
+  );
+  if (inventoryDetailMatch)
+    return {
+      type: "inventory-detail-open",
+      articleId: inventoryDetailMatch[1],
+      locationId: inventoryDetailMatch[2],
+    } as const;
+  const inventoryGlobalDetailMatch = action.match(
+    /^openInventoryGlobalDetail\('([^']+)'\)/,
+  );
+  if (inventoryGlobalDetailMatch)
+    return {
+      type: "inventory-global-detail-open",
+      articleId: inventoryGlobalDetailMatch[1],
+    } as const;
   if (action === "closeStockDrawer")
     return { type: "stock-drawer-close" } as const;
   if (action === "refreshStockDrawer")
@@ -9938,6 +11682,10 @@ function StockHubTemplate() {
         void (referentialImportType === "article"
           ? importArticles(root)
           : importReferentialElements(root));
+      if (parsed.type === "download-inventory-import-template")
+        downloadInventoryImportTemplate(root);
+      if (parsed.type === "import-inventory-rows")
+        void importInventoryRows(root);
       if (parsed.type === "count") {
         openModal(root, "countModal");
         void populateCountModal(root, parsed.articleId, parsed.locationId);
@@ -10052,12 +11800,24 @@ function StockHubTemplate() {
       if (parsed.type === "audit-tab") {
         showAuditTab(root, parsed.id, target);
       }
+      if (parsed.type === "audit-alert-detail")
+        openAuditAlertDetail(root, parsed.id);
+      if (parsed.type === "audit-log-detail") openAuditLogDetail(root, parsed.id);
+      if (parsed.type === "audit-log-date-range")
+        setAuditLogDateRange(root, parsed.range);
+      if (parsed.type === "audit-log-day")
+        toggleAuditLogDay(root, parsed.dayKey);
       if (parsed.type === "refresh-history") renderHistory(root);
       if (parsed.type === "export") exportData(root, parsed.kind);
       if (parsed.type === "stock-filter") renderStock(root);
       if (parsed.type === "stock-drawer-open") openStockDrawer(root, parsed.id);
+      if (parsed.type === "inventory-detail-open")
+        openInventoryDetail(root, parsed.articleId, parsed.locationId);
+      if (parsed.type === "inventory-global-detail-open")
+        openInventoryGlobalDetail(root, parsed.articleId);
       if (parsed.type === "stock-drawer-close") closeStockDrawer(root);
-      if (parsed.type === "stock-drawer-refresh") renderStockDrawer(root);
+      if (parsed.type === "stock-drawer-refresh")
+        openInventoryScope ? renderInventoryDrawer(root) : renderStockDrawer(root);
       if (parsed.type === "stock-sort") {
         if (stockSortKey === parsed.key) {
           stockSortDir = stockSortDir === "asc" ? "desc" : "asc";
@@ -10078,6 +11838,12 @@ function StockHubTemplate() {
       }
       if (parsed.type === "inventory-mode")
         showInventoryMode(root, parsed.mode);
+      if (parsed.type === "inventory-location") {
+        const select = root.querySelector<HTMLSelectElement>("#inventoryLocationSelect");
+        if (select) select.value = parsed.id;
+        showInventoryMode(root, "local");
+        renderInventory(root);
+      }
     };
     const importFile =
       root.querySelector<HTMLInputElement>("#articleImportFile");
@@ -10087,6 +11853,13 @@ function StockHubTemplate() {
       if (referentialImportType === "article")
         void readArticleImportFile(root, file);
       else void readReferentialImportFile(root, file);
+    });
+    const inventoryImportFile =
+      root.querySelector<HTMLInputElement>("#inventoryImportFile");
+    inventoryImportFile?.addEventListener("change", () => {
+      const file = inventoryImportFile.files?.[0];
+      if (!file) return;
+      void readInventoryImportFile(root, file);
     });
     root
       .querySelector<HTMLSelectElement>("#referentialImportType")
@@ -10108,6 +11881,23 @@ function StockHubTemplate() {
     const onChange = (event: Event) => {
       const target = event.target as HTMLElement;
       const importField = target as HTMLInputElement;
+      if (
+        importField.dataset.inventoryImportRow &&
+        importField.dataset.inventoryImportField
+      ) {
+        const rowIndex = Number(importField.dataset.inventoryImportRow);
+        const row = inventoryImportRows[rowIndex];
+        if (row) {
+          const field = importField.dataset
+            .inventoryImportField as keyof InventoryImportRow;
+          if (field !== "errors") {
+            (row as unknown as Record<string, string>)[field] =
+              importField.value;
+            renderInventoryImport(root);
+          }
+        }
+        return;
+      }
       if (importField.dataset.importRow && importField.dataset.importField) {
         const rowIndex = Number(importField.dataset.importRow);
         if (referentialImportType === "article") {
@@ -10133,6 +11923,29 @@ function StockHubTemplate() {
       if (target.id === "inventoryLocationSelect") {
         renderInventory(root);
       }
+      if (target.id === "inventoryHideValidated") {
+        renderInventory(root);
+      }
+      if (
+        [
+          "auditAlertTypeSelect",
+          "auditAlertSeveritySelect",
+          "auditAlertStatusSelect",
+        ].includes(target.id)
+      ) {
+        renderAuditAlerts(root);
+      }
+      if (
+        [
+          "auditLogDateFromInput",
+          "auditLogDateToInput",
+          "auditLogUserSelect",
+          "auditLogDomainSelect",
+          "auditLogActionSelect",
+        ].includes(target.id)
+      ) {
+        renderAuditLogs(root);
+      }
       if (
         [
           "stockLocationSelect",
@@ -10149,6 +11962,9 @@ function StockHubTemplate() {
     const onInput = (event: Event) => {
       const target = event.target as HTMLElement;
       if (target.id === "stockSearchInput") renderStock(root);
+      if (target.id === "inventorySearchInput") renderInventory(root);
+      if (target.id === "auditAlertSearchInput") renderAuditAlerts(root);
+      if (target.id === "auditLogSearchInput") renderAuditLogs(root);
       if (target.closest("#materialRequestLines")) {
         syncMaterialPreparationState(root);
       }

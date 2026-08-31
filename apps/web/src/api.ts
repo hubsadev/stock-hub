@@ -1,5 +1,31 @@
 const API_URL = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:3200";
 
+function currentAuditUserId() {
+  if (typeof localStorage === "undefined") return undefined;
+  try {
+    const raw = localStorage.getItem("stock-hub.user");
+    if (!raw) return undefined;
+    const user = JSON.parse(raw) as { id?: unknown };
+    return typeof user.id === "string" && user.id ? user.id : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function withAuditUser(body: unknown) {
+  const auditUserId = currentAuditUserId();
+  if (
+    !auditUserId ||
+    !body ||
+    typeof body !== "object" ||
+    body instanceof FormData ||
+    Array.isArray(body)
+  ) {
+    return body;
+  }
+  return { ...(body as Record<string, unknown>), auditUserId };
+}
+
 export type DashboardSummary = {
   articles: number;
   ruptures: number;
@@ -253,6 +279,19 @@ export type AuditAlert = {
   date: string;
   action: string;
   status: string;
+  domain?: string;
+  objectCode?: string | null;
+  locationId?: string | null;
+  movementId?: string | null;
+  movementReference?: string | null;
+  articleId?: string | null;
+  articleCode?: string | null;
+  articleName?: string | null;
+  impact?: string | null;
+  expectedQuantity?: number | null;
+  completedQuantity?: number | null;
+  gapQuantity?: number | null;
+  details?: Record<string, unknown> | null;
 };
 
 export type AuditLog = {
@@ -297,11 +336,17 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 function post<T>(path: string, body: unknown) {
-  return request<T>(path, { method: "POST", body: JSON.stringify(body) });
+  return request<T>(path, {
+    method: "POST",
+    body: JSON.stringify(withAuditUser(body)),
+  });
 }
 
 function patch<T>(path: string, body: unknown) {
-  return request<T>(path, { method: "PATCH", body: JSON.stringify(body) });
+  return request<T>(path, {
+    method: "PATCH",
+    body: JSON.stringify(withAuditUser(body)),
+  });
 }
 
 export function loginUser(body: { identifier: string; password: string }) {
@@ -329,7 +374,7 @@ export function getArticles() {
 }
 
 export function createArticle(body: {
-  code: string;
+  code?: string;
   designation: string;
   category: string;
   unit: string;
@@ -358,7 +403,7 @@ export function getClients() {
 }
 
 export function createClient(body: {
-  code: string;
+  code?: string;
   name: string;
   contact?: string;
   phone?: string;
@@ -376,7 +421,7 @@ export function getTeamServices() {
 }
 
 export function createTeamService(body: {
-  code: string;
+  code?: string;
   name: string;
   type?: string;
   manager?: string;
@@ -393,7 +438,7 @@ export function getEmployees() {
 }
 
 export function createEmployee(body: {
-  matricule: string;
+  matricule?: string;
   lastName: string;
   firstName: string;
   department?: string;
@@ -412,7 +457,7 @@ export function getSuppliers() {
 }
 
 export function createSupplier(body: {
-  code: string;
+  code?: string;
   name: string;
   fiscalId?: string;
   category?: string;
@@ -433,7 +478,7 @@ export function getProjects() {
 }
 
 export function createProject(body: {
-  code: string;
+  code?: string;
   name: string;
   client?: string;
   clientId?: string;
@@ -456,7 +501,7 @@ export function getLocations() {
 }
 
 export function createLocation(body: {
-  code: string;
+  code?: string;
   name: string;
   type: string;
   responsible?: string;
@@ -670,6 +715,8 @@ export function uploadExitRequestProof(id: string, body: { file: File; uploadedB
   const form = new FormData();
   form.append("file", body.file);
   if (body.uploadedBy) form.append("uploadedBy", body.uploadedBy);
+  const auditUserId = currentAuditUserId();
+  if (auditUserId) form.append("auditUserId", auditUserId);
   return request<StockMovement>("/stock-movements/exit-requests/" + encodeURIComponent(id) + "/proof", {
     method: "POST",
     body: form
@@ -749,6 +796,9 @@ export function createInventoryAdjustment(body: {
     articleId: string;
     expectedQuantity?: number;
     completedQuantity: number;
+    goodQuantity?: number;
+    repairQuantity?: number;
+    outOfServiceQuantity?: number;
     observation?: string;
   }>;
 }) {

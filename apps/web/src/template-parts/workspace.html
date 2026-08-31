@@ -117,7 +117,7 @@
           </div>
         </section>
 
-                <section id="referentiels" class="view">
+        <section id="referentiels" class="view">
           <div class="flex items-start justify-between gap-4 mb-6">
             <div class="min-w-0">
               <h1 class="text-3xl font-bold">Referentiels Stock Hub</h1>
@@ -134,7 +134,7 @@
             <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Emplacements</div><div id="refLocationsCount" class="text-3xl font-bold mt-3">0</div><div class="text-xs text-gray-500 mt-1">Magasins et depots</div></div>
           </div>
 
-                    <div class="bg-accent-50 border border-accent-100 rounded-xl p-4 mb-4">
+          <div class="bg-accent-50 border border-accent-100 rounded-xl p-4 mb-4">
             <div class="font-bold text-accent-600">Regle de codification</div>
             <p class="text-sm text-gray-600 mt-1">Un code article designe une designation de materiel, avec une quantite en stock. Un code equipement designe une piece precise suivie avec son numero de serie.</p>
           </div>
@@ -208,7 +208,7 @@
             </div>
           </div>
         </section>
-<section id="stock" class="view">
+        <section id="stock" class="view">
           <!-- Page header -->
           <div class="flex justify-between items-start gap-4 mb-6">
             <div>
@@ -475,8 +475,7 @@
                 <button data-action="showInventoryMode('local')" id="inventoryLocalTab" class="inventory-tab px-4 py-2 rounded-lg bg-white shadow-sm text-sm font-bold">Par emplacement</button>
                 <button data-action="showInventoryMode('global')" id="inventoryGlobalTab" class="inventory-tab px-4 py-2 rounded-lg text-sm font-bold text-gray-500">Synthese globale</button>
               </div>
-              <button class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold flex items-center gap-2"><i data-lucide="download" class="w-4 h-4"></i>Modele Excel</button>
-              <button class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold flex items-center gap-2"><i data-lucide="upload" class="w-4 h-4"></i>Importer XLS</button>
+              <button data-action="openModal('inventoryImportModal')" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold flex items-center gap-2"><i data-lucide="upload" class="w-4 h-4"></i>Importer Excel</button>
             </div>
           </div>
 
@@ -498,27 +497,28 @@
             </div>
 
             <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-              <div class="p-4 border-b flex justify-between gap-4"><div class="relative w-80"><i data-lucide="search" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400"></i><input class="w-full h-10 rounded-lg border border-gray-300 pl-10 pr-3" placeholder="Rechercher un article ou un code"></div><label class="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox"> Masquer les lignes validees</label></div>
+              <div class="p-4 border-b flex items-center justify-between gap-4"><div class="relative w-80 max-w-full shrink-0"><i data-lucide="search" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400"></i><input id="inventorySearchInput" class="w-full h-10 rounded-lg border border-gray-300 pl-10 pr-3" placeholder="Rechercher un article ou un code"></div><label class="ml-auto flex shrink-0 items-center gap-2 text-sm text-gray-700"><input id="inventoryHideValidated" type="checkbox"> Masquer les lignes validees</label></div>
               <div class="overflow-x-auto"><table id="inventoryTable" class="w-full text-sm"><thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Article</th><th class="px-5 py-3 text-right">Stock theorique emplacement</th><th class="px-5 py-3 text-right">Quantite constatee</th><th class="px-5 py-3 text-right">Bon etat</th><th class="px-5 py-3 text-right">A reparer</th><th class="px-5 py-3 text-right">Hors service</th><th class="px-5 py-3 text-center">Ecart</th><th class="px-5 py-3 text-left">Justification</th><th class="px-5 py-3 text-left">Controle</th><th class="px-5 py-3 text-right">Action</th></tr></thead><tbody class="divide-y"><tr><td class="px-5 py-8 text-center text-gray-500" colspan="10">Aucun stock theorique disponible pour lancer l'inventaire.</td></tr></tbody></table></div>
-              <div class="p-4 border-t bg-gray-50 text-sm text-gray-600">Apres saisie, les ecarts restent en attente de controle. La correction concerne seulement l'emplacement inventorie. Une synthese globale peut ensuite consolider plusieurs inventaires locaux.</div>
             </div>
           </div>
 
           <div id="inventoryGlobalPanel" class="hidden space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Emplacements inventories</div><div class="text-3xl font-bold mt-3">0</div><div class="text-xs text-gray-500 mt-1">Magasins, depots, chantiers</div></div>
-              <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Articles comptes</div><div class="text-3xl font-bold mt-3">0</div><div class="text-xs text-gray-500 mt-1">Toutes zones consolidees</div></div>
-              <div class="bg-white rounded-xl border border-warning-100 p-5 shadow-sm"><div class="text-sm font-semibold text-warning-700">Ecarts ouverts</div><div class="text-3xl font-bold mt-3 text-warning-700">0</div><div class="text-xs text-gray-500 mt-1">A controler par audit</div></div>
-              <div class="bg-white rounded-xl border border-success-100 p-5 shadow-sm"><div class="text-sm font-semibold text-success-700">Inventaires valides</div><div class="text-3xl font-bold mt-3 text-success-700">0</div><div class="text-xs text-gray-500 mt-1">Sur 5 emplacements</div></div>
+              <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Emplacements inventories</div><div id="inventoryGlobalLocations" class="text-3xl font-bold mt-3">0</div><div class="text-xs text-gray-500 mt-1">Magasins, depots, chantiers</div></div>
+              <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Articles comptes</div><div id="inventoryGlobalArticles" class="text-3xl font-bold mt-3">0</div><div class="text-xs text-gray-500 mt-1">Toutes zones consolidees</div></div>
+              <div class="bg-white rounded-xl border border-warning-100 p-5 shadow-sm"><div class="text-sm font-semibold text-warning-700">Ecarts ouverts</div><div id="inventoryGlobalGaps" class="text-3xl font-bold mt-3 text-warning-700">0</div><div class="text-xs text-gray-500 mt-1">Lignes en ecart</div></div>
+              <div class="bg-white rounded-xl border border-success-100 p-5 shadow-sm"><div class="text-sm font-semibold text-success-700">Inventaires valides</div><div id="inventoryGlobalValid" class="text-3xl font-bold mt-3 text-success-700">0</div><div id="inventoryGlobalValidHint" class="text-xs text-gray-500 mt-1">Sur 0 emplacements</div></div>
             </div>
-            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-              <div class="xl:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                <div class="p-5 border-b border-gray-200"><h2 class="text-lg font-bold">Synthese par emplacement</h2><p class="text-sm text-gray-500 mt-1">Chaque ligne vient d'un inventaire local.</p></div>
-                <div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Emplacement</th><th class="px-5 py-3 text-right">Articles</th><th class="px-5 py-3 text-right">Saisis</th><th class="px-5 py-3 text-right">Ecarts</th><th class="px-5 py-3 text-left">Statut</th><th class="px-5 py-3 text-right">Action</th></tr></thead><tbody class="divide-y"><tr><td class="px-5 py-8 text-center text-gray-500" colspan="6">Aucune synthese inventaire pour le moment.</td></tr></tbody></table></div>
-              </div>
+            <div class="grid grid-cols-1 gap-6">
               <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                <div class="p-5 border-b border-gray-200"><h2 class="text-lg font-bold">Ecarts sensibles</h2></div>
-                <div class="p-5 space-y-3 text-sm"><div class="p-4 rounded-xl bg-gray-50 border border-gray-100 text-gray-500">Aucun ecart sensible pour le moment.</div></div>             </div>           </div>          </div>        </section>        <section id="equipements" class="view">
+                <div class="p-5 border-b border-gray-200"><h2 class="text-lg font-bold">Synthese globale par article</h2><p class="text-sm text-gray-500 mt-1">Les valeurs sont consolidees sur tous les emplacements.</p></div>
+                <div class="overflow-x-auto"><table id="inventoryGlobalTable" class="w-full min-w-[1120px] text-sm"><thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Article</th><th class="px-5 py-3 text-right">Stock theorique global</th><th class="px-5 py-3 text-right">Quantite constatee</th><th class="px-5 py-3 text-right">Bon etat</th><th class="px-5 py-3 text-right">A reparer</th><th class="px-5 py-3 text-right">Hors service</th><th class="px-5 py-3 text-center">Ecart</th><th class="px-5 py-3 text-left">Emplacements concernes</th><th class="px-5 py-3 text-left">Statut</th></tr></thead><tbody class="divide-y"><tr><td class="px-5 py-8 text-center text-gray-500" colspan="9">Aucune synthese inventaire pour le moment.</td></tr></tbody></table></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="equipements" class="view">
             <div class="flex justify-between items-start gap-4 mb-6">
               <div>
                 <h1 class="text-3xl font-bold">Equipements et affectations</h1>
@@ -548,7 +548,7 @@
               </div>
             </div>
           </section>
-          <section id="parcAuto" class="view">
+        <section id="parcAuto" class="view">
           <div class="flex justify-between items-start gap-4 mb-6">
             <div>
               <h1 class="text-3xl font-bold">Parc auto</h1>
@@ -566,7 +566,9 @@
             <div class="p-5 border-b border-gray-200 flex flex-col xl:flex-row xl:items-center justify-between gap-4"><h2 class="text-lg font-bold">Registre vehicules</h2><div class="flex gap-2 flex-wrap"><button data-vehicle-filter="ALL" data-action="setVehicleFilter('ALL')" class="px-3 py-2 rounded-lg text-xs font-semibold bg-accent-50 text-accent-600">Tous</button><button data-vehicle-filter="AVAILABLE" data-action="setVehicleFilter('AVAILABLE')" class="px-3 py-2 rounded-lg text-xs font-semibold bg-gray-100 text-gray-600">Disponibles</button><button data-vehicle-filter="ASSIGNED" data-action="setVehicleFilter('ASSIGNED')" class="px-3 py-2 rounded-lg text-xs font-semibold bg-gray-100 text-gray-600">Affectes</button><button data-vehicle-filter="ALERTS" data-action="setVehicleFilter('ALERTS')" class="px-3 py-2 rounded-lg text-xs font-semibold bg-gray-100 text-gray-600">Alertes</button></div></div>
             <div class="overflow-x-auto"><table id="vehicles-table" class="w-full text-sm min-w-[1050px]"><thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Vehicule</th><th class="px-5 py-3 text-left">Immatriculation</th><th class="px-5 py-3 text-left">Type</th><th class="px-5 py-3 text-left">Affectation</th><th class="px-5 py-3 text-left">Chauffeur</th><th class="px-5 py-3 text-left">Apprenti</th><th class="px-5 py-3 text-left">Statut</th><th class="px-5 py-3 text-right">Action</th></tr></thead><tbody class="divide-y"><tr><td class="px-5 py-8 text-center text-gray-500" colspan="8">Chargement des vehicules...</td></tr></tbody></table></div>
           </div>
-        </section>        <section id="audit" class="view">
+        </section>
+
+        <section id="audit" class="view">
           <div class="flex justify-between items-start gap-4 mb-6">
             <div>
               <h1 class="text-3xl font-bold">Audit & alertes</h1>
@@ -595,28 +597,53 @@
             </div>
 
             <div id="audit-alerts" class="audit-view">
-              <div class="p-4 border-b bg-gray-50 flex flex-col lg:flex-row gap-3 lg:items-center justify-between">
-                <div class="relative w-full lg:w-96"><i data-lucide="search" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400"></i><input class="w-full h-10 rounded-lg border border-gray-300 pl-10 pr-3" placeholder="Article, equipement, emplacement"></div>
-                <div class="flex gap-2 text-xs font-semibold flex-wrap"><button data-audit-filter="ALL" data-action="setAuditFilter('ALL')" class="px-3 py-2 rounded-lg bg-accent-50 text-accent-600">Toutes</button><button data-audit-filter="CRITICAL" data-action="setAuditFilter('CRITICAL')" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Critique</button><button data-audit-filter="TO_VERIFY" data-action="setAuditFilter('TO_VERIFY')" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">A verifier</button><button data-audit-filter="INVENTORY" data-action="setAuditFilter('INVENTORY')" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Inventaire</button></div>
+              <div class="p-4 border-b bg-gray-50 space-y-3">
+                <div class="flex flex-col xl:flex-row gap-3 xl:items-center justify-between">
+                  <div class="relative w-full xl:w-[420px]"><i data-lucide="search" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400"></i><input id="auditAlertSearchInput" class="w-full h-10 rounded-lg border border-gray-300 pl-10 pr-3" placeholder="Article, code, bon, emplacement, action"></div>
+                  <div id="auditAlertCount" class="text-sm font-semibold text-gray-500">0 alerte</div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <select id="auditAlertTypeSelect" class="h-10 rounded-lg border border-gray-300 px-3"><option value="ALL">Tous domaines</option><option value="STOCK">Stock</option><option value="INVENTORY">Inventaire</option><option value="ENTRY">Entrees</option><option value="EXIT">Sorties</option><option value="RETURN">Retours</option><option value="DATA">Donnees</option></select>
+                  <select id="auditAlertSeveritySelect" class="h-10 rounded-lg border border-gray-300 px-3"><option value="ALL">Toutes gravites</option><option value="CRITIQUE">Critique</option><option value="A_VERIFIER">A verifier</option><option value="INFO">Information</option></select>
+                  <select id="auditAlertStatusSelect" class="h-10 rounded-lg border border-gray-300 px-3"><option value="ALL">Tous statuts</option><option value="OUVERTE">Ouvertes</option><option value="TRAITEE">Traitees</option><option value="IGNOREE">Ignorees</option></select>
+                </div>
+                <div class="flex gap-2 text-xs font-semibold flex-wrap"><button data-audit-filter="ALL" data-action="setAuditFilter('ALL')" class="px-3 py-2 rounded-lg bg-accent-50 text-accent-600">Toutes</button><button data-audit-filter="CRITICAL" data-action="setAuditFilter('CRITICAL')" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Critiques</button><button data-audit-filter="TO_VERIFY" data-action="setAuditFilter('TO_VERIFY')" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">A verifier</button><button data-audit-filter="INVENTORY" data-action="setAuditFilter('INVENTORY')" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Inventaire</button><button data-audit-filter="STOCK" data-action="setAuditFilter('STOCK')" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Stock</button></div>
+              </div>
+              <div id="auditAlertKpis" class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border-b bg-white">
+                <div class="rounded-xl border border-error-100 bg-error-50 p-4 shadow-sm"><div class="text-sm font-semibold text-gray-500">Critiques</div><div id="auditAlertCriticalKpi" class="mt-2 text-3xl font-bold text-error-700">0</div></div>
+                <div class="rounded-xl border border-warning-100 bg-warning-50 p-4 shadow-sm"><div class="text-sm font-semibold text-gray-500">A verifier</div><div id="auditAlertVerifyKpi" class="mt-2 text-3xl font-bold text-warning-700">0</div></div>
+                <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 shadow-sm"><div class="text-sm font-semibold text-gray-500">Total alertes</div><div id="auditAlertTotalKpi" class="mt-2 text-3xl font-bold">0</div></div>
               </div>
               <div class="overflow-x-auto">
                 <table class="w-full text-sm min-w-[1100px]">
-                  <thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Alerte</th><th class="px-5 py-3 text-left">Objet</th><th class="px-5 py-3 text-left">Emplacement</th><th class="px-5 py-3 text-left">Gravite</th><th class="px-5 py-3 text-left">Date</th><th class="px-5 py-3 text-left">Action attendue</th><th class="px-5 py-3 text-left">Statut</th><th class="px-5 py-3 text-right">Action</th></tr></thead>
-                  <tbody class="divide-y divide-gray-200"><tr><td class="px-5 py-8 text-center text-gray-500" colspan="8">Aucune alerte ouverte pour le moment.</td></tr></tbody>
+                  <thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Priorite</th><th class="px-5 py-3 text-left">Sujet</th><th class="px-5 py-3 text-left">Contexte</th><th class="px-5 py-3 text-left">Impact stock</th><th class="px-5 py-3 text-left">Action attendue</th><th class="px-5 py-3 text-left">Date</th><th class="px-5 py-3 text-left">Statut</th></tr></thead>
+                  <tbody class="divide-y divide-gray-200"><tr><td class="px-5 py-8 text-center text-gray-500" colspan="7">Aucune alerte ouverte pour le moment.</td></tr></tbody>
                 </table>
               </div>
             </div>
 
             <div id="audit-journal" class="audit-view hidden">
-              <div class="p-4 border-b bg-gray-50 grid grid-cols-1 lg:grid-cols-4 gap-3">
-                <input class="h-10 rounded-lg border border-gray-300 px-3" placeholder="Date">
-                <select class="h-10 rounded-lg border border-gray-300 px-3"><option>Tous utilisateurs</option></select>
-                <select class="h-10 rounded-lg border border-gray-300 px-3"><option>Toutes actions</option><option>Creation</option><option>Modification</option><option>Blocage</option></select>
-                <input class="h-10 rounded-lg border border-gray-300 px-3" placeholder="Objet concerne">
+              <div class="p-4 border-b bg-gray-50 space-y-3">
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-3">
+                  <input id="auditLogSearchInput" class="h-10 rounded-lg border border-gray-300 px-3 lg:col-span-2" placeholder="Rechercher action, bon, article, emplacement">
+                  <input id="auditLogDateFromInput" type="date" class="h-10 rounded-lg border border-gray-300 px-3">
+                  <input id="auditLogDateToInput" type="date" class="h-10 rounded-lg border border-gray-300 px-3">
+                  <select id="auditLogUserSelect" class="h-10 rounded-lg border border-gray-300 px-3"><option value="">Tous utilisateurs</option></select>
+                </div>
+                <div class="flex flex-wrap gap-2 text-xs font-semibold">
+                  <button data-action="setAuditLogDateRange('today')" class="px-3 py-2 rounded-lg bg-white border border-gray-200 text-gray-700 hover:bg-accent-50 hover:text-accent-600">Aujourd'hui</button>
+                  <button data-action="setAuditLogDateRange('7d')" class="px-3 py-2 rounded-lg bg-white border border-gray-200 text-gray-700 hover:bg-accent-50 hover:text-accent-600">7 derniers jours</button>
+                  <button data-action="setAuditLogDateRange('30d')" class="px-3 py-2 rounded-lg bg-white border border-gray-200 text-gray-700 hover:bg-accent-50 hover:text-accent-600">30 derniers jours</button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <select id="auditLogDomainSelect" class="h-10 rounded-lg border border-gray-300 px-3"><option value="">Tous domaines</option><option value="ENTRY">Entrees</option><option value="EXIT">Sorties</option><option value="RETURN">Retours</option><option value="TRANSFER">Transferts</option><option value="INVENTORY">Inventaire</option><option value="REFERENTIAL">Referentiel</option><option value="SYSTEM">Systeme</option></select>
+                  <select id="auditLogActionSelect" class="h-10 rounded-lg border border-gray-300 px-3"><option value="">Toutes actions</option></select>
+                  <div id="auditLogCount" class="h-10 rounded-lg border border-gray-200 bg-white px-3 flex items-center text-sm font-semibold text-gray-500">0 trace</div>
+                </div>
               </div>
               <div class="overflow-x-auto">
                 <table class="w-full text-sm min-w-[1050px]">
-                  <thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Date</th><th class="px-5 py-3 text-left">Utilisateur</th><th class="px-5 py-3 text-left">Action</th><th class="px-5 py-3 text-left">Objet</th><th class="px-5 py-3 text-left">Avant</th><th class="px-5 py-3 text-left">Apres</th><th class="px-5 py-3 text-left">Resultat</th></tr></thead>
+                  <thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Heure</th><th class="px-5 py-3 text-left">Utilisateur</th><th class="px-5 py-3 text-left">Action metier</th><th class="px-5 py-3 text-left">Document</th><th class="px-5 py-3 text-left">Article / emplacement</th><th class="px-5 py-3 text-left">Resultat</th><th class="px-5 py-3 text-right">Action</th></tr></thead>
                   <tbody class="divide-y divide-gray-200"><tr><td class="px-5 py-8 text-center text-gray-500" colspan="7">Aucune trace audit pour le moment.</td></tr></tbody>
                 </table>
               </div>

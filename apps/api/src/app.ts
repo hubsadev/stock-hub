@@ -65,6 +65,10 @@ function asBody(requestBody: unknown): Record<string, unknown> {
   return requestBody && typeof requestBody === "object" ? requestBody as Record<string, unknown> : {};
 }
 
+function auditUserIdFromBody(body: Record<string, unknown>) {
+  return asString(body.auditUserId) ?? null;
+}
+
 function requiredEnv(name: string) {
   const value = process.env[name];
   if (!value) throw new Error("R2_NOT_CONFIGURED");
@@ -175,6 +179,61 @@ async function nextArticleCode(family: string) {
     .filter((value) => Number.isFinite(value));
   const next = (numbers.length ? Math.max(...numbers) : 0) + 1;
   return prefix + String(next).padStart(4, "0");
+}
+
+async function nextCode(
+  findMany: () => Promise<Array<{ code: string }>>,
+  prefix: string,
+  width = 3,
+) {
+  const rows = await findMany();
+  const numbers = rows
+    .map((row) => Number(row.code.slice(prefix.length).replace(/\D/g, "")))
+    .filter((value) => Number.isFinite(value));
+  const next = (numbers.length ? Math.max(...numbers) : 0) + 1;
+  return prefix + String(next).padStart(width, "0");
+}
+
+async function nextMatricule(prefix = "EMP-", width = 3) {
+  const employees = await prisma.employee.findMany({
+    where: { matricule: { startsWith: prefix } },
+    select: { matricule: true }
+  });
+  const numbers = employees
+    .map((employee) => Number(employee.matricule.slice(prefix.length).replace(/\D/g, "")))
+    .filter((value) => Number.isFinite(value));
+  const next = (numbers.length ? Math.max(...numbers) : 0) + 1;
+  return prefix + String(next).padStart(width, "0");
+}
+
+function locationCodePrefix(type: unknown) {
+  const normalized = String(type ?? "MAGASIN").trim().toUpperCase();
+  if (normalized === "DEPOT") return "DEP-";
+  if (normalized === "BUREAU") return "BUR-";
+  if (normalized === "VEHICULE") return "VEH-";
+  if (normalized === "SITE" || normalized === "CHANTIER") return "SITE-";
+  if (normalized === "MAGASIN") return "MAG-";
+  return "LOC-";
+}
+
+async function uniqueCodeOrNext(
+  requested: string | undefined,
+  findUnique: (code: string) => Promise<unknown>,
+  findMany: () => Promise<Array<{ code: string }>>,
+  prefix: string,
+  width = 3,
+) {
+  const clean = requested?.trim();
+  if (clean && !(await findUnique(clean))) return clean;
+  return nextCode(findMany, prefix, width);
+}
+
+async function uniqueMatriculeOrNext(requested: string | undefined) {
+  const clean = requested?.trim();
+  if (clean && !(await prisma.employee.findUnique({ where: { matricule: clean } }))) {
+    return clean;
+  }
+  return nextMatricule();
 }
 
 export function buildApp() {
@@ -350,9 +409,15 @@ export function buildApp() {
 
   app.post("/clients", async (request, reply) => {
     const body = asBody(request.body);
+    const code = await uniqueCodeOrNext(
+      asString(body.code),
+      (value) => prisma.client.findUnique({ where: { code: value } }),
+      () => prisma.client.findMany({ where: { code: { startsWith: "CLI-" } }, select: { code: true } }),
+      "CLI-"
+    );
     const client = await prisma.client.create({
       data: {
-        code: String(body.code ?? ""),
+        code,
         name: String(body.name ?? ""),
         contact: body.contact ? String(body.contact) : undefined,
         phone: body.phone ? String(body.phone) : undefined,
@@ -384,9 +449,15 @@ export function buildApp() {
 
   app.post("/team-services", async (request, reply) => {
     const body = asBody(request.body);
+    const code = await uniqueCodeOrNext(
+      asString(body.code),
+      (value) => prisma.teamService.findUnique({ where: { code: value } }),
+      () => prisma.teamService.findMany({ where: { code: { startsWith: "SRV-" } }, select: { code: true } }),
+      "SRV-"
+    );
     const service = await prisma.teamService.create({
       data: {
-        code: String(body.code ?? ""),
+        code,
         name: String(body.name ?? ""),
         type: String(body.type ?? "SERVICE"),
         manager: asString(body.manager)
@@ -416,9 +487,10 @@ export function buildApp() {
 
   app.post("/employees", async (request, reply) => {
     const body = asBody(request.body);
+    const matricule = await uniqueMatriculeOrNext(asString(body.matricule));
     const employee = await prisma.employee.create({
       data: {
-        matricule: String(body.matricule ?? ""),
+        matricule,
         lastName: String(body.lastName ?? ""),
         firstName: String(body.firstName ?? ""),
         department: asString(body.department),
@@ -453,9 +525,15 @@ export function buildApp() {
 
   app.post("/suppliers", async (request, reply) => {
     const body = asBody(request.body);
+    const code = await uniqueCodeOrNext(
+      asString(body.code),
+      (value) => prisma.supplier.findUnique({ where: { code: value } }),
+      () => prisma.supplier.findMany({ where: { code: { startsWith: "FRN-" } }, select: { code: true } }),
+      "FRN-"
+    );
     const supplier = await prisma.supplier.create({
       data: {
-        code: String(body.code ?? ""),
+        code,
         name: String(body.name ?? ""),
         fiscalId: asString(body.fiscalId),
         category: asString(body.category),
@@ -505,9 +583,16 @@ export function buildApp() {
     }
     const clientId = asString(body.clientId);
     const selectedClient = clientId ? await prisma.client.findUnique({ where: { id: clientId } }) : null;
+    const projectPrefix = "PROJ-" + new Date().getFullYear() + "-";
+    const code = await uniqueCodeOrNext(
+      asString(body.code),
+      (value) => prisma.project.findUnique({ where: { code: value } }),
+      () => prisma.project.findMany({ where: { code: { startsWith: projectPrefix } }, select: { code: true } }),
+      projectPrefix
+    );
     const project = await prisma.project.create({
       data: {
-        code: String(body.code ?? ""),
+        code,
         name: String(body.name ?? ""),
         client: selectedClient?.name ?? asString(body.client),
         clientId,
@@ -597,11 +682,19 @@ export function buildApp() {
 
   app.post("/locations", async (request, reply) => {
     const body = asBody(request.body);
+    const type = String(body.type ?? "MAGASIN");
+    const prefix = locationCodePrefix(type);
+    const code = await uniqueCodeOrNext(
+      asString(body.code),
+      (value) => prisma.location.findUnique({ where: { code: value } }),
+      () => prisma.location.findMany({ where: { code: { startsWith: prefix } }, select: { code: true } }),
+      prefix
+    );
     const location = await prisma.location.create({
       data: {
-        code: String(body.code ?? ""),
+        code,
         name: String(body.name ?? ""),
-        type: String(body.type ?? "MAGASIN"),
+        type,
         responsible: asString(body.responsible),
         region: asString(body.region),
         city: asString(body.city),
@@ -676,6 +769,7 @@ export function buildApp() {
     });
     await prisma.auditLog.create({
       data: {
+        userId: auditUserIdFromBody(body),
         action: "CREATE_EQUIPMENT",
         entity: "Equipment",
         entityId: equipment.id,
@@ -729,6 +823,7 @@ export function buildApp() {
     });
     await prisma.auditLog.create({
       data: {
+        userId: auditUserIdFromBody(body),
         action: "UPDATE_EQUIPMENT",
         entity: "Equipment",
         entityId: equipment.id,
@@ -743,6 +838,7 @@ export function buildApp() {
 
   app.post("/equipments/:id/unassign", async (request, reply) => {
     const params = request.params as { id: string };
+    const body = asBody(request.body);
     const before = await prisma.equipment.findUnique({ where: { id: params.id }, include: { article: true, supplier: true } });
     if (!before) {
       return reply.code(404).send({ message: "Equipement introuvable." });
@@ -768,6 +864,7 @@ export function buildApp() {
     });
     await prisma.auditLog.create({
       data: {
+        userId: auditUserIdFromBody(body),
         action: "UNASSIGN_EQUIPMENT",
         entity: "Equipment",
         entityId: equipment.id,
@@ -824,6 +921,7 @@ export function buildApp() {
     });
     await prisma.auditLog.create({
       data: {
+        userId: auditUserIdFromBody(body),
         action: "CREATE_VEHICLE",
         entity: "Vehicle",
         entityId: vehicle.id,
@@ -880,6 +978,7 @@ export function buildApp() {
     });
     await prisma.auditLog.create({
       data: {
+        userId: auditUserIdFromBody(body),
         action: "UPDATE_VEHICLE",
         entity: "Vehicle",
         entityId: vehicle.id,
@@ -962,6 +1061,7 @@ export function buildApp() {
 
       await tx.auditLog.create({
         data: {
+          userId: auditUserIdFromBody(body),
           action: "CREATE_STOCK_ENTRY",
           entity: "StockMovement",
           entityId: created.id,
@@ -1109,6 +1209,7 @@ export function buildApp() {
 
       await tx.auditLog.create({
         data: {
+          userId: auditUserIdFromBody(body),
           action: "RESOLVE_STOCK_ENTRY_DISPUTE",
           entity: "StockMovement",
           entityId: after.id,
@@ -1159,6 +1260,7 @@ export function buildApp() {
 
       await tx.auditLog.create({
         data: {
+          userId: auditUserIdFromBody(body),
           action: "CREATE_EXIT_REQUEST",
           entity: "StockMovement",
           entityId: created.id,
@@ -1285,6 +1387,7 @@ export function buildApp() {
 
       await tx.auditLog.create({
         data: {
+          userId: auditUserIdFromBody(body),
           action: "PREPARE_EXIT_REQUEST",
           entity: "StockMovement",
           entityId: requestMovement.id,
@@ -1364,6 +1467,7 @@ export function buildApp() {
 
       await tx.auditLog.create({
         data: {
+          userId: auditUserIdFromBody(body),
           action: "REJECT_EXIT_REQUEST",
           entity: "StockMovement",
           entityId: updated.id,
@@ -1425,6 +1529,7 @@ export function buildApp() {
       throw error;
     }
     const uploadedByField = uploaded.fields.uploadedBy as { value?: unknown } | undefined;
+    const auditUserIdField = uploaded.fields.auditUserId as { value?: unknown } | undefined;
     const updated = await prisma.stockMovement.update({
       where: { id: params.id },
       data: {
@@ -1444,6 +1549,7 @@ export function buildApp() {
 
     await prisma.auditLog.create({
       data: {
+        userId: asString(auditUserIdField?.value) ?? null,
         action: "UPLOAD_EXIT_REQUEST_PROOF",
         entity: "StockMovement",
         entityId: updated.id,
@@ -1588,6 +1694,7 @@ export function buildApp() {
 
       await tx.auditLog.create({
         data: {
+          userId: auditUserIdFromBody(body),
           action: "CREATE_STOCK_EXIT",
           entity: "StockMovement",
           entityId: created.id,
@@ -1748,7 +1855,7 @@ export function buildApp() {
       }
 
       await tx.auditLog.create({
-        data: { action: "CREATE_STOCK_RETURN", entity: "StockMovement", entityId: created.id, after: created as any }
+        data: { userId: auditUserIdFromBody(body), action: "CREATE_STOCK_RETURN", entity: "StockMovement", entityId: created.id, after: created as any }
       });
       return created;
     }).catch((error) => {
@@ -1895,6 +2002,7 @@ export function buildApp() {
 
       await tx.auditLog.create({
         data: {
+          userId: auditUserIdFromBody(body),
           action: "CONTROL_STOCK_RETURN",
           entity: "StockMovement",
           entityId: after.id,
@@ -2011,7 +2119,7 @@ export function buildApp() {
       }
 
       await tx.auditLog.create({
-        data: { action: "CREATE_STOCK_TRANSFER", entity: "StockMovement", entityId: created.id, after: created as any }
+        data: { userId: auditUserIdFromBody(body), action: "CREATE_STOCK_TRANSFER", entity: "StockMovement", entityId: created.id, after: created as any }
       });
       return created;
     }).catch((error) => {
@@ -2036,6 +2144,55 @@ export function buildApp() {
       return reply.code(400).send({ message: "Au moins une ligne de comptage est requise." });
     }
 
+    let checkedLines: Array<{
+      articleId: string;
+      expectedQuantity: number | undefined;
+      completedQuantity: number;
+      goodQuantity: number;
+      repairQuantity: number;
+      outOfServiceQuantity: number;
+      observation: string | undefined;
+    }>;
+    try {
+      checkedLines = lines.map((line) => {
+        const articleId = String(line.articleId ?? "");
+        const completedQuantity = toNumber(line.completedQuantity) ?? 0;
+        const goodQuantity = line.goodQuantity === undefined ? completedQuantity : toNumber(line.goodQuantity) ?? 0;
+        const repairQuantity = toNumber(line.repairQuantity) ?? 0;
+        const outOfServiceQuantity = toNumber(line.outOfServiceQuantity) ?? 0;
+        const stateTotal = goodQuantity + repairQuantity + outOfServiceQuantity;
+        if (!articleId) {
+          throw new Error("INVALID_INVENTORY_ARTICLE");
+        }
+        if ([completedQuantity, goodQuantity, repairQuantity, outOfServiceQuantity].some((value) => value < 0)) {
+          throw new Error("INVALID_INVENTORY_QUANTITY");
+        }
+        if (!sameQuantity(stateTotal, completedQuantity)) {
+          throw new Error("INVENTORY_STATE_TOTAL_MISMATCH");
+        }
+        return {
+          articleId,
+          expectedQuantity: toNumber(line.expectedQuantity),
+          completedQuantity,
+          goodQuantity,
+          repairQuantity,
+          outOfServiceQuantity,
+          observation: asString(line.observation)
+        };
+      });
+    } catch (error) {
+      if (error instanceof Error && error.message === "INVALID_INVENTORY_ARTICLE") {
+        return reply.code(400).send({ message: "Chaque ligne d'inventaire doit contenir un article." });
+      }
+      if (error instanceof Error && error.message === "INVALID_INVENTORY_QUANTITY") {
+        return reply.code(400).send({ message: "Les quantites d'inventaire doivent etre positives ou nulles." });
+      }
+      if (error instanceof Error && error.message === "INVENTORY_STATE_TOTAL_MISMATCH") {
+        return reply.code(400).send({ message: "La quantite constatee doit etre egale a bon etat + a reparer + hors service." });
+      }
+      throw error;
+    }
+
     const movement = await prisma.$transaction(async (tx) => {
       const created = await tx.stockMovement.create({
         data: {
@@ -2048,11 +2205,17 @@ export function buildApp() {
           handledBy: asString(body.handledBy),
           notes: asString(body.notes),
           lines: {
-            create: lines.map((line) => ({
-              articleId: String(line.articleId ?? ""),
-              expectedQuantity: toNumber(line.expectedQuantity),
-              completedQuantity: toNumber(line.completedQuantity) ?? 0,
-              observation: asString(line.observation)
+            create: checkedLines.map((line) => ({
+              articleId: line.articleId,
+              expectedQuantity: line.expectedQuantity,
+              completedQuantity: line.completedQuantity,
+              observation: [
+                "Inventaire: constate " + line.completedQuantity,
+                "bon etat " + line.goodQuantity,
+                "a reparer " + line.repairQuantity,
+                "hors service " + line.outOfServiceQuantity,
+                line.observation
+              ].filter(Boolean).join(" | ")
             }))
           }
         },
@@ -2068,7 +2231,7 @@ export function buildApp() {
       }
 
       await tx.auditLog.create({
-        data: { action: "CREATE_INVENTORY_ADJUSTMENT", entity: "StockMovement", entityId: created.id, after: created as any }
+        data: { userId: auditUserIdFromBody(body), action: "CREATE_INVENTORY_ADJUSTMENT", entity: "StockMovement", entityId: created.id, after: created as any }
       });
       return created;
     });
@@ -2081,48 +2244,204 @@ export function buildApp() {
   });
 
   app.get("/alerts", async () => {
-    const [levels, adjustments] = await Promise.all([
+    const [levels, movements] = await Promise.all([
       prisma.stockLevel.findMany({
         where: { OR: [{ quantity: { lte: 0 } }, { quantity: { lte: 999999999 } }] },
         include: { article: true, location: true },
         orderBy: [{ location: { code: "asc" } }, { article: { code: "asc" } }]
       }),
       prisma.stockMovement.findMany({
-        where: { type: "ADJUSTMENT" },
-        include: { lines: { include: { article: true } } },
+        where: { status: { not: "CANCELLED" } },
+        include: {
+          lines: { include: { article: true } },
+          sourceRequest: true
+        },
         orderBy: { createdAt: "desc" },
-        take: 50
+        take: 200
       })
     ]);
+    const movementLocationIds = movements
+      .flatMap((movement) => [movement.fromLocationId, movement.toLocationId, movement.siteLocationId])
+      .filter(Boolean) as string[];
+    const movementLocations = movementLocationIds.length
+      ? await prisma.location.findMany({ where: { id: { in: movementLocationIds } } })
+      : [];
+    const locationsById = new Map(movementLocations.map((location) => [location.id, location]));
+    const movementLocation = (movement: typeof movements[number]) =>
+      locationsById.get(movement.toLocationId ?? "") ??
+      locationsById.get(movement.fromLocationId ?? "") ??
+      locationsById.get(movement.siteLocationId ?? "") ??
+      null;
 
     const stockAlerts = levels
       .filter((level) => level.quantity <= level.article.minimumStock)
       .map((level) => ({
         id: "stock-" + level.id,
+        domain: "STOCK",
         type: level.quantity <= 0 ? "Rupture" : "Stock bas",
         object: level.article.designation,
+        objectCode: level.article.code,
+        articleId: level.articleId,
+        articleCode: level.article.code,
+        articleName: level.article.designation,
+        locationId: level.locationId,
         location: level.location.name,
         severity: level.quantity <= 0 ? "CRITIQUE" : "A_VERIFIER",
         date: level.updatedAt,
+        impact: "Disponible " + level.quantity + " / seuil " + level.article.minimumStock,
         action: level.quantity <= 0 ? "Reapprovisionner avant nouvelle sortie" : "Verifier le seuil et preparer reapprovisionnement",
-        status: "OUVERTE"
+        status: "OUVERTE",
+        completedQuantity: level.quantity,
+        expectedQuantity: level.article.minimumStock,
+        gapQuantity: level.quantity - level.article.minimumStock
       }));
 
-    const inventoryAlerts = adjustments.flatMap((movement) => movement.lines
+    const inventoryAlerts = movements
+      .filter((movement) => movement.type === "ADJUSTMENT")
+      .flatMap((movement) => movement.lines
       .filter((line) => (line.expectedQuantity ?? 0) !== (line.completedQuantity ?? 0))
       .map((line) => ({
         id: "inventory-" + line.id,
+        domain: "INVENTORY",
         type: "Ecart inventaire",
         object: line.article.designation,
-        location: movement.fromLocationId ?? "Emplacement inventorie",
+        objectCode: line.article.code,
+        articleId: line.articleId,
+        articleCode: line.article.code,
+        articleName: line.article.designation,
+        locationId: movement.toLocationId ?? movement.fromLocationId,
+        location: movementLocation(movement)?.name ?? "Emplacement inventorie",
+        movementId: movement.id,
+        movementReference: movement.reference,
         severity: "A_VERIFIER",
         date: movement.createdAt,
+        impact: "Ecart " + ((line.completedQuantity ?? 0) - (line.expectedQuantity ?? 0)),
         action: "Controler et justifier ecart " + ((line.completedQuantity ?? 0) - (line.expectedQuantity ?? 0)),
-        status: "OUVERTE"
+        status: "OUVERTE",
+        expectedQuantity: line.expectedQuantity,
+        completedQuantity: line.completedQuantity,
+        gapQuantity: (line.completedQuantity ?? 0) - (line.expectedQuantity ?? 0),
+        details: { observation: line.observation }
       }))
     );
 
-    return [...stockAlerts, ...inventoryAlerts];
+    const entryDisputes = movements
+      .filter((movement) => movement.type === "ENTRY" && movement.status !== "COMPLETED")
+      .flatMap((movement) => movement.lines
+        .filter((line) => {
+          const expected = line.expectedQuantity ?? 0;
+          const completed = line.completedQuantity ?? 0;
+          return expected > 0 && expected !== completed;
+        })
+        .map((line) => ({
+          id: "entry-" + line.id,
+          domain: "ENTRY",
+          type: "Entree en litige",
+          object: line.article.designation,
+          objectCode: line.article.code,
+          articleId: line.articleId,
+          articleCode: line.article.code,
+          articleName: line.article.designation,
+          locationId: movement.toLocationId,
+          location: movementLocation(movement)?.name ?? "Magasin reception",
+          movementId: movement.id,
+          movementReference: movement.reference,
+          severity: "A_VERIFIER",
+          date: movement.createdAt,
+          impact: "Recu " + (line.completedQuantity ?? 0) + " / attendu " + (line.expectedQuantity ?? 0),
+          action: "Completer le manquant ou regulariser l'ecart",
+          status: "OUVERTE",
+          expectedQuantity: line.expectedQuantity,
+          completedQuantity: line.completedQuantity,
+          gapQuantity: (line.completedQuantity ?? 0) - (line.expectedQuantity ?? 0),
+          details: { observation: line.observation }
+        }))
+      );
+
+    const staleLimit = new Date();
+    staleLimit.setDate(staleLimit.getDate() - 3);
+    const exitAlerts = movements
+      .filter((movement) => movement.type === "EXIT_REQUEST" && movement.status === "SUBMITTED" && movement.createdAt <= staleLimit)
+      .map((movement) => ({
+        id: "exit-stale-" + movement.id,
+        domain: "EXIT",
+        type: "Demande en attente",
+        object: movement.reference,
+        objectCode: movement.reference,
+        locationId: movement.fromLocationId ?? movement.siteLocationId,
+        location: movementLocation(movement)?.name ?? "Sortie stock",
+        movementId: movement.id,
+        movementReference: movement.reference,
+        severity: "A_VERIFIER",
+        date: movement.createdAt,
+        impact: movement.lines.length + " article(s) demandes",
+        action: "Preparer ou refuser la demande materiel",
+        status: "OUVERTE"
+      }));
+    const proofAlerts = movements
+      .filter((movement) => movement.type === "EXIT_REQUEST" && movement.status === "PREPARED" && !movement.proofFileKey && !movement.proofFileName)
+      .map((movement) => ({
+        id: "proof-" + movement.id,
+        domain: "EXIT",
+        type: "Preuve signee manquante",
+        object: movement.reference,
+        objectCode: movement.reference,
+        locationId: movement.fromLocationId ?? movement.siteLocationId,
+        location: movementLocation(movement)?.name ?? "Sortie stock",
+        movementId: movement.id,
+        movementReference: movement.reference,
+        severity: "A_VERIFIER",
+        date: movement.updatedAt,
+        impact: "Demande preparee non cloturee",
+        action: "Uploader la fiche signee",
+        status: "OUVERTE"
+      }));
+    const returnAlerts = movements
+      .filter((movement) => movement.type === "RETURN" && movement.status === "PREPARED")
+      .map((movement) => ({
+        id: "return-control-" + movement.id,
+        domain: "RETURN",
+        type: "Retour a controler",
+        object: movement.reference,
+        objectCode: movement.reference,
+        locationId: movement.toLocationId,
+        location: movementLocation(movement)?.name ?? "Retour stock",
+        movementId: movement.id,
+        movementReference: movement.reference,
+        severity: "A_VERIFIER",
+        date: movement.createdAt,
+        impact: movement.lines.reduce((sum, line) => sum + (line.completedQuantity ?? 0), 0) + " article(s) retournes",
+        action: "Verifier l'etat du materiel retourne",
+        status: "OUVERTE"
+      }));
+    const orphanReturnAlerts = movements
+      .filter((movement) => movement.type === "RETURN" && !movement.sourceRequestId)
+      .map((movement) => ({
+        id: "return-orphan-" + movement.id,
+        domain: "DATA",
+        type: "Retour sans sortie source",
+        object: movement.reference,
+        objectCode: movement.reference,
+        locationId: movement.toLocationId,
+        location: movementLocation(movement)?.name ?? "Retour stock",
+        movementId: movement.id,
+        movementReference: movement.reference,
+        severity: "CRITIQUE",
+        date: movement.createdAt,
+        impact: "Rattachement sortie absent",
+        action: "Rattacher le retour a sa sortie source",
+        status: "OUVERTE"
+      }));
+
+    return [
+      ...stockAlerts,
+      ...inventoryAlerts,
+      ...entryDisputes,
+      ...exitAlerts,
+      ...proofAlerts,
+      ...returnAlerts,
+      ...orphanReturnAlerts
+    ];
   });
 
   app.get("/stock-movements", async () => {
