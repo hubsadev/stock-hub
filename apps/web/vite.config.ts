@@ -1,13 +1,13 @@
-﻿import { defineConfig } from "vite";
+import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
   server: {
     host: "127.0.0.1",
-    port: Number(process.env.WEB_PORT ?? 5174)
+    port: Number(process.env.WEB_PORT ?? 5174),
   },
   preview: {
-    allowedHosts: ["stock-hub.up.railway.app"]
-  }
+    allowedHosts: ["stock-hub.up.railway.app"],
+  },
 });

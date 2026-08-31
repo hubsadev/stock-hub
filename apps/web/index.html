@@ -3,7 +3,63 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#3246ff" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Stock Hub" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/icons/stock-hub.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/icons/stock-hub-192.png" />
     <title>Stock Hub</title>
+    <script>
+      (function cleanupLocalStockHubPwa() {
+        var isLocalDev = ["127.0.0.1", "localhost"].includes(window.location.hostname);
+        if (!isLocalDev || !("serviceWorker" in navigator)) return;
+
+        var reloadKey = "stockHubPwaLocalCleanupReloaded";
+        var cleanup = navigator.serviceWorker
+          .getRegistrations()
+          .then(function (registrations) {
+            return Promise.all(
+              registrations
+                .filter(function (registration) {
+                  var activeUrl = registration.active && registration.active.scriptURL;
+                  var waitingUrl = registration.waiting && registration.waiting.scriptURL;
+                  var installingUrl = registration.installing && registration.installing.scriptURL;
+                  return [activeUrl, waitingUrl, installingUrl].some(function (url) {
+                    return url && url.indexOf("/sw.js") !== -1;
+                  });
+                })
+                .map(function (registration) {
+                  return registration.unregister();
+                }),
+            );
+          })
+          .then(function () {
+            if (!("caches" in window)) return Promise.resolve();
+            return caches.keys().then(function (keys) {
+              return Promise.all(
+                keys
+                  .filter(function (key) {
+                    return key.indexOf("stock-hub-shell-") === 0 || key.indexOf("stock-hub-cdn-") === 0;
+                  })
+                  .map(function (key) {
+                    return caches.delete(key);
+                  }),
+              );
+            });
+          });
+
+        cleanup.finally(function () {
+          if (navigator.serviceWorker.controller && sessionStorage.getItem(reloadKey) !== "1") {
+            sessionStorage.setItem(reloadKey, "1");
+            window.location.reload();
+          } else if (!navigator.serviceWorker.controller) {
+            sessionStorage.removeItem(reloadKey);
+          }
+        });
+      })();
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {

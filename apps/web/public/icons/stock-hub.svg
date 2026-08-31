@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Stock Hub">
+  <rect width="512" height="512" rx="112" fill="#3246ff"/>
+  <path d="M256 102 116 170l140 68 140-68-140-68Z" fill="#fff" opacity=".96"/>
+  <path d="M116 220l140 68 140-68v64l-140 68-140-68v-64Z" fill="#fff" opacity=".82"/>
+  <path d="M116 332l140 68 140-68v64l-140 68-140-68v-64Z" fill="#fff" opacity=".68"/>
+  <path d="M256 238v50M256 352v48" stroke="#3246ff" stroke-width="20" stroke-linecap="round" opacity=".28"/>
+</svg>
