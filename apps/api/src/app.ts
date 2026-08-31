@@ -661,6 +661,46 @@ export function buildApp() {
     return reply.code(201).send(publicUser(user));
   });
 
+  app.patch("/users/:id/profile", async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const body = asBody(request.body);
+    const firstName = String(body.firstName ?? "").trim();
+    const lastName = String(body.lastName ?? "").trim();
+    const email = asString(body.email)?.trim().toLowerCase() ?? null;
+    if (!firstName || !lastName) {
+      return reply.code(400).send({ message: "Prenom et nom sont requis." });
+    }
+    const user = await prisma.user.update({
+      where: { id },
+      data: { firstName, lastName, email }
+    });
+    return reply.send(publicUser(user));
+  });
+
+  app.post("/users/:id/change-password", async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const body = asBody(request.body);
+    const currentPassword = String(body.currentPassword ?? "");
+    const newPassword = String(body.newPassword ?? "");
+    if (!currentPassword || !newPassword) {
+      return reply.code(400).send({ message: "Ancien et nouveau mot de passe sont requis." });
+    }
+    if (newPassword.length < 8) {
+      return reply.code(400).send({ message: "Le nouveau mot de passe doit contenir au moins 8 caracteres." });
+    }
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user) return reply.code(404).send({ message: "Utilisateur introuvable." });
+    if (!user.active) return reply.code(403).send({ message: "Compte utilisateur inactif." });
+    if (!verifyPassword(currentPassword, user.passwordHash)) {
+      return reply.code(401).send({ message: "Ancien mot de passe incorrect." });
+    }
+    const updated = await prisma.user.update({
+      where: { id },
+      data: { passwordHash: hashPassword(newPassword) }
+    });
+    return reply.send(publicUser(updated));
+  });
+
   app.patch("/users/:id", async (request, reply) => {
     const { id } = request.params as { id: string };
     const body = asBody(request.body);

@@ -608,6 +608,21 @@ export function updateUser(id: string, body: {
   return patch<StockUser>("/users/" + encodeURIComponent(id), body);
 }
 
+export function updateMyProfile(id: string, body: {
+  firstName: string;
+  lastName: string;
+  email?: string | null;
+}) {
+  return patch<StockUser>("/users/" + encodeURIComponent(id) + "/profile", body);
+}
+
+export function changeMyPassword(id: string, body: {
+  currentPassword: string;
+  newPassword: string;
+}) {
+  return post<StockUser>("/users/" + encodeURIComponent(id) + "/change-password", body);
+}
+
 export function getStockMovements() {
   return request<StockMovement[]>("/stock-movements");
 }

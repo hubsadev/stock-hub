@@ -52,6 +52,8 @@ import {
   updateTeamService,
   updateUser,
   updateVehicle,
+  updateMyProfile,
+  changeMyPassword,
   type Article,
   type AuditAlert,
   type AuditLog,
@@ -285,6 +287,7 @@ function stockAvailableFor(articleId: string, locationId?: string | null) {
 
 function canAccessView(view: string) {
   if (!currentUser) return false;
+  if (view === "profil") return true;
   if (hasRole("ADMIN_STOCK")) return true;
   if (view === "home") return true;
   const roles = currentUser.roles;
@@ -324,6 +327,7 @@ const VIEW_ROUTES: Record<string, string> = {
   audit: "/audit-alertes",
   historique: "/historique-exports",
   users: "/utilisateurs-roles",
+  profil: "/profil",
 };
 const ROUTE_VIEWS: Record<string, string> = {
   [DEFAULT_ROUTE]: "home",
@@ -339,6 +343,7 @@ const ROUTE_VIEWS: Record<string, string> = {
   "/audit-alertes": "audit",
   "/historique-exports": "historique",
   "/utilisateurs-roles": "users",
+  "/profil": "profil",
 };
 let pendingRouteAfterLogin = DEFAULT_ROUTE;
 
@@ -482,14 +487,15 @@ function isOnline() {
 }
 
 function updatePwaInstallButton(root: HTMLElement) {
-  const button = root.querySelector<HTMLElement>("#pwaInstallButton");
-  if (!button) return;
   const standalone =
     window.matchMedia?.("(display-mode: standalone)").matches ||
     (navigator as Navigator & { standalone?: boolean }).standalone === true;
   const visible = import.meta.env.PROD && Boolean(deferredPwaInstallPrompt) && !standalone;
-  button.classList.toggle("hidden", !visible);
-  button.classList.toggle("inline-flex", visible);
+  root.querySelectorAll<HTMLElement>("[data-profile-pwa-install]").forEach((button) => {
+    button.classList.toggle("hidden", !visible);
+    button.classList.toggle("inline-flex", visible);
+  });
+  updateProfilePwaCards(root);
 }
 
 function updateNetworkStatus(root: HTMLElement) {
@@ -537,6 +543,8 @@ function offlineActionLabel(type: string) {
     "submit-vehicle": "enregistrer un vehicule",
     "submit-vehicle-edit": "modifier un vehicule",
     "submit-user": "enregistrer un utilisateur",
+    "submit-profile": "enregistrer le profil",
+    "submit-password-change": "changer le mot de passe",
     "submit-exit-request-rejection": "refuser une demande",
   };
   return labels[type] ?? "";
@@ -636,6 +644,21 @@ function setupPwa(root: HTMLElement) {
     window.removeEventListener("online", onNetworkChange);
     window.removeEventListener("offline", onNetworkChange);
   };
+}
+
+function updateProfilePwaCards(root: HTMLElement) {
+  const available = root.querySelector<HTMLElement>("#profilePwaAvailableCard");
+  const dev = root.querySelector<HTMLElement>("#profilePwaDevCard");
+  const installed = root.querySelector<HTMLElement>("#profilePwaInstalledCard");
+  const standalone =
+    window.matchMedia?.("(display-mode: standalone)").matches ||
+    (navigator as Navigator & { standalone?: boolean }).standalone === true;
+  available?.classList.toggle(
+    "hidden",
+    !import.meta.env.PROD || standalone || !deferredPwaInstallPrompt,
+  );
+  dev?.classList.toggle("hidden", !import.meta.env.DEV);
+  installed?.classList.toggle("hidden", !import.meta.env.PROD || !standalone);
 }
 
 function isToday(date: string | Date) {
@@ -8666,12 +8689,144 @@ function accessLabel(roles: string[]) {
   return "Acces limite";
 }
 
+function userInitials(user: Pick<StockUser, "firstName" | "lastName" | "identifier" | "email">) {
+  return (
+    `${user.firstName?.[0] ?? ""}${user.lastName?.[0] ?? ""}`
+      .trim()
+      .toUpperCase() || userIdentity(user).slice(0, 2).toUpperCase()
+  );
+}
+
+function profileRoleBadge(role: string) {
+  const variant = role === "ADMIN_STOCK" ? "accent" : role === "AUDIT" ? "warning" : "success";
+  return badge(roleLabel(role), variant);
+}
+
+function updateProfileView(root: HTMLElement) {
+  const user = currentUser ?? readStoredUser();
+  if (!user) return;
+  setText(root, "#profileInitials", userInitials(user));
+  setText(root, "#profileDisplayName", userDisplayName(user));
+  setText(root, "#profileIdentity", userIdentity(user));
+  const firstName = root.querySelector<HTMLInputElement>("#profileFirstName");
+  const lastName = root.querySelector<HTMLInputElement>("#profileLastName");
+  const email = root.querySelector<HTMLInputElement>("#profileEmail");
+  const identifier = root.querySelector<HTMLInputElement>("#profileIdentifier");
+  if (firstName) firstName.value = user.firstName;
+  if (lastName) lastName.value = user.lastName;
+  if (email) email.value = user.email ?? "";
+  if (identifier) identifier.value = user.identifier;
+  const roles = root.querySelector<HTMLElement>("#profileRoleBadges");
+  if (roles) roles.innerHTML = user.roles.map(profileRoleBadge).join("");
+  const status = root.querySelector<HTMLElement>("#profileStatus");
+  if (status) status.innerHTML = badge(user.active ? "Actif" : "Inactif", user.active ? "success" : "gray");
+  setText(root, "#profileAccess", accessLabel(user.roles));
+  updateProfilePwaCards(root);
+  window.lucide?.createIcons();
+}
+
+function syncCurrentUser(root: HTMLElement, user: StockUser) {
+  currentUser = user;
+  localStorage.setItem("stock-hub.user", JSON.stringify(user));
+  updateCurrentUserDisplay(root);
+  updateProfileView(root);
+}
+
+async function submitProfile(root: HTMLElement) {
+  if (!currentUser) return;
+  const firstName = root.querySelector<HTMLInputElement>("#profileFirstName")?.value.trim() ?? "";
+  const lastName = root.querySelector<HTMLInputElement>("#profileLastName")?.value.trim() ?? "";
+  const emailValue = root.querySelector<HTMLInputElement>("#profileEmail")?.value.trim() ?? "";
+  if (!firstName || !lastName) {
+    showToast(root, "Prenom et nom sont requis.", "error");
+    return;
+  }
+  try {
+    const user = await updateMyProfile(currentUser.id, {
+      firstName,
+      lastName,
+      email: emailValue || null,
+    });
+    syncCurrentUser(root, user);
+    latestUsers = latestUsers.map((item) => (item.id === user.id ? user : item));
+    renderUsersList(root);
+    showToast(root, "Profil mis a jour.");
+  } catch (error) {
+    showToast(root, error instanceof Error ? error.message : "Modification du profil impossible.", "error");
+  }
+}
+
+async function submitPasswordChange(root: HTMLElement) {
+  if (!currentUser) return;
+  const currentPassword = root.querySelector<HTMLInputElement>("#profileCurrentPassword")?.value ?? "";
+  const newPassword = root.querySelector<HTMLInputElement>("#profileNewPassword")?.value ?? "";
+  const confirmPassword = root.querySelector<HTMLInputElement>("#profileConfirmPassword")?.value ?? "";
+  if (!currentPassword || !newPassword) {
+    showToast(root, "Ancien et nouveau mot de passe sont requis.", "error");
+    return;
+  }
+  if (newPassword.length < 8) {
+    showToast(root, "Le nouveau mot de passe doit contenir au moins 8 caracteres.", "error");
+    return;
+  }
+  if (newPassword !== confirmPassword) {
+    showToast(root, "La confirmation ne correspond pas au nouveau mot de passe.", "error");
+    return;
+  }
+  try {
+    const user = await changeMyPassword(currentUser.id, { currentPassword, newPassword });
+    syncCurrentUser(root, user);
+    ["#profileCurrentPassword", "#profileNewPassword", "#profileConfirmPassword"].forEach((selector) => {
+      const input = root.querySelector<HTMLInputElement>(selector);
+      if (input) input.value = "";
+    });
+    showToast(root, "Mot de passe mis a jour.");
+  } catch (error) {
+    showToast(root, error instanceof Error ? error.message : "Changement de mot de passe impossible.", "error");
+  }
+}
+
 function userRow(user: StockUser) {
   const fullName = userDisplayName(user);
   const role = user.roles[0] ?? "GESTIONNAIRE_STOCK";
   const identity = userIdentity(user);
   const contact = user.email ?? "Email non renseigne";
   return `<tr><td class="px-5 py-4"><div class="font-bold">${escapeHtml(fullName)}</div><div class="text-xs text-gray-500">${escapeHtml(user.roles.map(roleLabel).join(", "))}</div></td><td class="px-5 py-4"><div class="font-semibold">${escapeHtml(identity)}</div><div class="text-xs text-gray-500">${escapeHtml(contact)}</div></td><td class="px-5 py-4">${badge(roleLabel(role), role === "ADMIN_STOCK" ? "accent" : role === "AUDIT" ? "warning" : "success")}</td><td class="px-5 py-4">${escapeHtml(accessLabel(user.roles))}</td><td class="px-5 py-4">${badge(user.active ? "Actif" : "Inactif", user.active ? "success" : "gray")}</td><td class="px-5 py-4 text-right"><button data-action="openUserDetail('${escapeHtml(user.id)}')" title="Voir utilisateur" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-accent-600"><i data-lucide="eye" class="w-4 h-4"></i></button></td></tr>`;
+}
+
+function renderUsersList(root: HTMLElement) {
+  const usersBody = root.querySelector<HTMLElement>("#users tbody");
+  if (usersBody)
+    usersBody.innerHTML = latestUsers.length
+      ? latestUsers.map(userRow).join("")
+      : emptyRow(6, "Aucun utilisateur en base pour le moment.");
+  setText(
+    root,
+    "#usersAdminCount",
+    latestUsers.filter((user) => user.roles.includes("ADMIN_STOCK")).length,
+  );
+  setText(
+    root,
+    "#usersManagersCount",
+    latestUsers.filter((user) => user.roles.includes("GESTIONNAIRE_STOCK"))
+      .length,
+  );
+  setText(
+    root,
+    "#usersAuditCount",
+    latestUsers.filter((user) => user.roles.includes("AUDIT")).length,
+  );
+  setText(
+    root,
+    "#usersProjectManagersCount",
+    latestUsers.filter((user) => user.roles.includes("CHEF_PROJET")).length,
+  );
+  setText(
+    root,
+    "#usersDirectionCount",
+    latestUsers.filter((user) => user.roles.includes("DIRECTION")).length,
+  );
+  window.lucide?.createIcons();
 }
 
 function clientRow(client: Client) {
@@ -9199,6 +9354,8 @@ function showView(root: HTMLElement, view: string, navButton?: HTMLElement) {
   if (activeButton?.classList.contains("nav-btn")) {
     clearActiveNav(root);
     activateNavButton(activeButton);
+  } else if (view === "profil") {
+    clearActiveNav(root);
   }
   const crumb = root.querySelector("#crumbPage");
   const titles: Record<string, string> = {
@@ -9215,9 +9372,11 @@ function showView(root: HTMLElement, view: string, navButton?: HTMLElement) {
     audit: "Audit & alertes",
     historique: "Historique & exports",
     users: "Utilisateurs & roles",
+    profil: "Mon profil",
   };
   if (crumb) crumb.textContent = titles[view] ?? "Accueil Module";
   setViewActions(root, view);
+  if (view === "profil") updateProfileView(root);
   window.lucide?.createIcons();
 }
 
@@ -11689,6 +11848,9 @@ function parseAction(action: string) {
   if (action === "setVehicleMaintenance")
     return { type: "set-vehicle-maintenance" } as const;
   if (action === "submitUser") return { type: "submit-user" } as const;
+  if (action === "submitProfile") return { type: "submit-profile" } as const;
+  if (action === "submitPasswordChange")
+    return { type: "submit-password-change" } as const;
   if (action === "toggleVehicleHistory")
     return { type: "toggle-vehicle-history" } as const;
   const userDetailMatch = action.match(/^openUserDetail\('([^']+)'\)/);
@@ -11931,6 +12093,9 @@ function StockHubTemplate() {
       if (parsed.type === "set-vehicle-maintenance")
         void setVehicleMaintenance(root);
       if (parsed.type === "submit-user") void submitUser(root);
+      if (parsed.type === "submit-profile") void submitProfile(root);
+      if (parsed.type === "submit-password-change")
+        void submitPasswordChange(root);
       if (parsed.type === "user-detail") openUserDetail(root, parsed.id);
       if (parsed.type === "exit-detail") openExitRequestDetail(root, parsed.id);
       if (parsed.type === "return-transfer-detail")
