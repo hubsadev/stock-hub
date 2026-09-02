@@ -34,11 +34,13 @@ import {
   getTeamServices,
   getUsers,
   getVehicles,
+  getEntryProof,
   getExitRequestProof,
   loginUser,
   prepareExitRequest,
   rejectExitRequest,
   resolveStockEntryDispute,
+  uploadEntryProof,
   uploadExitRequestProof,
   createVehicle,
   unassignEquipment,
@@ -394,6 +396,19 @@ function applyRoleAccess(root: HTMLElement) {
       const view = button.dataset.view ?? "";
       button.classList.toggle("hidden", !canAccessView(view));
     });
+  root.querySelectorAll<HTMLElement>("aside nav").forEach((nav) => {
+    const hasVisibleItem = Array.from(
+      nav.querySelectorAll<HTMLElement>(".nav-btn[data-view]"),
+    ).some((button) => !button.classList.contains("hidden"));
+    nav.classList.toggle("hidden", !hasVisibleItem);
+    const title = nav.previousElementSibling;
+    if (
+      title instanceof HTMLElement &&
+      title.classList.contains("uppercase")
+    ) {
+      title.classList.toggle("hidden", !hasVisibleItem);
+    }
+  });
 }
 
 function updateCurrentUserDisplay(root: HTMLElement) {
@@ -528,6 +543,7 @@ function offlineActionLabel(type: string) {
     "submit-referential-edit": "modifier le referentiel",
     "deactivate-referential-detail": "desactiver un element",
     "submit-stock-entry": "enregistrer une entree stock",
+    "upload-signed-entry-proof": "joindre une preuve d'entree",
     "submit-entry-resolution": "resoudre une entree",
     "submit-exit-request": "creer une demande materiel",
     "submit-material-request-preparation": "preparer une demande",
@@ -940,9 +956,7 @@ function renderStockSortHeaders(root: HTMLElement) {
   });
 }
 
-function renderStock(root: HTMLElement) {
-  const body = root.querySelector<HTMLElement>("#stock tbody");
-  if (!body) return;
+function filteredStockLevels(root: HTMLElement) {
   const location =
     root.querySelector<HTMLSelectElement>("#stockLocationSelect")?.value ?? "";
   const category =
@@ -994,6 +1008,13 @@ function renderStock(root: HTMLElement) {
       return stockSortDir === "asc" ? cmp : -cmp;
     });
   }
+  return levels;
+}
+
+function renderStock(root: HTMLElement) {
+  const body = root.querySelector<HTMLElement>("#stock tbody");
+  if (!body) return;
+  const levels = filteredStockLevels(root);
   body.innerHTML = levels.length
     ? levels.map(stockRow).join("")
     : emptyRow(9, "Aucun stock ne correspond aux critères.");
@@ -2906,6 +2927,129 @@ function downloadCsv(filename: string, rows: Array<Array<unknown>>) {
   URL.revokeObjectURL(url);
 }
 
+type ExcelColumnType = "text" | "number" | "currency" | "date";
+
+type ExcelExportColumn = {
+  key: string;
+  header: string;
+  type?: ExcelColumnType;
+  width?: number;
+};
+
+type ExcelCellValue = string | number | Date | null | undefined;
+type ExcelExportRow = Record<string, ExcelCellValue>;
+
+const stockHubExcelBlue = "3746F5";
+const stockHubExcelBorder = "CBD5E1";
+const stockHubExcelStripe = "F8FAFC";
+
+function excelCellText(value: ExcelCellValue) {
+  if (value instanceof Date) return formatDate(value);
+  return String(value ?? "");
+}
+
+function autoExcelColumnWidth(
+  column: ExcelExportColumn,
+  rows: ExcelExportRow[],
+) {
+  const contentWidth = rows.reduce(
+    (max, row) => Math.max(max, excelCellText(row[column.key]).length + 2),
+    column.header.length + 2,
+  );
+  return Math.min(Math.max(column.width ?? contentWidth, 12), 42);
+}
+
+async function exportWorkbook(input: {
+  filename: string;
+  sheetName: string;
+  columns: ExcelExportColumn[];
+  rows: ExcelExportRow[];
+}) {
+  const ExcelJS = await import("exceljs");
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = "Stock Hub";
+  workbook.created = new Date();
+  const worksheet = workbook.addWorksheet(input.sheetName.slice(0, 31));
+  worksheet.views = [{ state: "frozen", ySplit: 1 }];
+  worksheet.columns = input.columns.map((column) => ({
+    key: column.key,
+    header: column.header,
+    width: autoExcelColumnWidth(column, input.rows),
+  }));
+
+  input.rows.forEach((row) => worksheet.addRow(row));
+
+  const header = worksheet.getRow(1);
+  header.height = 22;
+  header.eachCell((cell) => {
+    cell.font = { bold: true, color: { argb: "FFFFFFFF" } };
+    cell.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FF" + stockHubExcelBlue },
+    };
+    cell.alignment = { vertical: "middle", horizontal: "center" };
+    cell.border = {
+      top: { style: "thin", color: { argb: "FF" + stockHubExcelBorder } },
+      left: { style: "thin", color: { argb: "FF" + stockHubExcelBorder } },
+      bottom: { style: "thin", color: { argb: "FF" + stockHubExcelBorder } },
+      right: { style: "thin", color: { argb: "FF" + stockHubExcelBorder } },
+    };
+  });
+
+  worksheet.eachRow((row, rowNumber) => {
+    if (rowNumber > 1 && rowNumber % 2 === 0) {
+      row.eachCell((cell) => {
+        cell.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "FF" + stockHubExcelStripe },
+        };
+      });
+    }
+    row.eachCell((cell, columnNumber) => {
+      const column = input.columns[columnNumber - 1];
+      cell.border = {
+        top: { style: "thin", color: { argb: "FF" + stockHubExcelBorder } },
+        left: { style: "thin", color: { argb: "FF" + stockHubExcelBorder } },
+        bottom: { style: "thin", color: { argb: "FF" + stockHubExcelBorder } },
+        right: { style: "thin", color: { argb: "FF" + stockHubExcelBorder } },
+      };
+      if (rowNumber === 1) return;
+      cell.alignment = {
+        vertical: "middle",
+        horizontal:
+          column?.type === "number" || column?.type === "currency"
+            ? "right"
+            : column?.type === "date"
+              ? "center"
+              : "left",
+      };
+      if (column?.type === "currency") cell.numFmt = '#,##0.00';
+      if (column?.type === "number") cell.numFmt = '#,##0';
+      if (column?.type === "date") cell.numFmt = "dd/mm/yyyy";
+    });
+  });
+
+  worksheet.autoFilter = {
+    from: { row: 1, column: 1 },
+    to: { row: 1, column: input.columns.length },
+  };
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer as BlobPart], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = input.filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
 function downloadMaterialRequestPdf(root: HTMLElement) {
   const modal = root.querySelector<HTMLElement>("#exitModal");
   if (!modal || modal.dataset.mode !== "prepare") {
@@ -3115,106 +3259,879 @@ function materialRequestDocumentHtml(input: {
 </body>
 </html>`;
 }
-function exportRows(kind: string, root: HTMLElement) {
+
+function entryDocumentHtml(movement: StockMovement) {
+  const origin =
+    movement.notes?.match(/^Origine entree:\s*([^\-]+)/i)?.[1]?.trim() ??
+    "Reception directe";
+  const rows = movement.lines
+    .map((line, index) => {
+      const expected = Number(line.expectedQuantity ?? 0);
+      const completed = Number(line.completedQuantity ?? 0);
+      const gap = completed - expected;
+      const observation = cleanEntryLineObservation(line.observation);
+      return `<tr>
+    <td class="num">${index + 1}</td>
+    <td><strong>${escapeHtml(line.article?.designation ?? "Article")}</strong><br><span>${escapeHtml(line.article?.code ?? "-")}</span></td>
+    <td>${escapeHtml(line.article?.unit ?? "U")}</td>
+    <td class="right strong">${formatNumber(expected)}</td>
+    <td class="right strong">${formatNumber(completed)}</td>
+    <td class="right strong">${formatNumber(gap)}</td>
+    <td>${escapeHtml(observation)}</td>
+  </tr>`;
+    })
+    .join("");
+  const { expected, completed } = entryMovementTotals(movement);
+  return `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Entree stock ${escapeHtml(movement.reference)}</title>
+  <style>
+    @page { size: A4; margin: 0; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #e9edf4; color: #0f172a; font-family: Arial, Helvetica, sans-serif; font-size: 11px; }
+    .toolbar { width: 210mm; margin: 10px auto 0; display: flex; justify-content: flex-end; }
+    .toolbar button { border: 1px solid #cbd5e1; background: #fff; border-radius: 6px; padding: 7px 11px; font-weight: 800; cursor: pointer; font-size: 12px; }
+    .page { width: 210mm; min-height: 297mm; margin: 10px auto 18px; background: #fff; padding: 10mm; box-shadow: 0 8px 26px rgba(15, 23, 42, .12); }
+    .doc-head { display: grid; grid-template-columns: 30mm 1fr 46mm; border: 1px solid #b9c7da; min-height: 23mm; }
+    .logo-cell { display: flex; align-items: center; justify-content: center; border-right: 1px solid #b9c7da; padding: 3mm; }
+    .hub-logo { width: 24mm; height: 16mm; background: #e71845; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: .86; }
+    .hub-logo-main { font-size: 20pt; font-weight: 950; letter-spacing: -.07em; }
+    .hub-logo-tag { margin-top: 1.5mm; font-size: 3pt; font-weight: 900; letter-spacing: .04em; }
+    .doc-name { padding: 4mm 5mm; display: flex; flex-direction: column; justify-content: center; }
+    .doc-name .small { color: #334155; font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: .12em; }
+    .doc-name .value { margin-top: 2mm; font-size: 15px; font-weight: 950; }
+    .doc-name .hint { margin-top: 1mm; color: #64748b; font-size: 10px; }
+    .meta { border-left: 1px solid #b9c7da; display: grid; grid-template-rows: repeat(4, 1fr); }
+    .meta div { display: grid; grid-template-columns: 18mm 1fr; align-items: center; border-bottom: 1px solid #d3dcea; min-height: 5.8mm; }
+    .meta div:last-child { border-bottom: 0; }
+    .meta b { padding: 1.7mm; font-size: 7.5px; text-transform: uppercase; color: #1e293b; }
+    .meta span { padding: 1.7mm; text-align: right; font-size: 9.5px; font-weight: 900; }
+    .title { padding: 10mm 0 7mm; text-align: center; font-size: 17px; font-weight: 950; letter-spacing: .13em; text-transform: uppercase; }
+    .info-strip { margin: 0 0 7mm; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm 10mm; }
+    .info-item { min-width: 0; padding-bottom: 2.5mm; border-bottom: 1px solid #d8e1ec; }
+    .info-item .label { color: #475569; font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: .09em; }
+    .info-item .value { margin-top: 1.5mm; font-size: 12px; font-weight: 900; line-height: 1.25; }
+    .items, .signature-table { width: 100%; border-collapse: collapse; }
+    .items { margin-top: 2mm; }
+    .items th { background: #eaf1fb; color: #102033; font-size: 8.5px; text-transform: uppercase; letter-spacing: .05em; text-align: left; }
+    .items td, .items th { border: 1px solid #d3dcea; padding: 3mm; vertical-align: middle; }
+    .items td { font-size: 11px; }
+    .items span { color: #64748b; font-size: 9px; }
+    .right { text-align: right; }
+    .strong { font-weight: 900; }
+    .num { width: 10mm; text-align: center; font-weight: 900; color: #1d4ed8; }
+    .sign-title { margin: 10mm 0 3mm; font-size: 12px; font-weight: 950; }
+    .signature-table td { border: 1px solid #b9c7da; width: 33.33%; height: 34mm; vertical-align: top; padding: 3mm; }
+    .signature-table .role { color: #1e293b; font-size: 8.5px; font-weight: 900; text-transform: uppercase; letter-spacing: .08em; }
+    .signature-table .name { margin-top: 3mm; font-size: 11px; font-weight: 900; }
+    .signature-table .line { margin-top: 18mm; color: #475569; font-size: 9px; }
+    @media print { body { background: white; } .toolbar { display: none; } .page { width: 210mm; min-height: 297mm; margin: 0; padding: 10mm; box-shadow: none; } }
+  </style>
+</head>
+<body>
+  <div class="toolbar"><button onclick="window.print()">Imprimer / Enregistrer PDF</button></div>
+  <main class="page">
+    <header class="doc-head">
+      <div class="logo-cell">${hubLogoMarkup()}</div>
+      <div class="doc-name"><div class="small">Document interne</div><div class="value">Entree stock</div><div class="hint">Reception et controle du materiel entrant</div></div>
+      <div class="meta"><div><b>Doc N</b><span>${escapeHtml(movement.reference.replace(/^BE-/, "FE-"))}</span></div><div><b>Bon</b><span>${escapeHtml(movement.reference)}</span></div><div><b>Statut</b><span>${escapeHtml(entryStatusLabel(movement))}</span></div><div><b>Date</b><span>${escapeHtml(formatDate(movement.date))}</span></div></div>
+    </header>
+    <div class="title">Fiche entree stock</div>
+    <section class="info-strip" aria-label="Informations de l'entree">
+      <div class="info-item"><div class="label">Fournisseur</div><div class="value">${escapeHtml(movement.supplier?.name ?? "-")}</div></div>
+      <div class="info-item"><div class="label">Origine</div><div class="value">${escapeHtml(origin)}</div></div>
+      <div class="info-item"><div class="label">Magasin reception</div><div class="value">${escapeHtml(movement.toLocation?.name ?? "-")}</div></div>
+      <div class="info-item"><div class="label">Responsable</div><div class="value">${escapeHtml(movement.handledBy ?? movement.receivedBy ?? "-")}</div></div>
+      <div class="info-item"><div class="label">Total attendu</div><div class="value">${formatNumber(expected)}</div></div>
+      <div class="info-item"><div class="label">Total recu</div><div class="value">${formatNumber(completed)}</div></div>
+    </section>
+    <table class="items"><thead><tr><th>N</th><th>Designation</th><th>Unite</th><th class="right">Attendue</th><th class="right">Recue</th><th class="right">Ecart</th><th>Observation</th></tr></thead><tbody>${rows}</tbody></table>
+    <div class="sign-title">Signatures</div>
+    <table class="signature-table"><tbody><tr>
+      <td><div class="role">Reception stock</div><div class="name">${escapeHtml(movement.receivedBy ?? movement.handledBy ?? "-")}</div><div class="line">Date et signature</div></td>
+      <td><div class="role">Controle qualite</div><div class="name"></div><div class="line">Date et signature</div></td>
+      <td><div class="role">Responsable magasin</div><div class="name">${escapeHtml(movement.toLocation?.responsible ?? movement.handledBy ?? "-")}</div><div class="line">Date et signature</div></td>
+    </tr></tbody></table>
+  </main>
+</body>
+</html>`;
+}
+
+function cleanEntryLineObservation(value: string | null | undefined) {
+  const text = (value ?? "").trim();
+  if (/^Origine entree\s*:/i.test(text)) return "";
+  return text;
+}
+
+function downloadEntryPdf(root: HTMLElement, id: string) {
+  const movement = latestMovements.find((item) => item.id === id);
+  if (!movement || movement.type !== "ENTRY") {
+    showToast(root, "Entree stock introuvable.", "error");
+    return;
+  }
+  const popup = window.open("", "_blank");
+  if (!popup) {
+    showToast(root, "Autorise les popups pour telecharger la fiche.", "error");
+    return;
+  }
+  popup.document.write(entryDocumentHtml(movement));
+  popup.document.close();
+  try {
+    popup.history.replaceState(null, "", "/documents/entree-stock/" + encodeURIComponent(movement.reference));
+  } catch {
+    // The printable document still works when the browser blocks URL replacement.
+  }
+  popup.focus();
+  popup.print();
+}
+
+function exportDateValue(value: string | Date | null | undefined) {
+  if (!value) return undefined;
+  const date = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(date.getTime()) ? undefined : date;
+}
+
+function inventoryExportSearch(root?: HTMLElement) {
+  return articleImportKey(
+    root?.querySelector<HTMLInputElement>("#inventorySearchInput")?.value ?? "",
+  );
+}
+
+function inventoryLineMatchesExportSearch(
+  line: InventoryComputedLine,
+  search: string,
+) {
+  if (!search) return true;
+  return articleImportKey(
+    `${line.article.code} ${line.article.designation} ${line.article.category}`,
+  ).includes(search);
+}
+
+function inventoryGlobalExportRows(root?: HTMLElement) {
+  const search = inventoryExportSearch(root);
+  const byArticle = new Map<string, InventoryComputedLine[]>();
+  allInventoryComputedLines()
+    .filter((line) => inventoryLineMatchesExportSearch(line, search))
+    .forEach((line) => {
+      byArticle.set(line.articleId, [...(byArticle.get(line.articleId) ?? []), line]);
+    });
+  return [...byArticle.values()]
+    .map((articleLines) => {
+      const first = articleLines[0];
+      const totals = articleLines.reduce(
+        (sum, line) => ({
+          theoretical: sum.theoretical + line.theoretical,
+          counted: sum.counted + line.counted,
+          good: sum.good + line.good,
+          repair: sum.repair + line.repair,
+          outOfService: sum.outOfService + line.outOfService,
+          gap: sum.gap + line.gap,
+        }),
+        {
+          theoretical: 0,
+          counted: 0,
+          good: 0,
+          repair: 0,
+          outOfService: 0,
+          gap: 0,
+        },
+      );
+      const counted = articleLines.some((line) => line.countedAt);
+      return {
+        article: first.article.designation,
+        code: first.article.code,
+        theoretical: totals.theoretical,
+        counted: totals.counted,
+        good: totals.good,
+        repair: totals.repair,
+        outOfService: totals.outOfService,
+        gap: totals.gap,
+        locations: articleLines.map((line) => line.location.name).join(", "),
+        status: !counted ? "A compter" : totals.gap === 0 ? "Valide" : "Ecart a justifier",
+      };
+    })
+    .sort((a, b) => String(a.code).localeCompare(String(b.code)));
+}
+
+function exportDataset(kind: string, root: HTMLElement): {
+  filenameKind: string;
+  sheetName: string;
+  columns: ExcelExportColumn[];
+  rows: ExcelExportRow[];
+} {
   if (kind === "stock" || kind === "inventory") {
-    return [
-      [
-        "Article",
-        "Code",
-        "Categorie",
-        "Emplacement",
-        "Quantite",
-        "Stock minimum",
-        "Statut",
+    if (kind === "inventory") {
+      return {
+        filenameKind: "inventory",
+        sheetName: "Inventaire",
+        columns: [
+          { key: "article", header: "Article" },
+          { key: "code", header: "Code" },
+          { key: "theoretical", header: "Stock theorique global", type: "number" },
+          { key: "counted", header: "Quantite constatee", type: "number" },
+          { key: "good", header: "Bon etat", type: "number" },
+          { key: "repair", header: "A reparer", type: "number" },
+          { key: "outOfService", header: "Hors service", type: "number" },
+          { key: "gap", header: "Ecart", type: "number" },
+          { key: "locations", header: "Emplacements concernes" },
+          { key: "status", header: "Statut" },
+        ],
+        rows: inventoryGlobalExportRows(),
+      };
+    }
+    return {
+      filenameKind: "stock",
+      sheetName: "Vue Stock",
+      columns: [
+        { key: "article", header: "Article" },
+        { key: "code", header: "Code" },
+        { key: "category", header: "Categorie" },
+        { key: "location", header: "Emplacement" },
+        { key: "quantity", header: "Quantite", type: "number" },
+        { key: "minimumStock", header: "Stock minimum", type: "number" },
+        { key: "status", header: "Statut" },
       ],
-      ...latestStockLevels.map((level) => [
-        level.article.designation,
-        level.article.code,
-        level.article.category,
-        level.location.name,
-        level.quantity,
-        level.article.minimumStock,
-        level.quantity <= 0
-          ? "Rupture"
-          : level.quantity <= level.article.minimumStock
-            ? "Stock bas"
-            : "OK",
-      ]),
-    ];
+      rows: [...latestStockLevels]
+        .sort((a, b) => {
+          const quantityDiff = Number(b.quantity ?? 0) - Number(a.quantity ?? 0);
+          if (quantityDiff !== 0) return quantityDiff;
+          return a.article.designation.localeCompare(b.article.designation);
+        })
+        .map((level) => ({
+          article: level.article.designation,
+          code: level.article.code,
+          category: level.article.category,
+          location: level.location.name,
+          quantity: Number(level.quantity ?? 0),
+          minimumStock: Number(level.article.minimumStock ?? 0),
+          status:
+            level.quantity <= 0
+              ? "Rupture"
+              : level.quantity <= level.article.minimumStock
+                ? "Stock bas"
+                : "OK",
+        })),
+    };
   }
   if (kind === "reappro") {
     const levels = reapproLevels();
-    return [
-      [
-        "Article",
-        "Code",
-        "Emplacement",
-        "Disponible",
-        "Stock minimum",
-        "A recommander",
-        "Prix indicatif",
-        "Valeur estimee",
+    return {
+      filenameKind: "reappro",
+      sheetName: "Reapprovisionnement",
+      columns: [
+        { key: "article", header: "Article" },
+        { key: "code", header: "Code" },
+        { key: "location", header: "Emplacement" },
+        { key: "available", header: "Disponible", type: "number" },
+        { key: "minimumStock", header: "Stock minimum", type: "number" },
+        { key: "recommended", header: "A recommander", type: "number" },
+        { key: "referencePrice", header: "Prix indicatif", type: "currency" },
+        { key: "estimatedValue", header: "Valeur estimee", type: "currency" },
       ],
-      ...levels.map((level) => [
-        level.article.designation,
-        level.article.code,
-        level.location.name,
-        level.quantity,
-        level.article.minimumStock,
-        reorderQuantity(level),
-        level.article.referencePrice,
-        reorderQuantity(level) * Number(level.article.referencePrice ?? 0),
-      ]),
-    ];
+      rows: levels.map((level) => ({
+        article: level.article.designation,
+        code: level.article.code,
+        location: level.location.name,
+        available: Number(level.quantity ?? 0),
+        minimumStock: Number(level.article.minimumStock ?? 0),
+        recommended: reorderQuantity(level),
+        referencePrice: Number(level.article.referencePrice ?? 0),
+        estimatedValue: reorderQuantity(level) * Number(level.article.referencePrice ?? 0),
+      })),
+    };
   }
   if (kind === "audit") {
-    return [
-      ["Date", "Action", "Entite", "Reference", "Utilisateur"],
-      ...latestAuditLogs.map((log) => [
-        formatDate(log.createdAt),
-        log.action,
-        log.entity,
-        log.entityId ?? "-",
-        log.userId ?? "-",
-      ]),
-    ];
+    return {
+      filenameKind: "audit",
+      sheetName: "Journal audit",
+      columns: [
+        { key: "date", header: "Date", type: "date" },
+        { key: "user", header: "Utilisateur" },
+        { key: "action", header: "Action metier" },
+        { key: "document", header: "Document" },
+        { key: "result", header: "Resultat" },
+      ],
+      rows: latestAuditLogs.map((log) => ({
+        date: exportDateValue(log.createdAt),
+        user: auditLogUserLabel(log),
+        action: auditActionLabel(log.action),
+        document: auditDocumentLabel(log),
+        result: auditLogResultLabel(auditLogResult(log)),
+      })),
+    };
   }
   const movements = kind === "all" ? latestMovements : filteredHistory(root);
-  return [
-    [
-      "Date",
-      "Type",
-      "Reference",
-      "Article",
-      "Quantite",
-      "Utilisateur",
-      "Projet",
-      "Fournisseur",
-      "Origine",
-      "Destination",
-      "Statut",
+  return {
+    filenameKind: "mouvements",
+    sheetName: "Mouvements",
+    columns: [
+      { key: "date", header: "Date", type: "date" },
+      { key: "type", header: "Type" },
+      { key: "reference", header: "Reference" },
+      { key: "article", header: "Article" },
+      { key: "quantity", header: "Quantite", type: "number" },
+      { key: "user", header: "Utilisateur" },
+      { key: "project", header: "Projet" },
+      { key: "supplier", header: "Fournisseur" },
+      { key: "origin", header: "Origine" },
+      { key: "destination", header: "Destination" },
+      { key: "status", header: "Statut" },
     ],
-    ...movements.map((movement) => [
-      formatDate(movement.date),
-      movementTypeLabel(movement.type),
-      movement.reference,
-      movementArticleLabel(movement),
-      movementQuantity(movement),
-      movementActor(movement),
-      movement.project?.name ?? "",
-      movement.supplier?.name ?? "",
-      movement.fromLocation?.name ?? "",
-      movement.toLocation?.name ?? "",
-      movement.status,
-    ]),
+    rows: movements.map((movement) => ({
+      date: exportDateValue(movement.date),
+      type: movementTypeLabel(movement.type),
+      reference: movement.reference,
+      article: movementArticleLabel(movement),
+      quantity: movementQuantity(movement),
+      user: movementActor(movement),
+      project: movement.project?.name ?? "",
+      supplier: movement.supplier?.name ?? "",
+      origin: movement.fromLocation?.name ?? "",
+      destination: movement.toLocation?.name ?? "",
+      status: movement.status,
+    })),
+  };
+}
+
+function exportRows(kind: string, root: HTMLElement) {
+  const dataset = exportDataset(kind, root);
+  return [
+    dataset.columns.map((column) => column.header),
+    ...dataset.rows.map((row) => dataset.columns.map((column) => row[column.key])),
   ];
 }
 
-function exportData(root: HTMLElement, kind: string) {
-  const filename =
-    "stock-hub-" + kind + "-" + new Date().toISOString().slice(0, 10) + ".csv";
-  downloadCsv(filename, exportRows(kind, root));
-  showToast(root, "Export CSV prepare : " + filename);
+async function exportData(root: HTMLElement, kind: string) {
+  try {
+    const dataset = exportDataset(kind, root);
+    const date = new Date().toISOString().slice(0, 10);
+    const filename = "stock-hub-" + dataset.filenameKind + "-" + date + ".xlsx";
+    await exportWorkbook({
+      filename,
+      sheetName: dataset.sheetName,
+      columns: dataset.columns,
+      rows: dataset.rows,
+    });
+    showToast(root, "Export Excel prepare : " + filename);
+  } catch (error) {
+    showToast(
+      root,
+      error instanceof Error ? error.message : "Export Excel impossible.",
+      "error",
+    );
+  }
+}
+
+type StockExportScope = "location" | "global";
+
+function stockLevelStatusLabel(level: StockLevel) {
+  const status = stockStatusCategory(level);
+  if (status === "rupture") return "Rupture";
+  if (status === "sous-seuil") return "Sous seuil";
+  return "Disponible";
+}
+
+function selectedStockExportLocationId(root: HTMLElement) {
+  return (
+    root.querySelector<HTMLSelectElement>("#stockExportLocationSelect")?.value ||
+    root.querySelector<HTMLSelectElement>("#stockLocationSelect")?.value ||
+    ""
+  );
+}
+
+function stockLocationExportRows(root: HTMLElement) {
+  const locationId = selectedStockExportLocationId(root);
+  if (!locationId) return [];
+  return latestStockLevels
+    .filter((level) => level.location.id === locationId)
+    .sort((a, b) => {
+      const quantityDiff = Number(b.quantity ?? 0) - Number(a.quantity ?? 0);
+      if (quantityDiff !== 0) return quantityDiff;
+      return a.article.designation.localeCompare(b.article.designation);
+    })
+    .map((level) => {
+    const metrics = stockMovementMetrics(level);
+    const quantity = Number(level.quantity ?? 0);
+    return {
+      article: level.article.designation,
+      code: level.article.code,
+      category: level.article.category,
+      location: level.location.name,
+      initial: metrics.initial,
+      entries: metrics.entries,
+      exits: metrics.exits,
+      quantity,
+      minimumStock: Number(level.article.minimumStock ?? 0),
+      value: quantity * Number(level.article.referencePrice ?? 0),
+      status: stockLevelStatusLabel(level),
+    };
+  });
+}
+
+function stockGlobalExportRows() {
+  const byArticle = new Map<string, StockLevel[]>();
+  latestStockLevels.forEach((level) => {
+    byArticle.set(level.article.id, [...(byArticle.get(level.article.id) ?? []), level]);
+  });
+  return [...byArticle.values()]
+    .map((levels) => {
+      const first = levels[0];
+      const quantity = levels.reduce((sum, level) => sum + Number(level.quantity ?? 0), 0);
+      const minimumStock = Number(first.article.minimumStock ?? 0);
+      return {
+        article: first.article.designation,
+        code: first.article.code,
+        category: first.article.category,
+        locations: levels.map((level) => level.location.name).join(", "),
+        quantity,
+        minimumStock,
+        value: quantity * Number(first.article.referencePrice ?? 0),
+        status:
+          quantity <= 0
+            ? "Rupture"
+            : quantity <= minimumStock
+              ? "Sous seuil"
+              : "Disponible",
+      };
+    })
+    .sort((a, b) => {
+      const quantityDiff = Number(b.quantity ?? 0) - Number(a.quantity ?? 0);
+      if (quantityDiff !== 0) return quantityDiff;
+      return String(a.article).localeCompare(String(b.article));
+    });
+}
+
+function stockExportDataset(root: HTMLElement, scope: StockExportScope): {
+  filenameKind: string;
+  sheetName: string;
+  title: string;
+  columns: ExcelExportColumn[];
+  rows: ExcelExportRow[];
+  } {
+  if (scope === "global") {
+    return {
+      filenameKind: "stock-global",
+      sheetName: "Stock global",
+      title: "Etat global du stock",
+      columns: [
+        { key: "article", header: "Article" },
+        { key: "code", header: "Code" },
+        { key: "category", header: "Famille" },
+        { key: "locations", header: "Emplacements" },
+        { key: "quantity", header: "Disponible global", type: "number" },
+        { key: "minimumStock", header: "Stock minimum", type: "number" },
+        { key: "value", header: "Valeur estimee", type: "currency" },
+        { key: "status", header: "Statut" },
+      ],
+      rows: stockGlobalExportRows(),
+    };
+  }
+  if (!selectedStockExportLocationId(root)) {
+    throw new Error("Selectionne l'emplacement a exporter.");
+  }
+  const locationName =
+    latestLocations.find((location) => location.id === selectedStockExportLocationId(root))?.name ??
+    "Emplacement";
+  return {
+    filenameKind: "stock-par-emplacement",
+    sheetName: "Stock par emplacement",
+    title: "Etat du stock - " + locationName,
+    columns: [
+      { key: "article", header: "Article" },
+      { key: "code", header: "Code" },
+      { key: "category", header: "Famille" },
+      { key: "location", header: "Emplacement" },
+      { key: "initial", header: "Initial", type: "number" },
+      { key: "entries", header: "Entrees", type: "number" },
+      { key: "exits", header: "Sorties", type: "number" },
+      { key: "quantity", header: "Disponible", type: "number" },
+      { key: "minimumStock", header: "Stock minimum", type: "number" },
+      { key: "status", header: "Statut" },
+    ],
+    rows: stockLocationExportRows(root),
+  };
+}
+
+async function downloadStockExcel(root: HTMLElement, scope: StockExportScope) {
+  try {
+    const dataset = stockExportDataset(root, scope);
+    const date = new Date().toISOString().slice(0, 10);
+    const filename = "stock-hub-" + dataset.filenameKind + "-" + date + ".xlsx";
+    await exportWorkbook({
+      filename,
+      sheetName: dataset.sheetName,
+      columns: dataset.columns,
+      rows: dataset.rows,
+    });
+    closeModal(root, "stockExportModal");
+    showToast(root, "Export Excel prepare : " + filename);
+  } catch (error) {
+    showToast(root, error instanceof Error ? error.message : "Export Excel impossible.", "error");
+  }
+}
+
+function stockPdfHtml(dataset: ReturnType<typeof stockExportDataset>) {
+  const totalQuantity = dataset.rows.reduce(
+    (sum, row) => sum + Number(row.quantity ?? 0),
+    0,
+  );
+  const totalValue = dataset.rows.reduce(
+    (sum, row) => sum + Number(row.value ?? 0),
+    0,
+  );
+  const header = dataset.columns
+    .map((column) => `<th class="${column.type === "number" || column.type === "currency" ? "right" : ""}">${escapeHtml(column.header)}</th>`)
+    .join("");
+  const rows = dataset.rows
+    .map(
+      (row) =>
+        `<tr>${dataset.columns
+          .map((column) => {
+            const value = row[column.key];
+            const text =
+              column.type === "number" || column.type === "currency"
+                ? formatNumber(Number(value ?? 0))
+                : excelCellText(value);
+            return `<td class="${column.type === "number" || column.type === "currency" ? "right strong" : ""}">${escapeHtml(text)}</td>`;
+          })
+          .join("")}</tr>`,
+    )
+    .join("");
+  return `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${escapeHtml(dataset.title)}</title>
+  <style>
+    @page { size: A4 landscape; margin: 0; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #e9edf4; color: #0f172a; font-family: Arial, Helvetica, sans-serif; font-size: 10px; }
+    .toolbar { width: 287mm; margin: 10px auto 0; display: flex; justify-content: flex-end; }
+    .toolbar button { border: 1px solid #cbd5e1; background: #fff; border-radius: 6px; padding: 7px 11px; font-weight: 800; cursor: pointer; font-size: 12px; }
+    .page { width: 287mm; min-height: 200mm; margin: 10px auto 18px; background: #fff; padding: 10mm; box-shadow: 0 8px 26px rgba(15, 23, 42, .12); }
+    .head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12mm; border-bottom: 2px solid #d8e1ec; padding-bottom: 6mm; }
+    .hub-logo { width: 24mm; height: 16mm; background: #e71845; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: .86; }
+    .hub-logo-main { font-size: 20pt; font-weight: 950; letter-spacing: -.07em; }
+    .hub-logo-tag { margin-top: 1.5mm; font-size: 3pt; font-weight: 900; letter-spacing: .04em; }
+    .title { font-size: 18px; font-weight: 950; letter-spacing: .08em; text-transform: uppercase; }
+    .meta { color: #475569; font-size: 10px; margin-top: 2mm; }
+    .kpis { display: flex; gap: 4mm; margin: 6mm 0; }
+    .kpi { border: 1px solid #d3dcea; padding: 3mm 5mm; min-width: 34mm; }
+    .kpi .label { color: #64748b; font-size: 8px; text-transform: uppercase; font-weight: 900; }
+    .kpi .value { margin-top: 1.5mm; font-size: 14px; font-weight: 950; }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: #3746f5; color: #fff; font-size: 8px; text-transform: uppercase; letter-spacing: .05em; text-align: left; }
+    td, th { border: 1px solid #cbd5e1; padding: 2.2mm; vertical-align: middle; }
+    tbody tr:nth-child(even) { background: #f8fafc; }
+    .right { text-align: right; }
+    .strong { font-weight: 900; }
+    @media print { body { background: white; } .toolbar { display: none; } .page { width: 297mm; min-height: 210mm; margin: 0; box-shadow: none; } }
+  </style>
+</head>
+<body>
+  <div class="toolbar"><button onclick="window.print()">Imprimer / Enregistrer PDF</button></div>
+  <main class="page">
+    <header class="head">
+      <div>${hubLogoMarkup()}</div>
+      <div><div class="title">${escapeHtml(dataset.title)}</div><div class="meta">Export genere le ${escapeHtml(formatDate(new Date()))} - ${formatNumber(dataset.rows.length)} ligne(s)</div></div>
+    </header>
+    <section class="kpis">
+      <div class="kpi"><div class="label">Lignes</div><div class="value">${formatNumber(dataset.rows.length)}</div></div>
+      <div class="kpi"><div class="label">Quantite totale</div><div class="value">${formatNumber(totalQuantity)}</div></div>
+      <div class="kpi"><div class="label">Valeur estimee</div><div class="value">${formatNumber(totalValue)}</div></div>
+    </section>
+    <table><thead><tr>${header}</tr></thead><tbody>${rows || `<tr><td colspan="${dataset.columns.length}">Aucune donnee a exporter.</td></tr>`}</tbody></table>
+  </main>
+</body>
+</html>`;
+}
+
+function downloadStockPdf(root: HTMLElement, scope: StockExportScope) {
+  let dataset: ReturnType<typeof stockExportDataset>;
+  try {
+    dataset = stockExportDataset(root, scope);
+  } catch (error) {
+    showToast(root, error instanceof Error ? error.message : "Export PDF impossible.", "error");
+    return;
+  }
+  const popup = window.open("", "_blank");
+  if (!popup) {
+    showToast(root, "Autorise les popups pour telecharger le PDF.", "error");
+    return;
+  }
+  popup.document.write(stockPdfHtml(dataset));
+  popup.document.close();
+  closeModal(root, "stockExportModal");
+  popup.focus();
+  popup.print();
+}
+
+function prepareStockExportModal(root: HTMLElement) {
+  const select = root.querySelector<HTMLSelectElement>("#stockExportLocationSelect");
+  if (!select) return;
+  const currentFilter =
+    root.querySelector<HTMLSelectElement>("#stockLocationSelect")?.value ?? "";
+  const previous = select.value || currentFilter;
+  const locationsWithStock = latestLocations
+    .filter((location) =>
+      latestStockLevels.some((level) => level.location.id === location.id),
+    )
+    .sort((a, b) => a.name.localeCompare(b.name));
+  select.innerHTML =
+    '<option value="">Selectionner un emplacement</option>' +
+    locationsWithStock
+      .map((location) => option(location.id, `${location.code} - ${location.name}`))
+      .join("");
+  if (locationsWithStock.some((location) => location.id === previous)) {
+    select.value = previous;
+  }
+}
+
+type InventoryExportScope = "location" | "global";
+
+function selectedInventoryExportLocationId(root: HTMLElement) {
+  return (
+    root.querySelector<HTMLSelectElement>("#inventoryExportLocationSelect")
+      ?.value ||
+    root.querySelector<HTMLSelectElement>("#inventoryLocationSelect")?.value ||
+    ""
+  );
+}
+
+function inventoryLocationExportRows(root: HTMLElement) {
+  const locationId = selectedInventoryExportLocationId(root);
+  if (!locationId) return [];
+  const search = inventoryExportSearch(root);
+  const hideValidated = Boolean(
+    root.querySelector<HTMLInputElement>("#inventoryHideValidated")?.checked,
+  );
+  return inventoryComputedLinesForLocation(locationId)
+    .filter((line) => {
+      if (!inventoryLineMatchesExportSearch(line, search)) return false;
+      if (hideValidated && inventoryLineIsValidated(line)) return false;
+      return true;
+    })
+    .sort((a, b) => a.article.code.localeCompare(b.article.code))
+    .map((line) => ({
+      article: line.article.designation,
+      code: line.article.code,
+      location: line.location.name,
+      theoretical: line.theoretical,
+      counted: line.counted,
+      good: line.good,
+      repair: line.repair,
+      outOfService: line.outOfService,
+      gap: line.gap,
+      justification: line.justification,
+      status: inventoryLineStatus(line).label,
+    }));
+}
+
+function inventoryExportDataset(root: HTMLElement, scope: InventoryExportScope): {
+  filenameKind: string;
+  sheetName: string;
+  title: string;
+  columns: ExcelExportColumn[];
+  rows: ExcelExportRow[];
+} {
+  if (scope === "global") {
+    return {
+      filenameKind: "inventaire-global",
+      sheetName: "Inventaire global",
+      title: "Synthese globale inventaire",
+      columns: [
+        { key: "article", header: "Article" },
+        { key: "code", header: "Code" },
+        { key: "theoretical", header: "Stock theorique global", type: "number" },
+        { key: "counted", header: "Quantite constatee", type: "number" },
+        { key: "good", header: "Bon etat", type: "number" },
+        { key: "repair", header: "A reparer", type: "number" },
+        { key: "outOfService", header: "Hors service", type: "number" },
+        { key: "gap", header: "Ecart", type: "number" },
+        { key: "locations", header: "Emplacements concernes" },
+        { key: "status", header: "Statut" },
+      ],
+      rows: inventoryGlobalExportRows(root),
+    };
+  }
+  const locationId = selectedInventoryExportLocationId(root);
+  if (!locationId) {
+    throw new Error("Selectionne l'emplacement a exporter.");
+  }
+  const locationName =
+    latestLocations.find((location) => location.id === locationId)?.name ??
+    "Emplacement";
+  return {
+    filenameKind: "inventaire-par-emplacement",
+    sheetName: "Inventaire emplacement",
+    title: "Inventaire - " + locationName,
+    columns: [
+      { key: "article", header: "Article" },
+      { key: "code", header: "Code" },
+      { key: "location", header: "Emplacement" },
+      { key: "theoretical", header: "Stock theorique emplacement", type: "number" },
+      { key: "counted", header: "Quantite constatee", type: "number" },
+      { key: "good", header: "Bon etat", type: "number" },
+      { key: "repair", header: "A reparer", type: "number" },
+      { key: "outOfService", header: "Hors service", type: "number" },
+      { key: "gap", header: "Ecart", type: "number" },
+      { key: "justification", header: "Justification" },
+      { key: "status", header: "Statut" },
+    ],
+    rows: inventoryLocationExportRows(root),
+  };
+}
+
+async function downloadInventoryExcel(root: HTMLElement, scope: InventoryExportScope) {
+  try {
+    const dataset = inventoryExportDataset(root, scope);
+    const date = new Date().toISOString().slice(0, 10);
+    const filename = "stock-hub-" + dataset.filenameKind + "-" + date + ".xlsx";
+    await exportWorkbook({
+      filename,
+      sheetName: dataset.sheetName,
+      columns: dataset.columns,
+      rows: dataset.rows,
+    });
+    closeModal(root, "inventoryExportModal");
+    showToast(root, "Export Excel prepare : " + filename);
+  } catch (error) {
+    showToast(root, error instanceof Error ? error.message : "Export Excel impossible.", "error");
+  }
+}
+
+function inventoryPdfHtml(dataset: ReturnType<typeof inventoryExportDataset>) {
+  const totalTheoretical = dataset.rows.reduce(
+    (sum, row) => sum + Number(row.theoretical ?? 0),
+    0,
+  );
+  const totalCounted = dataset.rows.reduce(
+    (sum, row) => sum + Number(row.counted ?? 0),
+    0,
+  );
+  const totalGap = dataset.rows.reduce(
+    (sum, row) => sum + Number(row.gap ?? 0),
+    0,
+  );
+  const header = dataset.columns
+    .map(
+      (column) =>
+        `<th class="${column.type === "number" || column.type === "currency" ? "right" : ""}">${escapeHtml(column.header)}</th>`,
+    )
+    .join("");
+  const rows = dataset.rows
+    .map(
+      (row) =>
+        `<tr>${dataset.columns
+          .map((column) => {
+            const value = row[column.key];
+            const text =
+              column.type === "number" || column.type === "currency"
+                ? formatNumber(Number(value ?? 0))
+                : excelCellText(value);
+            const emphasis =
+              column.key === "gap" && Number(value ?? 0) !== 0
+                ? " gap"
+                : "";
+            return `<td class="${column.type === "number" || column.type === "currency" ? "right strong" : ""}${emphasis}">${escapeHtml(text)}</td>`;
+          })
+          .join("")}</tr>`,
+    )
+    .join("");
+  return `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${escapeHtml(dataset.title)}</title>
+  <style>
+    @page { size: A4 landscape; margin: 0; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #e9edf4; color: #0f172a; font-family: Arial, Helvetica, sans-serif; font-size: 10px; }
+    .toolbar { width: 287mm; margin: 10px auto 0; display: flex; justify-content: flex-end; }
+    .toolbar button { border: 1px solid #cbd5e1; background: #fff; border-radius: 6px; padding: 7px 11px; font-weight: 800; cursor: pointer; font-size: 12px; }
+    .page { width: 287mm; min-height: 200mm; margin: 10px auto 18px; background: #fff; padding: 10mm; box-shadow: 0 8px 26px rgba(15, 23, 42, .12); }
+    .head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12mm; border-bottom: 2px solid #d8e1ec; padding-bottom: 6mm; }
+    .hub-logo { width: 24mm; height: 16mm; background: #e71845; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: .86; }
+    .hub-logo-main { font-size: 20pt; font-weight: 950; letter-spacing: -.07em; }
+    .hub-logo-tag { margin-top: 1.5mm; font-size: 3pt; font-weight: 900; letter-spacing: .04em; }
+    .title { font-size: 18px; font-weight: 950; letter-spacing: .08em; text-transform: uppercase; }
+    .meta { color: #475569; font-size: 10px; margin-top: 2mm; }
+    .kpis { display: flex; gap: 4mm; margin: 6mm 0; }
+    .kpi { border: 1px solid #d3dcea; padding: 3mm 5mm; min-width: 36mm; }
+    .kpi .label { color: #64748b; font-size: 8px; text-transform: uppercase; font-weight: 900; }
+    .kpi .value { margin-top: 1.5mm; font-size: 14px; font-weight: 950; }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: #3746f5; color: #fff; font-size: 8px; text-transform: uppercase; letter-spacing: .05em; text-align: left; }
+    td, th { border: 1px solid #cbd5e1; padding: 2.2mm; vertical-align: middle; }
+    tbody tr:nth-child(even) { background: #f8fafc; }
+    .right { text-align: right; }
+    .strong { font-weight: 900; }
+    .gap { color: #b91c1c; }
+    @media print { body { background: white; } .toolbar { display: none; } .page { width: 297mm; min-height: 210mm; margin: 0; box-shadow: none; } }
+  </style>
+</head>
+<body>
+  <div class="toolbar"><button onclick="window.print()">Imprimer / Enregistrer PDF</button></div>
+  <main class="page">
+    <header class="head">
+      <div>${hubLogoMarkup()}</div>
+      <div><div class="title">${escapeHtml(dataset.title)}</div><div class="meta">Export genere le ${escapeHtml(formatDate(new Date()))} - ${formatNumber(dataset.rows.length)} ligne(s)</div></div>
+    </header>
+    <section class="kpis">
+      <div class="kpi"><div class="label">Lignes</div><div class="value">${formatNumber(dataset.rows.length)}</div></div>
+      <div class="kpi"><div class="label">Stock theorique</div><div class="value">${formatNumber(totalTheoretical)}</div></div>
+      <div class="kpi"><div class="label">Quantite constatee</div><div class="value">${formatNumber(totalCounted)}</div></div>
+      <div class="kpi"><div class="label">Ecart total</div><div class="value">${formatNumber(totalGap)}</div></div>
+    </section>
+    <table><thead><tr>${header}</tr></thead><tbody>${rows || `<tr><td colspan="${dataset.columns.length}">Aucune donnee a exporter.</td></tr>`}</tbody></table>
+  </main>
+</body>
+</html>`;
+}
+
+function downloadInventoryPdf(root: HTMLElement, scope: InventoryExportScope) {
+  let dataset: ReturnType<typeof inventoryExportDataset>;
+  try {
+    dataset = inventoryExportDataset(root, scope);
+  } catch (error) {
+    showToast(root, error instanceof Error ? error.message : "Export PDF impossible.", "error");
+    return;
+  }
+  const popup = window.open("", "_blank");
+  if (!popup) {
+    showToast(root, "Autorise les popups pour telecharger le PDF.", "error");
+    return;
+  }
+  popup.document.write(inventoryPdfHtml(dataset));
+  popup.document.close();
+  closeModal(root, "inventoryExportModal");
+  popup.focus();
+  popup.print();
+}
+
+function prepareInventoryExportModal(root: HTMLElement) {
+  const select = root.querySelector<HTMLSelectElement>(
+    "#inventoryExportLocationSelect",
+  );
+  if (!select) return;
+  const currentFilter =
+    root.querySelector<HTMLSelectElement>("#inventoryLocationSelect")?.value ?? "";
+  const previous = select.value || currentFilter;
+  const locationsWithInventory = latestLocations
+    .filter((location) =>
+      allInventoryComputedLines().some((line) => line.locationId === location.id),
+    )
+    .sort((a, b) => a.name.localeCompare(b.name));
+  select.innerHTML =
+    '<option value="">Selectionner un emplacement</option>' +
+    locationsWithInventory
+      .map((location) => option(location.id, `${location.code} - ${location.name}`))
+      .join("");
+  if (locationsWithInventory.some((location) => location.id === previous)) {
+    select.value = previous;
+  }
 }
 
 function movementStatus(movement: StockMovement) {
@@ -3343,6 +4260,7 @@ function openEntryDetail(root: HTMLElement, id: string) {
     .map((line, index) => {
       const lineExpected = Number(line.expectedQuantity ?? 0);
       const lineCompleted = Number(line.completedQuantity ?? 0);
+      const observation = cleanEntryLineObservation(line.observation);
       return (
         '<div class="md:col-span-2 rounded-lg border border-gray-200 p-3">' +
         '<div class="flex items-start justify-between gap-3"><div><div class="text-xs font-semibold text-gray-400">Ligne ' +
@@ -3363,15 +4281,37 @@ function openEntryDetail(root: HTMLElement, id: string) {
         '</div></div><div><span class="text-gray-500">Prix unitaire</span><div class="font-semibold">' +
         formatNumber(Number(line.unitPrice ?? 0)) +
         "</div></div></div>" +
-        (line.observation
+        (observation
           ? '<div class="mt-3 text-sm text-gray-600">' +
-            escapeHtml(line.observation) +
+            escapeHtml(observation) +
             "</div>"
           : "") +
         "</div>"
       );
     })
     .join("");
+  const canUploadProof = movement.status !== "CANCELLED";
+  const hasProof = Boolean(movement.proofFileName || movement.proofFileKey);
+  const proofInfo = hasProof
+    ? `<div class="mt-4 flex items-center gap-2 rounded-lg border border-success-100 bg-success-50 px-3 py-2 text-sm font-semibold text-success-700"><i data-lucide="check" class="w-4 h-4 shrink-0"></i><span class="min-w-0 truncate">${escapeHtml(movement.proofFileName ?? "Preuve ajoutee")}</span></div>`
+    : `<div class="mt-4 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-500">Aucune fiche signee jointe.</div>`;
+  const documents =
+    `<div class="md:col-span-2 rounded-xl border border-gray-200 overflow-hidden">` +
+    `<div class="px-5 py-4 border-b border-gray-200 bg-gray-50"><h3 class="font-bold">Documents</h3><p class="text-sm text-gray-500 mt-1">Telecharge la fiche d'entree, puis joins la version signee.</p></div>` +
+    `<div class="p-5 grid grid-cols-1 lg:grid-cols-2 gap-4">` +
+    `<div class="rounded-xl border border-accent-100 bg-accent-50/40 p-4">` +
+    `<div class="flex items-start gap-3"><div class="w-11 h-11 rounded-xl bg-accent-600 text-white flex items-center justify-center shrink-0"><i data-lucide="file-down" class="w-5 h-5"></i></div><div><div class="text-xs font-bold uppercase tracking-wide text-gray-500">Etape 1</div><h4 class="font-bold mt-1">Telecharger la fiche d'entree</h4><p class="text-sm text-gray-600 mt-1">Imprime la fiche recue pour signature et classement.</p></div></div>` +
+    `<button type="button" data-action="downloadEntryPdf('${escapeHtml(movement.id)}')" class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-accent-600 px-4 py-2.5 font-semibold text-white hover:bg-accent-500"><i data-lucide="download" class="w-4 h-4"></i>Telecharger la fiche</button>` +
+    `${hasProof ? `<button type="button" data-action="viewSignedEntryProof('${escapeHtml(movement.id)}')" class="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 font-semibold text-gray-700 hover:bg-gray-50"><i data-lucide="file-check" class="w-4 h-4"></i>Voir la preuve</button>` : ""}` +
+    `</div>` +
+    `<div class="rounded-xl border border-gray-200 bg-white p-4">` +
+    `<div class="flex items-start gap-3"><div class="w-11 h-11 rounded-xl bg-gray-900 text-white flex items-center justify-center shrink-0"><i data-lucide="upload" class="w-5 h-5"></i></div><div><div class="text-xs font-bold uppercase tracking-wide text-gray-500">Etape 2</div><h4 class="font-bold mt-1">Uploader la fiche signee</h4><p class="text-sm text-gray-600 mt-1">PDF ou image signee rattachee a ce bon d'entree.</p></div></div>` +
+    `<input id="signedEntryProof-${escapeHtml(movement.id)}" type="file" accept="application/pdf,image/*" class="mt-4 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm">` +
+    `<button type="button" data-action="uploadSignedEntryProof('${escapeHtml(movement.id)}')" class="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-lg border-2 border-accent-300 bg-accent-50 px-4 py-2.5 font-semibold text-accent-700 hover:bg-accent-100 ${canUploadProof ? "" : "pointer-events-none opacity-50"}"><i data-lucide="upload" class="w-4 h-4"></i>Uploader la fiche signee</button>` +
+    proofInfo +
+    `</div>` +
+    `</div>` +
+    `</div>`;
   if (fields)
     fields.innerHTML =
       [
@@ -3396,7 +4336,7 @@ function openEntryDetail(root: HTMLElement, id: string) {
             escapeHtml(value) +
             "</div></div>",
         )
-        .join("") + rows;
+        .join("") + rows + documents;
   const resolveButton =
     root.querySelector<HTMLButtonElement>("#entryResolveButton");
   if (resolveButton) {
@@ -5466,7 +6406,7 @@ async function submitStockEntry(root: HTMLElement) {
       notes,
       lines: lines.map((line) => ({
         ...line,
-        observation: line.observation ?? notes,
+        observation: line.observation || undefined,
       })),
     });
     closeModal(root, "entryModal");
@@ -5967,6 +6907,45 @@ async function uploadSignedMaterialProof(root: HTMLElement, id: string) {
   }
 }
 
+async function uploadSignedEntryProof(root: HTMLElement, id: string) {
+  const input = root.querySelector<HTMLInputElement>(
+    `#signedEntryProof-${CSS.escape(id)}`,
+  );
+  const file = input?.files?.[0];
+  if (!file) {
+    showToast(root, "Ajoute la fiche d'entree signee.", "error");
+    return;
+  }
+  try {
+    const updated = await uploadEntryProof(id, {
+      file,
+      uploadedBy: currentUser
+        ? `${currentUser.firstName} ${currentUser.lastName}`.trim()
+        : undefined,
+    });
+    latestMovements = await getStockMovements();
+    selectedEntryId = updated.id;
+    openEntryDetail(root, updated.id);
+    updateApiBackedViews(root);
+    showToast(root, "Fiche d'entree signee uploadée.");
+  } catch (error) {
+    showToast(
+      root,
+      error instanceof Error ? error.message : "Upload impossible.",
+      "error",
+    );
+  }
+}
+
+function openProofInNewTab(url: string) {
+  const popup = window.open(url, "_blank");
+  if (popup) {
+    popup.opener = null;
+    return true;
+  }
+  return false;
+}
+
 async function viewSignedMaterialProof(root: HTMLElement, id: string) {
   const movement = latestMovements.find((item) => item.id === id);
   if (!movement?.proofFileName && !movement?.proofFileKey) {
@@ -5975,8 +6954,29 @@ async function viewSignedMaterialProof(root: HTMLElement, id: string) {
   }
   try {
     const proof = await getExitRequestProof(id);
-    const popup = window.open(proof.url, "_blank", "noopener,noreferrer");
-    if (!popup) {
+    if (!openProofInNewTab(proof.url)) {
+      showToast(root, "Autorise les popups pour ouvrir la preuve.", "error");
+      return;
+    }
+    showToast(root, "Preuve signee ouverte : " + (proof.fileName ?? movement.proofFileName ?? "fichier"));
+  } catch (error) {
+    showToast(
+      root,
+      error instanceof Error ? error.message : "Preuve signee inaccessible.",
+      "error",
+    );
+  }
+}
+
+async function viewSignedEntryProof(root: HTMLElement, id: string) {
+  const movement = latestMovements.find((item) => item.id === id);
+  if (!movement?.proofFileName && !movement?.proofFileKey) {
+    showToast(root, "Aucune preuve signee jointe.", "error");
+    return;
+  }
+  try {
+    const proof = await getEntryProof(id);
+    if (!openProofInNewTab(proof.url)) {
       showToast(root, "Autorise les popups pour ouvrir la preuve.", "error");
       return;
     }
@@ -9193,6 +10193,10 @@ function canUseHeaderAction(view: string, action: HeaderAction) {
     return (
       hasRole("DIRECTION") || hasRole("AUDIT") || hasRole("GESTIONNAIRE_STOCK")
     );
+  if (action.modal === "stockExportModal")
+    return (
+      hasRole("DIRECTION") || hasRole("AUDIT") || hasRole("GESTIONNAIRE_STOCK")
+    );
   if (action.modal === "importModal" || action.modal === "inventoryImportModal")
     return hasRole("GESTIONNAIRE_STOCK");
   if (view === "referentiels") return hasRole("GESTIONNAIRE_STOCK");
@@ -9217,7 +10221,7 @@ function setViewActions(root: HTMLElement, view: string) {
   const actionByView: Record<string, HeaderAction[]> = {
     home: [
       {
-        label: "Importer XLS",
+        label: "Importer Excel",
         icon: "upload",
         modal: "importModal",
         variant: "secondary",
@@ -9225,7 +10229,7 @@ function setViewActions(root: HTMLElement, view: string) {
     ],
     entrees: [
       {
-        label: "Importer XLS",
+        label: "Importer Excel",
         icon: "upload",
         modal: "importModal",
         variant: "secondary",
@@ -9253,9 +10257,9 @@ function setViewActions(root: HTMLElement, view: string) {
     ],
     stock: [
       {
-        label: "Importer XLS",
-        icon: "upload",
-        modal: "importModal",
+        label: "Telecharger",
+        icon: "download",
+        modal: "stockExportModal",
         variant: "secondary",
       },
     ],
@@ -9899,26 +10903,30 @@ function renderReferentialImport(root: HTMLElement) {
   }
   window.lucide?.createIcons();
 }
-function downloadReferentialTemplate(root: HTMLElement) {
-  const fields = referentialImportFields[referentialImportType];
-  const worksheet = XLSX.utils.aoa_to_sheet([
-    fields.map(([, label]) => label),
-    fields.map(([field]) =>
-      field === "category"
-          ? "Exemple"
-          : "",
-    ),
-  ]);
-  worksheet["!cols"] = fields.map(([, label]) => ({
-    wch: Math.max(18, label.length + 2),
-  }));
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Import");
-  XLSX.writeFile(
-    workbook,
-    `modele-import-${referentialImportType}-stock-hub.xlsx`,
-  );
-  showToast(root, "Modele Excel telecharge.");
+async function downloadReferentialTemplate(root: HTMLElement) {
+  try {
+    const fields = referentialImportFields[referentialImportType];
+    await exportWorkbook({
+      filename: `modele-import-${referentialImportType}-stock-hub.xlsx`,
+      sheetName: "Referentiel",
+      columns: fields.map(([field, label]) => ({
+        key: field,
+        header: label,
+      })),
+      rows: [
+        Object.fromEntries(
+          fields.map(([field]) => [field, field === "category" ? "Exemple" : ""]),
+        ),
+      ],
+    });
+    showToast(root, "Modele Excel telecharge.");
+  } catch (error) {
+    showToast(
+      root,
+      error instanceof Error ? error.message : "Telechargement impossible.",
+      "error",
+    );
+  }
 }
 async function readReferentialImportFile(root: HTMLElement, file: File) {
   try {
@@ -10169,30 +11177,39 @@ function renderInventoryImport(root: HTMLElement) {
   window.lucide?.createIcons();
 }
 
-function downloadInventoryImportTemplate(root: HTMLElement) {
+async function downloadInventoryImportTemplate(root: HTMLElement) {
   const lines = allInventoryComputedLines();
-  const rows = lines.map((line) => [
-    line.article.code,
-    line.article.designation,
-    line.location.code || line.location.name,
-    line.theoretical,
-    line.counted,
-    line.good,
-    line.repair,
-    line.outOfService,
-    line.justification,
-  ]);
-  const worksheet = XLSX.utils.aoa_to_sheet([
-    inventoryImportFields.map(([, label]) => label),
-    ...rows,
-  ]);
-  worksheet["!cols"] = inventoryImportFields.map(([, label]) => ({
-    wch: Math.max(label.length + 2, 18),
-  }));
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Inventaire");
-  XLSX.writeFile(workbook, "modele-inventaire-stock-hub.xlsx");
-  showToast(root, "Modele inventaire telecharge.");
+  try {
+    await exportWorkbook({
+      filename: "modele-inventaire-stock-hub.xlsx",
+      sheetName: "Inventaire",
+      columns: inventoryImportFields.map(([field, label]) => ({
+        key: field,
+        header: label,
+        type: ["theoretical", "counted", "good", "repair", "outOfService"].includes(field)
+          ? "number"
+          : "text",
+      })),
+      rows: lines.map((line) => ({
+        articleCode: line.article.code,
+        designation: line.article.designation,
+        location: line.location.code || line.location.name,
+        theoretical: line.theoretical,
+        counted: line.counted,
+        good: line.good,
+        repair: line.repair,
+        outOfService: line.outOfService,
+        justification: line.justification,
+      })),
+    });
+    showToast(root, "Modele inventaire telecharge.");
+  } catch (error) {
+    showToast(
+      root,
+      error instanceof Error ? error.message : "Telechargement impossible.",
+      "error",
+    );
+  }
 }
 
 async function readInventoryImportFile(root: HTMLElement, file: File) {
@@ -10327,7 +11344,7 @@ async function importInventoryRows(root: HTMLElement) {
   }
 }
 
-function downloadArticleImportTemplate(root: HTMLElement) {
+async function downloadArticleImportTemplate(root: HTMLElement) {
   const headers = [
     "Designation",
     "Famille",
@@ -10352,21 +11369,51 @@ function downloadArticleImportTemplate(root: HTMLElement) {
     "",
     "",
   ];
-  const worksheet = XLSX.utils.aoa_to_sheet([headers, example]);
-  worksheet["!cols"] = headers.map((header) => ({
-    wch: Math.max(header.length + 2, 18),
-  }));
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Articles");
-  XLSX.writeFile(workbook, "modele-import-articles-stock-hub.xlsx");
-  showToast(
-    root,
-    "Modele Excel telecharge. Complete-le sans modifier les noms de colonnes.",
-  );
+  try {
+    await exportWorkbook({
+      filename: "modele-import-articles-stock-hub.xlsx",
+      sheetName: "Articles",
+      columns: headers.map((header) => ({
+        key: articleImportHeaderKey(header),
+        header,
+        type: ["stockminimum", "stocksecurite", "stockdedepart", "prixindicatif"].includes(
+          articleImportHeaderKey(header),
+        )
+          ? "number"
+          : "text",
+      })),
+      rows: [
+        Object.fromEntries(
+          headers.map((header, index) => [
+            articleImportHeaderKey(header),
+            ["Stock minimum", "Stock securite", "Stock de depart", "Prix indicatif"].includes(header)
+              ? Number(example[index] || 0)
+              : example[index],
+          ]),
+        ),
+      ],
+    });
+    showToast(
+      root,
+      "Modele Excel telecharge. Complete-le sans modifier les noms de colonnes.",
+    );
+  } catch (error) {
+    showToast(
+      root,
+      error instanceof Error ? error.message : "Telechargement impossible.",
+      "error",
+    );
+  }
 }
 
 function openModal(root: HTMLElement, id: string) {
   setVisible(root.querySelector(`#${CSS.escape(id)}`), true);
+  if (id === "stockExportModal") {
+    prepareStockExportModal(root);
+  }
+  if (id === "inventoryExportModal") {
+    prepareInventoryExportModal(root);
+  }
   if (id === "importModal") {
     articleImportRows = [];
     referentialImportRows = [];
@@ -11924,6 +12971,17 @@ function parseAction(action: string) {
   const entryDetailMatch = action.match(/^openEntryDetail\('([^']+)'\)/);
   if (entryDetailMatch)
     return { type: "entry-detail", id: entryDetailMatch[1] } as const;
+  const downloadEntryPdfMatch = action.match(/^downloadEntryPdf\('([^']+)'\)/);
+  if (downloadEntryPdfMatch)
+    return { type: "download-entry-pdf", id: downloadEntryPdfMatch[1] } as const;
+  const uploadEntryProofMatch = action.match(
+    /^uploadSignedEntryProof\('([^']+)'\)/,
+  );
+  if (uploadEntryProofMatch)
+    return { type: "upload-signed-entry-proof", id: uploadEntryProofMatch[1] } as const;
+  const viewEntryProofMatch = action.match(/^viewSignedEntryProof\('([^']+)'\)/);
+  if (viewEntryProofMatch)
+    return { type: "view-signed-entry-proof", id: viewEntryProofMatch[1] } as const;
   const equipmentDetailMatch = action.match(
     /^openEquipmentDetail\('([^']+)'\)/,
   );
@@ -11956,6 +13014,34 @@ function parseAction(action: string) {
   const stockSortMatch = action.match(/^sortStock\('([^']+)'\)/);
   if (stockSortMatch)
     return { type: "stock-sort", key: stockSortMatch[1] } as const;
+  const stockExcelMatch = action.match(/^downloadStockExcel\('(location|global)'\)/);
+  if (stockExcelMatch)
+    return {
+      type: "download-stock-excel",
+      scope: stockExcelMatch[1] as StockExportScope,
+    } as const;
+  const stockPdfMatch = action.match(/^downloadStockPdf\('(location|global)'\)/);
+  if (stockPdfMatch)
+    return {
+      type: "download-stock-pdf",
+      scope: stockPdfMatch[1] as StockExportScope,
+    } as const;
+  const inventoryExcelMatch = action.match(
+    /^downloadInventoryExcel\('(location|global)'\)/,
+  );
+  if (inventoryExcelMatch)
+    return {
+      type: "download-inventory-excel",
+      scope: inventoryExcelMatch[1] as InventoryExportScope,
+    } as const;
+  const inventoryPdfMatch = action.match(
+    /^downloadInventoryPdf\('(location|global)'\)/,
+  );
+  if (inventoryPdfMatch)
+    return {
+      type: "download-inventory-pdf",
+      scope: inventoryPdfMatch[1] as InventoryExportScope,
+    } as const;
   const refMatch = action.match(/^showRef\('([^']+)'/);
   if (refMatch) return { type: "ref", id: refMatch[1] } as const;
   if (action === "installPwa") return { type: "install-pwa" } as const;
@@ -12118,6 +13204,12 @@ function StockHubTemplate() {
         void submitExitRequestRejection(root);
       if (parsed.type === "vehicle-detail") openVehicleDetail(root, parsed.id);
       if (parsed.type === "entry-detail") openEntryDetail(root, parsed.id);
+      if (parsed.type === "download-entry-pdf")
+        downloadEntryPdf(root, parsed.id);
+      if (parsed.type === "upload-signed-entry-proof")
+        void uploadSignedEntryProof(root, parsed.id);
+      if (parsed.type === "view-signed-entry-proof")
+        void viewSignedEntryProof(root, parsed.id);
       if (parsed.type === "equipment-detail")
         openEquipmentDetail(root, parsed.id);
       if (parsed.type === "toggle-vehicle-history") toggleVehicleHistory(root);
@@ -12149,6 +13241,14 @@ function StockHubTemplate() {
         toggleAuditLogDay(root, parsed.dayKey);
       if (parsed.type === "refresh-history") renderHistory(root);
       if (parsed.type === "export") exportData(root, parsed.kind);
+      if (parsed.type === "download-stock-excel")
+        void downloadStockExcel(root, parsed.scope);
+      if (parsed.type === "download-stock-pdf")
+        downloadStockPdf(root, parsed.scope);
+      if (parsed.type === "download-inventory-excel")
+        void downloadInventoryExcel(root, parsed.scope);
+      if (parsed.type === "download-inventory-pdf")
+        downloadInventoryPdf(root, parsed.scope);
       if (parsed.type === "stock-filter") renderStock(root);
       if (parsed.type === "stock-drawer-open") openStockDrawer(root, parsed.id);
       if (parsed.type === "inventory-detail-open")

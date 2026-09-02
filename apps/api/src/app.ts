@@ -1265,6 +1265,134 @@ export function buildApp() {
     return reply.send(movement);
   });
 
+  app.post("/stock-movements/entries/:id/proof", async (request, reply) => {
+    const params = request.params as { id: string };
+    if (!request.isMultipart()) {
+      return reply.code(400).send({ message: "Ajoute le fichier signe en multipart/form-data." });
+    }
+
+    const uploaded = await request.file();
+    if (!uploaded) {
+      return reply.code(400).send({ message: "Ajoute la fiche signee." });
+    }
+    const fileName = uploaded.filename || "preuve-signee";
+    const mimeType = uploaded.mimetype || "application/octet-stream";
+    if (!mimeType.startsWith("application/pdf") && !mimeType.startsWith("image/")) {
+      return reply.code(400).send({ message: "La preuve doit etre un PDF ou une image." });
+    }
+
+    const existing = await prisma.stockMovement.findUnique({ where: { id: params.id } });
+    if (!existing || existing.type !== "ENTRY") {
+      return reply.code(404).send({ message: "Entree stock introuvable." });
+    }
+    if (existing.status === "CANCELLED") {
+      return reply.code(400).send({ message: "Impossible de joindre une preuve a une entree annulee." });
+    }
+
+    const buffer = await uploaded.toBuffer();
+    let proofFileKey = "";
+    try {
+      proofFileKey = await saveProofFile(existing.id, fileName, mimeType, buffer);
+    } catch (error) {
+      if (error instanceof Error && error.message === "R2_NOT_CONFIGURED") {
+        return reply.code(500).send({ message: "Stockage Cloudflare R2 non configure." });
+      }
+      if (error instanceof Error && error.message === "STORAGE_DRIVER_INVALID") {
+        return reply.code(500).send({ message: "Driver de stockage invalide." });
+      }
+      throw error;
+    }
+    const uploadedByField = uploaded.fields.uploadedBy as { value?: unknown } | undefined;
+    const auditUserIdField = uploaded.fields.auditUserId as { value?: unknown } | undefined;
+    const updated = await prisma.stockMovement.update({
+      where: { id: params.id },
+      data: {
+        proofFileKey,
+        proofFileName: fileName,
+        proofMimeType: mimeType,
+        proofSizeBytes: buffer.byteLength,
+        proofUploadedAt: new Date(),
+        proofUploadedBy: asString(uploadedByField?.value)
+      },
+      include: {
+        lines: { include: { article: true } }
+      }
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        userId: asString(auditUserIdField?.value) ?? null,
+        action: "UPLOAD_ENTRY_PROOF",
+        entity: "StockMovement",
+        entityId: updated.id,
+        after: updated as any
+      }
+    });
+
+    return reply.send(updated);
+  });
+
+  app.get("/stock-movements/entries/:id/proof", async (request, reply) => {
+    const params = request.params as { id: string };
+    const movement = await prisma.stockMovement.findUnique({ where: { id: params.id } });
+    if (!movement || movement.type !== "ENTRY") {
+      return reply.code(404).send({ message: "Entree stock introuvable." });
+    }
+    if (!movement.proofFileKey) {
+      return reply.code(404).send({ message: "Aucune preuve signee jointe." });
+    }
+    try {
+      if (storageDriver() === "local") {
+        const filePath = localProofPath(movement.proofFileKey);
+        await stat(filePath);
+        const protoHeader = request.headers["x-forwarded-proto"];
+        const protocol = Array.isArray(protoHeader) ? protoHeader[0] : protoHeader ?? request.protocol;
+        return {
+          url: protocol + "://" + request.headers.host + "/stock-movements/entries/" + encodeURIComponent(movement.id) + "/proof/file",
+          fileName: movement.proofFileName,
+          mimeType: movement.proofMimeType
+        };
+      }
+      return {
+        url: await signedProofUrl(movement.proofFileKey),
+        fileName: movement.proofFileName,
+        mimeType: movement.proofMimeType,
+        expiresIn: 300
+      };
+    } catch (error) {
+      if (error instanceof Error && error.message === "R2_NOT_CONFIGURED") {
+        return reply.code(500).send({ message: "Stockage Cloudflare R2 non configure." });
+      }
+      if (error instanceof Error && error.message === "STORAGE_DRIVER_INVALID") {
+        return reply.code(500).send({ message: "Driver de stockage invalide." });
+      }
+      throw error;
+    }
+  });
+
+  app.get("/stock-movements/entries/:id/proof/file", async (request, reply) => {
+    const params = request.params as { id: string };
+    if (storageDriver() !== "local") {
+      return reply.code(404).send({ message: "Fichier local indisponible avec ce driver de stockage." });
+    }
+    const movement = await prisma.stockMovement.findUnique({ where: { id: params.id } });
+    if (!movement || movement.type !== "ENTRY") {
+      return reply.code(404).send({ message: "Entree stock introuvable." });
+    }
+    if (!movement.proofFileKey) {
+      return reply.code(404).send({ message: "Aucune preuve signee jointe." });
+    }
+    const filePath = localProofPath(movement.proofFileKey);
+    try {
+      await stat(filePath);
+    } catch {
+      return reply.code(404).send({ message: "Fichier local introuvable." });
+    }
+    reply.header("Content-Type", movement.proofMimeType ?? "application/octet-stream");
+    reply.header("Content-Disposition", "inline; filename=\"" + safeFileName(movement.proofFileName ?? "preuve-signee") + "\"");
+    return reply.send(createReadStream(filePath));
+  });
+
 
   app.post("/stock-movements/exit-requests", async (request, reply) => {
     const body = asBody(request.body);

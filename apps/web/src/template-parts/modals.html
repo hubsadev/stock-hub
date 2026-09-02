@@ -1,4 +1,4 @@
-<div id="userModal" class="modal fixed inset-0 bg-gray-900/50 items-center justify-center p-6 z-50">
+  <div id="userModal" class="modal fixed inset-0 bg-gray-900/50 items-center justify-center p-6 z-50">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] flex flex-col overflow-hidden">
       <div class="px-6 py-5 border-b flex justify-between items-center"><div><div class="text-xs text-gray-500 font-semibold">Administration</div><h2 class="text-xl font-bold">Compte utilisateur</h2></div><button data-action="closeModal('userModal')" class="text-gray-500 hover:text-gray-900"><i data-lucide="x" class="w-5 h-5"></i></button></div>
       <div class="p-6 overflow-y-auto flex-1 min-h-0 space-y-5">
@@ -7,6 +7,80 @@
         <div class="border rounded-xl overflow-hidden"><div class="px-5 py-4 bg-gray-50 border-b"><h3 class="font-bold">Securite</h3><p class="text-sm text-gray-500 mt-1">Mot de passe initial ou reinitialisation.</p></div><div class="p-5 grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3"><div class="flex rounded-lg border border-gray-300 overflow-hidden"><input id="userPassword" type="password" class="w-full h-11 px-3 outline-none" placeholder="Nouveau mot de passe"><button type="button" data-action="toggleUserPassword()" class="w-12 border-l text-gray-500 flex items-center justify-center"><i id="userPasswordIcon" data-lucide="eye" class="w-4 h-4"></i></button></div><button class="h-11 px-4 rounded-lg border font-semibold">Reinitialiser</button></div></div>
       </div>
       <div class="px-6 py-4 border-t flex justify-end gap-3"><button data-action="closeModal('userModal')" class="px-4 py-2 bg-white border rounded-lg font-semibold">Annuler</button><button data-action="submitUser" class="px-4 py-2 bg-accent-600 text-white rounded-lg font-semibold">Enregistrer utilisateur</button></div>
+    </div>
+  </div>
+  <div id="stockExportModal" class="modal fixed inset-0 bg-gray-900/50 items-center justify-center p-6 z-50">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden">
+      <div class="px-6 py-5 border-b flex justify-between items-start gap-4">
+        <div>
+          <div class="text-xs text-gray-500 font-semibold">Vue Stock</div>
+          <h2 class="text-xl font-bold">Telecharger le stock</h2>
+          <p class="text-sm text-gray-500 mt-1">Choisis un emplacement pour les exports locaux, ou une synthese globale.</p>
+        </div>
+        <button data-action="closeModal('stockExportModal')" class="text-gray-500 hover:text-gray-900"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div class="p-6 space-y-4">
+        <div class="flex flex-col gap-3 rounded-xl border border-gray-200 bg-gray-50 p-4 md:flex-row md:items-center">
+          <label for="stockExportLocationSelect" class="text-sm font-semibold text-gray-700 md:w-40">Emplacement</label>
+          <select id="stockExportLocationSelect" class="h-11 min-w-0 flex-1 rounded-lg border border-gray-300 bg-white px-3 text-sm">
+              <option value="">Selectionner un emplacement</option>
+          </select>
+        </div>
+        <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+        <button type="button" data-action="downloadStockExcel('location')" class="text-left rounded-xl border border-gray-200 bg-white p-4 hover:border-accent-300 hover:bg-accent-50/40 transition">
+          <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg bg-accent-600 text-white flex items-center justify-center shrink-0"><i data-lucide="file-spreadsheet" class="w-5 h-5"></i></div><div class="min-w-0"><div class="font-bold">Excel par emplacement</div><p class="text-xs text-gray-500 mt-0.5">Stock de l'emplacement choisi</p></div></div>
+        </button>
+        <button type="button" data-action="downloadStockExcel('global')" class="text-left rounded-xl border border-gray-200 bg-white p-4 hover:border-accent-300 hover:bg-accent-50/40 transition">
+          <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg bg-success-600 text-white flex items-center justify-center shrink-0"><i data-lucide="table-2" class="w-5 h-5"></i></div><div class="min-w-0"><div class="font-bold">Excel global</div><p class="text-xs text-gray-500 mt-0.5">Tous les articles consolides</p></div></div>
+        </button>
+        <button type="button" data-action="downloadStockPdf('location')" class="text-left rounded-xl border border-gray-200 bg-white p-4 hover:border-accent-300 hover:bg-accent-50/40 transition">
+          <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg bg-gray-900 text-white flex items-center justify-center shrink-0"><i data-lucide="file-text" class="w-5 h-5"></i></div><div class="min-w-0"><div class="font-bold">PDF par emplacement</div><p class="text-xs text-gray-500 mt-0.5">Fiche imprimable locale</p></div></div>
+        </button>
+        <button type="button" data-action="downloadStockPdf('global')" class="text-left rounded-xl border border-gray-200 bg-white p-4 hover:border-accent-300 hover:bg-accent-50/40 transition">
+          <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg bg-gray-900 text-white flex items-center justify-center shrink-0"><i data-lucide="file-bar-chart" class="w-5 h-5"></i></div><div class="min-w-0"><div class="font-bold">PDF global</div><p class="text-xs text-gray-500 mt-0.5">Synthese imprimable</p></div></div>
+        </button>
+        </div>
+      </div>
+      <div class="px-6 py-4 border-t flex justify-end">
+        <button data-action="closeModal('stockExportModal')" class="px-4 py-2 bg-white border rounded-lg font-semibold">Fermer</button>
+      </div>
+    </div>
+  </div>
+  <div id="inventoryExportModal" class="modal fixed inset-0 bg-gray-900/50 items-center justify-center p-6 z-50">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden">
+      <div class="px-6 py-5 border-b flex justify-between items-start gap-4">
+        <div>
+          <div class="text-xs text-gray-500 font-semibold">Inventaire de stock</div>
+          <h2 class="text-xl font-bold">Telecharger l'inventaire</h2>
+          <p class="text-sm text-gray-500 mt-1">Exporte un emplacement precis ou la synthese globale consolidee.</p>
+        </div>
+        <button data-action="closeModal('inventoryExportModal')" class="text-gray-500 hover:text-gray-900"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div class="p-6 space-y-4">
+        <div class="flex flex-col gap-3 rounded-xl border border-gray-200 bg-gray-50 p-4 md:flex-row md:items-center">
+          <label for="inventoryExportLocationSelect" class="text-sm font-semibold text-gray-700 md:w-40">Emplacement</label>
+          <select id="inventoryExportLocationSelect" class="h-11 min-w-0 flex-1 rounded-lg border border-gray-300 bg-white px-3 text-sm">
+            <option value="">Selectionner un emplacement</option>
+          </select>
+        </div>
+        <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <button type="button" data-action="downloadInventoryExcel('location')" class="text-left rounded-xl border border-gray-200 bg-white p-4 transition hover:border-accent-300 hover:bg-accent-50/40">
+            <div class="flex items-center gap-3"><div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent-600 text-white"><i data-lucide="file-spreadsheet" class="h-5 w-5"></i></div><div class="min-w-0"><div class="font-bold">Excel par emplacement</div><p class="mt-0.5 text-xs text-gray-500">Comptage de l'emplacement choisi</p></div></div>
+          </button>
+          <button type="button" data-action="downloadInventoryExcel('global')" class="text-left rounded-xl border border-gray-200 bg-white p-4 transition hover:border-accent-300 hover:bg-accent-50/40">
+            <div class="flex items-center gap-3"><div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-success-600 text-white"><i data-lucide="table-2" class="h-5 w-5"></i></div><div class="min-w-0"><div class="font-bold">Excel global</div><p class="mt-0.5 text-xs text-gray-500">Tous les emplacements consolides</p></div></div>
+          </button>
+          <button type="button" data-action="downloadInventoryPdf('location')" class="text-left rounded-xl border border-gray-200 bg-white p-4 transition hover:border-accent-300 hover:bg-accent-50/40">
+            <div class="flex items-center gap-3"><div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-900 text-white"><i data-lucide="file-text" class="h-5 w-5"></i></div><div class="min-w-0"><div class="font-bold">PDF par emplacement</div><p class="mt-0.5 text-xs text-gray-500">Fiche imprimable locale</p></div></div>
+          </button>
+          <button type="button" data-action="downloadInventoryPdf('global')" class="text-left rounded-xl border border-gray-200 bg-white p-4 transition hover:border-accent-300 hover:bg-accent-50/40">
+            <div class="flex items-center gap-3"><div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-900 text-white"><i data-lucide="file-bar-chart" class="h-5 w-5"></i></div><div class="min-w-0"><div class="font-bold">PDF global</div><p class="mt-0.5 text-xs text-gray-500">Synthese imprimable par article</p></div></div>
+          </button>
+        </div>
+      </div>
+      <div class="px-6 py-4 border-t flex justify-end">
+        <button data-action="closeModal('inventoryExportModal')" class="px-4 py-2 bg-white border rounded-lg font-semibold">Fermer</button>
+      </div>
     </div>
   </div>
   <div id="entryModal" class="modal fixed inset-0 bg-gray-900/50 items-center justify-center p-6 z-50">
@@ -723,17 +797,17 @@
     const labels = { home:'Tableau de bord', entrees:'Entrees stock', referentiels:'Referentiels', stock:'Vue Stock', sortie:'Sorties stock', retours:'Retours & transferts', reappro:'Reapprovisionnement', inventaire:'Inventaire', equipements:'Equipements', parcAuto:'Parc auto', audit:'Audit & alertes', users:'Utilisateurs & roles', historique:'Historique & exports' };
     const headerActions = {
       home: [
-        { label:'Importer XLS', icon:'upload', modal:'importModal', variant:'secondary' }
+        { label:'Importer Excel', icon:'upload', modal:'importModal', variant:'secondary' }
       ],
       entrees: [
-        { label:'Importer XLS', icon:'upload', modal:'importModal', variant:'secondary' },
+        { label:'Importer Excel', icon:'upload', modal:'importModal', variant:'secondary' },
         { label:'Nouvelle entree', icon:'plus', modal:'entryModal', variant:'primary' }
       ],
       referentiels: [
         { label:'Nouvel element', icon:'plus', modal:'referentialModal', variant:'primary' }
       ],
       stock: [
-        { label:'Importer XLS', icon:'upload', modal:'importModal', variant:'secondary' }
+        { label:'Telecharger', icon:'download', modal:'stockExportModal', variant:'secondary' }
       ],
       sortie: [
         { label:'Nouvelle sortie', icon:'package-minus', modal:'directExitModal', variant:'secondary' },
@@ -747,6 +821,7 @@
         { label:'Exporter liste', icon:'download', variant:'secondary' }
       ],
       inventaire: [
+        { label:'Telecharger', icon:'download', modal:'inventoryExportModal', variant:'secondary' },
         { label:'Importer Excel', icon:'upload', modal:'inventoryImportModal', variant:'secondary' }
       ],
       equipements: [

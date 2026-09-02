@@ -744,6 +744,24 @@ export function getExitRequestProof(id: string) {
   );
 }
 
+export function uploadEntryProof(id: string, body: { file: File; uploadedBy?: string }) {
+  const form = new FormData();
+  form.append("file", body.file);
+  if (body.uploadedBy) form.append("uploadedBy", body.uploadedBy);
+  const auditUserId = currentAuditUserId();
+  if (auditUserId) form.append("auditUserId", auditUserId);
+  return request<StockMovement>("/stock-movements/entries/" + encodeURIComponent(id) + "/proof", {
+    method: "POST",
+    body: form
+  });
+}
+
+export function getEntryProof(id: string) {
+  return request<{ url: string; fileName: string | null; mimeType: string | null; expiresIn?: number }>(
+    "/stock-movements/entries/" + encodeURIComponent(id) + "/proof"
+  );
+}
+
 
 export function createStockReturn(body: {
   reference: string;

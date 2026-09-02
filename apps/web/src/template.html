@@ -338,7 +338,7 @@
               <h1 class="text-3xl font-bold">Vue Stock par emplacement</h1>
               <p class="text-sm text-gray-500 mt-2">Consulter le stock disponible par magasin, depot, chantier ou vehicule. Cliquez sur une ligne pour voir le detail.</p>
             </div>
-            <button class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold flex items-center gap-2"><i data-lucide="download" class="w-4 h-4"></i>Exporter CSV</button>
+            <button data-action="openModal('stockExportModal')" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold flex items-center gap-2"><i data-lucide="download" class="w-4 h-4"></i>Télécharger</button>
           </div>
 
           <!-- KPI Banner -->
@@ -642,7 +642,7 @@
                 <button data-action="showInventoryMode('global')" id="inventoryGlobalTab" class="inventory-tab px-4 py-2 rounded-lg text-sm font-bold text-gray-500">Synthese globale</button>
               </div>
               <button class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold flex items-center gap-2"><i data-lucide="download" class="w-4 h-4"></i>Modele Excel</button>
-              <button class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold flex items-center gap-2"><i data-lucide="upload" class="w-4 h-4"></i>Importer XLS</button>
+            <button data-action="openModal('inventoryImportModal')" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold flex items-center gap-2"><i data-lucide="upload" class="w-4 h-4"></i>Importer Excel</button>
             </div>
           </div>
 
@@ -1371,17 +1371,17 @@
     const labels = { home:'Tableau de bord', entrees:'Entrees stock', referentiels:'Referentiels', stock:'Vue Stock', sortie:'Sorties stock', retours:'Retours & transferts', reappro:'Reapprovisionnement', inventaire:'Inventaire', equipements:'Equipements', parcAuto:'Parc auto', audit:'Audit & alertes', users:'Utilisateurs & roles', historique:'Historique & exports' };
     const headerActions = {
       home: [
-        { label:'Importer XLS', icon:'upload', modal:'importModal', variant:'secondary' }
+        { label:'Importer Excel', icon:'upload', modal:'importModal', variant:'secondary' }
       ],
       entrees: [
-        { label:'Importer XLS', icon:'upload', modal:'importModal', variant:'secondary' },
+        { label:'Importer Excel', icon:'upload', modal:'importModal', variant:'secondary' },
         { label:'Nouvelle entree', icon:'plus', modal:'entryModal', variant:'primary' }
       ],
       referentiels: [
         { label:'Nouvel element', icon:'plus', modal:'referentialModal', variant:'primary' }
       ],
       stock: [
-        { label:'Importer XLS', icon:'upload', modal:'importModal', variant:'secondary' }
+        { label:'Telecharger', icon:'download', modal:'stockExportModal', variant:'secondary' }
       ],
       sortie: [
         { label:'Nouvelle sortie', icon:'package-minus', modal:'directExitModal', variant:'secondary' },
@@ -1396,7 +1396,7 @@
       ],
       inventaire: [
         { label:'Modele Excel', icon:'download', variant:'secondary' },
-        { label:'Importer XLS', icon:'upload', modal:'importModal', variant:'secondary' }
+        { label:'Importer Excel', icon:'upload', modal:'importModal', variant:'secondary' }
       ],
       equipements: [
         { label:'Affecter equipement', icon:'plus', modal:'equipmentModal', variant:'primary' }
@@ -1580,4 +1580,3 @@
     </section>
     <div class="footer-note"><span>Document genere depuis Stock Hub.</span><span>Les quantites remises alimentent le registre des sorties.</span></div>
   </main>
-

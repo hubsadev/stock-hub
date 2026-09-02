@@ -218,7 +218,7 @@
               <h1 class="text-3xl font-bold">Vue Stock par emplacement</h1>
               <p class="text-sm text-gray-500 mt-2">Consulter le stock disponible par magasin, depot, chantier ou vehicule. Cliquez sur une ligne pour voir le detail.</p>
             </div>
-            <button class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold flex items-center gap-2"><i data-lucide="download" class="w-4 h-4"></i>Exporter CSV</button>
+            <button data-action="openModal('stockExportModal')" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold flex items-center gap-2"><i data-lucide="download" class="w-4 h-4"></i>Télécharger</button>
           </div>
 
           <!-- KPI Banner -->
@@ -478,6 +478,7 @@
                 <button data-action="showInventoryMode('local')" id="inventoryLocalTab" class="inventory-tab px-4 py-2 rounded-lg bg-white shadow-sm text-sm font-bold">Par emplacement</button>
                 <button data-action="showInventoryMode('global')" id="inventoryGlobalTab" class="inventory-tab px-4 py-2 rounded-lg text-sm font-bold text-gray-500">Synthese globale</button>
               </div>
+              <button data-action="openModal('inventoryExportModal')" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold flex items-center gap-2"><i data-lucide="download" class="w-4 h-4"></i>Telecharger</button>
               <button data-action="openModal('inventoryImportModal')" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold flex items-center gap-2"><i data-lucide="upload" class="w-4 h-4"></i>Importer Excel</button>
             </div>
           </div>

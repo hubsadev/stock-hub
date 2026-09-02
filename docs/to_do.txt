@@ -10,6 +10,7 @@
 Dans réferentiel Site projet rattache - region - ville sont absents alors que dans la fiche détail on a toutes les infos présentes 
 Vue stock initial - entrees - sorties ne donnent pas de données  
 
+
  
 
 pnpm --dir packages/database exec   prisma migrate deploy
