@@ -4,6 +4,8 @@ import workspaceHtml from "../template-parts/workspace.html?raw";
 import modalsHtml from "../template-parts/modals.html?raw";
 import entreesStockHtml from "../pages/entrees-stock/entrees-stock.html?raw";
 import entreesStockModalsHtml from "../pages/entrees-stock/entrees-stock-modals.html?raw";
+import retoursTransfertsHtml from "../pages/retours-transferts/retours-transferts.html?raw";
+import retoursTransfertsModalsHtml from "../pages/retours-transferts/retours-transferts-modals.html?raw";
 import sortiesStockHtml from "../pages/sorties-stock/sorties-stock.html?raw";
 import sortiesStockModalsHtml from "../pages/sorties-stock/sorties-stock-modals.html?raw";
 import vueStockHtml from "../pages/vue-stock/vue-stock.html?raw";
@@ -51,7 +53,8 @@ export function Workspace() {
       html={workspaceHtml
         .replace("<!-- entrees-stock-page -->", entreesStockHtml)
         .replace("<!-- vue-stock-page -->", vueStockHtml)
-        .replace("<!-- sorties-stock-page -->", sortiesStockHtml)}
+        .replace("<!-- sorties-stock-page -->", sortiesStockHtml)
+        .replace("<!-- retours-transferts-page -->", retoursTransfertsHtml)}
     />
   );
 }
@@ -62,6 +65,7 @@ export function ModalLayer() {
       html={modalsHtml
         .replace("<!-- entrees-stock-entry-modal -->", entryModalHtml)
         .replace("<!-- sorties-stock-modals -->", sortiesStockModalsHtml)
+        .replace("<!-- retours-transferts-modals -->", retoursTransfertsModalsHtml)
         .replace("<!-- entrees-stock-detail-modal -->", entryDetailModalHtml)
         .replace("<!-- entrees-stock-resolution-modal -->", entryResolutionModalHtml)
         .replace("<!-- vue-stock-modals -->", vueStockModalsHtml)}
