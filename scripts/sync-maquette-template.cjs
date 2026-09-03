@@ -30,7 +30,6 @@ const bodyMatch = source.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
 if (!bodyMatch) fail("Body introuvable dans la maquette.");
 let html = bodyMatch[1].replace(/<script>[\s\S]*?<\/script>\s*$/i, "").trim();
 html = html.replace(/onclick="([^"]+)"/g, 'data-action="$1"');
-fs.writeFileSync(path.join(webSrc, "template.html"), `${html}\n`, "utf8");
 
 const asideStart = html.indexOf("<aside");
 const asideEnd = html.indexOf("</aside>", asideStart) + "</aside>".length;
