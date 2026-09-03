@@ -2,6 +2,22 @@ import React, { useEffect, useRef } from "react";
 import ReactDOM from "react-dom/client";
 import * as XLSX from "xlsx";
 import { StockHubShell } from "./components/StockHubShell";
+import type { BeforeInstallPromptEvent } from "./types/browser";
+import type {
+  ExcelCellValue,
+  ExcelExportColumn,
+  ExcelExportRow,
+  InventoryExportScope,
+  StockExportScope,
+} from "./types/export";
+import type {
+  ArticleImportRow,
+  InventoryImportRow,
+  ReferentialImportRow,
+  ReferentialImportType,
+} from "./types/import";
+import type { InventoryComputedLine } from "./types/stock";
+import type { HeaderAction } from "./types/ui";
 import { isOnline, selectedText, setText, setVisible } from "./utils/dom";
 import { escapeHtml, formatDate, formatNumber, isToday } from "./utils/format";
 import {
@@ -79,17 +95,6 @@ import {
 } from "./api";
 import "./template.css";
 
-declare global {
-  interface Window {
-    lucide?: { createIcons: () => void };
-  }
-}
-
-type BeforeInstallPromptEvent = Event & {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
-};
-
 let latestMovements: StockMovement[] = [];
 let currentExitFilter = "ALL";
 let currentEntryFilter = "ALL";
@@ -123,43 +128,6 @@ let historyProofFilter: "ALL" | "MISSING" = "ALL";
 let openHistoryMovementId: string | null = null;
 let currentUser: StockUser | null = readStoredUser();
 
-type ReferentialImportType =
-  | "article"
-  | "supplier"
-  | "client"
-  | "project"
-  | "site"
-  | "employee"
-  | "location"
-  | "teamService";
-type ReferentialImportRow = Record<string, any> & { errors: string[] };
-type ArticleImportRow = ReferentialImportRow;
-type InventoryImportRow = {
-  articleCode: string;
-  designation: string;
-  location: string;
-  theoretical: string;
-  counted: string;
-  good: string;
-  repair: string;
-  outOfService: string;
-  justification: string;
-  errors: string[];
-};
-type InventoryComputedLine = {
-  articleId: string;
-  article: Article;
-  locationId: string;
-  location: StockLocation;
-  theoretical: number;
-  counted: number;
-  good: number;
-  repair: number;
-  outOfService: number;
-  gap: number;
-  justification: string;
-  countedAt?: string;
-};
 let referentialImportType: ReferentialImportType = "article";
 let referentialImportRows: ReferentialImportRow[] = [];
 let articleImportRows: ArticleImportRow[] = [];
@@ -3316,18 +3284,6 @@ function downloadCsv(filename: string, rows: Array<Array<unknown>>) {
   URL.revokeObjectURL(url);
 }
 
-type ExcelColumnType = "text" | "number" | "currency" | "date";
-
-type ExcelExportColumn = {
-  key: string;
-  header: string;
-  type?: ExcelColumnType;
-  width?: number;
-};
-
-type ExcelCellValue = string | number | Date | null | undefined;
-type ExcelExportRow = Record<string, ExcelCellValue>;
-
 const stockHubExcelBlue = "3746F5";
 const stockHubExcelBorder = "CBD5E1";
 const stockHubExcelStripe = "F8FAFC";
@@ -4182,8 +4138,6 @@ async function exportData(root: HTMLElement, kind: string) {
   }
 }
 
-type StockExportScope = "location" | "global";
-
 function stockLevelStatusLabel(level: StockLevel) {
   const status = stockStatusCategory(level);
   if (status === "rupture") return "Rupture";
@@ -4446,8 +4400,6 @@ function prepareStockExportModal(root: HTMLElement) {
     select.value = previous;
   }
 }
-
-type InventoryExportScope = "location" | "global";
 
 function selectedInventoryExportLocationId(root: HTMLElement) {
   return (
@@ -10899,14 +10851,6 @@ function renderHeaderButton(action: {
       : "";
   return `<button class="${classes}"${dataAction}><i data-lucide="${action.icon}" class="w-4 h-4"></i>${action.label}</button>`;
 }
-type HeaderAction = {
-  label: string;
-  icon: string;
-  modal?: string;
-  action?: string;
-  variant: "primary" | "secondary";
-};
-
 function canUseHeaderAction(view: string, action: HeaderAction) {
   if (!currentUser) return false;
   if (hasRole("ADMIN_STOCK")) return true;

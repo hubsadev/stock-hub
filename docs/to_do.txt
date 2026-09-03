@@ -11,6 +11,8 @@ Dans réferentiel Site projet rattache - region - ville sont absents alors que d
 Vue stock initial - entrees - sorties ne donnent pas de données  
 
 
-23y@38GK3ILe3%.! 23y@38GK3ILe3%.! 
+
+
+dzde
 
 pnpm --dir packages/database exec prisma migrate deploy
