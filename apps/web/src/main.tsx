@@ -2,6 +2,8 @@ import React, { useEffect, useRef } from "react";
 import ReactDOM from "react-dom/client";
 import * as XLSX from "xlsx";
 import { StockHubShell } from "./components/StockHubShell";
+import { isOnline, selectedText, setText, setVisible } from "./utils/dom";
+import { escapeHtml, formatDate, formatNumber, isToday } from "./utils/format";
 import {
   controlStockReturn,
   createArticle,
@@ -451,28 +453,6 @@ function hideLogin(root: HTMLElement) {
   const overlay = root.querySelector<HTMLElement>("#loginOverlay");
   if (overlay) overlay.style.display = "none";
 }
-function setVisible(element: Element | null, visible: boolean) {
-  if (!element) return;
-  element.classList.toggle("active", visible);
-  element.classList.toggle("show", visible);
-}
-
-function formatNumber(value: number | string | null | undefined) {
-  if (value === null || value === undefined || value === "") return "0";
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed)) return String(value);
-  return new Intl.NumberFormat("fr-FR").format(parsed);
-}
-
-function escapeHtml(value: unknown) {
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
 function badge(
   label: string,
   tone: "success" | "warning" | "error" | "gray" | "accent" = "gray",
@@ -499,15 +479,6 @@ function setCardValue(
   const number = card?.querySelector<HTMLElement>(".text-3xl");
   if (number) number.textContent = formatNumber(value);
 }
-function setText(root: HTMLElement, selector: string, value: number | string) {
-  const element = root.querySelector<HTMLElement>(selector);
-  if (element) element.textContent = formatNumber(value);
-}
-
-function isOnline() {
-  return navigator.onLine !== false;
-}
-
 function updatePwaInstallButton(root: HTMLElement) {
   const standalone =
     window.matchMedia?.("(display-mode: standalone)").matches ||
@@ -682,16 +653,6 @@ function updateProfilePwaCards(root: HTMLElement) {
   );
   dev?.classList.toggle("hidden", !import.meta.env.DEV);
   installed?.classList.toggle("hidden", !import.meta.env.PROD || !standalone);
-}
-
-function isToday(date: string | Date) {
-  const value = new Date(date);
-  const today = new Date();
-  return (
-    value.getFullYear() === today.getFullYear() &&
-    value.getMonth() === today.getMonth() &&
-    value.getDate() === today.getDate()
-  );
 }
 
 function updateDashboard(root: HTMLElement) {
@@ -2800,13 +2761,6 @@ async function submitEquipmentAssignment(root: HTMLElement) {
     );
   }
 }
-function formatDate(value: string | Date | null | undefined) {
-  if (!value) return "-";
-  const date = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(date.getTime())) return String(value);
-  return new Intl.DateTimeFormat("fr-FR").format(date);
-}
-
 function movementTypeLabel(type: StockMovement["type"]) {
   const labels: Record<StockMovement["type"], string> = {
     ENTRY: "Entree",
@@ -6274,11 +6228,6 @@ function fillSelect(
 ) {
   if (!select) return;
   select.innerHTML = placeholder ? option("", placeholder) + options : options;
-}
-
-function selectedText(select: HTMLSelectElement | undefined) {
-  if (!select?.value) return undefined;
-  return select.selectedOptions[0]?.textContent?.trim() || undefined;
 }
 
 function userOptions(users: StockUser[]) {
