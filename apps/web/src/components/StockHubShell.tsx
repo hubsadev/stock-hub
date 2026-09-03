@@ -4,6 +4,8 @@ import workspaceHtml from "../template-parts/workspace.html?raw";
 import modalsHtml from "../template-parts/modals.html?raw";
 import entreesStockHtml from "../pages/entrees-stock/entrees-stock.html?raw";
 import entreesStockModalsHtml from "../pages/entrees-stock/entrees-stock-modals.html?raw";
+import sortiesStockHtml from "../pages/sorties-stock/sorties-stock.html?raw";
+import sortiesStockModalsHtml from "../pages/sorties-stock/sorties-stock-modals.html?raw";
 import vueStockHtml from "../pages/vue-stock/vue-stock.html?raw";
 import vueStockModalsHtml from "../pages/vue-stock/vue-stock-modals.html?raw";
 
@@ -48,7 +50,8 @@ export function Workspace() {
     <HtmlPart
       html={workspaceHtml
         .replace("<!-- entrees-stock-page -->", entreesStockHtml)
-        .replace("<!-- vue-stock-page -->", vueStockHtml)}
+        .replace("<!-- vue-stock-page -->", vueStockHtml)
+        .replace("<!-- sorties-stock-page -->", sortiesStockHtml)}
     />
   );
 }
@@ -58,6 +61,7 @@ export function ModalLayer() {
     <HtmlPart
       html={modalsHtml
         .replace("<!-- entrees-stock-entry-modal -->", entryModalHtml)
+        .replace("<!-- sorties-stock-modals -->", sortiesStockModalsHtml)
         .replace("<!-- entrees-stock-detail-modal -->", entryDetailModalHtml)
         .replace("<!-- entrees-stock-resolution-modal -->", entryResolutionModalHtml)
         .replace("<!-- vue-stock-modals -->", vueStockModalsHtml)}

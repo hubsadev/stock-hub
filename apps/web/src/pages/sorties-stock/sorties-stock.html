@@ -1,0 +1,89 @@
+        <section id="sortie" class="view">
+          <div class="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-4 mb-6">
+            <div>
+              <div class="text-xs font-semibold text-gray-500">Mouvements stock</div>
+              <h1 class="text-3xl font-bold mt-1">Sorties stock</h1>
+              <p class="text-sm text-gray-500 mt-2">Registre complet des demandes, preparations, sorties reelles, blocages et annulations.</p>
+            </div>
+            <div class="flex flex-wrap gap-3"><button class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold flex items-center gap-2" data-action="openModal('directExitModal')"><i data-lucide="package-minus" class="w-4 h-4"></i>Nouvelle sortie</button><button class="px-4 py-2 bg-accent-600 text-white rounded-lg text-sm font-semibold flex items-center gap-2" data-action="openModal('exitModal')"><i data-lucide="plus" class="w-4 h-4"></i>Nouvelle demande</button></div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-5">
+            <button class="bg-white rounded-xl border border-gray-200 p-4 text-left shadow-sm hover:border-accent-200 hover:shadow-md">
+              <div class="text-sm font-semibold text-gray-500">Demandes</div>
+              <div id="exitRequestsCount" class="text-2xl font-bold mt-2">0</div>
+              <div class="text-xs text-gray-500 mt-1">A preparer</div>
+            </button>
+            <button class="bg-white rounded-xl border border-gray-200 p-4 text-left shadow-sm hover:border-accent-200 hover:shadow-md">
+              <div class="text-sm font-semibold text-gray-500">Sorties reelles</div>
+              <div id="exitCompletedCount" class="text-2xl font-bold mt-2">0</div>
+              <div class="text-xs text-gray-500 mt-1">Materiel remis</div>
+            </button>
+            <button class="bg-error-50 rounded-xl border border-error-100 p-4 text-left shadow-sm hover:shadow-md">
+              <div class="text-sm font-semibold text-error-700">Bloquees</div>
+              <div id="entriesIssueCount" class="text-2xl font-bold mt-2">0</div>
+              <div class="text-xs text-error-700 mt-1">Stock insuffisant</div>
+            </button>
+            <button class="bg-white rounded-xl border border-gray-200 p-4 text-left shadow-sm hover:border-accent-200 hover:shadow-md">
+              <div class="text-sm font-semibold text-gray-500">Aujourd'hui</div>
+              <div id="exitTodayCount" class="text-2xl font-bold mt-2">0</div>
+              <div class="text-xs text-gray-500 mt-1">Demandes et sorties</div>
+            </button>
+          </div>
+
+          <div id="exitPendingAlert" class="bg-accent-50 border border-accent-100 rounded-xl p-4 mb-4 flex items-start gap-3 hidden">
+            <div class="w-9 h-9 rounded-lg bg-white text-accent-600 flex items-center justify-center shrink-0"><i data-lucide="bell" class="w-5 h-5"></i></div>
+            <div>
+              <div class="font-bold text-accent-700"><span id="exitPendingCount">0</span> demande a preparer</div>
+              <p class="text-sm text-gray-600 mt-1">Une demande de sortie attend le gestionnaire stock ou l'admin. Ouvre le registre pour preparer ou transformer la demande en sortie reelle.</p>
+            </div>
+          </div>
+
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <div class="p-5 border-b border-gray-200 space-y-4">
+              <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
+                <div>
+                  <h2 class="text-lg font-bold">Registre sorties stock</h2>
+                  <p class="text-sm text-gray-500 mt-1">Toutes les demandes et sorties restent visibles avec leur statut.</p>
+                </div>
+                <div class="flex flex-wrap gap-2 text-xs font-semibold">
+                  <button data-exit-filter="ALL" data-action="setExitFilter('ALL')" class="px-3 py-2 rounded-lg bg-accent-50 text-accent-600">Toutes</button>
+                  <button data-exit-filter="REQUESTED" data-action="setExitFilter('REQUESTED')" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Demandees</button>
+                  <button data-exit-filter="PREPARED" data-action="setExitFilter('PREPARED')" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Preparees</button>
+                  <button data-exit-filter="EXIT" data-action="setExitFilter('EXIT')" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Sorties</button>
+                  <button data-exit-filter="BLOCKED" data-action="setExitFilter('BLOCKED')" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Bloquees</button>
+                  <button data-exit-filter="CANCELLED" data-action="setExitFilter('CANCELLED')" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Annulees</button>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 lg:grid-cols-[1fr_180px_180px] gap-3">
+                <div class="relative">
+                  <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-3.5"></i>
+                  <input class="w-full h-11 rounded-lg border border-gray-300 pl-10 pr-3" placeholder="Rechercher bon, article, projet, beneficiaire, transporteur, remis a">
+                </div>
+                <select class="h-11 rounded-lg border border-gray-300 px-3"><option>Tous projets</option><option>Site Riviera</option><option>Yopougon</option></select>
+                <select class="h-11 rounded-lg border border-gray-300 px-3"><option>Toutes dates</option><option>Aujourd'hui</option><option>Cette semaine</option></select>
+              </div>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm min-w-[1380px]">
+                <thead class="bg-gray-50 text-xs uppercase text-gray-500">
+                  <tr>
+                    <th class="px-5 py-3 text-left">Bon</th>
+                    <th class="px-5 py-3 text-left">Date / heure</th>
+                    <th class="px-5 py-3 text-left">Article</th>
+                    <th class="px-5 py-3 text-right">Qte</th>
+                    <th class="px-5 py-3 text-right">Dispo</th>
+                    <th class="px-5 py-3 text-left">Projet / chantier</th>
+                    <th class="px-5 py-3 text-left">Beneficiaire</th>
+                    <th class="px-5 py-3 text-left">Sorti par</th>
+                    <th class="px-5 py-3 text-left">Transporte par</th>
+                    <th class="px-5 py-3 text-left">Remis a</th>
+                    <th class="px-5 py-3 text-left">Statut</th>
+                    <th class="px-5 py-3 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y"><tr><td class="px-5 py-8 text-center text-gray-500" colspan="12">Aucune demande ou sortie stock en base pour le moment.</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
