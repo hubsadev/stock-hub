@@ -13,6 +13,5 @@ Vue stock initial - entrees - sorties ne donnent pas de données
 
 
 
-dzde
 
 pnpm --dir packages/database exec prisma migrate deploy
