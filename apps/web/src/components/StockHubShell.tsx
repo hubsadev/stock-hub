@@ -4,6 +4,7 @@ import workspaceHtml from "../template-parts/workspace.html?raw";
 import modalsHtml from "../template-parts/modals.html?raw";
 import entreesStockHtml from "../pages/entrees-stock/entrees-stock.html?raw";
 import entreesStockModalsHtml from "../pages/entrees-stock/entrees-stock-modals.html?raw";
+import historiqueHtml from "../pages/historique/historique.html?raw";
 import retoursTransfertsHtml from "../pages/retours-transferts/retours-transferts.html?raw";
 import retoursTransfertsModalsHtml from "../pages/retours-transferts/retours-transferts-modals.html?raw";
 import sortiesStockHtml from "../pages/sorties-stock/sorties-stock.html?raw";
@@ -54,7 +55,8 @@ export function Workspace() {
         .replace("<!-- entrees-stock-page -->", entreesStockHtml)
         .replace("<!-- vue-stock-page -->", vueStockHtml)
         .replace("<!-- sorties-stock-page -->", sortiesStockHtml)
-        .replace("<!-- retours-transferts-page -->", retoursTransfertsHtml)}
+        .replace("<!-- retours-transferts-page -->", retoursTransfertsHtml)
+        .replace("<!-- historique-page -->", historiqueHtml)}
     />
   );
 }
