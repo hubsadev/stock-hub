@@ -148,6 +148,160 @@ function localProofPath(key: string) {
   return filePath;
 }
 
+type ProofMovementType = "RETURN" | "TRANSFER";
+
+async function uploadMovementProof(
+  request: any,
+  reply: any,
+  options: {
+    id: string;
+    type: ProofMovementType;
+    notFoundMessage: string;
+    cancelledMessage: string;
+    auditAction: string;
+  },
+) {
+  if (!request.isMultipart()) {
+    return reply.code(400).send({ message: "Ajoute le fichier signe en multipart/form-data." });
+  }
+  const uploaded = await request.file();
+  if (!uploaded) {
+    return reply.code(400).send({ message: "Ajoute la fiche signee." });
+  }
+  const fileName = uploaded.filename || "preuve-signee";
+  const mimeType = uploaded.mimetype || "application/octet-stream";
+  if (!mimeType.startsWith("application/pdf") && !mimeType.startsWith("image/")) {
+    return reply.code(400).send({ message: "La preuve doit etre un PDF ou une image." });
+  }
+  const existing = await prisma.stockMovement.findUnique({ where: { id: options.id } });
+  if (!existing || existing.type !== options.type) {
+    return reply.code(404).send({ message: options.notFoundMessage });
+  }
+  if (existing.status === "CANCELLED") {
+    return reply.code(400).send({ message: options.cancelledMessage });
+  }
+
+  const buffer = await uploaded.toBuffer();
+  let proofFileKey = "";
+  try {
+    proofFileKey = await saveProofFile(existing.id, fileName, mimeType, buffer);
+  } catch (error) {
+    if (error instanceof Error && error.message === "R2_NOT_CONFIGURED") {
+      return reply.code(500).send({ message: "Stockage Cloudflare R2 non configure." });
+    }
+    if (error instanceof Error && error.message === "STORAGE_DRIVER_INVALID") {
+      return reply.code(500).send({ message: "Driver de stockage invalide." });
+    }
+    throw error;
+  }
+
+  const uploadedByField = uploaded.fields.uploadedBy as { value?: unknown } | undefined;
+  const auditUserIdField = uploaded.fields.auditUserId as { value?: unknown } | undefined;
+  const updated = await prisma.stockMovement.update({
+    where: { id: options.id },
+    data: {
+      proofFileKey,
+      proofFileName: fileName,
+      proofMimeType: mimeType,
+      proofSizeBytes: buffer.byteLength,
+      proofUploadedAt: new Date(),
+      proofUploadedBy: asString(uploadedByField?.value)
+    },
+    include: {
+      lines: { include: { article: true } },
+      sourceRequest: { include: { lines: { include: { article: true } } } }
+    }
+  });
+
+  await prisma.auditLog.create({
+    data: {
+      userId: asString(auditUserIdField?.value) ?? null,
+      action: options.auditAction,
+      entity: "StockMovement",
+      entityId: updated.id,
+      after: updated as any
+    }
+  });
+
+  return reply.send(updated);
+}
+
+async function getMovementProof(
+  request: any,
+  reply: any,
+  options: {
+    id: string;
+    type: ProofMovementType;
+    routeSegment: "returns" | "transfers";
+    notFoundMessage: string;
+  },
+) {
+  const movement = await prisma.stockMovement.findUnique({ where: { id: options.id } });
+  if (!movement || movement.type !== options.type) {
+    return reply.code(404).send({ message: options.notFoundMessage });
+  }
+  if (!movement.proofFileKey) {
+    return reply.code(404).send({ message: "Aucune preuve signee jointe." });
+  }
+  try {
+    if (storageDriver() === "local") {
+      const filePath = localProofPath(movement.proofFileKey);
+      await stat(filePath);
+      const protoHeader = request.headers["x-forwarded-proto"];
+      const protocol = Array.isArray(protoHeader) ? protoHeader[0] : protoHeader ?? request.protocol;
+      return {
+        url: protocol + "://" + request.headers.host + "/stock-movements/" + options.routeSegment + "/" + encodeURIComponent(movement.id) + "/proof/file",
+        fileName: movement.proofFileName,
+        mimeType: movement.proofMimeType
+      };
+    }
+    return {
+      url: await signedProofUrl(movement.proofFileKey),
+      fileName: movement.proofFileName,
+      mimeType: movement.proofMimeType,
+      expiresIn: 300
+    };
+  } catch (error) {
+    if (error instanceof Error && error.message === "R2_NOT_CONFIGURED") {
+      return reply.code(500).send({ message: "Stockage Cloudflare R2 non configure." });
+    }
+    if (error instanceof Error && error.message === "STORAGE_DRIVER_INVALID") {
+      return reply.code(500).send({ message: "Driver de stockage invalide." });
+    }
+    throw error;
+  }
+}
+
+async function streamMovementProof(
+  request: any,
+  reply: any,
+  options: {
+    id: string;
+    type: ProofMovementType;
+    notFoundMessage: string;
+  },
+) {
+  if (storageDriver() !== "local") {
+    return reply.code(404).send({ message: "Fichier local indisponible avec ce driver de stockage." });
+  }
+  const movement = await prisma.stockMovement.findUnique({ where: { id: options.id } });
+  if (!movement || movement.type !== options.type) {
+    return reply.code(404).send({ message: options.notFoundMessage });
+  }
+  if (!movement.proofFileKey) {
+    return reply.code(404).send({ message: "Aucune preuve signee jointe." });
+  }
+  const filePath = localProofPath(movement.proofFileKey);
+  try {
+    await stat(filePath);
+  } catch {
+    return reply.code(404).send({ message: "Fichier local introuvable." });
+  }
+  reply.header("Content-Type", movement.proofMimeType ?? "application/octet-stream");
+  reply.header("Content-Disposition", "inline; filename=\"" + safeFileName(movement.proofFileName ?? "preuve-signee") + "\"");
+  return reply.send(createReadStream(filePath));
+}
+
 function returnBreakdownFromObservation(observation: string | null | undefined) {
   const text = observation ?? "";
   const read = (label: string) => {
@@ -2220,6 +2374,36 @@ export function buildApp() {
     return reply.send(movement);
   });
 
+  app.post("/stock-movements/returns/:id/proof", async (request, reply) => {
+    const { id } = request.params as { id: string };
+    return uploadMovementProof(request, reply, {
+      id,
+      type: "RETURN",
+      notFoundMessage: "Retour stock introuvable.",
+      cancelledMessage: "Impossible de joindre une preuve a un retour annule.",
+      auditAction: "UPLOAD_RETURN_PROOF"
+    });
+  });
+
+  app.get("/stock-movements/returns/:id/proof", async (request, reply) => {
+    const { id } = request.params as { id: string };
+    return getMovementProof(request, reply, {
+      id,
+      type: "RETURN",
+      routeSegment: "returns",
+      notFoundMessage: "Retour stock introuvable."
+    });
+  });
+
+  app.get("/stock-movements/returns/:id/proof/file", async (request, reply) => {
+    const { id } = request.params as { id: string };
+    return streamMovementProof(request, reply, {
+      id,
+      type: "RETURN",
+      notFoundMessage: "Retour stock introuvable."
+    });
+  });
+
   app.post("/stock-movements/transfers", async (request, reply) => {
     const body = asBody(request.body);
     const lines = Array.isArray(body.lines) ? body.lines as Array<Record<string, unknown>> : [];
@@ -2301,6 +2485,37 @@ export function buildApp() {
     if (reply.sent) return;
     return reply.code(201).send(movement);
   });
+
+  app.post("/stock-movements/transfers/:id/proof", async (request, reply) => {
+    const { id } = request.params as { id: string };
+    return uploadMovementProof(request, reply, {
+      id,
+      type: "TRANSFER",
+      notFoundMessage: "Transfert stock introuvable.",
+      cancelledMessage: "Impossible de joindre une preuve a un transfert annule.",
+      auditAction: "UPLOAD_TRANSFER_PROOF"
+    });
+  });
+
+  app.get("/stock-movements/transfers/:id/proof", async (request, reply) => {
+    const { id } = request.params as { id: string };
+    return getMovementProof(request, reply, {
+      id,
+      type: "TRANSFER",
+      routeSegment: "transfers",
+      notFoundMessage: "Transfert stock introuvable."
+    });
+  });
+
+  app.get("/stock-movements/transfers/:id/proof/file", async (request, reply) => {
+    const { id } = request.params as { id: string };
+    return streamMovementProof(request, reply, {
+      id,
+      type: "TRANSFER",
+      notFoundMessage: "Transfert stock introuvable."
+    });
+  });
+
   app.post("/stock-movements/adjustments", async (request, reply) => {
     const body = asBody(request.body);
     const lines = Array.isArray(body.lines) ? body.lines as Array<Record<string, unknown>> : [];
@@ -2621,23 +2836,55 @@ export function buildApp() {
       },
       orderBy: { date: "desc" }
     });
+    const movementIds = movements.map((movement) => movement.id);
+    const creatorActions = new Set([
+      "CREATE_STOCK_ENTRY",
+      "CREATE_EXIT_REQUEST",
+      "CREATE_STOCK_EXIT",
+      "PREPARE_EXIT_REQUEST",
+      "CREATE_STOCK_RETURN",
+      "CREATE_STOCK_TRANSFER",
+      "CREATE_INVENTORY_ADJUSTMENT",
+      "CREATE_INITIAL_STOCK"
+    ]);
+    const movementAuditLogs = movementIds.length
+      ? await prisma.auditLog.findMany({
+          where: {
+            entity: "StockMovement",
+            entityId: { in: movementIds }
+          },
+          orderBy: { createdAt: "asc" }
+        })
+      : [];
+    const auditByMovementId = new Map<string, typeof movementAuditLogs[number]>();
+    for (const log of movementAuditLogs) {
+      if (!log.entityId || auditByMovementId.has(log.entityId)) continue;
+      if (creatorActions.has(log.action)) auditByMovementId.set(log.entityId, log);
+    }
+    for (const log of movementAuditLogs) {
+      if (!log.entityId || auditByMovementId.has(log.entityId)) continue;
+      auditByMovementId.set(log.entityId, log);
+    }
+    const auditUserIds = [...new Set(movementAuditLogs.map((log) => log.userId).filter(Boolean) as string[])];
     const supplierIds = movements.map((movement) => movement.supplierId).filter(Boolean) as string[];
     const clientIds = movements.map((movement) => movement.clientId).filter(Boolean) as string[];
     const teamServiceIds = movements.map((movement) => movement.teamServiceId).filter(Boolean) as string[];
     const projectIds = movements.map((movement) => movement.projectId).filter(Boolean) as string[];
     const locationIds = movements.flatMap((movement) => [movement.fromLocationId, movement.toLocationId, movement.siteLocationId]).filter(Boolean) as string[];
-    const [suppliers, clients, teamServices, projects, locations] = await Promise.all([
+    const [suppliers, clients, teamServices, projects, locations, auditUsers] = await Promise.all([
       supplierIds.length ? prisma.supplier.findMany({ where: { id: { in: supplierIds } } }) : [],
       clientIds.length ? prisma.client.findMany({ where: { id: { in: clientIds } } }) : [],
       teamServiceIds.length ? prisma.teamService.findMany({ where: { id: { in: teamServiceIds } } }) : [],
       projectIds.length ? prisma.project.findMany({ where: { id: { in: projectIds } } }) : [],
-      locationIds.length ? prisma.location.findMany({ where: { id: { in: locationIds } } }) : []
+      locationIds.length ? prisma.location.findMany({ where: { id: { in: locationIds } } }) : [],
+      auditUserIds.length ? prisma.user.findMany({ where: { id: { in: auditUserIds } } }) : []
     ]);
     const suppliersById = new Map(suppliers.map((supplier) => [supplier.id, supplier]));
     const clientsById = new Map(clients.map((client) => [client.id, client]));
     const teamServicesById = new Map(teamServices.map((service) => [service.id, service]));
     const projectsById = new Map(projects.map((project) => [project.id, project]));
     const locationsById = new Map(locations.map((location) => [location.id, location]));
+    const auditUsersById = new Map(auditUsers.map((user) => [user.id, publicUser(user)]));
     return movements.map((movement) => ({
       ...movement,
       supplier: movement.supplierId ? suppliersById.get(movement.supplierId) ?? null : null,
@@ -2646,7 +2893,8 @@ export function buildApp() {
       teamService: movement.teamServiceId ? teamServicesById.get(movement.teamServiceId) ?? null : null,
       siteLocation: movement.siteLocationId ? locationsById.get(movement.siteLocationId) ?? null : null,
       fromLocation: movement.fromLocationId ? locationsById.get(movement.fromLocationId) ?? null : null,
-      toLocation: movement.toLocationId ? locationsById.get(movement.toLocationId) ?? null : null
+      toLocation: movement.toLocationId ? locationsById.get(movement.toLocationId) ?? null : null,
+      createdByUser: auditByMovementId.get(movement.id)?.userId ? auditUsersById.get(auditByMovementId.get(movement.id)?.userId ?? "") ?? null : null
     }));
   });
 

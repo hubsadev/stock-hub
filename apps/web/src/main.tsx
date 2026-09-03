@@ -36,12 +36,16 @@ import {
   getVehicles,
   getEntryProof,
   getExitRequestProof,
+  getReturnProof,
+  getTransferProof,
   loginUser,
   prepareExitRequest,
   rejectExitRequest,
   resolveStockEntryDispute,
   uploadEntryProof,
   uploadExitRequestProof,
+  uploadReturnProof,
+  uploadTransferProof,
   createVehicle,
   unassignEquipment,
   updateArticle,
@@ -113,6 +117,8 @@ let selectedExitRequestId: string | null = null;
 let selectedRejectedExitRequestId: string | null = null;
 let selectedEntryId: string | null = null;
 let selectedReturnTransferId: string | null = null;
+let historyProofFilter: "ALL" | "MISSING" = "ALL";
+let openHistoryMovementId: string | null = null;
 let currentUser: StockUser | null = readStoredUser();
 
 type ReferentialImportType =
@@ -327,7 +333,7 @@ const VIEW_ROUTES: Record<string, string> = {
   reappro: "/reapprovisionnement",
   inventaire: "/inventaire",
   audit: "/audit-alertes",
-  historique: "/historique-exports",
+  historique: "/historiques",
   users: "/utilisateurs-roles",
   profil: "/profil",
 };
@@ -343,6 +349,7 @@ const ROUTE_VIEWS: Record<string, string> = {
   "/reapprovisionnement": "reappro",
   "/inventaire": "inventaire",
   "/audit-alertes": "audit",
+  "/historiques": "historique",
   "/historique-exports": "historique",
   "/utilisateurs-roles": "users",
   "/profil": "profil",
@@ -1059,6 +1066,7 @@ function openStockDrawer(root: HTMLElement, levelId: string) {
   openInventoryArticleId = null;
   openInventoryLocationId = null;
   openInventoryScope = null;
+  openHistoryMovementId = null;
   openStockLevelId = levelId;
   renderStockDrawer(root);
 }
@@ -1068,6 +1076,7 @@ function closeStockDrawer(root: HTMLElement) {
   openInventoryArticleId = null;
   openInventoryLocationId = null;
   openInventoryScope = null;
+  openHistoryMovementId = null;
   const drawers = root.querySelectorAll<HTMLElement>(
     "#stockDrawer, .stock-drawer",
   );
@@ -1148,6 +1157,17 @@ function renderStockDrawer(root: HTMLElement) {
   drawer.classList.remove("translate-x-full");
   drawer.classList.add("translate-x-0");
   drawer.classList.add("stock-drawer--open");
+
+  const titles = drawer.querySelectorAll<HTMLElement>("h2");
+  if (titles[0])
+    titles[0].innerHTML =
+      '<i data-lucide="info" class="w-4 h-4 text-accent-600"></i>Informations article';
+  if (titles[1])
+    titles[1].innerHTML =
+      '<i data-lucide="history" class="w-4 h-4 text-accent-600"></i>Historique des mouvements';
+  drawer
+    .querySelector<HTMLElement>("#stockDrawerHistory")
+    ?.previousElementSibling?.classList.remove("hidden");
 
   // Header
   const header = drawer.querySelector<HTMLElement>("#stockDrawerHeader");
@@ -1493,6 +1513,7 @@ function openInventoryDetail(
   openInventoryArticleId = articleId;
   openInventoryLocationId = locationId;
   openInventoryScope = "local";
+  openHistoryMovementId = null;
   renderInventoryDrawer(root);
 }
 
@@ -1501,6 +1522,7 @@ function openInventoryGlobalDetail(root: HTMLElement, articleId: string) {
   openInventoryArticleId = articleId;
   openInventoryLocationId = null;
   openInventoryScope = "global";
+  openHistoryMovementId = null;
   renderInventoryDrawer(root);
 }
 
@@ -1843,6 +1865,17 @@ function renderInventoryDrawer(root: HTMLElement) {
   drawer.classList.remove("translate-x-full");
   drawer.classList.add("translate-x-0");
   drawer.classList.add("stock-drawer--open");
+
+  const titles = drawer.querySelectorAll<HTMLElement>("h2");
+  if (titles[0])
+    titles[0].innerHTML =
+      '<i data-lucide="info" class="w-4 h-4 text-accent-600"></i>Informations article';
+  if (titles[1])
+    titles[1].innerHTML =
+      '<i data-lucide="history" class="w-4 h-4 text-accent-600"></i>Historique des mouvements';
+  drawer
+    .querySelector<HTMLElement>("#stockDrawerHistory")
+    ?.previousElementSibling?.classList.remove("hidden");
 
   const totals = inventoryTotals(lines);
   const header = drawer.querySelector<HTMLElement>("#stockDrawerHeader");
@@ -2777,7 +2810,7 @@ function formatDate(value: string | Date | null | undefined) {
 function movementTypeLabel(type: StockMovement["type"]) {
   const labels: Record<StockMovement["type"], string> = {
     ENTRY: "Entree",
-    EXIT_REQUEST: "Demande sortie",
+    EXIT_REQUEST: "Demande de sortie",
     EXIT: "Sortie",
     RETURN: "Retour",
     TRANSFER: "Transfert",
@@ -2825,11 +2858,198 @@ function movementArticleLabel(movement: StockMovement) {
   return first.article.designation + " (" + first.article.code + ")";
 }
 
+function movementProofSource(movement: StockMovement) {
+  if (movement.type === "ENTRY" || movement.type === "EXIT_REQUEST") {
+    return movement;
+  }
+  if (movement.type === "EXIT") {
+    const request = proofRequestForMovement(movement);
+    if (request?.proofFileKey || request?.proofFileName) return request;
+    return movement;
+  }
+  return movement.proofFileKey || movement.proofFileName ? movement : null;
+}
+
+function movementProofCount(movement: StockMovement) {
+  const proofSource = movementProofSource(movement);
+  return proofSource?.proofFileKey || proofSource?.proofFileName ? 1 : 0;
+}
+
+function movementHasProof(movement: StockMovement) {
+  return movementProofCount(movement) > 0;
+}
+
+function movementRequiresSignedProof(movement: StockMovement) {
+  if (
+    movement.type === "ENTRY" ||
+    movement.type === "EXIT" ||
+    movement.type === "RETURN" ||
+    movement.type === "TRANSFER"
+  )
+    return true;
+  if (movement.type === "EXIT_REQUEST") {
+    return (
+      movement.status !== "SUBMITTED" &&
+      movement.status !== "DRAFT" &&
+      !linkedExitForRequest(movement)
+    );
+  }
+  return false;
+}
+
+function movementProofStatus(movement: StockMovement) {
+  if (movementHasProof(movement)) return "jointe";
+  if (movementRequiresSignedProof(movement)) return "manquante";
+  return "non-requise";
+}
+
+function historyProofBadge(movement: StockMovement) {
+  const count = movementProofCount(movement);
+  if (count > 0) {
+    return `<span class="inline-flex items-center gap-1.5 rounded-full bg-success-50 px-2.5 py-1 text-xs font-bold text-success-700"><i data-lucide="paperclip" class="h-3.5 w-3.5"></i>${formatNumber(count)}</span>`;
+  }
+  if (movementProofStatus(movement) === "non-requise") {
+    return badge("Non requise", "gray");
+  }
+  return badge("Manquante", "warning");
+}
+
+function historyLineObservation(
+  movement: StockMovement,
+  line: StockMovement["lines"][number],
+) {
+  const observation =
+    movement.type === "ENTRY"
+      ? cleanEntryLineObservation(line.observation)
+      : (line.observation ?? "").trim();
+  if (/^Origine entree\s*:/i.test(observation)) return "";
+  return observation;
+}
+
+function historyProofViewAction(movement: StockMovement) {
+  const proofSource = movementProofSource(movement);
+  if (!proofSource || !movementHasProof(movement)) return "";
+  if (proofSource.type === "ENTRY") {
+    return "viewSignedEntryProof('" + escapeHtml(proofSource.id) + "')";
+  }
+  if (proofSource.type === "EXIT" || proofSource.type === "EXIT_REQUEST") {
+    return "viewSignedMaterialProof('" + escapeHtml(proofSource.id) + "')";
+  }
+  if (proofSource.type === "RETURN") {
+    return "viewSignedReturnProof('" + escapeHtml(proofSource.id) + "')";
+  }
+  if (proofSource.type === "TRANSFER") {
+    return "viewSignedTransferProof('" + escapeHtml(proofSource.id) + "')";
+  }
+  return "";
+}
+
+function historyExitRequestActorLabel(movement: StockMovement) {
+  const request =
+    movement.type === "EXIT"
+      ? requestForExit(movement)
+      : movement.type === "EXIT_REQUEST"
+        ? movement
+        : null;
+  if (!request) return "";
+  const auditActor = historyMovementActorLabel(request);
+  if (auditActor !== "Non trace") return auditActor;
+  return request.requestedBy?.trim() || "Non trace";
+}
+
+function historyExitPreparedByLabel(movement: StockMovement) {
+  if (movement.type !== "EXIT") return "";
+  return (
+    movement.handledBy?.trim() ||
+    movement.deliveredBy?.trim() ||
+    movement.sourceRequest?.handledBy?.trim() ||
+    "Non trace"
+  );
+}
+
+function historyStats(movements: StockMovement[]) {
+  const articleIds = new Set<string>();
+  movements.forEach((movement) => {
+    movement.lines.forEach((line) => {
+      if (line.articleId) articleIds.add(line.articleId);
+    });
+  });
+  return {
+    movements: movements.length,
+    missingProofs: movements.filter(
+      (movement) => movementProofStatus(movement) === "manquante",
+    ).length,
+    articles: articleIds.size,
+  };
+}
+
+function setHistoryProofFilter(root: HTMLElement, filter: "ALL" | "MISSING") {
+  historyProofFilter = historyProofFilter === filter ? "ALL" : filter;
+  renderHistory(root);
+}
+
+function initialsFromText(value: string) {
+  const cleaned = value.trim();
+  if (!cleaned || cleaned === "-") return "?";
+  const parts = cleaned
+    .split(/[\s._-]+/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+  return (parts[0]?.[0] ?? "?").toUpperCase() + (parts[1]?.[0] ?? "").toUpperCase();
+}
+
+function movementAuditActorUser(movement: StockMovement) {
+  if (movement.createdByUser) return movement.createdByUser;
+  const createActions = new Set([
+    "CREATE_STOCK_ENTRY",
+    "CREATE_EXIT_REQUEST",
+    "CREATE_STOCK_EXIT",
+    "PREPARE_EXIT_REQUEST",
+    "CREATE_STOCK_RETURN",
+    "CREATE_STOCK_TRANSFER",
+    "CREATE_INVENTORY_ADJUSTMENT",
+    "CREATE_INITIAL_STOCK",
+  ]);
+  const related = latestAuditLogs
+    .filter((log) => log.entity === "StockMovement" && log.entityId === movement.id)
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  const log =
+    related.find((item) => createActions.has(item.action)) ?? related[0];
+  if (!log?.userId) return null;
+  return latestUsers.find((user) => user.id === log.userId) ?? null;
+}
+
+function historyMovementActorLabel(movement: StockMovement) {
+  const user = movementAuditActorUser(movement);
+  if (user) return `${user.firstName} ${user.lastName}`.trim() || user.identifier;
+  return "Non trace";
+}
+
+function historyActorMarkup(movement: StockMovement) {
+  const auditUser = movementAuditActorUser(movement);
+  const actor = auditUser
+    ? `${auditUser.firstName} ${auditUser.lastName}`.trim() || auditUser.identifier
+    : "Non trace";
+  const normalized = actor.toLowerCase();
+  const user = latestUsers.find((item) => {
+    const fullName = `${item.firstName} ${item.lastName}`.trim().toLowerCase();
+    return (
+      item.identifier.toLowerCase() === normalized ||
+      fullName === normalized ||
+      item.email?.toLowerCase() === normalized
+    );
+  }) ?? auditUser;
+  const label = user ? `${user.firstName} ${user.lastName}`.trim() : actor;
+  const subtitle = user?.identifier ?? "";
+  const initials = user ? userInitials(user) : initialsFromText(label);
+  return `<div class="flex min-w-0 items-center gap-2"><div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-50 text-xs font-bold text-accent-700">${escapeHtml(initials)}</div><div class="min-w-0"><div class="truncate font-semibold">${escapeHtml(label)}</div>${subtitle ? `<div class="truncate text-xs text-gray-500">${escapeHtml(subtitle)}</div>` : ""}</div></div>`;
+}
+
 function historyMovementRow(movement: StockMovement) {
   const quantity = movementQuantity(movement);
   const quantityClass = quantity < 0 ? "text-error-700" : "text-success-700";
   return (
-    "<tr>" +
+    `<tr class="cursor-pointer transition-colors hover:bg-gray-50" data-action="openHistoryMovementDetail('${escapeHtml(movement.id)}')">` +
     '<td class="px-5 py-4">' +
     formatDate(movement.date) +
     "</td>" +
@@ -2856,10 +3076,10 @@ function historyMovementRow(movement: StockMovement) {
     formatNumber(quantity) +
     "</td>" +
     '<td class="px-5 py-4">' +
-    escapeHtml(movementActor(movement)) +
+    historyActorMarkup(movement) +
     "</td>" +
     '<td class="px-5 py-4">' +
-    badge("A joindre", "gray") +
+    historyProofBadge(movement) +
     "</td>" +
     "</tr>"
   );
@@ -2873,11 +3093,26 @@ function filteredHistory(root: HTMLElement) {
       .toLowerCase() ?? "";
   const type =
     root.querySelector<HTMLSelectElement>("#historyType")?.value ?? "ALL";
+  const period =
+    root.querySelector<HTMLInputElement>("#historyPeriod")?.value.trim().toLowerCase() ?? "";
   return latestMovements.filter((movement) => {
+    if (movement.type === "EXIT_REQUEST" && linkedExitForRequest(movement)) {
+      return false;
+    }
     const typeOk = type === "ALL" || movement.type === type;
+    const proofOk =
+      historyProofFilter === "ALL" ||
+      (historyProofFilter === "MISSING" &&
+        movementProofStatus(movement) === "manquante");
+    const periodHaystack = [movement.date, formatDate(movement.date)]
+      .join(" ")
+      .toLowerCase();
     const haystack = [
       movement.reference,
+      movement.date,
+      formatDate(movement.date),
       movementTypeLabel(movement.type),
+      historyMovementActorLabel(movement),
       movementActor(movement),
       movement.project?.name,
       movement.supplier?.name,
@@ -2890,7 +3125,12 @@ function filteredHistory(root: HTMLElement) {
     ]
       .join(" ")
       .toLowerCase();
-    return typeOk && (!search || haystack.includes(search));
+    return (
+      typeOk &&
+      proofOk &&
+      (!period || periodHaystack.includes(period)) &&
+      (!search || haystack.includes(search))
+    );
   });
 }
 
@@ -2898,9 +3138,204 @@ function renderHistory(root: HTMLElement) {
   const body = root.querySelector<HTMLElement>("#history-table tbody");
   if (!body) return;
   const rows = filteredHistory(root);
+  const stats = historyStats(rows);
+  setText(root, "#historyMovementCount", stats.movements);
+  setText(root, "#historyMissingProofCount", stats.missingProofs);
+  setText(root, "#historyArticleCount", stats.articles);
+  const toggle = root.querySelector<HTMLElement>("#historyMissingProofToggle");
+  if (toggle) {
+    const active = historyProofFilter === "MISSING";
+    toggle.classList.toggle("bg-warning-50", active);
+    toggle.classList.toggle("border-warning-200", active);
+    toggle.classList.toggle("text-warning-700", active);
+    toggle.classList.toggle("bg-white", !active);
+    toggle.classList.toggle("border-gray-300", !active);
+    toggle.classList.toggle("text-gray-700", !active);
+  }
   body.innerHTML = rows.length
     ? rows.map(historyMovementRow).join("")
     : emptyRow(7, "Aucun mouvement ne correspond au filtre.");
+  window.lucide?.createIcons();
+}
+
+function movementLocationSummary(movement: StockMovement) {
+  const from = movement.fromLocation?.name;
+  const to = movement.toLocation?.name;
+  if (from && to) return from + " -> " + to;
+  return to ?? from ?? "-";
+}
+
+function movementPartySummary(movement: StockMovement) {
+  return [
+    movement.supplier?.name,
+    movement.client?.name,
+    movement.project?.name,
+    movement.teamService?.name,
+    movement.siteLocation?.name,
+  ]
+    .filter(Boolean)
+    .join(" | ");
+}
+
+function movementContextItems(movement: StockMovement) {
+  return [
+    ["Fournisseur", movement.supplier?.name],
+    ["Client", movement.client?.name],
+    ["Projet", movement.project?.name],
+    ["Equipe", movement.teamService?.name],
+    ["Site", movement.siteLocation?.name],
+  ].filter((item): item is [string, string] => Boolean(item[1]?.trim()));
+}
+
+function movementContextCard(movement: StockMovement) {
+  const items = movementContextItems(movement);
+  if (!items.length) {
+    return `<div class="col-span-2 p-4 rounded-xl border bg-gray-50 border-gray-200 text-gray-900"><div class="text-xs font-semibold opacity-70">Contexte</div><div class="font-bold mt-1">-</div></div>`;
+  }
+  return `
+    <div class="col-span-2 rounded-xl border border-gray-200 bg-gray-50 p-4 text-gray-900">
+      <div class="text-xs font-semibold opacity-70">Contexte</div>
+      <div class="mt-3 grid grid-cols-1 gap-2">
+        ${items
+          .map(
+            ([label, value]) => `
+              <div class="flex min-w-0 items-start gap-2 rounded-lg bg-white px-3 py-2">
+                <span class="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-bold text-gray-500">${escapeHtml(label)}</span>
+                <span class="min-w-0 break-words text-sm font-bold leading-snug">${escapeHtml(value)}</span>
+              </div>
+            `,
+          )
+          .join("")}
+      </div>
+    </div>
+  `;
+}
+
+function movementStatusText(movement: StockMovement) {
+  if (movement.status === "CANCELLED") return "Annule";
+  if (movement.type === "ENTRY") return entryStatusLabel(movement);
+  if (movement.type === "RETURN" && movement.status === "PREPARED")
+    return "A controler";
+  if (movement.status === "COMPLETED") return "Termine";
+  if (movement.status === "PREPARED") return "Prepare";
+  if (movement.status === "REJECTED") return "Refuse";
+  return movement.status || "-";
+}
+
+function openHistoryMovementDrawer(root: HTMLElement, id: string) {
+  openStockLevelId = null;
+  openInventoryArticleId = null;
+  openInventoryLocationId = null;
+  openInventoryScope = null;
+  openHistoryMovementId = id;
+  renderHistoryMovementDrawer(root);
+}
+
+function renderHistoryMovementDrawer(root: HTMLElement) {
+  const drawer = root.querySelector<HTMLElement>("#stockDrawer");
+  const backdrop = root.querySelector<HTMLElement>("#stockDrawerBackdrop");
+  const movement = latestMovements.find((item) => item.id === openHistoryMovementId);
+  if (!drawer || !backdrop || !movement) return;
+
+  backdrop.classList.remove("hidden");
+  drawer.classList.remove("translate-x-full");
+  drawer.classList.add("translate-x-0");
+  drawer.classList.add("stock-drawer--open");
+
+  const titles = drawer.querySelectorAll<HTMLElement>("h2");
+  if (titles[0])
+    titles[0].innerHTML =
+      '<i data-lucide="info" class="w-4 h-4 text-accent-600"></i>Informations mouvement';
+  if (titles[1])
+    titles[1].innerHTML =
+      '<i data-lucide="paperclip" class="w-4 h-4 text-accent-600"></i>Articles et preuves';
+
+  const header = drawer.querySelector<HTMLElement>("#stockDrawerHeader");
+  if (header) {
+    header.innerHTML = `
+      <div class="min-w-0 flex-1">
+        <div class="font-bold text-lg truncate">${escapeHtml(movement.reference)}</div>
+        <div class="text-sm text-gray-500">${escapeHtml(movementTypeLabel(movement.type))} &bull; ${escapeHtml(formatDate(movement.date))}</div>
+      </div>
+    `;
+  }
+
+  const infoEl = drawer.querySelector<HTMLElement>("#stockDrawerInfo");
+  if (infoEl) {
+    const requestedBy = historyExitRequestActorLabel(movement);
+    const preparedBy = historyExitPreparedByLabel(movement);
+    const proofStatus = movementProofStatus(movement);
+    const proofLabel =
+      proofStatus === "jointe"
+        ? "Jointe"
+        : proofStatus === "non-requise"
+          ? "Non requise"
+          : "Manquante";
+    const proofTone =
+      proofStatus === "jointe"
+        ? "bg-success-50 border-success-100 text-success-700"
+        : proofStatus === "non-requise"
+          ? "bg-gray-50 border-gray-200 text-gray-700"
+          : "bg-warning-50 border-warning-100 text-warning-700";
+    infoEl.innerHTML = `
+      <div class="grid grid-cols-2 gap-3 text-sm">
+        ${detailCard("Statut", movementStatusText(movement))}
+        ${detailCard("Quantite", (movementQuantity(movement) > 0 ? "+" : "") + formatNumber(movementQuantity(movement)))}
+        ${detailCard("Enregistre par", historyMovementActorLabel(movement))}
+        ${requestedBy ? detailCard("Demande par", requestedBy) : ""}
+        ${preparedBy ? detailCard("Sorti / prepare par", preparedBy) : ""}
+        ${detailCard("Emplacement", movementLocationSummary(movement))}
+        <div class="p-4 rounded-xl border ${proofTone}"><div class="text-xs font-semibold opacity-70">Preuve</div><div class="font-bold mt-1">${proofLabel}</div></div>
+        ${movementContextCard(movement)}
+      </div>
+    `;
+  }
+
+  const dateFilters = drawer.querySelector<HTMLElement>("#stockDrawerHistory")?.previousElementSibling;
+  dateFilters?.classList.add("hidden");
+
+  const histEl = drawer.querySelector<HTMLElement>("#stockDrawerHistory");
+  if (histEl) {
+    const lineRows = movement.lines
+      .map((line) => {
+        const quantity = Number(
+          line.completedQuantity ?? line.requestedQuantity ?? line.expectedQuantity ?? 0,
+        );
+        const observation = historyLineObservation(movement, line);
+        return `<tr>
+          <td class="px-3 py-2"><div class="font-bold">${escapeHtml(line.article?.designation ?? "Article")}</div><div class="text-xs text-gray-500">${escapeHtml(line.article?.code ?? "-")}</div></td>
+          <td class="px-3 py-2 text-right font-bold">${formatNumber(quantity)}</td>
+          <td class="px-3 py-2 text-gray-600">${escapeHtml(observation)}</td>
+        </tr>`;
+      })
+      .join("");
+    const proofSource = movementProofSource(movement);
+    const proofAction = historyProofViewAction(movement);
+    const proofHtml = proofSource && movementHasProof(movement)
+      ? `<div class="rounded-xl border border-success-100 bg-success-50 p-3 text-sm text-success-700">
+          <div class="flex items-center justify-between gap-3">
+            <div class="min-w-0">
+              <div class="flex items-center gap-2 font-bold"><i data-lucide="paperclip" class="h-4 w-4 shrink-0"></i><span class="truncate">${escapeHtml(proofSource.proofFileName ?? "Piece jointe")}</span></div>
+              <div class="mt-1 text-xs text-success-700/80">${escapeHtml(proofSource.proofUploadedAt ? "Ajoutee le " + formatDate(proofSource.proofUploadedAt) : "Piece justificative rattachee")}</div>
+            </div>
+            ${proofAction ? `<button type="button" data-action="${proofAction}" class="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg border border-success-200 bg-white px-3 py-2 text-xs font-bold text-success-700 hover:bg-success-50"><i data-lucide="eye" class="h-4 w-4"></i>Voir la preuve</button>` : ""}
+          </div>
+        </div>`
+      : movementProofStatus(movement) === "non-requise"
+        ? `<div class="rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm font-semibold text-gray-600">Preuve signee non requise pour ce type de mouvement.</div>`
+        : `<div class="rounded-xl border border-warning-100 bg-warning-50 p-3 text-sm font-semibold text-warning-700">Aucune piece justificative rattachee a ce mouvement.</div>`;
+    histEl.innerHTML = `
+      <div class="space-y-4">
+        <div class="overflow-hidden rounded-xl border border-gray-200">
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-3 py-2 text-left">Article</th><th class="px-3 py-2 text-right">Quantite</th><th class="px-3 py-2 text-left">Observation</th></tr></thead>
+            <tbody class="divide-y">${lineRows || `<tr><td colspan="3" class="px-3 py-6 text-center text-gray-500">Aucune ligne article.</td></tr>`}</tbody>
+          </table>
+        </div>
+        ${proofHtml}
+      </div>
+    `;
+  }
   window.lucide?.createIcons();
 }
 
@@ -3067,10 +3502,7 @@ function downloadMaterialRequestPdf(root: HTMLElement) {
   const rows = Array.from(
     modal.querySelectorAll<HTMLTableRowElement>("#materialRequestLines tr"),
   );
-  const reference =
-    root
-      .querySelector<HTMLElement>("#materialRequestReference")
-      ?.textContent?.trim() || "DS-2026-000";
+  const reference = "DS-AUTO";
   const docCode = reference.replace(/^DS-/, "DM-");
   const date =
     modal.querySelector<HTMLInputElement>('input[type="date"]')?.value ||
@@ -3383,6 +3815,178 @@ function downloadEntryPdf(root: HTMLElement, id: string) {
   } catch {
     // The printable document still works when the browser blocks URL replacement.
   }
+  popup.focus();
+  popup.print();
+}
+
+function returnTransferDocumentCss() {
+  return `
+    @page { size: A4; margin: 0; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #e9edf4; color: #0f172a; font-family: Arial, Helvetica, sans-serif; font-size: 11px; }
+    .toolbar { width: 210mm; margin: 10px auto 0; display: flex; justify-content: flex-end; }
+    .toolbar button { border: 1px solid #cbd5e1; background: #fff; border-radius: 6px; padding: 7px 11px; font-weight: 800; cursor: pointer; font-size: 12px; }
+    .page { width: 210mm; min-height: 297mm; margin: 10px auto 18px; background: #fff; padding: 10mm; box-shadow: 0 8px 26px rgba(15, 23, 42, .12); }
+    .doc-head { display: grid; grid-template-columns: 30mm 1fr 52mm; border: 1px solid #b9c7da; min-height: 23mm; }
+    .logo-cell { display: flex; align-items: center; justify-content: center; border-right: 1px solid #b9c7da; padding: 3mm; }
+    .hub-logo { width: 24mm; height: 16mm; background: #e71845; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: .86; }
+    .hub-logo-main { font-size: 20pt; font-weight: 950; letter-spacing: -.07em; }
+    .hub-logo-tag { margin-top: 1.5mm; font-size: 3pt; font-weight: 900; letter-spacing: .04em; }
+    .doc-name { padding: 4mm 5mm; display: flex; flex-direction: column; justify-content: center; }
+    .doc-name .small { color: #334155; font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: .12em; }
+    .doc-name .value { margin-top: 2mm; font-size: 15px; font-weight: 950; }
+    .doc-name .hint { margin-top: 1mm; color: #64748b; font-size: 10px; }
+    .meta { border-left: 1px solid #b9c7da; display: grid; grid-template-rows: repeat(4, 1fr); }
+    .meta div { display: grid; grid-template-columns: 20mm 1fr; align-items: center; border-bottom: 1px solid #d3dcea; min-height: 5.8mm; }
+    .meta div:last-child { border-bottom: 0; }
+    .meta b { padding: 1.7mm; font-size: 7.5px; text-transform: uppercase; color: #1e293b; }
+    .meta span { padding: 1.7mm; text-align: right; font-size: 9.5px; font-weight: 900; }
+    .title { padding: 10mm 0 7mm; text-align: center; font-size: 17px; font-weight: 950; letter-spacing: .13em; text-transform: uppercase; }
+    .info-strip { margin: 0 0 7mm; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm 10mm; }
+    .info-item { min-width: 0; padding-bottom: 2.5mm; border-bottom: 1px solid #d8e1ec; }
+    .info-item .label { color: #475569; font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: .09em; }
+    .info-item .value { margin-top: 1.5mm; font-size: 12px; font-weight: 900; line-height: 1.25; }
+    .items, .signature-table { width: 100%; border-collapse: collapse; }
+    .items th { background: #eaf1fb; color: #102033; font-size: 8.5px; text-transform: uppercase; letter-spacing: .05em; text-align: left; }
+    .items td, .items th { border: 1px solid #d3dcea; padding: 2.6mm; vertical-align: middle; }
+    .items td { font-size: 10.5px; }
+    .items span { color: #64748b; font-size: 9px; }
+    .right { text-align: right; }
+    .strong { font-weight: 900; }
+    .num { width: 10mm; text-align: center; font-weight: 900; color: #1d4ed8; }
+    .sign-title { margin: 10mm 0 3mm; font-size: 12px; font-weight: 950; }
+    .signature-table td { border: 1px solid #b9c7da; width: 33.33%; height: 34mm; vertical-align: top; padding: 3mm; }
+    .signature-table .role { color: #1e293b; font-size: 8.5px; font-weight: 900; text-transform: uppercase; letter-spacing: .08em; }
+    .signature-table .name { margin-top: 3mm; font-size: 11px; font-weight: 900; }
+    .signature-table .line { margin-top: 18mm; color: #475569; font-size: 9px; }
+    @media print { body { background: white; } .toolbar { display: none; } .page { width: 210mm; min-height: 297mm; margin: 0; padding: 10mm; box-shadow: none; } }
+  `;
+}
+
+function returnDocumentHtml(movement: StockMovement) {
+  const source = movement.sourceRequest ?? latestMovements.find((item) => item.id === movement.sourceRequestId);
+  const sourceByArticle = new Map(returnSourceLines(source).map((line) => [line.articleId, line]));
+  const total = movement.lines.reduce((sum, line) => sum + Number(line.completedQuantity ?? 0), 0);
+  const rows = movement.lines
+    .map((line, index) => {
+      const breakdown = returnLineBreakdown(line, movement);
+      const sourceQuantity = sourceByArticle.get(line.articleId)?.completedQuantity;
+      const observation = returnLineDisplayObservation(line);
+      return `<tr>
+        <td class="num">${index + 1}</td>
+        <td><strong>${escapeHtml(line.article?.designation ?? "Article")}</strong><br><span>${escapeHtml(line.article?.code ?? "")}</span></td>
+        <td>${escapeHtml(line.article?.unit ?? "U")}</td>
+        <td class="right strong">${sourceQuantity === undefined ? "" : formatNumber(sourceQuantity)}</td>
+        <td class="right strong">${formatNumber(breakdown.total)}</td>
+        <td class="right">${formatNumber(breakdown.good)}</td>
+        <td class="right">${formatNumber(breakdown.damaged)}</td>
+        <td class="right">${formatNumber(breakdown.scrap)}</td>
+        <td class="right">${formatNumber(breakdown.pending)}</td>
+        <td>${escapeHtml(observation)}</td>
+      </tr>`;
+    })
+    .join("");
+  return `<!doctype html><html><head><meta charset="utf-8"><title>Retour stock ${escapeHtml(movement.reference)}</title><style>${returnTransferDocumentCss()}</style></head><body>
+    <div class="toolbar"><button onclick="window.print()">Imprimer / Enregistrer PDF</button></div>
+    <main class="page">
+      <header class="doc-head">
+        <div class="logo-cell">${hubLogoMarkup()}</div>
+        <div class="doc-name"><div class="small">Document interne</div><div class="value">Retour stock</div><div class="hint">Reception du materiel revenu et etat constate</div></div>
+        <div class="meta"><div><b>Bon</b><span>${escapeHtml(movement.reference)}</span></div><div><b>Source</b><span>${escapeHtml(source?.reference ?? "")}</span></div><div><b>Statut</b><span>${escapeHtml(returnTransferDetailStatus(movement))}</span></div><div><b>Date</b><span>${escapeHtml(formatDate(movement.date))}</span></div></div>
+      </header>
+      <div class="title">Fiche retour stock</div>
+      <section class="info-strip">
+        <div class="info-item"><div class="label">Sortie source</div><div class="value">${escapeHtml(source?.reference ?? "")}</div></div>
+        <div class="info-item"><div class="label">Emplacement retour</div><div class="value">${escapeHtml(movement.toLocation?.name ?? "")}</div></div>
+        <div class="info-item"><div class="label">Responsable</div><div class="value">${escapeHtml(movement.handledBy ?? "")}</div></div>
+        <div class="info-item"><div class="label">Ramene par</div><div class="value">${escapeHtml(movement.deliveredBy ?? "")}</div></div>
+        <div class="info-item"><div class="label">Receptionne par</div><div class="value">${escapeHtml(movement.receivedBy ?? "")}</div></div>
+        <div class="info-item"><div class="label">Total retourne</div><div class="value">${formatNumber(total)}</div></div>
+      </section>
+      <table class="items"><thead><tr><th>N</th><th>Designation</th><th>Unite</th><th class="right">Sortie</th><th class="right">Retour</th><th class="right">Bon etat</th><th class="right">A reparer</th><th class="right">Rebut</th><th class="right">A controler</th><th>Observation</th></tr></thead><tbody>${rows}</tbody></table>
+      <div class="sign-title">Signatures</div>
+      <table class="signature-table"><tbody><tr>
+        <td><div class="role">Reception retour</div><div class="name">${escapeHtml(movement.receivedBy ?? "")}</div><div class="line">Date et signature</div></td>
+        <td><div class="role">Controle etat</div><div class="name">${escapeHtml(movement.handledBy ?? "")}</div><div class="line">Date et signature</div></td>
+        <td><div class="role">Responsable magasin</div><div class="name">${escapeHtml(movement.toLocation?.responsible ?? "")}</div><div class="line">Date et signature</div></td>
+      </tr></tbody></table>
+    </main>
+  </body></html>`;
+}
+
+function transferDocumentHtml(movement: StockMovement) {
+  const total = movement.lines.reduce((sum, line) => sum + Number(line.completedQuantity ?? 0), 0);
+  const rows = movement.lines
+    .map((line, index) => {
+      const quantity = Number(line.completedQuantity ?? 0);
+      const observation = (line.observation ?? "").trim();
+      return `<tr>
+        <td class="num">${index + 1}</td>
+        <td><strong>${escapeHtml(line.article?.designation ?? "Article")}</strong><br><span>${escapeHtml(line.article?.code ?? "")}</span></td>
+        <td>${escapeHtml(line.article?.unit ?? "U")}</td>
+        <td class="right strong">${formatNumber(quantity)}</td>
+        <td>${escapeHtml(observation)}</td>
+      </tr>`;
+    })
+    .join("");
+  return `<!doctype html><html><head><meta charset="utf-8"><title>Transfert stock ${escapeHtml(movement.reference)}</title><style>${returnTransferDocumentCss()}</style></head><body>
+    <div class="toolbar"><button onclick="window.print()">Imprimer / Enregistrer PDF</button></div>
+    <main class="page">
+      <header class="doc-head">
+        <div class="logo-cell">${hubLogoMarkup()}</div>
+        <div class="doc-name"><div class="small">Document interne</div><div class="value">Transfert stock</div><div class="hint">Sortie interne depuis un emplacement vers une destination</div></div>
+        <div class="meta"><div><b>Bon</b><span>${escapeHtml(movement.reference)}</span></div><div><b>Source</b><span>${escapeHtml(movement.fromLocation?.name ?? "")}</span></div><div><b>Statut</b><span>${escapeHtml(returnTransferDetailStatus(movement))}</span></div><div><b>Date</b><span>${escapeHtml(formatDate(movement.date))}</span></div></div>
+      </header>
+      <div class="title">Fiche transfert stock</div>
+      <section class="info-strip">
+        <div class="info-item"><div class="label">Emplacement source</div><div class="value">${escapeHtml(movement.fromLocation?.name ?? "")}</div></div>
+        <div class="info-item"><div class="label">Destination</div><div class="value">${escapeHtml(movement.toLocation?.name ?? "")}</div></div>
+        <div class="info-item"><div class="label">Responsable</div><div class="value">${escapeHtml(movement.handledBy ?? "")}</div></div>
+        <div class="info-item"><div class="label">Transporte par</div><div class="value">${escapeHtml(movement.deliveredBy ?? "")}</div></div>
+        <div class="info-item"><div class="label">Receptionne par</div><div class="value">${escapeHtml(movement.receivedBy ?? "")}</div></div>
+        <div class="info-item"><div class="label">Quantite totale</div><div class="value">${formatNumber(total)}</div></div>
+      </section>
+      <table class="items"><thead><tr><th>N</th><th>Designation</th><th>Unite</th><th class="right">Quantite transferee</th><th>Observation</th></tr></thead><tbody>${rows}</tbody></table>
+      <div class="sign-title">Signatures</div>
+      <table class="signature-table"><tbody><tr>
+        <td><div class="role">Magasin source</div><div class="name">${escapeHtml(movement.fromLocation?.responsible ?? movement.handledBy ?? "")}</div><div class="line">Date et signature</div></td>
+        <td><div class="role">Transport</div><div class="name">${escapeHtml(movement.deliveredBy ?? "")}</div><div class="line">Date et signature</div></td>
+        <td><div class="role">Magasin destination</div><div class="name">${escapeHtml(movement.receivedBy ?? movement.toLocation?.responsible ?? "")}</div><div class="line">Date et signature</div></td>
+      </tr></tbody></table>
+    </main>
+  </body></html>`;
+}
+
+function downloadReturnPdf(root: HTMLElement, id: string) {
+  const movement = latestMovements.find((item) => item.id === id);
+  if (!movement || movement.type !== "RETURN") {
+    showToast(root, "Retour stock introuvable.", "error");
+    return;
+  }
+  const popup = window.open("", "_blank");
+  if (!popup) {
+    showToast(root, "Autorise les popups pour telecharger la fiche.", "error");
+    return;
+  }
+  popup.document.write(returnDocumentHtml(movement));
+  popup.document.close();
+  popup.focus();
+  popup.print();
+}
+
+function downloadTransferPdf(root: HTMLElement, id: string) {
+  const movement = latestMovements.find((item) => item.id === id);
+  if (!movement || movement.type !== "TRANSFER") {
+    showToast(root, "Transfert stock introuvable.", "error");
+    return;
+  }
+  const popup = window.open("", "_blank");
+  if (!popup) {
+    showToast(root, "Autorise les popups pour telecharger la fiche.", "error");
+    return;
+  }
+  popup.document.write(transferDocumentHtml(movement));
+  popup.document.close();
   popup.focus();
   popup.print();
 }
@@ -5346,6 +5950,58 @@ function returnLineDisplayObservation(line: StockMovement["lines"][number]) {
     .join(" | ");
 }
 
+function returnTransferDocumentBlock(movement: StockMovement) {
+  const isReturn = movement.type === "RETURN";
+  const hasProof = Boolean(movement.proofFileKey || movement.proofFileName);
+  const canUpload = movement.status !== "CANCELLED";
+  const inputId = (isReturn ? "signedReturnProof-" : "signedTransferProof-") + movement.id;
+  const downloadAction = isReturn
+    ? "downloadReturnPdf('" + escapeHtml(movement.id) + "')"
+    : "downloadTransferPdf('" + escapeHtml(movement.id) + "')";
+  const uploadAction = isReturn
+    ? "uploadSignedReturnProof('" + escapeHtml(movement.id) + "')"
+    : "uploadSignedTransferProof('" + escapeHtml(movement.id) + "')";
+  const viewAction = isReturn
+    ? "viewSignedReturnProof('" + escapeHtml(movement.id) + "')"
+    : "viewSignedTransferProof('" + escapeHtml(movement.id) + "')";
+  return `
+    <div class="rounded-xl border border-gray-200 bg-white overflow-hidden">
+      <div class="px-5 py-4 bg-gray-50 border-b">
+        <h3 class="font-bold">Documents</h3>
+        <p class="text-sm text-gray-500 mt-1">Telecharge la fiche, puis joins la version signee.</p>
+      </div>
+      <div class="grid gap-4 p-5 md:grid-cols-2">
+        <div class="rounded-xl border border-accent-100 bg-accent-50/40 p-4">
+          <div class="flex items-start gap-3">
+            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent-600 text-white"><i data-lucide="file-down" class="w-5 h-5"></i></div>
+            <div>
+              <div class="text-xs font-bold uppercase text-gray-500">Etape 1</div>
+              <div class="font-bold">Telecharger la fiche</div>
+              <p class="mt-1 text-sm text-gray-500">Imprime la fiche pour signature et classement.</p>
+            </div>
+          </div>
+          <button type="button" data-action="${downloadAction}" class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-accent-600 px-4 py-2.5 font-semibold text-white hover:bg-accent-500"><i data-lucide="download" class="w-4 h-4"></i>Telecharger la fiche</button>
+        </div>
+        <div class="rounded-xl border border-gray-200 bg-white p-4">
+          <div class="flex items-start gap-3">
+            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gray-900 text-white"><i data-lucide="upload" class="w-5 h-5"></i></div>
+            <div>
+              <div class="text-xs font-bold uppercase text-gray-500">Etape 2</div>
+              <div class="font-bold">Uploader la fiche signee</div>
+              <p class="mt-1 text-sm text-gray-500">PDF ou image signee rattachee a ce bon.</p>
+            </div>
+          </div>
+          <input id="${escapeHtml(inputId)}" type="file" accept=".pdf,image/*" class="mt-4 w-full rounded-lg border border-gray-300 bg-white p-2 text-sm" ${canUpload ? "" : "disabled"}>
+          <button type="button" data-action="${uploadAction}" class="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-lg border-2 border-accent-300 bg-accent-50 px-4 py-2.5 font-semibold text-accent-700 hover:bg-accent-100 ${canUpload ? "" : "pointer-events-none opacity-50"}"><i data-lucide="upload" class="w-4 h-4"></i>Uploader la fiche signee</button>
+          <div class="mt-3 rounded-lg border ${hasProof ? "border-success-100 bg-success-50 text-success-700" : "border-gray-200 bg-gray-50 text-gray-500"} p-3 text-sm font-semibold">
+            ${hasProof ? `<div class="flex items-center justify-between gap-3"><span class="min-w-0 truncate"><i data-lucide="paperclip" class="mr-1 inline h-4 w-4"></i>${escapeHtml(movement.proofFileName ?? "Fiche signee")}</span><button type="button" data-action="${viewAction}" class="shrink-0 rounded-lg border border-success-200 bg-white px-3 py-1.5 text-xs font-bold text-success-700 hover:bg-success-50">Voir la preuve</button></div>` : "Aucune fiche signee jointe."}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 function openReturnTransferDetail(root: HTMLElement, id: string) {
   const movement = latestMovements.find((item) => item.id === id);
   if (!movement || (movement.type !== "RETURN" && movement.type !== "TRANSFER")) {
@@ -5368,7 +6024,9 @@ function openReturnTransferDetail(root: HTMLElement, id: string) {
       (line, index) => {
         const sourceQuantity = sourceByArticle.get(line.articleId)?.completedQuantity;
         const breakdown = returnLineBreakdown(line, movement);
-        const observation = returnLineDisplayObservation(line) || movement.notes || "-";
+        const observation = movement.type === "RETURN"
+          ? returnLineDisplayObservation(line)
+          : (line.observation ?? "").trim();
         return `<tr>
           <td class="px-5 py-4 font-bold text-gray-400">${index + 1}</td>
           <td class="px-5 py-4"><div class="font-bold">${escapeHtml(line.article?.designation ?? "-")}</div><div class="text-xs text-gray-500">${escapeHtml(line.article?.code ?? "-")} - ${escapeHtml(line.article?.unit ?? "U")}</div></td>
@@ -5442,6 +6100,7 @@ function openReturnTransferDetail(root: HTMLElement, id: string) {
         <div class="px-5 py-4 bg-gray-50 border-b"><h3 class="font-bold">Articles ${movement.type === "RETURN" ? "retournes" : "transferes"}</h3><p class="text-sm text-gray-500 mt-1">Detail des lignes du bon.</p></div>
         <div class="overflow-x-auto"><table class="w-full min-w-[1120px] text-sm"><thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">N</th><th class="px-5 py-3 text-left">Article</th>${movement.type === "RETURN" ? '<th class="px-5 py-3 text-right">Quantite sortie</th>' : ""}<th class="px-5 py-3 text-right">${movement.type === "RETURN" ? "Quantite retournee" : "Quantite"}</th>${movement.type === "RETURN" ? '<th class="px-5 py-3 text-right">Bon etat</th><th class="px-5 py-3 text-right">Endommage</th><th class="px-5 py-3 text-right">Rebut</th><th class="px-5 py-3 text-right">A controler</th>' : ""}<th class="px-5 py-3 text-left">Observation</th></tr></thead><tbody class="divide-y">${rows || emptyRow(movement.type === "RETURN" ? 9 : 4, "Aucune ligne sur ce bon.")}</tbody></table></div>
       </div>
+      ${returnTransferDocumentBlock(movement)}
       ${movement.notes ? `<div class="rounded-xl border bg-gray-50 p-4 text-sm text-gray-700"><div class="font-bold mb-1">Observation generale</div>${escapeHtml(movement.notes)}</div>` : ""}`;
   }
   const controlButton = root.querySelector<HTMLButtonElement>("#returnControlButton");
@@ -6084,20 +6743,6 @@ function refreshEntryLines(root: HTMLElement) {
   setText(modal, "#entryLineCount", String(rows.length));
   setText(modal, "#entryTotalExpected", formatNumber(totalExpected));
   setText(modal, "#entryTotalReceived", formatNumber(totalReceived));
-  const firstArticleId =
-    rows.find((row) => row.querySelector<HTMLSelectElement>(".entry-article")?.value)
-      ?.querySelector<HTMLSelectElement>(".entry-article")?.value ?? "";
-  const currentStock =
-    firstArticleId && selectedLocationId
-      ? stockAvailableFor(firstArticleId, selectedLocationId)
-      : null;
-  setText(
-    modal,
-    "#entryCurrentStock",
-    currentStock === null ? "-" : formatNumber(currentStock),
-  );
-  setText(modal, "#entryExpectedControl", rows.length + " ligne(s)");
-
   const statusBox = modal.querySelector<HTMLElement>("#entryComputedStatus");
   if (statusBox) {
     const lineValues = rows.map(entryLineValues);
@@ -6569,14 +7214,6 @@ function setMaterialRequestMode(
     (hasRole("ADMIN_STOCK") || hasRole("GESTIONNAIRE_STOCK"));
   const title = root.querySelector<HTMLElement>("#materialRequestTitle");
   const subtitle = root.querySelector<HTMLElement>("#materialRequestSubtitle");
-  const reference = root.querySelector<HTMLElement>(
-    "#materialRequestReference",
-  );
-  const status = root.querySelector<HTMLElement>("#materialRequestStatus");
-  const step = root.querySelector<HTMLElement>("#materialRequestStep");
-  const lineCount = root.querySelector<HTMLElement>(
-    "#materialRequestLineCount",
-  );
   const addLine = root.querySelector<HTMLElement>("#materialAddLineButton");
   const treatmentTitle = root.querySelector<HTMLElement>(
     "#materialTreatmentTitle",
@@ -6597,16 +7234,6 @@ function setMaterialRequestMode(
       mode === "prepare"
         ? "Vue gestionnaire : renseigner les quantites remises, la tracabilite et le document final."
         : "Vue demandeur : seules les informations du besoin sont saisies ici.";
-  if (reference) reference.textContent = movement?.reference ?? "Auto";
-  if (status)
-    status.textContent =
-      mode === "prepare" ? movementStatusLabel(movement!) : "Brouillon";
-  if (step) step.textContent = mode === "prepare" ? "Preparation" : "Saisie";
-  if (lineCount)
-    lineCount.textContent = String(
-      movement?.lines.length ??
-        root.querySelectorAll("#materialRequestLines tr").length,
-    );
   addLine?.classList.toggle("hidden", mode === "prepare");
   draft?.classList.toggle("hidden", mode === "prepare");
   if (treatmentTitle)
@@ -6937,29 +7564,24 @@ async function uploadSignedEntryProof(root: HTMLElement, id: string) {
   }
 }
 
-function openProofInNewTab(url: string) {
-  const popup = window.open(url, "_blank");
-  if (popup) {
-    popup.opener = null;
-    return true;
-  }
-  return false;
-}
-
 async function viewSignedMaterialProof(root: HTMLElement, id: string) {
   const movement = latestMovements.find((item) => item.id === id);
   if (!movement?.proofFileName && !movement?.proofFileKey) {
     showToast(root, "Aucune preuve signee jointe.", "error");
     return;
   }
+  const popup = window.open("", "_blank");
+  if (!popup) {
+    showToast(root, "Autorise les popups pour ouvrir la preuve.", "error");
+    return;
+  }
+  popup.opener = null;
   try {
     const proof = await getExitRequestProof(id);
-    if (!openProofInNewTab(proof.url)) {
-      showToast(root, "Autorise les popups pour ouvrir la preuve.", "error");
-      return;
-    }
+    popup.location.href = proof.url;
     showToast(root, "Preuve signee ouverte : " + (proof.fileName ?? movement.proofFileName ?? "fichier"));
   } catch (error) {
+    popup.close();
     showToast(
       root,
       error instanceof Error ? error.message : "Preuve signee inaccessible.",
@@ -6974,14 +7596,130 @@ async function viewSignedEntryProof(root: HTMLElement, id: string) {
     showToast(root, "Aucune preuve signee jointe.", "error");
     return;
   }
+  const popup = window.open("", "_blank");
+  if (!popup) {
+    showToast(root, "Autorise les popups pour ouvrir la preuve.", "error");
+    return;
+  }
+  popup.opener = null;
   try {
     const proof = await getEntryProof(id);
-    if (!openProofInNewTab(proof.url)) {
-      showToast(root, "Autorise les popups pour ouvrir la preuve.", "error");
-      return;
-    }
+    popup.location.href = proof.url;
     showToast(root, "Preuve signee ouverte : " + (proof.fileName ?? movement.proofFileName ?? "fichier"));
   } catch (error) {
+    popup.close();
+    showToast(
+      root,
+      error instanceof Error ? error.message : "Preuve signee inaccessible.",
+      "error",
+    );
+  }
+}
+
+async function uploadSignedReturnProof(root: HTMLElement, id: string) {
+  const input = root.querySelector<HTMLInputElement>(
+    `#signedReturnProof-${CSS.escape(id)}`,
+  );
+  const file = input?.files?.[0];
+  if (!file) {
+    showToast(root, "Ajoute la fiche retour signee.", "error");
+    return;
+  }
+  try {
+    const updated = await uploadReturnProof(id, {
+      file,
+      uploadedBy: currentUser
+        ? `${currentUser.firstName} ${currentUser.lastName}`.trim()
+        : undefined,
+    });
+    latestMovements = await getStockMovements();
+    selectedReturnTransferId = updated.id;
+    openReturnTransferDetail(root, updated.id);
+    updateApiBackedViews(root);
+    showToast(root, "Fiche retour signee uploadee.");
+  } catch (error) {
+    showToast(
+      root,
+      error instanceof Error ? error.message : "Upload impossible.",
+      "error",
+    );
+  }
+}
+
+async function uploadSignedTransferProof(root: HTMLElement, id: string) {
+  const input = root.querySelector<HTMLInputElement>(
+    `#signedTransferProof-${CSS.escape(id)}`,
+  );
+  const file = input?.files?.[0];
+  if (!file) {
+    showToast(root, "Ajoute la fiche transfert signee.", "error");
+    return;
+  }
+  try {
+    const updated = await uploadTransferProof(id, {
+      file,
+      uploadedBy: currentUser
+        ? `${currentUser.firstName} ${currentUser.lastName}`.trim()
+        : undefined,
+    });
+    latestMovements = await getStockMovements();
+    selectedReturnTransferId = updated.id;
+    openReturnTransferDetail(root, updated.id);
+    updateApiBackedViews(root);
+    showToast(root, "Fiche transfert signee uploadee.");
+  } catch (error) {
+    showToast(
+      root,
+      error instanceof Error ? error.message : "Upload impossible.",
+      "error",
+    );
+  }
+}
+
+async function viewSignedReturnProof(root: HTMLElement, id: string) {
+  const movement = latestMovements.find((item) => item.id === id);
+  if (!movement?.proofFileName && !movement?.proofFileKey) {
+    showToast(root, "Aucune preuve signee jointe.", "error");
+    return;
+  }
+  const popup = window.open("", "_blank");
+  if (!popup) {
+    showToast(root, "Autorise les popups pour ouvrir la preuve.", "error");
+    return;
+  }
+  popup.opener = null;
+  try {
+    const proof = await getReturnProof(id);
+    popup.location.href = proof.url;
+    showToast(root, "Preuve signee ouverte : " + (proof.fileName ?? movement.proofFileName ?? "fichier"));
+  } catch (error) {
+    popup.close();
+    showToast(
+      root,
+      error instanceof Error ? error.message : "Preuve signee inaccessible.",
+      "error",
+    );
+  }
+}
+
+async function viewSignedTransferProof(root: HTMLElement, id: string) {
+  const movement = latestMovements.find((item) => item.id === id);
+  if (!movement?.proofFileName && !movement?.proofFileKey) {
+    showToast(root, "Aucune preuve signee jointe.", "error");
+    return;
+  }
+  const popup = window.open("", "_blank");
+  if (!popup) {
+    showToast(root, "Autorise les popups pour ouvrir la preuve.", "error");
+    return;
+  }
+  popup.opener = null;
+  try {
+    const proof = await getTransferProof(id);
+    popup.location.href = proof.url;
+    showToast(root, "Preuve signee ouverte : " + (proof.fileName ?? movement.proofFileName ?? "fichier"));
+  } catch (error) {
+    popup.close();
     showToast(
       root,
       error instanceof Error ? error.message : "Preuve signee inaccessible.",
@@ -7614,10 +8352,52 @@ function removeReturnLine(root: HTMLElement, trigger: HTMLElement) {
   refreshReturnLines(root);
 }
 
+function returnSourceOptionLabel(movement: StockMovement) {
+  const articleCount = movement.lines.length;
+  const articleLabel =
+    articleCount > 1
+      ? formatNumber(articleCount) + " articles"
+      : movement.lines[0]?.article?.designation ?? "1 article";
+  const context =
+    movement.project?.name ??
+    movement.toLocation?.name ??
+    movement.requestedBy ??
+    movement.receivedBy ??
+    "Destination inconnue";
+  return `${movement.reference} · ${articleLabel} · ${context}`;
+}
+
+function returnSourceCompactOptionLabel(movement: StockMovement) {
+  const articleCount = movement.lines.length;
+  const articleLabel =
+    articleCount > 1
+      ? formatNumber(articleCount) + " articles"
+      : movement.lines[0]?.article?.designation ?? "1 article";
+  const context =
+    movement.project?.name ??
+    movement.toLocation?.name ??
+    movement.requestedBy ??
+    movement.receivedBy ??
+    "Destination inconnue";
+  return `${movement.reference} - ${articleLabel} - ${context}`;
+}
+
+function normalizeReturnSourceOptions(
+  select: HTMLSelectElement,
+  movements: StockMovement[],
+) {
+  Array.from(select.options).forEach((item) => {
+    if (!item.value) return;
+    const movement = movements.find((source) => source.id === item.value);
+    if (movement) item.textContent = returnSourceCompactOptionLabel(movement);
+  });
+}
+
 function updateReturnSelection(root: HTMLElement, movements: StockMovement[]) {
   const modal = root.querySelector<HTMLElement>("#returnModal");
   const select = modal?.querySelector<HTMLSelectElement>("#returnSourceSelect");
   if (!modal || !select) return;
+  normalizeReturnSourceOptions(select, movements);
   const movement = movements.find((item) => item.id === select.value);
   latestMovements = movements;
   const sourceLines = returnSourceLines(movement);
@@ -7739,17 +8519,7 @@ async function populateReturnTransferModals(
       option("", "Selectionner une sortie") +
       exits
         .map((movement) => {
-          const articles = movement.lines
-            .map((line) => line.article?.designation ?? "Article")
-            .join(", ");
-          const destination =
-            movement.toLocation?.name ??
-            movement.project?.name ??
-            "Destination inconnue";
-          return option(
-            movement.id,
-            `${movement.reference} - ${articles} - ${destination}`,
-          );
+          return option(movement.id, returnSourceCompactOptionLabel(movement));
         })
         .join("");
     sourceSelect.onchange = () => updateReturnSelection(root, latestMovements);
@@ -10100,6 +10870,7 @@ function updateApiBackedViews(root: HTMLElement) {
         users.filter((user) => user.roles.includes("DIRECTION")).length,
       );
       renderAuditLogs(root);
+      renderHistory(root);
       window.lucide?.createIcons();
     })
     .catch(() => undefined);
@@ -10142,6 +10913,7 @@ function updateApiBackedViews(root: HTMLElement) {
     .then((logs) => {
       latestAuditLogs = logs;
       renderAuditLogs(root);
+      renderHistory(root);
       setAuditCardValue(root, "Actions tracees", logs.length);
       window.lucide?.createIcons();
     })
@@ -10332,14 +11104,7 @@ function setViewActions(root: HTMLElement, view: string) {
         variant: "primary",
       },
     ],
-    historique: [
-      {
-        label: "Export complet",
-        icon: "file-down",
-        action: "exportData('all')",
-        variant: "secondary",
-      },
-    ],
+    historique: [],
   };
   actions.innerHTML = (actionByView[view] ?? [])
     .filter((action) => canUseHeaderAction(view, action))
@@ -10374,7 +11139,7 @@ function showView(root: HTMLElement, view: string, navButton?: HTMLElement) {
     reappro: "Reapprovisionnement",
     inventaire: "Inventaire de stock",
     audit: "Audit & alertes",
-    historique: "Historique & exports",
+    historique: "Historique des mouvements",
     users: "Utilisateurs & roles",
     profil: "Mon profil",
   };
@@ -12806,6 +13571,14 @@ function parseAction(action: string) {
   const panelMatch = action.match(/^togglePanel\('([^']+)'\)/);
   if (panelMatch) return { type: "toggle-panel", id: panelMatch[1] } as const;
   if (action === "refreshHistory") return { type: "refresh-history" } as const;
+  const historyProofFilterMatch = action.match(
+    /^setHistoryProofFilter\('(ALL|MISSING)'\)/,
+  );
+  if (historyProofFilterMatch)
+    return {
+      type: "history-proof-filter",
+      filter: historyProofFilterMatch[1] as "ALL" | "MISSING",
+    } as const;
   if (action.includes("toggleLoginPassword"))
     return { type: "toggle-password" } as const;
   if (action.includes("toggleUserPassword"))
@@ -12971,6 +13744,11 @@ function parseAction(action: string) {
   const entryDetailMatch = action.match(/^openEntryDetail\('([^']+)'\)/);
   if (entryDetailMatch)
     return { type: "entry-detail", id: entryDetailMatch[1] } as const;
+  const historyMovementDetailMatch = action.match(
+    /^openHistoryMovementDetail\('([^']+)'\)/,
+  );
+  if (historyMovementDetailMatch)
+    return { type: "history-movement-detail", id: historyMovementDetailMatch[1] } as const;
   const downloadEntryPdfMatch = action.match(/^downloadEntryPdf\('([^']+)'\)/);
   if (downloadEntryPdfMatch)
     return { type: "download-entry-pdf", id: downloadEntryPdfMatch[1] } as const;
@@ -12982,6 +13760,28 @@ function parseAction(action: string) {
   const viewEntryProofMatch = action.match(/^viewSignedEntryProof\('([^']+)'\)/);
   if (viewEntryProofMatch)
     return { type: "view-signed-entry-proof", id: viewEntryProofMatch[1] } as const;
+  const downloadReturnPdfMatch = action.match(/^downloadReturnPdf\('([^']+)'\)/);
+  if (downloadReturnPdfMatch)
+    return { type: "download-return-pdf", id: downloadReturnPdfMatch[1] } as const;
+  const downloadTransferPdfMatch = action.match(/^downloadTransferPdf\('([^']+)'\)/);
+  if (downloadTransferPdfMatch)
+    return { type: "download-transfer-pdf", id: downloadTransferPdfMatch[1] } as const;
+  const uploadReturnProofMatch = action.match(
+    /^uploadSignedReturnProof\('([^']+)'\)/,
+  );
+  if (uploadReturnProofMatch)
+    return { type: "upload-signed-return-proof", id: uploadReturnProofMatch[1] } as const;
+  const uploadTransferProofMatch = action.match(
+    /^uploadSignedTransferProof\('([^']+)'\)/,
+  );
+  if (uploadTransferProofMatch)
+    return { type: "upload-signed-transfer-proof", id: uploadTransferProofMatch[1] } as const;
+  const viewReturnProofMatch = action.match(/^viewSignedReturnProof\('([^']+)'\)/);
+  if (viewReturnProofMatch)
+    return { type: "view-signed-return-proof", id: viewReturnProofMatch[1] } as const;
+  const viewTransferProofMatch = action.match(/^viewSignedTransferProof\('([^']+)'\)/);
+  if (viewTransferProofMatch)
+    return { type: "view-signed-transfer-proof", id: viewTransferProofMatch[1] } as const;
   const equipmentDetailMatch = action.match(
     /^openEquipmentDetail\('([^']+)'\)/,
   );
@@ -13204,12 +14004,26 @@ function StockHubTemplate() {
         void submitExitRequestRejection(root);
       if (parsed.type === "vehicle-detail") openVehicleDetail(root, parsed.id);
       if (parsed.type === "entry-detail") openEntryDetail(root, parsed.id);
+      if (parsed.type === "history-movement-detail")
+        openHistoryMovementDrawer(root, parsed.id);
       if (parsed.type === "download-entry-pdf")
         downloadEntryPdf(root, parsed.id);
       if (parsed.type === "upload-signed-entry-proof")
         void uploadSignedEntryProof(root, parsed.id);
       if (parsed.type === "view-signed-entry-proof")
         void viewSignedEntryProof(root, parsed.id);
+      if (parsed.type === "download-return-pdf")
+        downloadReturnPdf(root, parsed.id);
+      if (parsed.type === "download-transfer-pdf")
+        downloadTransferPdf(root, parsed.id);
+      if (parsed.type === "upload-signed-return-proof")
+        void uploadSignedReturnProof(root, parsed.id);
+      if (parsed.type === "upload-signed-transfer-proof")
+        void uploadSignedTransferProof(root, parsed.id);
+      if (parsed.type === "view-signed-return-proof")
+        void viewSignedReturnProof(root, parsed.id);
+      if (parsed.type === "view-signed-transfer-proof")
+        void viewSignedTransferProof(root, parsed.id);
       if (parsed.type === "equipment-detail")
         openEquipmentDetail(root, parsed.id);
       if (parsed.type === "toggle-vehicle-history") toggleVehicleHistory(root);
@@ -13240,6 +14054,8 @@ function StockHubTemplate() {
       if (parsed.type === "audit-log-day")
         toggleAuditLogDay(root, parsed.dayKey);
       if (parsed.type === "refresh-history") renderHistory(root);
+      if (parsed.type === "history-proof-filter")
+        setHistoryProofFilter(root, parsed.filter);
       if (parsed.type === "export") exportData(root, parsed.kind);
       if (parsed.type === "download-stock-excel")
         void downloadStockExcel(root, parsed.scope);
@@ -13257,7 +14073,11 @@ function StockHubTemplate() {
         openInventoryGlobalDetail(root, parsed.articleId);
       if (parsed.type === "stock-drawer-close") closeStockDrawer(root);
       if (parsed.type === "stock-drawer-refresh")
-        openInventoryScope ? renderInventoryDrawer(root) : renderStockDrawer(root);
+        openHistoryMovementId
+          ? renderHistoryMovementDrawer(root)
+          : openInventoryScope
+            ? renderInventoryDrawer(root)
+            : renderStockDrawer(root);
       if (parsed.type === "stock-sort") {
         if (stockSortKey === parsed.key) {
           stockSortDir = stockSortDir === "asc" ? "desc" : "asc";
@@ -13388,12 +14208,15 @@ function StockHubTemplate() {
       }
       if (
         [
+          "historyType",
+          "historyPeriod",
           "stockLocationSelect",
           "stockCategorySelect",
           "stockStatusSelect",
         ].includes(target.id)
       ) {
-        renderStock(root);
+        if (target.id.startsWith("history")) renderHistory(root);
+        else renderStock(root);
       }
       if (target.closest("#materialRequestLines")) {
         syncMaterialPreparationState(root);
@@ -13402,6 +14225,7 @@ function StockHubTemplate() {
     const onInput = (event: Event) => {
       const target = event.target as HTMLElement;
       if (target.id === "stockSearchInput") renderStock(root);
+      if (target.id === "historySearch") renderHistory(root);
       if (target.id === "inventorySearchInput") renderInventory(root);
       if (target.id === "auditAlertSearchInput") renderAuditAlerts(root);
       if (target.id === "auditLogSearchInput") renderAuditLogs(root);

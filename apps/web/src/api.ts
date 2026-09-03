@@ -257,6 +257,7 @@ export type StockMovement = {
   toLocation?: StockLocation | null;
   sourceRequest?: StockMovement | null;
   generatedExits?: StockMovement[];
+  createdByUser?: StockUser | null;
   lines: StockMovementLine[];
 };
 
@@ -800,6 +801,24 @@ export function controlStockReturn(id: string, body: {
   return post<StockMovement>("/stock-movements/returns/" + encodeURIComponent(id) + "/control", body);
 }
 
+export function uploadReturnProof(id: string, body: { file: File; uploadedBy?: string }) {
+  const form = new FormData();
+  form.append("file", body.file);
+  if (body.uploadedBy) form.append("uploadedBy", body.uploadedBy);
+  const auditUserId = currentAuditUserId();
+  if (auditUserId) form.append("auditUserId", auditUserId);
+  return request<StockMovement>("/stock-movements/returns/" + encodeURIComponent(id) + "/proof", {
+    method: "POST",
+    body: form
+  });
+}
+
+export function getReturnProof(id: string) {
+  return request<{ url: string; fileName: string | null; mimeType: string | null; expiresIn?: number }>(
+    "/stock-movements/returns/" + encodeURIComponent(id) + "/proof"
+  );
+}
+
 export function createStockTransfer(body: {
   reference: string;
   date: string;
@@ -816,6 +835,24 @@ export function createStockTransfer(body: {
   }>;
 }) {
   return post<StockMovement>("/stock-movements/transfers", body);
+}
+
+export function uploadTransferProof(id: string, body: { file: File; uploadedBy?: string }) {
+  const form = new FormData();
+  form.append("file", body.file);
+  if (body.uploadedBy) form.append("uploadedBy", body.uploadedBy);
+  const auditUserId = currentAuditUserId();
+  if (auditUserId) form.append("auditUserId", auditUserId);
+  return request<StockMovement>("/stock-movements/transfers/" + encodeURIComponent(id) + "/proof", {
+    method: "POST",
+    body: form
+  });
+}
+
+export function getTransferProof(id: string) {
+  return request<{ url: string; fileName: string | null; mimeType: string | null; expiresIn?: number }>(
+    "/stock-movements/transfers/" + encodeURIComponent(id) + "/proof"
+  );
 }
 
 

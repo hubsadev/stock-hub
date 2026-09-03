@@ -93,11 +93,6 @@
         <button data-action="closeModal('entryModal')" class="text-gray-500 hover:text-gray-900"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
       <div class="p-6 overflow-y-auto space-y-6">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div class="p-4 rounded-xl bg-accent-50 border border-accent-100"><div class="text-xs font-semibold text-accent-600">Type</div><div class="font-bold text-xl mt-1">Entree stock</div><p class="text-xs text-gray-600 mt-2">Reception fournisseur, retour ou regularisation entrante.</p></div>
-          <div class="p-4 rounded-xl bg-gray-50 border"><div class="text-xs font-semibold text-gray-500">Stock actuel article</div><div id="entryCurrentStock" class="font-bold text-2xl mt-1 text-gray-400">-</div><p class="text-xs text-gray-500 mt-2">Disponible apres selection article et magasin.</p></div>
-          <div class="p-4 rounded-xl bg-gray-50 border"><div class="text-xs font-semibold text-gray-500">Controle attendu</div><div id="entryExpectedControl" class="font-bold text-xl mt-1">Article + origine + magasin</div><p class="text-xs text-gray-500 mt-2">Le stock final se calcule apres saisie.</p></div>
-        </div>
         <div class="border border-gray-200 rounded-xl overflow-hidden">
           <div class="px-5 py-4 bg-gray-50 border-b">
             <h3 class="font-bold">Informations reception</h3>
@@ -206,19 +201,6 @@
       </div>
 
       <div id="materialRequestPreview" class="p-6 overflow-y-auto space-y-5">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div class="p-4 rounded-xl bg-accent-50 border border-accent-100"><div class="text-xs font-semibold text-accent-600">N demande</div><div id="materialRequestReference" class="font-bold text-2xl mt-1">Auto</div><p class="text-xs text-gray-600 mt-2">Genere automatiquement.</p></div>
-          <div class="p-4 rounded-xl bg-gray-50 border"><div class="text-xs font-semibold text-gray-500">Statut</div><div id="materialRequestStatus" class="font-bold text-xl mt-1">Brouillon</div><p class="text-xs text-gray-500 mt-2">Avant soumission.</p></div>
-          <div class="p-4 rounded-xl bg-gray-50 border"><div class="text-xs font-semibold text-gray-500">Lignes</div><div id="materialRequestLineCount" class="font-bold text-2xl mt-1">1</div><p class="text-xs text-gray-500 mt-2">Articles demandes.</p></div>
-          <div class="p-4 rounded-xl bg-gray-50 border"><div class="text-xs font-semibold text-gray-500">Etape</div><div id="materialRequestStep" class="font-bold text-xl mt-1">Saisie</div><p class="text-xs text-gray-500 mt-2">Preparation apres soumission.</p></div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div class="p-4 rounded-xl bg-accent-50 border border-accent-100"><div class="text-xs font-semibold text-accent-600">1. Demandeur</div><div class="font-bold mt-1">Saisie du besoin</div><p class="text-xs text-gray-600 mt-2">Articles et quantites demandees uniquement.</p></div>
-          <div id="materialStepStock" class="p-4 rounded-xl bg-gray-50 border"><div class="text-xs font-semibold text-gray-500">2. Gestionnaire stock</div><div class="font-bold mt-1">Preparation</div><p class="text-xs text-gray-500 mt-2">Quantites remises, signatures et PDF.</p></div>
-          <div id="materialStepFinal" class="p-4 rounded-xl bg-gray-50 border"><div class="text-xs font-semibold text-gray-500">3. Fiche finale</div><div class="font-bold mt-1">PDF + signatures</div><p class="text-xs text-gray-500 mt-2">Document joint apres preparation.</p></div>
-        </div>
-
         <div class="border border-gray-200 rounded-xl overflow-hidden">
           <div class="px-5 py-4 bg-gray-50 border-b">
             <h3 class="font-bold">Informations de la demande</h3>
@@ -525,11 +507,6 @@
         <button data-action="closeModal('returnModal')" class="text-gray-500 hover:text-gray-900"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
       <div class="p-6 overflow-y-auto flex-1 min-h-0 space-y-5">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div class="p-4 rounded-xl bg-accent-50 border border-accent-100"><div class="text-xs font-semibold text-accent-600">Sortie origine</div><div class="font-bold text-xl mt-1">-</div><p class="text-xs text-gray-600 mt-2">Selectionner une sortie a retourner.</p></div>
-          <div class="p-4 rounded-xl bg-gray-50 border"><div class="text-xs font-semibold text-gray-500">Quantite sortie</div><div class="font-bold text-2xl mt-1">-</div><p class="text-xs text-gray-500 mt-2">Quantite maximum retournee apres selection.</p></div>
-          <div class="p-4 rounded-xl bg-success-50 border border-success-50"><div class="text-xs font-semibold text-success-700">Decision stock</div><div class="font-bold text-xl mt-1">A verifier</div><p class="text-xs text-gray-600 mt-2">Reintegrer ou bloquer controle.</p></div>
-        </div>
         <div class="border border-gray-200 rounded-xl overflow-hidden">
           <div class="px-5 py-4 bg-gray-50 border-b"><h3 class="font-bold">Informations retour</h3><p class="text-sm text-gray-500 mt-1">Un retour remet le materiel dans le circuit seulement si son etat le permet.</p></div>
           <div class="p-5 grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -794,7 +771,7 @@
 
   <div id="importModal" class="modal fixed inset-0 bg-gray-900/50 items-center justify-center p-6 z-50"><div class="flex flex-col bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[92vh] overflow-hidden"><div class="px-6 py-5 border-b flex justify-between"><div><div class="text-xs text-gray-500 font-semibold">Reprise Excel</div><h2 class="text-xl font-bold">Créer des éléments en masse</h2><p class="text-sm text-gray-500 mt-1">Les codes sont générés automatiquement à l'enregistrement. Remplis uniquement les informations métier du modèle.</p></div><button data-action="closeModal('importModal')"><i data-lucide="x"></i></button></div><div class="p-6 space-y-4 overflow-y-auto flex-1 min-h-0"><label class="block"><span class="text-sm font-semibold">Type d'élément à importer</span><select id="referentialImportType" class="mt-2 w-full h-11 border rounded-lg px-3 bg-white"><option value="article">Articles</option><option value="supplier">Fournisseurs</option><option value="client">Clients</option><option value="project">Projets</option><option value="site">Sites / chantiers</option><option value="employee">Employés</option><option value="location">Emplacements</option><option value="teamService">Équipes / services</option></select></label><div class="p-4 bg-accent-50 border border-accent-100 rounded-xl text-sm text-gray-700">L'import initialise les éléments du référentiel. Utilise le modèle pour respecter exactement les colonnes attendues; les anciens codes saisis dans un fichier seront ignorés.</div><div class="flex flex-wrap items-center justify-between gap-4 rounded-xl border-2 border-accent-300 bg-accent-50 p-5 shadow-sm"><div class="flex items-center gap-3"><div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent-600 text-white shadow-sm"><i data-lucide="file-down" class="w-5 h-5"></i></div><div><div class="text-xs font-bold uppercase tracking-wide text-accent-700">Étape 1 — indispensable</div><div class="mt-0.5 font-bold text-gray-900">Télécharger le modèle Excel</div><div class="text-sm text-gray-700">Le fichier contient les colonnes attendues et une ligne d'exemple sans colonne Code.</div></div></div><button type="button" data-action="downloadArticleImportTemplate" class="inline-flex items-center gap-2 rounded-lg bg-accent-600 px-4 py-2.5 font-semibold text-white shadow-sm transition hover:bg-accent-700 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2"><i data-lucide="download" class="w-4 h-4"></i>Télécharger le modèle</button></div><div class="rounded-xl border-2 border-accent-300 bg-white p-5 shadow-sm"><div class="mb-3 flex items-center gap-3"><div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent-600 text-white shadow-sm"><i data-lucide="file-up" class="w-5 h-5"></i></div><div><div class="text-xs font-bold uppercase tracking-wide text-accent-700">Étape 2 — à effectuer ensuite</div><div class="mt-0.5 font-bold text-gray-900">Importer le fichier complété</div><div class="text-sm text-gray-700">Sélectionne le modèle Excel rempli pour vérifier les données avant l'enregistrement.</div></div></div><label for="articleImportFile" class="flex min-h-24 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-accent-300 bg-accent-50/50 px-4 py-4 text-center transition hover:border-accent-500 hover:bg-accent-50"><i data-lucide="upload-cloud" class="mb-1 h-6 w-6 text-accent-600"></i><span class="font-semibold text-accent-700">Choisir un fichier Excel</span><span class="mt-1 text-xs text-gray-600">Formats acceptés : .xlsx, .xls ou .csv</span><input id="articleImportFile" type="file" accept=".xlsx,.xls,.csv" class="sr-only"></label><div id="articleImportSummary" class="hidden grid-cols-2 gap-3 md:grid-cols-4"></div><div id="articleImportTable" class="hidden"></div></div><div class="shrink-0 px-6 py-4 border-t flex justify-end gap-3"><button data-action="closeModal('importModal')" class="px-4 py-2 bg-white border rounded-lg font-semibold">Annuler</button><button id="articleImportSaveButton" data-action="importArticles" disabled class="px-4 py-2 bg-accent-600 text-white rounded-lg font-semibold opacity-50 cursor-not-allowed">Enregistrer les lignes valides</button></div></div></div>
   <script>
-    const labels = { home:'Tableau de bord', entrees:'Entrees stock', referentiels:'Referentiels', stock:'Vue Stock', sortie:'Sorties stock', retours:'Retours & transferts', reappro:'Reapprovisionnement', inventaire:'Inventaire', equipements:'Equipements', parcAuto:'Parc auto', audit:'Audit & alertes', users:'Utilisateurs & roles', historique:'Historique & exports' };
+    const labels = { home:'Tableau de bord', entrees:'Entrees stock', referentiels:'Referentiels', stock:'Vue Stock', sortie:'Sorties stock', retours:'Retours & transferts', reappro:'Reapprovisionnement', inventaire:'Inventaire', equipements:'Equipements', parcAuto:'Parc auto', audit:'Audit & alertes', users:'Utilisateurs & roles', historique:'Historique des mouvements' };
     const headerActions = {
       home: [
         { label:'Importer Excel', icon:'upload', modal:'importModal', variant:'secondary' }
@@ -834,9 +811,7 @@
       users: [
         { label:'Nouvel utilisateur', icon:'user-plus', modal:'userModal', variant:'primary' }
       ],
-      historique: [
-        { label:'Export complet', icon:'file-down', variant:'secondary' }
-      ]
+      historique: []
     };
     function loginMock(){
       document.getElementById('loginOverlay').classList.add('hidden');
