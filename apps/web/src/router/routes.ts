@@ -34,6 +34,7 @@ export const ROUTE_VIEWS: Record<string, string> = {
   "/profil": "profil",
 };
 
+
 export function normalizeRoute(pathname = window.location.pathname) {
   const path = pathname.replace(/\/+$/, "");
   return path || DEFAULT_ROUTE;
