@@ -2,12 +2,38 @@ import loginHtml from "../template-parts/login.html?raw";
 import sidebarHtml from "../template-parts/sidebar.html?raw";
 import workspaceHtml from "../template-parts/workspace.html?raw";
 import modalsHtml from "../template-parts/modals.html?raw";
+import entreesStockHtml from "../pages/entrees-stock/entrees-stock.html?raw";
+import entreesStockModalsHtml from "../pages/entrees-stock/entrees-stock-modals.html?raw";
 import vueStockHtml from "../pages/vue-stock/vue-stock.html?raw";
 import vueStockModalsHtml from "../pages/vue-stock/vue-stock-modals.html?raw";
 
 function HtmlPart({ html }: { html: string }) {
   return <div className="template-part" dangerouslySetInnerHTML={{ __html: html }} />;
 }
+
+function htmlBefore(html: string, end: string) {
+  const endIndex = html.indexOf(end);
+  return endIndex >= 0 ? html.slice(0, endIndex).trimEnd() : "";
+}
+
+function htmlBetween(html: string, start: string, end: string) {
+  const startIndex = html.indexOf(start);
+  const endIndex = html.indexOf(end, startIndex);
+  return startIndex >= 0 && endIndex >= 0 ? html.slice(startIndex, endIndex).trimEnd() : "";
+}
+
+function htmlFrom(html: string, start: string) {
+  const startIndex = html.indexOf(start);
+  return startIndex >= 0 ? html.slice(startIndex).trimEnd() : "";
+}
+
+const entryModalHtml = htmlBefore(entreesStockModalsHtml, '  <div id="entryDetailModal"');
+const entryDetailModalHtml = htmlBetween(
+  entreesStockModalsHtml,
+  '  <div id="entryDetailModal"',
+  '  <div id="entryResolutionModal"',
+);
+const entryResolutionModalHtml = htmlFrom(entreesStockModalsHtml, '  <div id="entryResolutionModal"');
 
 export function LoginOverlay() {
   return <HtmlPart html={loginHtml} />;
@@ -18,11 +44,25 @@ export function Sidebar() {
 }
 
 export function Workspace() {
-  return <HtmlPart html={workspaceHtml.replace("<!-- vue-stock-page -->", vueStockHtml)} />;
+  return (
+    <HtmlPart
+      html={workspaceHtml
+        .replace("<!-- entrees-stock-page -->", entreesStockHtml)
+        .replace("<!-- vue-stock-page -->", vueStockHtml)}
+    />
+  );
 }
 
 export function ModalLayer() {
-  return <HtmlPart html={modalsHtml.replace("<!-- vue-stock-modals -->", vueStockModalsHtml)} />;
+  return (
+    <HtmlPart
+      html={modalsHtml
+        .replace("<!-- entrees-stock-entry-modal -->", entryModalHtml)
+        .replace("<!-- entrees-stock-detail-modal -->", entryDetailModalHtml)
+        .replace("<!-- entrees-stock-resolution-modal -->", entryResolutionModalHtml)
+        .replace("<!-- vue-stock-modals -->", vueStockModalsHtml)}
+    />
+  );
 }
 
 export function StockHubShell() {
