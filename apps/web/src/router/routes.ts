@@ -16,6 +16,8 @@ export const VIEW_ROUTES: Record<string, string> = {
   users: "/utilisateurs-roles",
   profil: "/profil",
 };
+
+
 export const ROUTE_VIEWS: Record<string, string> = {
   [DEFAULT_ROUTE]: "home",
   "/referentiels": "referentiels",
