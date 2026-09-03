@@ -3,6 +3,16 @@ import ReactDOM from "react-dom/client";
 import * as XLSX from "xlsx";
 import { StockHubShell } from "./components/StockHubShell";
 import {
+  DEFAULT_ROUTE,
+  LOGIN_ROUTE,
+  VIEW_ROUTES,
+  navButtonForView,
+  normalizeRoute,
+  viewForRoute,
+  writeLoginRoute,
+  writeRoute,
+} from "./router/routes";
+import {
   canAccessView as canAccessViewForUser,
   canPrepareMaterialRequests as canPrepareMaterialRequestsForUser,
   hasRole as userHasRole,
@@ -263,82 +273,7 @@ function canAccessView(view: string) {
   return canAccessViewForUser(currentUser, view);
 }
 
-const LOGIN_ROUTE = "/login";
-const DEFAULT_ROUTE = "/dashboard";
-const VIEW_ROUTES: Record<string, string> = {
-  home: DEFAULT_ROUTE,
-  referentiels: "/referentiels",
-  stock: "/stock",
-  equipements: "/equipements",
-  parcAuto: "/parc-auto",
-  entrees: "/entrees-stock",
-  sortie: "/sorties-stock",
-  retours: "/retours-transferts",
-  reappro: "/reapprovisionnement",
-  inventaire: "/inventaire",
-  audit: "/audit-alertes",
-  historique: "/historiques",
-  users: "/utilisateurs-roles",
-  profil: "/profil",
-};
-const ROUTE_VIEWS: Record<string, string> = {
-  [DEFAULT_ROUTE]: "home",
-  "/referentiels": "referentiels",
-  "/stock": "stock",
-  "/equipements": "equipements",
-  "/parc-auto": "parcAuto",
-  "/entrees-stock": "entrees",
-  "/sorties-stock": "sortie",
-  "/retours-transferts": "retours",
-  "/reapprovisionnement": "reappro",
-  "/inventaire": "inventaire",
-  "/audit-alertes": "audit",
-  "/historiques": "historique",
-  "/historique-exports": "historique",
-  "/utilisateurs-roles": "users",
-  "/profil": "profil",
-};
 let pendingRouteAfterLogin = DEFAULT_ROUTE;
-
-function normalizeRoute(pathname = window.location.pathname) {
-  const path = pathname.replace(/\/+$/, "");
-  return path || DEFAULT_ROUTE;
-}
-
-function routeForView(view: string) {
-  return VIEW_ROUTES[view] ?? DEFAULT_ROUTE;
-}
-
-function viewForRoute(pathname = window.location.pathname) {
-  return ROUTE_VIEWS[normalizeRoute(pathname)];
-}
-
-function navButtonForView(root: HTMLElement, view: string) {
-  return root.querySelector<HTMLElement>(
-    `.nav-btn[data-view="${CSS.escape(view)}"]`,
-  );
-}
-
-function writeRoute(view: string, replace = false) {
-  const route = routeForView(view);
-  if (normalizeRoute() === route) return;
-  const state = { stockHubView: view };
-  if (replace) {
-    window.history.replaceState(state, "", route);
-  } else {
-    window.history.pushState(state, "", route);
-  }
-}
-
-function writeLoginRoute(replace = true) {
-  if (normalizeRoute() === LOGIN_ROUTE) return;
-  const state = { stockHubView: "login" };
-  if (replace) {
-    window.history.replaceState(state, "", LOGIN_ROUTE);
-  } else {
-    window.history.pushState(state, "", LOGIN_ROUTE);
-  }
-}
 
 function applyRoleAccess(root: HTMLElement) {
   root
