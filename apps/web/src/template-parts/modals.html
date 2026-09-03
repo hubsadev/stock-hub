@@ -9,43 +9,7 @@
       <div class="px-6 py-4 border-t flex justify-end gap-3"><button data-action="closeModal('userModal')" class="px-4 py-2 bg-white border rounded-lg font-semibold">Annuler</button><button data-action="submitUser" class="px-4 py-2 bg-accent-600 text-white rounded-lg font-semibold">Enregistrer utilisateur</button></div>
     </div>
   </div>
-  <div id="stockExportModal" class="modal fixed inset-0 bg-gray-900/50 items-center justify-center p-6 z-50">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden">
-      <div class="px-6 py-5 border-b flex justify-between items-start gap-4">
-        <div>
-          <div class="text-xs text-gray-500 font-semibold">Vue Stock</div>
-          <h2 class="text-xl font-bold">Telecharger le stock</h2>
-          <p class="text-sm text-gray-500 mt-1">Choisis un emplacement pour les exports locaux, ou une synthese globale.</p>
-        </div>
-        <button data-action="closeModal('stockExportModal')" class="text-gray-500 hover:text-gray-900"><i data-lucide="x" class="w-5 h-5"></i></button>
-      </div>
-      <div class="p-6 space-y-4">
-        <div class="flex flex-col gap-3 rounded-xl border border-gray-200 bg-gray-50 p-4 md:flex-row md:items-center">
-          <label for="stockExportLocationSelect" class="text-sm font-semibold text-gray-700 md:w-40">Emplacement</label>
-          <select id="stockExportLocationSelect" class="h-11 min-w-0 flex-1 rounded-lg border border-gray-300 bg-white px-3 text-sm">
-              <option value="">Selectionner un emplacement</option>
-          </select>
-        </div>
-        <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-        <button type="button" data-action="downloadStockExcel('location')" class="text-left rounded-xl border border-gray-200 bg-white p-4 hover:border-accent-300 hover:bg-accent-50/40 transition">
-          <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg bg-accent-600 text-white flex items-center justify-center shrink-0"><i data-lucide="file-spreadsheet" class="w-5 h-5"></i></div><div class="min-w-0"><div class="font-bold">Excel par emplacement</div><p class="text-xs text-gray-500 mt-0.5">Stock de l'emplacement choisi</p></div></div>
-        </button>
-        <button type="button" data-action="downloadStockExcel('global')" class="text-left rounded-xl border border-gray-200 bg-white p-4 hover:border-accent-300 hover:bg-accent-50/40 transition">
-          <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg bg-success-600 text-white flex items-center justify-center shrink-0"><i data-lucide="table-2" class="w-5 h-5"></i></div><div class="min-w-0"><div class="font-bold">Excel global</div><p class="text-xs text-gray-500 mt-0.5">Tous les articles consolides</p></div></div>
-        </button>
-        <button type="button" data-action="downloadStockPdf('location')" class="text-left rounded-xl border border-gray-200 bg-white p-4 hover:border-accent-300 hover:bg-accent-50/40 transition">
-          <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg bg-gray-900 text-white flex items-center justify-center shrink-0"><i data-lucide="file-text" class="w-5 h-5"></i></div><div class="min-w-0"><div class="font-bold">PDF par emplacement</div><p class="text-xs text-gray-500 mt-0.5">Fiche imprimable locale</p></div></div>
-        </button>
-        <button type="button" data-action="downloadStockPdf('global')" class="text-left rounded-xl border border-gray-200 bg-white p-4 hover:border-accent-300 hover:bg-accent-50/40 transition">
-          <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg bg-gray-900 text-white flex items-center justify-center shrink-0"><i data-lucide="file-bar-chart" class="w-5 h-5"></i></div><div class="min-w-0"><div class="font-bold">PDF global</div><p class="text-xs text-gray-500 mt-0.5">Synthese imprimable</p></div></div>
-        </button>
-        </div>
-      </div>
-      <div class="px-6 py-4 border-t flex justify-end">
-        <button data-action="closeModal('stockExportModal')" class="px-4 py-2 bg-white border rounded-lg font-semibold">Fermer</button>
-      </div>
-    </div>
-  </div>
+  <!-- vue-stock-modals -->
   <div id="inventoryExportModal" class="modal fixed inset-0 bg-gray-900/50 items-center justify-center p-6 z-50">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden">
       <div class="px-6 py-5 border-b flex justify-between items-start gap-4">
