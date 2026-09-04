@@ -2,6 +2,12 @@ import React, { useEffect, useRef } from "react";
 import ReactDOM from "react-dom/client";
 import { StockHubShell } from "./components/StockHubShell";
 import {
+  closeModalPage,
+  openModalPage,
+  prepareTemplateActionsPage,
+  type ModalControllerContext,
+} from "./app/modals";
+import {
   auditActionLabelPage,
   auditAlertDomainPage,
   auditDocumentLabelPage,
@@ -484,6 +490,25 @@ function viewActionsContext(): ViewActionsContext {
   return {
     currentUser,
     hasRole,
+  };
+}
+
+function modalControllerContext(): ModalControllerContext {
+  return {
+    prepareStockExportModal,
+    prepareInventoryExportModal,
+    resetReferentialImport: (root) =>
+      resetReferentialImportPage(root, referentielsContext()),
+    resetInventoryImport,
+    prepareUserModal,
+    updateReferentialForm,
+    populateQuickArticleModal,
+    populateEntryModal,
+    setMaterialRequestMode: (root, mode) => setMaterialRequestMode(root, mode),
+    populateExitModals,
+    populateReturnTransferModals,
+    populateEquipmentModal,
+    populateEquipmentCreateModal,
   };
 }
 
@@ -2863,52 +2888,11 @@ async function downloadArticleImportTemplate(root: HTMLElement) {
 }
 
 function openModal(root: HTMLElement, id: string) {
-  setVisible(root.querySelector(`#${CSS.escape(id)}`), true);
-  if (id === "stockExportModal") {
-    prepareStockExportModal(root);
-  }
-  if (id === "inventoryExportModal") {
-    prepareInventoryExportModal(root);
-  }
-  if (id === "importModal") {
-    resetReferentialImportPage(root, referentielsContext());
-  }
-  if (id === "inventoryImportModal") {
-    resetInventoryImport(root);
-  }
-  if (id === "userModal") {
-    prepareUserModal(root);
-  }
-  if (id === "referentialModal") {
-    updateReferentialForm(
-      root,
-      root.querySelector<HTMLSelectElement>("#referentialType")?.value ?? "",
-    );
-  }
-  if (id === "articleModal") {
-    void populateQuickArticleModal(root);
-  }
-  if (id === "entryModal") {
-    void populateEntryModal(root);
-  }
-  if (id === "exitModal" || id === "directExitModal") {
-    if (id === "exitModal") setMaterialRequestMode(root, "create");
-    void populateExitModals(root, id);
-  }
-  if (id === "returnModal" || id === "transferModal") {
-    void populateReturnTransferModals(root, id);
-  }
-  if (id === "equipmentModal") {
-    void populateEquipmentModal(root);
-  }
-  if (id === "equipmentCreateModal") {
-    void populateEquipmentCreateModal(root);
-  }
-  window.lucide?.createIcons();
+  return openModalPage(root, id, modalControllerContext());
 }
 
 function closeModal(root: HTMLElement, id: string) {
-  setVisible(root.querySelector(`#${CSS.escape(id)}`), false);
+  return closeModalPage(root, id);
 }
 
 function togglePassword(root: HTMLElement) {
@@ -2924,80 +2908,7 @@ function logout(root: HTMLElement) {
 }
 
 function prepareTemplateActions(root: HTMLElement) {
-  root
-    .querySelectorAll<HTMLButtonElement>("#referentialModal button")
-    .forEach((button) => {
-      if (
-        !button.dataset.action &&
-        button.textContent?.trim().includes("Creer element")
-      ) {
-        button.dataset.action = "submitReferential";
-      }
-    });
-  root
-    .querySelectorAll<HTMLButtonElement>("#entryModal button")
-    .forEach((button) => {
-      if (
-        !button.dataset.action &&
-        button.textContent?.trim().includes("Enregistrer entree")
-      ) {
-        button.dataset.action = "submitStockEntry";
-      }
-    });
-  root
-    .querySelectorAll<HTMLButtonElement>("#exitModal button")
-    .forEach((button) => {
-      if (button.textContent?.trim().includes("Soumettre demande")) {
-        button.dataset.action = "submitExitRequest";
-      }
-    });
-  root
-    .querySelectorAll<HTMLButtonElement>("#directExitModal button")
-    .forEach((button) => {
-      if (
-        !button.dataset.action &&
-        button.textContent?.trim().includes("Valider sortie")
-      ) {
-        button.dataset.action = "submitDirectExit";
-      }
-    });
-  root
-    .querySelectorAll<HTMLButtonElement>("#returnModal button")
-    .forEach((button) => {
-      if (
-        !button.dataset.action &&
-        button.textContent?.trim().includes("Enregistrer retour")
-      ) {
-        button.dataset.action = "submitStockReturn";
-      }
-    });
-  root
-    .querySelectorAll<HTMLButtonElement>("#transferModal button")
-    .forEach((button) => {
-      if (
-        !button.dataset.action &&
-        button.textContent?.trim().includes("Enregistrer transfert")
-      ) {
-        button.dataset.action = "submitStockTransfer";
-      }
-    });
-  root
-    .querySelectorAll<HTMLButtonElement>("#countModal button")
-    .forEach((button) => {
-      if (button.textContent?.trim().includes("Enregistrer comptage")) {
-        button.dataset.action = "submitInventoryCount";
-      }
-    });
-  root
-    .querySelectorAll<HTMLButtonElement>("#equipmentModal button")
-    .forEach((button) => {
-      if (
-        !button.dataset.action &&
-        button.textContent?.trim().includes("Affecter")
-      ) {
-        button.dataset.action = "submitEquipmentAssignment";
-      }
-    });
+  return prepareTemplateActionsPage(root);
 }
 
 
