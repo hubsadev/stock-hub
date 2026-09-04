@@ -1,9 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import ReactDOM from "react-dom/client";
 import { StockHubShell } from "./components/StockHubShell";
-import {
-  parseAction,
-} from "./app/actions";
+import { parseAction } from "./app/actions";
 import {
   closeModalPage,
   openModalPage,
@@ -430,6 +428,7 @@ import {
 } from "./api";
 import "./template.css";
 
+// ---- Application state ----
 let latestMovements: StockMovement[] = [];
 let latestAuditAlerts: AuditAlert[] = [];
 let latestStockLevels: StockLevel[] = [];
@@ -446,6 +445,7 @@ let latestLocations: StockLocation[] = [];
 let latestUsers: StockUser[] = [];
 let currentUser: StockUser | null = readStoredUser();
 
+// ---- Session and permissions ----
 function readStoredUser(): StockUser | null {
   return readStoredUserPage();
 }
@@ -485,6 +485,7 @@ function canAccessView(view: string) {
 
 let pendingRouteAfterLogin = DEFAULT_ROUTE;
 
+// ---- Context builders ----
 function loginContext(): LoginContext {
   return {
     loginUser,
@@ -650,6 +651,7 @@ function dataRefreshContext(): DataRefreshContext {
   };
 }
 
+// ---- Shell UI ----
 function applyRoleAccess(root: HTMLElement) {
   root
     .querySelectorAll<HTMLElement>(".nav-btn[data-view]")
@@ -716,6 +718,7 @@ function updateDashboard(root: HTMLElement) {
   return updateDashboardPage(root, tableauDeBordContext());
 }
 
+// ---- Feature contexts ----
 function tableauDeBordContext(): TableauDeBordContext {
   return {
     latestAuditAlerts,
@@ -1160,6 +1163,7 @@ function inventaireStockContext(): InventaireStockContext {
   };
 }
 
+// ---- Page and service wrappers ----
 function stockInitialForLevel(level: StockLevel) {
   return computeStockInitialForLevel(level, latestMovements);
 }
@@ -1408,6 +1412,7 @@ function hasOpenHistoryMovementDrawer() {
   return hasOpenHistoryMovementDrawerPage();
 }
 
+// ---- Documents and exports ----
 function downloadMaterialRequestPdf(root: HTMLElement) {
   const modal = root.querySelector<HTMLElement>("#exitModal");
   if (!modal || modal.dataset.mode !== "prepare") {
@@ -2175,31 +2180,9 @@ function setAuditCardValue(root: HTMLElement, label: string, value: number | str
   return setAuditCardValuePage(root, label, value, auditAlertesContext());
 }
 
-
-
-
 function auditAlertDomain(alert: AuditAlert) {
   return auditAlertDomainPage(alert, auditAlertesContext());
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 function renderAuditAlerts(root: HTMLElement) {
   return renderAuditAlertsPage(root, auditAlertesContext());
@@ -2213,37 +2196,21 @@ function auditActionLabel(action: string) {
   return auditActionLabelPage(action, auditAlertesContext());
 }
 
-
-
-
 function auditDocumentLabel(log: AuditLog) {
   return auditDocumentLabelPage(log, auditAlertesContext());
 }
-
-
-
 
 function auditLogUserLabel(log: AuditLog) {
   return auditLogUserLabelPage(log, auditAlertesContext());
 }
 
-
-
 function setAuditLogDateRange(root: HTMLElement, range: string) {
   return setAuditLogDateRangePage(root, range, auditAlertesContext());
 }
 
-
-
-
 function auditLogResult(log: AuditLog) {
   return auditLogResultPage(log, auditAlertesContext());
 }
-
-
-
-
-
 
 function renderAuditLogs(root: HTMLElement) {
   return renderAuditLogsPage(root, auditAlertesContext());
@@ -2252,12 +2219,6 @@ function renderAuditLogs(root: HTMLElement) {
 function toggleAuditLogDay(root: HTMLElement, dayKey: string) {
   return toggleAuditLogDayPage(root, dayKey, auditAlertesContext());
 }
-
-
-
-
-
-
 
 function auditLogResultLabel(result: string) {
   return auditLogResultLabelPage(result, auditAlertesContext());
@@ -2388,8 +2349,6 @@ function renderUsersList(root: HTMLElement) {
   return renderUsersListPage(root, utilisateursRolesContext());
 }
 
-
-
 function renderReferentialsRegistry(root: HTMLElement) {
   return renderReferentialsRegistryPage(root, referentielsContext());
 }
@@ -2398,6 +2357,7 @@ function updateApiBackedViews(root: HTMLElement) {
   return updateApiBackedViewsPage(root, dataRefreshContext());
 }
 
+// ---- Routing ----
 function showView(root: HTMLElement, view: string, navButton?: HTMLElement) {
   closeStockDrawer(root);
   root
@@ -2501,6 +2461,7 @@ function openRoute(
   navigateToView(root, view, undefined, options);
 }
 
+// ---- Modals and actions ----
 function showRef(root: HTMLElement, ref: string, button?: HTMLElement) {
   return showRefPage(root, ref, button, referentielsContext());
 }
@@ -2575,21 +2536,6 @@ function prepareTemplateActions(root: HTMLElement) {
   return prepareTemplateActionsPage(root);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 function renderReferentialDetail(root: HTMLElement, type: string, id: string, editing = false) {
   return renderReferentialDetailPage(root, type, id, editing, referentielsContext());
 }
@@ -2654,6 +2600,8 @@ async function submitUser(root: HTMLElement) {
 function toggleUserPassword(root: HTMLElement) {
   return toggleUserPasswordPage(root);
 }
+
+// ---- React shell ----
 function StockHubTemplate() {
   const rootRef = useRef<HTMLDivElement>(null);
 
