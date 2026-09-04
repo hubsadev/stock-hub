@@ -21,6 +21,15 @@ import {
   type AuditAlertesContext,
 } from "./pages/audit-alertes/render";
 import {
+  renderDashboardAuditAlertsPage,
+  renderDashboardAuditLogCountPage,
+  renderDashboardPendingExitRequestsPage,
+  renderDashboardWatchStockPage,
+  setCardValuePage,
+  updateDashboardPage,
+  type TableauDeBordContext,
+} from "./pages/tableau-de-bord/render";
+import {
   addEntryLinePage,
   cleanEntryLineObservation as cleanEntryLineObservationPage,
   downloadEntryPdfPage,
@@ -437,12 +446,7 @@ function setCardValue(
   label: string,
   value: number | string,
 ) {
-  const cards = Array.from(
-    root.querySelectorAll<HTMLElement>("#home .bg-white.rounded-xl"),
-  );
-  const card = cards.find((element) => element.textContent?.includes(label));
-  const number = card?.querySelector<HTMLElement>(".text-3xl");
-  if (number) number.textContent = formatNumber(value);
+  return setCardValuePage(root, label, value, tableauDeBordContext());
 }
 function updatePwaInstallButton(root: HTMLElement) {
   const standalone =
@@ -621,21 +625,7 @@ function updateProfilePwaCards(root: HTMLElement) {
 }
 
 function updateDashboard(root: HTMLElement) {
-  getDashboardSummary()
-    .then((summary) => {
-      setCardValue(root, "Articles actifs", summary.articles);
-      setText(root, "#homeArticlesCount", summary.articles);
-      setCardValue(root, "Ruptures", summary.ruptures);
-      setText(root, "#homeRupturesCount", summary.ruptures);
-      setCardValue(root, "Equipements affectes", summary.equipmentAssigned);
-      setText(root, "#homeEquipmentsCount", summary.equipmentAssigned);
-      setCardValue(root, "Mouvements du jour", summary.movementsToday);
-      setText(root, "#homeMovementsCount", summary.movementsToday);
-      window.lucide?.createIcons();
-    })
-    .catch(() => {
-      // La maquette reste visible si l'API locale n'est pas lancee.
-    });
+  return updateDashboardPage(root, tableauDeBordContext());
 }
 
 
@@ -649,6 +639,21 @@ function actionEye(modal = "referentialDetailModal") {
 
 function actionEyeFor(action: string) {
   return `<button data-action="${escapeHtml(action)}" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-accent-600 hover:bg-accent-50" title="Voir la fiche"><i data-lucide="eye" class="w-4 h-4"></i></button>`;
+}
+
+function tableauDeBordContext(): TableauDeBordContext {
+  return {
+    latestAuditAlerts,
+    latestMovements,
+    latestStockLevels,
+    getDashboardSummary,
+    watchStockRow,
+    auditAlertDomain,
+    emptyRow,
+    setText,
+    formatNumber,
+    escapeHtml,
+  };
 }
 
 function auditAlertesContext(): AuditAlertesContext {
@@ -1197,11 +1202,7 @@ function renderReappro(root: HTMLElement) {
     body.innerHTML = levels.length
       ? levels.map(reapproRow).join("")
       : emptyRow(7, "Aucun article sous seuil pour le moment.");
-  const watchBody = root.querySelector<HTMLElement>("#home-watch-stock-body");
-  if (watchBody)
-    watchBody.innerHTML = levels.length
-      ? levels.map(watchStockRow).join("")
-      : emptyRow(6, "Aucun stock a surveiller pour le moment.");
+  renderDashboardWatchStockPage(root, levels, tableauDeBordContext());
   const ruptures = levels.filter((level) => level.quantity <= 0).length;
   const lowStock = levels.filter((level) => level.quantity > 0).length;
   const estimated = levels.reduce(
@@ -3853,14 +3854,14 @@ function updateApiBackedViews(root: HTMLElement) {
       );
       const pendingAlert = root.querySelector<HTMLElement>("#exitPendingAlert");
       const pendingCount = root.querySelector<HTMLElement>("#exitPendingCount");
-      const dashboardPendingCount = root.querySelector<HTMLElement>(
-        "#dashboardPendingExitRequestsCount",
-      );
       if (pendingAlert)
         pendingAlert.classList.toggle("hidden", pendingExits.length === 0);
       if (pendingCount) pendingCount.textContent = String(pendingExits.length);
-      if (dashboardPendingCount)
-        dashboardPendingCount.textContent = String(pendingExits.length);
+      renderDashboardPendingExitRequestsPage(
+        root,
+        pendingExits,
+        tableauDeBordContext(),
+      );
       renderExitRegistry(root);
       setText(root, "#exitRequestsCount", pendingExits.length);
       setText(
@@ -3959,33 +3960,7 @@ function updateApiBackedViews(root: HTMLElement) {
     .then((alerts) => {
       latestAuditAlerts = alerts;
       renderAuditAlerts(root);
-      const homeAlerts = root.querySelector<HTMLElement>("#homeAuditAlerts");
-      if (homeAlerts)
-        homeAlerts.innerHTML = alerts.length
-          ? alerts
-              .slice(0, 3)
-              .map(
-                (alert) =>
-                  '<div class="p-4 rounded-xl bg-warning-50 border border-warning-100"><div class="font-bold text-warning-700">' +
-                  escapeHtml(alert.type) +
-                  '</div><div class="text-sm text-gray-600 mt-1">' +
-                  escapeHtml(alert.action + " - " + alert.object) +
-                  "</div></div>",
-              )
-              .join("")
-          : '<div class="p-4 rounded-xl bg-gray-50 border border-gray-100 text-sm text-gray-500">Aucune alerte audit pour le moment.</div>';
-      setAuditCardValue(root, "Alertes ouvertes", alerts.length);
-      setAuditCardValue(
-        root,
-        "Ruptures",
-        alerts.filter((alert) => auditAlertDomain(alert) === "STOCK").length,
-      );
-      setAuditCardValue(
-        root,
-        "Ecarts inventaire",
-        alerts.filter((alert) => auditAlertDomain(alert) === "INVENTORY").length,
-      );
-      window.lucide?.createIcons();
+      renderDashboardAuditAlertsPage(root, alerts, tableauDeBordContext());
     })
     .catch(() => undefined);
 
@@ -3994,8 +3969,7 @@ function updateApiBackedViews(root: HTMLElement) {
       latestAuditLogs = logs;
       renderAuditLogs(root);
       renderHistory(root);
-      setAuditCardValue(root, "Actions tracees", logs.length);
-      window.lucide?.createIcons();
+      renderDashboardAuditLogCountPage(root, logs.length, tableauDeBordContext());
     })
     .catch(() => undefined);
 }

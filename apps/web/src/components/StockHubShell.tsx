@@ -17,6 +17,7 @@ import retoursTransfertsHtml from "../pages/retours-transferts/retours-transfert
 import retoursTransfertsModalsHtml from "../pages/retours-transferts/retours-transferts-modals.html?raw";
 import sortiesStockHtml from "../pages/sorties-stock/sorties-stock.html?raw";
 import sortiesStockModalsHtml from "../pages/sorties-stock/sorties-stock-modals.html?raw";
+import tableauDeBordHtml from "../pages/tableau-de-bord/tableau-de-bord.html?raw";
 import vueStockHtml from "../pages/vue-stock/vue-stock.html?raw";
 import vueStockModalsHtml from "../pages/vue-stock/vue-stock-modals.html?raw";
 
@@ -76,6 +77,7 @@ export function Workspace() {
   return (
     <HtmlPart
       html={workspaceHtml
+        .replace("<!-- tableau-de-bord-page -->", tableauDeBordHtml)
         .replace("<!-- entrees-stock-page -->", entreesStockHtml)
         .replace("<!-- referentiels-page -->", referentielsHtml)
         .replace("<!-- vue-stock-page -->", vueStockHtml)
