@@ -60,45 +60,7 @@
       <div class="px-6 py-4 border-t flex justify-end gap-3"><button data-action="closeModal('vehicleModal')" class="px-4 py-2 bg-white border rounded-lg font-semibold">Annuler</button><button data-action="submitVehicle" class="px-4 py-2 bg-accent-600 text-white rounded-lg font-semibold">Enregistrer vehicule</button></div>
     </div>
   </div>
-  <div id="equipmentCreateModal" class="modal fixed inset-0 bg-gray-900/50 items-center justify-center p-6 z-50">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] flex flex-col overflow-hidden">
-      <div class="px-6 py-5 border-b flex justify-between items-center"><div><div class="text-xs text-gray-500 font-semibold">Tracabilite materiel</div><h2 class="text-xl font-bold">Nouvel equipement</h2></div><button data-action="closeModal('equipmentCreateModal')" class="text-gray-500 hover:text-gray-900" title="Fermer"><i data-lucide="x" class="w-5 h-5"></i></button></div>
-      <div class="p-6 space-y-5 overflow-y-auto"><div class="p-4 rounded-xl bg-accent-50 border border-accent-100 text-sm">Un equipement est une piece suivie individuellement. L'affectation se fera dans une action separee.</div><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="text-sm font-semibold">Article modele</span><select id="equipmentCreateArticle" class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner</option></select></label><label><span class="text-sm font-semibold">Numero de serie</span><input id="equipmentCreateSerial" class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Optionnel"></label><label><span class="text-sm font-semibold">Etat initial</span><select id="equipmentCreateState" class="mt-2 w-full h-11 border rounded-lg px-3"><option value="GOOD">Bon</option><option value="DAMAGED">Abime</option><option value="REPAIR">A reparer</option></select></label><label><span class="text-sm font-semibold">Emplacement initial</span><select id="equipmentCreateLocation" class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Non localise</option></select></label><label><span class="text-sm font-semibold">Date d'entree</span><input id="equipmentCreateEntryDate" type="date" class="mt-2 w-full h-11 border rounded-lg px-3"></label><label><span class="text-sm font-semibold">Fournisseur</span><select id="equipmentCreateSupplier" class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Optionnel</option></select></label><label><span class="text-sm font-semibold">Origine</span><input id="equipmentCreateOrigin" class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Optionnel"></label><label class="md:col-span-2"><span class="text-sm font-semibold">Observation</span><textarea id="equipmentCreateNotes" class="mt-2 w-full min-h-20 border rounded-lg px-3 py-3" placeholder="Optionnel"></textarea></label></div></div>
-      <div class="px-6 py-4 border-t flex justify-end gap-3"><button data-action="closeModal('equipmentCreateModal')" class="px-4 py-2 bg-white border rounded-lg font-semibold">Annuler</button><button data-action="submitEquipmentCreation" class="px-4 py-2 bg-accent-600 text-white rounded-lg font-semibold">Enregistrer equipement</button></div>
-    </div>
-  </div>
-  <div id="equipmentModal" class="modal fixed inset-0 bg-gray-900/50 items-center justify-center p-6 z-50">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[calc(100vh-4rem)] flex flex-col overflow-hidden">
-      <div class="px-6 py-5 border-b flex justify-between items-start gap-4">
-        <div><div class="text-xs text-gray-500 font-semibold">Tracabilite materiel</div><h2 class="text-xl font-bold">Affecter un equipement</h2><p class="text-sm text-gray-500 mt-1">L'equipement peut etre remis a une personne, un service, un bureau ou un chantier.</p></div>
-        <button data-action="closeModal('equipmentModal')" class="text-gray-500 hover:text-gray-900"><i data-lucide="x" class="w-5 h-5"></i></button>
-      </div>
-      <div class="p-6 overflow-y-auto flex-1 min-h-0 space-y-5">
-        <div class="border rounded-xl overflow-hidden">
-          <div class="px-5 py-4 bg-gray-50 border-b"><h3 class="font-bold">Equipement a affecter</h3><p class="text-sm text-gray-500 mt-1">Recherche par code ou designation. Les details confirment la piece exacte avant affectation.</p></div>
-          <div class="p-5 space-y-4">
-            <label class="block"><span class="text-sm font-semibold">Rechercher / selectionner equipement</span><select id="equipmentAssignmentSelect" class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner</option></select><span class="text-xs text-gray-500 mt-2 block">Le code identifie la piece exacte. Le nom sert seulement a reconnaitre le materiel.</span></label>
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
-              <div id="equipmentAssignmentPreview" class="col-span-2 md:col-span-5 p-3 rounded-lg bg-gray-50 border text-sm text-gray-500">Selectionner un equipement.</div>
-            </div>
-          </div>
-        </div>
-        <div class="border rounded-xl overflow-hidden">
-          <div class="px-5 py-4 bg-gray-50 border-b"><h3 class="font-bold">Destination d'affectation</h3><p class="text-sm text-gray-500 mt-1">Un ordinateur peut aller au bureau, une camera peut aller sur chantier.</p></div>
-          <div class="p-5 grid grid-cols-1 md:grid-cols-3 gap-4">
-            <label><span class="text-sm font-semibold">Type d'affectation</span><select class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner</option><option>Personne / employe</option><option>Service bureau</option><option>Projet / chantier</option><option>Stock temporaire</option></select></label>
-            <label><span class="text-sm font-semibold">Beneficiaire</span><select id="equipmentAssignmentBeneficiary" class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner</option></select></label>
-            <label><span class="text-sm font-semibold">Lieu d'utilisation</span><select id="equipmentAssignmentLocation" class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner</option></select></label>
-            <label><span class="text-sm font-semibold">Reference projet</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Optionnel si affectation bureau"></label>
-            <label><span class="text-sm font-semibold">Retour prevu</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Optionnel"></label>
-            <label><span class="text-sm font-semibold">Responsable remise</span><select id="equipmentAssignmentHandledBy" class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner</option></select></label>
-          </div>
-        </div>
-        <label class="block"><span class="text-sm font-semibold">Observation</span><textarea class="mt-2 w-full min-h-24 border rounded-lg px-3 py-3" placeholder="Ajouter une remarque sur l'affectation"></textarea></label>
-      </div>
-      <div class="px-6 py-4 border-t flex justify-end gap-3"><button data-action="closeModal('equipmentModal')" class="px-4 py-2 bg-white border rounded-lg font-semibold">Annuler</button><button class="px-4 py-2 bg-accent-600 text-white rounded-lg font-semibold">Affecter</button></div>
-    </div>
-  </div>
+  <!-- equipements-modals -->
   <div id="referentialModal" class="modal fixed inset-0 bg-gray-900/50 items-start justify-center px-6 py-8 z-50 overflow-y-auto">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[calc(100vh-4rem)] flex flex-col overflow-hidden">
       <div class="px-6 py-5 border-b flex justify-between items-center">
@@ -292,35 +254,7 @@
   </div>
 
   <!-- entrees-stock-resolution-modal -->
-  <div id="equipmentDetailModal" class="modal fixed inset-0 bg-gray-900/50 items-center justify-center p-6 z-50">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden">
-      <div class="px-6 py-5 border-b flex flex-col md:flex-row md:justify-between md:items-start gap-4">
-        <div>
-          <div class="text-xs text-gray-500 font-semibold">Fiche equipement</div>
-          <h2 id="equipmentDetailTitle" class="text-xl font-bold">Equipement</h2>
-          <p id="equipmentDetailSubtitle" class="text-sm text-gray-500 mt-1">Materiel identifie suivi piece par piece.</p>
-        </div>
-        <div id="equipmentDetailActions" class="flex flex-wrap items-center gap-2"></div>
-      </div>
-      <div id="equipmentDetailBody" class="p-6 overflow-y-auto flex-1 min-h-0 space-y-5">
-        <div id="equipmentDetailCards" class="grid grid-cols-1 md:grid-cols-4 gap-3"></div>
-        <div id="equipmentDetailTrackingPanel" class="border rounded-xl overflow-hidden">
-          <div class="px-5 py-4 bg-gray-50 border-b flex items-center justify-between gap-3 font-bold">
-            <span id="equipmentDetailContentTitle">Informations et tracabilite</span>
-          </div>
-          <div id="equipmentDetailFields" class="p-5"></div>
-        </div>
-        <div id="equipmentHistoryPanelWrapper" class="border rounded-xl overflow-hidden">
-          <button type="button" data-action="togglePanel('equipmentHistory')" class="w-full px-5 py-4 bg-gray-50 border-b font-bold flex items-center justify-between">
-            <span>Historique equipement</span>
-            <i data-lucide="chevron-down" class="w-4 h-4"></i>
-          </button>
-          <div id="equipmentHistory" class="hidden p-5 space-y-4"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
+  <!-- equipements-detail-modal -->
   <div id="vehicleDetailModal" class="modal fixed inset-0 bg-gray-900/50 items-center justify-center p-6 z-50">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden">
       <div class="px-6 py-5 border-b flex flex-col md:flex-row md:justify-between md:items-start gap-4">
