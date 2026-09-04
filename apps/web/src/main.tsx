@@ -66,7 +66,6 @@ import {
 } from "./pages/entrees-stock/render";
 import {
   addMaterialRequestLinePage,
-  canUploadSignedProofForPage,
   closeFloatingExitActionsPage,
   downloadPreparedMaterialPdfPage,
   materialPdfLinkedExitPage,
@@ -77,7 +76,6 @@ import {
   openPreparedExitForActionPage,
   populateExitModalsPage,
   prepareExitFromRequestPage,
-  proofRequestForMovementPage,
   refreshMaterialRequestLinesPage,
   removeMaterialRequestLinePage,
   renderExitRegistryPage,
@@ -289,6 +287,15 @@ import {
   movementTypeLabel as movementTypeLabelValue,
   requestForExitFromMovements,
 } from "./services/movements";
+import {
+  canUploadSignedProofFor as canUploadSignedProofForValue,
+  movementHasProof as movementHasProofValue,
+  movementProofCount as movementProofCountValue,
+  movementProofSource as movementProofSourceValue,
+  movementProofStatus as movementProofStatusValue,
+  movementRequiresSignedProof as movementRequiresSignedProofValue,
+  proofRequestForMovement as proofRequestForMovementValue,
+} from "./services/proofs";
 import {
   installPwa,
   requireOnlineAction,
@@ -1249,48 +1256,30 @@ function movementArticleLabel(movement: StockMovement) {
 }
 
 function movementProofSource(movement: StockMovement) {
-  if (movement.type === "ENTRY" || movement.type === "EXIT_REQUEST") {
-    return movement;
-  }
-  if (movement.type === "EXIT") {
-    const request = proofRequestForMovement(movement);
-    if (request?.proofFileKey || request?.proofFileName) return request;
-    return movement;
-  }
-  return movement.proofFileKey || movement.proofFileName ? movement : null;
+  return movementProofSourceValue(movement, proofRequestForMovement(movement));
 }
 
 function movementProofCount(movement: StockMovement) {
-  const proofSource = movementProofSource(movement);
-  return proofSource?.proofFileKey || proofSource?.proofFileName ? 1 : 0;
+  return movementProofCountValue(movement, proofRequestForMovement(movement));
 }
 
 function movementHasProof(movement: StockMovement) {
-  return movementProofCount(movement) > 0;
+  return movementHasProofValue(movement, proofRequestForMovement(movement));
 }
 
 function movementRequiresSignedProof(movement: StockMovement) {
-  if (
-    movement.type === "ENTRY" ||
-    movement.type === "EXIT" ||
-    movement.type === "RETURN" ||
-    movement.type === "TRANSFER"
-  )
-    return true;
-  if (movement.type === "EXIT_REQUEST") {
-    return (
-      movement.status !== "SUBMITTED" &&
-      movement.status !== "DRAFT" &&
-      !linkedExitForRequest(movement)
-    );
-  }
-  return false;
+  return movementRequiresSignedProofValue(
+    movement,
+    linkedExitForRequest(movement),
+  );
 }
 
 function movementProofStatus(movement: StockMovement) {
-  if (movementHasProof(movement)) return "jointe";
-  if (movementRequiresSignedProof(movement)) return "manquante";
-  return "non-requise";
+  return movementProofStatusValue(
+    movement,
+    linkedExitForRequest(movement),
+    proofRequestForMovement(movement),
+  );
 }
 
 function filteredHistory(root: HTMLElement) {
@@ -2083,9 +2072,17 @@ function materialPdfMovement(movement: StockMovement) { return materialPdfMoveme
 
 function materialPdfLinkedExit(movement: StockMovement) { return materialPdfLinkedExitPage(movement, sortiesStockContext()); }
 
-function proofRequestForMovement(movement: StockMovement) { return proofRequestForMovementPage(movement, sortiesStockContext()); }
+function proofRequestForMovement(movement: StockMovement) {
+  return proofRequestForMovementValue(movement, requestForExit);
+}
 
-function canUploadSignedProofFor(movement: StockMovement) { return canUploadSignedProofForPage(movement, sortiesStockContext()); }
+function canUploadSignedProofFor(movement: StockMovement) {
+  return canUploadSignedProofForValue(
+    movement,
+    requestForExit,
+    linkedExitForRequest,
+  );
+}
 
 function visibleExitMovements(movements: StockMovement[]) { return visibleExitMovementsPage(movements, sortiesStockContext()); }
 

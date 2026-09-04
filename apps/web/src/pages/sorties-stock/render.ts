@@ -9,6 +9,10 @@ import type {
   TeamService,
 } from "../../api";
 import { requestForExitFromMovements } from "../../services/movements";
+import {
+  canUploadSignedProofFor as canUploadSignedProofForValue,
+  proofRequestForMovement as proofRequestForMovementValue,
+} from "../../services/proofs";
 import { selectedText } from "../../utils/dom";
 import { escapeHtml, formatDate, formatNumber, isToday } from "../../utils/format";
 
@@ -185,20 +189,14 @@ function materialPdfLinkedExit(movement: StockMovement) {
 }
 
 function proofRequestForMovement(movement: StockMovement) {
-  return movement.type === "EXIT_REQUEST" ? movement : requestForExit(movement);
+  return proofRequestForMovementValue(movement, requestForExit);
 }
 
 function canUploadSignedProofFor(movement: StockMovement) {
-  const proofSource = proofRequestForMovement(movement);
-  const linkedExit = proofSource ? linkedExitForRequest(proofSource) : null;
-  const preparedEnough =
-    proofSource?.status !== "SUBMITTED" || Boolean(linkedExit);
-  return Boolean(
-    proofSource?.type === "EXIT_REQUEST" &&
-    preparedEnough &&
-    proofSource.status !== "REJECTED" &&
-    proofSource.status !== "CANCELLED" &&
-    !proofSource.proofFileName,
+  return canUploadSignedProofForValue(
+    movement,
+    requestForExit,
+    linkedExitForRequest,
   );
 }
 
