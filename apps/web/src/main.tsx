@@ -8,6 +8,10 @@ import {
   type ModalControllerContext,
 } from "./app/modals";
 import {
+  updateApiBackedViewsPage,
+  type DataRefreshContext,
+} from "./app/data-refresh";
+import {
   auditActionLabelPage,
   auditAlertDomainPage,
   auditDocumentLabelPage,
@@ -553,6 +557,93 @@ function modalControllerContext(): ModalControllerContext {
     populateReturnTransferModals,
     populateEquipmentModal,
     populateEquipmentCreateModal,
+  };
+}
+
+function dataRefreshContext(): DataRefreshContext {
+  return {
+    getArticles,
+    getSuppliers,
+    getClients,
+    getTeamServices,
+    getEmployees,
+    getProjects,
+    getLocations,
+    getStockMovements,
+    getStockLevels,
+    getEquipments,
+    getVehicles,
+    getUsers,
+    getAuditAlerts,
+    getAuditLogs,
+    setLatestArticles: (articles) => {
+      latestArticles = articles;
+    },
+    setLatestSuppliers: (suppliers) => {
+      latestSuppliers = suppliers;
+    },
+    setLatestClients: (clients) => {
+      latestClients = clients;
+    },
+    setLatestTeamServices: (services) => {
+      latestTeamServices = services;
+    },
+    setLatestEmployees: (employees) => {
+      latestEmployees = employees;
+    },
+    setLatestProjects: (projects) => {
+      latestProjects = projects;
+    },
+    setLatestLocations: (locations) => {
+      latestLocations = locations;
+    },
+    setLatestMovements: (movements) => {
+      latestMovements = movements;
+    },
+    setLatestStockLevels: (levels) => {
+      latestStockLevels = levels;
+    },
+    setLatestEquipments: (equipments) => {
+      latestEquipments = equipments;
+    },
+    setLatestUsers: (users) => {
+      latestUsers = users;
+    },
+    setLatestAuditAlerts: (alerts) => {
+      latestAuditAlerts = alerts;
+    },
+    setLatestAuditLogs: (logs) => {
+      latestAuditLogs = logs;
+    },
+    updateDashboard,
+    renderReferentialsRegistry,
+    renderInventory,
+    populateStockFilters,
+    renderStock,
+    renderEntriesRegistry,
+    visibleExitMovements,
+    renderDashboardPendingExitRequests: (root, movements) =>
+      renderDashboardPendingExitRequestsPage(
+        root,
+        movements,
+        tableauDeBordContext(),
+      ),
+    renderExitRegistry,
+    renderReturnTransferRegistry,
+    renderReappro,
+    renderEquipmentsRegistry,
+    renderVehicles,
+    renderUsersList,
+    renderAuditLogs,
+    renderHistory,
+    renderAuditAlerts,
+    renderDashboardAuditAlerts: (root, alerts) =>
+      renderDashboardAuditAlertsPage(root, alerts, tableauDeBordContext()),
+    renderDashboardAuditLogCount: (root, count) =>
+      renderDashboardAuditLogCountPage(root, count, tableauDeBordContext()),
+    setText,
+    isToday,
+    createIcons: () => window.lucide?.createIcons(),
   };
 }
 
@@ -2301,166 +2392,7 @@ function renderReferentialsRegistry(root: HTMLElement) {
 }
 
 function updateApiBackedViews(root: HTMLElement) {
-  updateDashboard(root);
-  getArticles()
-    .then((articles) => {
-      latestArticles = articles;
-      renderReferentialsRegistry(root);
-      renderInventory(root);
-      window.lucide?.createIcons();
-    })
-    .catch(() => undefined);
-
-  getSuppliers()
-    .then((suppliers) => {
-      latestSuppliers = suppliers;
-      renderReferentialsRegistry(root);
-      window.lucide?.createIcons();
-    })
-    .catch(() => undefined);
-
-  getClients()
-    .then((clients) => {
-      latestClients = clients;
-      renderReferentialsRegistry(root);
-      window.lucide?.createIcons();
-    })
-    .catch(() => undefined);
-
-  getTeamServices()
-    .then((services) => {
-      latestTeamServices = services;
-      renderReferentialsRegistry(root);
-      window.lucide?.createIcons();
-    })
-    .catch(() => undefined);
-
-  getEmployees()
-    .then((employees) => {
-      latestEmployees = employees;
-      renderReferentialsRegistry(root);
-      window.lucide?.createIcons();
-    })
-    .catch(() => undefined);
-  getProjects()
-    .then((projects) => {
-      latestProjects = projects;
-      renderReferentialsRegistry(root);
-      window.lucide?.createIcons();
-    })
-    .catch(() => undefined);
-
-  getLocations()
-    .then((locations) => {
-      latestLocations = locations;
-      renderReferentialsRegistry(root);
-      populateStockFilters(root);
-      renderStock(root);
-      renderInventory(root);
-      window.lucide?.createIcons();
-    })
-    .catch(() => undefined);
-
-  getStockMovements()
-    .then((movements) => {
-      latestMovements = movements;
-      renderStock(root);
-      renderEntriesRegistry(root);
-      const exits = visibleExitMovements(movements);
-      const pendingExits = exits.filter(
-        (movement) =>
-          movement.type === "EXIT_REQUEST" && movement.status === "SUBMITTED",
-      );
-      const pendingAlert = root.querySelector<HTMLElement>("#exitPendingAlert");
-      const pendingCount = root.querySelector<HTMLElement>("#exitPendingCount");
-      if (pendingAlert)
-        pendingAlert.classList.toggle("hidden", pendingExits.length === 0);
-      if (pendingCount) pendingCount.textContent = String(pendingExits.length);
-      renderDashboardPendingExitRequestsPage(
-        root,
-        pendingExits,
-        tableauDeBordContext(),
-      );
-      renderExitRegistry(root);
-      setText(root, "#exitRequestsCount", pendingExits.length);
-      setText(
-        root,
-        "#exitCompletedCount",
-        exits.filter(
-          (movement) =>
-            movement.type === "EXIT" && movement.status === "COMPLETED",
-        ).length,
-      );
-      setText(
-        root,
-        "#exitBlockedCount",
-        exits.filter(
-          (movement) =>
-            movement.status === "REJECTED" || movement.status === "CANCELLED",
-        ).length,
-      );
-      setText(
-        root,
-        "#exitTodayCount",
-        exits.filter((movement) => isToday(movement.date)).length,
-      );
-      renderReturnTransferRegistry(root, movements);
-      renderHistory(root);
-      window.lucide?.createIcons();
-    })
-    .catch(() => undefined);
-
-  getStockLevels()
-    .then((levels) => {
-      latestStockLevels = levels;
-      populateStockFilters(root);
-      renderStock(root);
-      renderInventory(root);
-      renderExitRegistry(root);
-      renderReappro(root);
-      window.lucide?.createIcons();
-    })
-    .catch(() => undefined);
-
-  getEquipments()
-    .then((equipments) => {
-      latestEquipments = equipments;
-      renderEquipmentsRegistry(root, equipments);
-    })
-    .catch(() => undefined);
-
-  getVehicles()
-    .then((vehicles) => {
-      renderVehicles(root, vehicles);
-    })
-    .catch(() => undefined);
-
-  getUsers()
-    .then((users) => {
-      latestUsers = users;
-      renderUsersList(root);
-      renderAuditLogs(root);
-      renderHistory(root);
-      window.lucide?.createIcons();
-    })
-    .catch(() => undefined);
-
-  getAuditAlerts()
-    .then((alerts) => {
-      latestAuditAlerts = alerts;
-      renderAuditAlerts(root);
-      renderDashboardAuditAlertsPage(root, alerts, tableauDeBordContext());
-    })
-    .catch(() => undefined);
-
-  getAuditLogs()
-    .then((logs) => {
-      latestAuditLogs = logs;
-      renderAuditLogs(root);
-      renderHistory(root);
-      renderDashboardAuditLogCountPage(root, logs.length, tableauDeBordContext());
-    })
-    .catch(() => undefined);
+  return updateApiBackedViewsPage(root, dataRefreshContext());
 }
 
 function showView(root: HTMLElement, view: string, navButton?: HTMLElement) {
