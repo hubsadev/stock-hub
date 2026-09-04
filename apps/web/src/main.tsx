@@ -288,6 +288,22 @@ import type {
 } from "./types/export";
 import type { ReferentialImportType } from "./types/import";
 import { selectedText, setText, setVisible } from "./utils/dom";
+import {
+  articleOptions,
+  articleStockAtLocation as formArticleStockAtLocation,
+  clientOptions,
+  fillSelect,
+  locationOptions,
+  option,
+  projectOptions,
+  setProjectSiteOptions as formSetProjectSiteOptions,
+  siteOptions,
+  sitesForProject as formSitesForProject,
+  supplierOptions,
+  teamServiceOptions,
+  toNumber,
+  userOptions as formUserOptions,
+} from "./utils/forms";
 import { escapeHtml, formatDate, formatNumber, isToday } from "./utils/format";
 import {
   actionEye,
@@ -2169,92 +2185,19 @@ function openReturnControl(root: HTMLElement) { return openReturnControlPage(roo
 
 async function submitReturnControl(root: HTMLElement) { return submitReturnControlPage(root, retoursTransfertsContext()); }
 
-function fillSelect(
-  select: HTMLSelectElement | undefined,
-  options: string,
-  placeholder?: string,
-) {
-  if (!select) return;
-  select.innerHTML = placeholder ? option("", placeholder) + options : options;
-}
-
 function userOptions(users: StockUser[]) {
-  return users.map((user) => option(user.id, userDisplayName(user))).join("");
-}
-
-function articleOptions(articles: Article[]) {
-  return articles
-    .map((article) => option(article.id, article.designation))
-    .join("");
-}
-
-function projectOptions(projects: StockProject[]) {
-  return projects
-    .map((project) => option(project.id, project.code + " - " + project.name))
-    .join("");
-}
-
-function clientOptions(clients: Client[]) {
-  return clients.map((client) => option(client.id, client.name)).join("");
-}
-
-function supplierOptions(suppliers: Supplier[]) {
-  return suppliers
-    .map((supplier) => option(supplier.id, supplier.name))
-    .join("");
-}
-
-function teamServiceOptions(services: TeamService[]) {
-  return services.map((service) => option(service.id, service.name)).join("");
+  return formUserOptions(users, userDisplayName);
 }
 
 function sitesForProject(projectId: string, locations = latestLocations) {
-  return locations.filter(
-    (location) =>
-      ["SITE", "CHANTIER"].includes(location.type.toUpperCase()) &&
-      (!projectId || location.projectId === projectId),
-  );
-}
-
-function siteOptions(locations: StockLocation[]) {
-  return locations
-    .map((location) => option(location.id, location.name))
-    .join("");
+  return formSitesForProject(projectId, locations);
 }
 
 function setProjectSiteOptions(
   siteSelect: HTMLSelectElement | undefined,
   projectId: string,
 ) {
-  if (!siteSelect) return;
-  if (!projectId) {
-    fillSelect(siteSelect, "", "Selectionner un projet d'abord");
-    return;
-  }
-  const sites = sitesForProject(projectId);
-  fillSelect(
-    siteSelect,
-    siteOptions(sites),
-    sites.length
-      ? "Selectionner site ou zone"
-      : "Aucun site rattache a ce projet",
-  );
-}
-
-function locationOptions(locations: StockLocation[]) {
-  return locations
-    .map((location) => option(location.id, location.name))
-    .join("");
-}
-
-function option(value: string, label: string) {
-  return (
-    '<option value="' +
-    escapeHtml(value) +
-    '">' +
-    escapeHtml(label) +
-    "</option>"
-  );
+  return formSetProjectSiteOptions(siteSelect, projectId, latestLocations);
 }
 
 async function populateEntryModal(root: HTMLElement) {
@@ -2954,22 +2897,11 @@ function updateReferentialForm(root: HTMLElement, type: string) {
   return updateReferentialFormPage(root, type, referentielsContext());
 }
 
-function toNumber(value: string) {
-  const parsed = Number(value.replace(/\s/g, ""));
-  return Number.isFinite(parsed) ? parsed : 0;
-}
-
 function articleStockAtLocation(
   articleId: string,
   locationId: string | null | undefined,
 ) {
-  if (!locationId) return 0;
-  return Number(
-    latestStockLevels.find(
-      (level) =>
-        level.article.id === articleId && level.location.id === locationId,
-    )?.quantity ?? 0,
-  );
+  return formArticleStockAtLocation(latestStockLevels, articleId, locationId);
 }
 
 function showToast(
