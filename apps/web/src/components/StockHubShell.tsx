@@ -7,6 +7,8 @@ import entreesStockModalsHtml from "../pages/entrees-stock/entrees-stock-modals.
 import equipementsHtml from "../pages/equipements/equipements.html?raw";
 import equipementsModalsHtml from "../pages/equipements/equipements-modals.html?raw";
 import historiqueHtml from "../pages/historique/historique.html?raw";
+import parcAutoHtml from "../pages/parc-auto/parc-auto.html?raw";
+import parcAutoModalsHtml from "../pages/parc-auto/parc-auto-modals.html?raw";
 import retoursTransfertsHtml from "../pages/retours-transferts/retours-transferts.html?raw";
 import retoursTransfertsModalsHtml from "../pages/retours-transferts/retours-transferts-modals.html?raw";
 import sortiesStockHtml from "../pages/sorties-stock/sorties-stock.html?raw";
@@ -43,6 +45,8 @@ const entryDetailModalHtml = htmlBetween(
 const entryResolutionModalHtml = htmlFrom(entreesStockModalsHtml, '  <div id="entryResolutionModal"');
 const equipmentDetailModalHtml = htmlFrom(equipementsModalsHtml, '  <div id="equipmentDetailModal"');
 const equipmentModalsHtml = htmlBefore(equipementsModalsHtml, '  <div id="equipmentDetailModal"');
+const vehicleDetailModalHtml = htmlFrom(parcAutoModalsHtml, '  <div id="vehicleDetailModal"');
+const vehicleModalHtml = htmlBefore(parcAutoModalsHtml, '  <div id="vehicleDetailModal"');
 
 export function LoginOverlay() {
   return <HtmlPart html={loginHtml} />;
@@ -61,6 +65,7 @@ export function Workspace() {
         .replace("<!-- sorties-stock-page -->", sortiesStockHtml)
         .replace("<!-- retours-transferts-page -->", retoursTransfertsHtml)
         .replace("<!-- equipements-page -->", equipementsHtml)
+        .replace("<!-- parc-auto-page -->", parcAutoHtml)
         .replace("<!-- historique-page -->", historiqueHtml)}
     />
   );
@@ -73,10 +78,12 @@ export function ModalLayer() {
         .replace("<!-- entrees-stock-entry-modal -->", entryModalHtml)
         .replace("<!-- sorties-stock-modals -->", sortiesStockModalsHtml)
         .replace("<!-- retours-transferts-modals -->", retoursTransfertsModalsHtml)
+        .replace("<!-- parc-auto-modal -->", vehicleModalHtml)
         .replace("<!-- equipements-modals -->", equipmentModalsHtml)
         .replace("<!-- entrees-stock-detail-modal -->", entryDetailModalHtml)
         .replace("<!-- entrees-stock-resolution-modal -->", entryResolutionModalHtml)
         .replace("<!-- equipements-detail-modal -->", equipmentDetailModalHtml)
+        .replace("<!-- parc-auto-detail-modal -->", vehicleDetailModalHtml)
         .replace("<!-- vue-stock-modals -->", vueStockModalsHtml)}
     />
   );

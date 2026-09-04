@@ -1,0 +1,19 @@
+        <section id="parcAuto" class="view">
+          <div class="flex justify-between items-start gap-4 mb-6">
+            <div>
+              <h1 class="text-3xl font-bold">Parc auto</h1>
+              <p class="text-sm text-gray-500 mt-2">Suivre les vehicules, leurs chauffeurs, apprentis, affectations et alertes de maintenance.</p>
+            </div>
+            <button class="px-4 py-2 bg-accent-600 text-white rounded-lg text-sm font-semibold flex items-center gap-2" data-action="openModal('vehicleModal')"><i data-lucide="plus" class="w-4 h-4"></i>Nouveau vehicule</button>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Vehicules actifs</div><div class="text-3xl font-bold mt-3" data-vehicle-kpi="active">0</div><div class="text-xs text-gray-500 mt-1">Voitures, motos, utilitaires</div></div>
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Affectes</div><div class="text-3xl font-bold mt-3" data-vehicle-kpi="assigned">0</div><div class="text-xs text-gray-500 mt-1">Avec chauffeur ou affectation</div></div>
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Documents a suivre</div><div class="text-3xl font-bold mt-3 text-warning-700" data-vehicle-kpi="documents">0</div><div class="text-xs text-warning-700 mt-1">Assurance ou visite proche</div></div>
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Maintenance</div><div class="text-3xl font-bold mt-3 text-error-700" data-vehicle-kpi="maintenance">0</div><div class="text-xs text-error-700 mt-1">A planifier</div></div>
+          </div>
+          <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <div class="p-5 border-b border-gray-200 flex flex-col xl:flex-row xl:items-center justify-between gap-4"><h2 class="text-lg font-bold">Registre vehicules</h2><div class="flex gap-2 flex-wrap"><button data-vehicle-filter="ALL" data-action="setVehicleFilter('ALL')" class="px-3 py-2 rounded-lg text-xs font-semibold bg-accent-50 text-accent-600">Tous</button><button data-vehicle-filter="AVAILABLE" data-action="setVehicleFilter('AVAILABLE')" class="px-3 py-2 rounded-lg text-xs font-semibold bg-gray-100 text-gray-600">Disponibles</button><button data-vehicle-filter="ASSIGNED" data-action="setVehicleFilter('ASSIGNED')" class="px-3 py-2 rounded-lg text-xs font-semibold bg-gray-100 text-gray-600">Affectes</button><button data-vehicle-filter="ALERTS" data-action="setVehicleFilter('ALERTS')" class="px-3 py-2 rounded-lg text-xs font-semibold bg-gray-100 text-gray-600">Alertes</button></div></div>
+            <div class="overflow-x-auto"><table id="vehicles-table" class="w-full text-sm min-w-[1050px]"><thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Vehicule</th><th class="px-5 py-3 text-left">Immatriculation</th><th class="px-5 py-3 text-left">Type</th><th class="px-5 py-3 text-left">Affectation</th><th class="px-5 py-3 text-left">Chauffeur</th><th class="px-5 py-3 text-left">Apprenti</th><th class="px-5 py-3 text-left">Statut</th><th class="px-5 py-3 text-right">Action</th></tr></thead><tbody class="divide-y"><tr><td class="px-5 py-8 text-center text-gray-500" colspan="8">Chargement des vehicules...</td></tr></tbody></table></div>
+          </div>
+        </section>
