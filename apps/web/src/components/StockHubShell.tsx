@@ -1,5 +1,5 @@
-import loginHtml from "../template-parts/login.html?raw";
-import sidebarHtml from "../template-parts/sidebar.html?raw";
+import loginHtml from "../pages/login/login.html?raw";
+import sidebarHtml from "./layout/sidebar.html?raw";
 import workspaceHtml from "../template-parts/workspace.html?raw";
 import modalsHtml from "../template-parts/modals.html?raw";
 import auditAlertesHtml from "../pages/audit-alertes/audit-alertes.html?raw";

@@ -235,6 +235,16 @@ import {
   type UtilisateursRolesContext,
 } from "./pages/utilisateurs-roles/render";
 import {
+  hideLoginPage,
+  loginPage,
+  logoutPage,
+  readStoredUserPage,
+  setLoginErrorPage,
+  showLoginPage,
+  togglePasswordPage,
+  type LoginContext,
+} from "./pages/login/render";
+import {
   canAccessView as canAccessViewForUser,
   canPrepareMaterialRequests as canPrepareMaterialRequestsForUser,
   hasRole as userHasRole,
@@ -354,14 +364,7 @@ let pwaServiceWorkerRegistered = false;
 let currentUser: StockUser | null = readStoredUser();
 
 function readStoredUser(): StockUser | null {
-  const raw = localStorage.getItem("stock-hub.user");
-  if (!raw) return null;
-  try {
-    const parsed = JSON.parse(raw) as StockUser;
-    return parsed?.identifier || parsed?.email ? parsed : null;
-  } catch {
-    return null;
-  }
+  return readStoredUserPage();
 }
 
 function userIdentity(user: Pick<StockUser, "identifier" | "email">) {
@@ -378,10 +381,7 @@ function userDisplayName(
 }
 
 function setLoginError(root: HTMLElement, message: string | null) {
-  const error = root.querySelector<HTMLElement>("#loginError");
-  if (!error) return;
-  error.textContent = message ?? "";
-  error.classList.toggle("hidden", !message);
+  return setLoginErrorPage(root, message);
 }
 
 function hasRole(role: string) {
@@ -401,6 +401,27 @@ function canAccessView(view: string) {
 }
 
 let pendingRouteAfterLogin = DEFAULT_ROUTE;
+
+function loginContext(): LoginContext {
+  return {
+    loginUser,
+    getCurrentUser: () => currentUser,
+    setCurrentUser: (user) => {
+      currentUser = user;
+    },
+    getPendingRouteAfterLogin: () => pendingRouteAfterLogin,
+    setPendingRouteAfterLogin: (route) => {
+      pendingRouteAfterLogin = route;
+    },
+    updateCurrentUserDisplay,
+    applyRoleAccess,
+    canAccessView,
+    navigateToView,
+    viewForRoute,
+    writeLoginRoute,
+    DEFAULT_ROUTE,
+  };
+}
 
 function applyRoleAccess(root: HTMLElement) {
   root
@@ -449,13 +470,11 @@ function updateCurrentUserDisplay(root: HTMLElement) {
   });
 }
 function showLogin(root: HTMLElement) {
-  const overlay = root.querySelector<HTMLElement>("#loginOverlay");
-  if (overlay) overlay.style.display = "flex";
+  return showLoginPage(root);
 }
 
 function hideLogin(root: HTMLElement) {
-  const overlay = root.querySelector<HTMLElement>("#loginOverlay");
-  if (overlay) overlay.style.display = "none";
+  return hideLoginPage(root);
 }
 function badge(
   label: string,
@@ -3283,51 +3302,15 @@ function closeModal(root: HTMLElement, id: string) {
 }
 
 function togglePassword(root: HTMLElement) {
-  const input = root.querySelector<HTMLInputElement>("#loginPassword");
-  if (!input) return;
-  input.type = input.type === "password" ? "text" : "password";
+  return togglePasswordPage(root);
 }
 
 async function login(root: HTMLElement) {
-  const identifier =
-    root
-      .querySelector<HTMLInputElement>("#loginIdentifier")
-      ?.value.trim()
-      .toLowerCase() ?? "";
-  const password =
-    root.querySelector<HTMLInputElement>("#loginPassword")?.value ?? "";
-  setLoginError(root, null);
-  try {
-    const { user } = await loginUser({ identifier, password });
-    currentUser = user;
-    localStorage.setItem("stock-hub.session", "1");
-    localStorage.setItem("stock-hub.user", JSON.stringify(user));
-    hideLogin(root);
-    updateCurrentUserDisplay(root);
-    applyRoleAccess(root);
-    const requestedView = viewForRoute(pendingRouteAfterLogin) ?? "home";
-    navigateToView(
-      root,
-      canAccessView(requestedView) ? requestedView : "home",
-      undefined,
-      { replace: true },
-    );
-    pendingRouteAfterLogin = DEFAULT_ROUTE;
-  } catch (error) {
-    setLoginError(
-      root,
-      error instanceof Error ? error.message : "Connexion impossible.",
-    );
-  }
+  return loginPage(root, loginContext());
 }
 
 function logout(root: HTMLElement) {
-  currentUser = null;
-  localStorage.removeItem("stock-hub.session");
-  localStorage.removeItem("stock-hub.user");
-  updateCurrentUserDisplay(root);
-  showLogin(root);
-  writeLoginRoute(true);
+  return logoutPage(root, loginContext());
 }
 
 function prepareTemplateActions(root: HTMLElement) {
