@@ -2,6 +2,8 @@ import loginHtml from "../template-parts/login.html?raw";
 import sidebarHtml from "../template-parts/sidebar.html?raw";
 import workspaceHtml from "../template-parts/workspace.html?raw";
 import modalsHtml from "../template-parts/modals.html?raw";
+import auditAlertesHtml from "../pages/audit-alertes/audit-alertes.html?raw";
+import auditAlertesModalsHtml from "../pages/audit-alertes/audit-alertes-modals.html?raw";
 import entreesStockHtml from "../pages/entrees-stock/entrees-stock.html?raw";
 import entreesStockModalsHtml from "../pages/entrees-stock/entrees-stock-modals.html?raw";
 import equipementsHtml from "../pages/equipements/equipements.html?raw";
@@ -81,6 +83,7 @@ export function Workspace() {
         .replace("<!-- retours-transferts-page -->", retoursTransfertsHtml)
         .replace("<!-- equipements-page -->", equipementsHtml)
         .replace("<!-- parc-auto-page -->", parcAutoHtml)
+        .replace("<!-- audit-alertes-page -->", auditAlertesHtml)
         .replace("<!-- historique-page -->", historiqueHtml)}
     />
   );
@@ -99,6 +102,7 @@ export function ModalLayer() {
         .replace("<!-- referentiels-quick-article-modal -->", quickArticleModalHtml)
         .replace("<!-- referentiels-detail-modal -->", referentialDetailModalHtml)
         .replace("<!-- entrees-stock-detail-modal -->", entryDetailModalHtml)
+        .replace("<!-- audit-alertes-detail-modal -->", auditAlertesModalsHtml)
         .replace("<!-- entrees-stock-resolution-modal -->", entryResolutionModalHtml)
         .replace("<!-- equipements-detail-modal -->", equipmentDetailModalHtml)
         .replace("<!-- parc-auto-detail-modal -->", vehicleDetailModalHtml)

@@ -1,0 +1,83 @@
+        <section id="audit" class="view">
+          <div class="flex justify-between items-start gap-4 mb-6">
+            <div>
+              <h1 class="text-3xl font-bold">Audit & alertes</h1>
+              <p class="text-sm text-gray-500 mt-2">Alertes a traiter d'un cote, journal des actions de l'autre.</p>
+            </div>
+            <button class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold flex items-center gap-2"><i data-lucide="download" class="w-4 h-4"></i>Exporter audit</button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Alertes ouvertes</div><div class="text-3xl font-bold mt-3">0</div><div class="text-xs text-gray-500 mt-1">A traiter</div></div>
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Ruptures</div><div class="text-3xl font-bold mt-3 text-error-700">0</div><div class="text-xs text-gray-500 mt-1">Stock a zero ou trop bas</div></div>
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Ecarts inventaire</div><div class="text-3xl font-bold mt-3 text-warning-700">0</div><div class="text-xs text-gray-500 mt-1">A justifier</div></div>
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Actions tracees</div><div class="text-3xl font-bold mt-3">0</div><div class="text-xs text-gray-500 mt-1">Journal non supprimable</div></div>
+          </div>
+
+          <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <div class="p-5 border-b flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+              <div>
+                <h2 class="text-lg font-bold">Suivi audit</h2>
+                <p class="text-sm text-gray-500 mt-1">Une alerte se traite. Une trace audit se conserve.</p>
+              </div>
+              <div class="flex gap-2 text-xs font-semibold flex-wrap">
+                <button data-action="showAudit('alerts', this)" class="audit-tab px-3 py-2 rounded-lg bg-accent-50 text-accent-600">Alertes ouvertes</button>
+                <button data-action="showAudit('journal', this)" class="audit-tab px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Journal audit</button>
+              </div>
+            </div>
+
+            <div id="audit-alerts" class="audit-view">
+              <div class="p-4 border-b bg-gray-50 space-y-3">
+                <div class="flex flex-col xl:flex-row gap-3 xl:items-center justify-between">
+                  <div class="relative w-full xl:w-[420px]"><i data-lucide="search" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400"></i><input id="auditAlertSearchInput" class="w-full h-10 rounded-lg border border-gray-300 pl-10 pr-3" placeholder="Article, code, bon, emplacement, action"></div>
+                  <div id="auditAlertCount" class="text-sm font-semibold text-gray-500">0 alerte</div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <select id="auditAlertTypeSelect" class="h-10 rounded-lg border border-gray-300 px-3"><option value="ALL">Tous domaines</option><option value="STOCK">Stock</option><option value="INVENTORY">Inventaire</option><option value="ENTRY">Entrees</option><option value="EXIT">Sorties</option><option value="RETURN">Retours</option><option value="DATA">Donnees</option></select>
+                  <select id="auditAlertSeveritySelect" class="h-10 rounded-lg border border-gray-300 px-3"><option value="ALL">Toutes gravites</option><option value="CRITIQUE">Critique</option><option value="A_VERIFIER">A verifier</option><option value="INFO">Information</option></select>
+                  <select id="auditAlertStatusSelect" class="h-10 rounded-lg border border-gray-300 px-3"><option value="ALL">Tous statuts</option><option value="OUVERTE">Ouvertes</option><option value="TRAITEE">Traitees</option><option value="IGNOREE">Ignorees</option></select>
+                </div>
+                <div class="flex gap-2 text-xs font-semibold flex-wrap"><button data-audit-filter="ALL" data-action="setAuditFilter('ALL')" class="px-3 py-2 rounded-lg bg-accent-50 text-accent-600">Toutes</button><button data-audit-filter="CRITICAL" data-action="setAuditFilter('CRITICAL')" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Critiques</button><button data-audit-filter="TO_VERIFY" data-action="setAuditFilter('TO_VERIFY')" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">A verifier</button><button data-audit-filter="INVENTORY" data-action="setAuditFilter('INVENTORY')" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Inventaire</button><button data-audit-filter="STOCK" data-action="setAuditFilter('STOCK')" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-600">Stock</button></div>
+              </div>
+              <div id="auditAlertKpis" class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border-b bg-white">
+                <div class="rounded-xl border border-error-100 bg-error-50 p-4 shadow-sm"><div class="text-sm font-semibold text-gray-500">Critiques</div><div id="auditAlertCriticalKpi" class="mt-2 text-3xl font-bold text-error-700">0</div></div>
+                <div class="rounded-xl border border-warning-100 bg-warning-50 p-4 shadow-sm"><div class="text-sm font-semibold text-gray-500">A verifier</div><div id="auditAlertVerifyKpi" class="mt-2 text-3xl font-bold text-warning-700">0</div></div>
+                <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 shadow-sm"><div class="text-sm font-semibold text-gray-500">Total alertes</div><div id="auditAlertTotalKpi" class="mt-2 text-3xl font-bold">0</div></div>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm min-w-[1100px]">
+                  <thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Priorite</th><th class="px-5 py-3 text-left">Sujet</th><th class="px-5 py-3 text-left">Contexte</th><th class="px-5 py-3 text-left">Impact stock</th><th class="px-5 py-3 text-left">Action attendue</th><th class="px-5 py-3 text-left">Date</th><th class="px-5 py-3 text-left">Statut</th></tr></thead>
+                  <tbody class="divide-y divide-gray-200"><tr><td class="px-5 py-8 text-center text-gray-500" colspan="7">Aucune alerte ouverte pour le moment.</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div id="audit-journal" class="audit-view hidden">
+              <div class="p-4 border-b bg-gray-50 space-y-3">
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-3">
+                  <input id="auditLogSearchInput" class="h-10 rounded-lg border border-gray-300 px-3 lg:col-span-2" placeholder="Rechercher action, bon, article, emplacement">
+                  <input id="auditLogDateFromInput" type="date" class="h-10 rounded-lg border border-gray-300 px-3">
+                  <input id="auditLogDateToInput" type="date" class="h-10 rounded-lg border border-gray-300 px-3">
+                  <select id="auditLogUserSelect" class="h-10 rounded-lg border border-gray-300 px-3"><option value="">Tous utilisateurs</option></select>
+                </div>
+                <div class="flex flex-wrap gap-2 text-xs font-semibold">
+                  <button data-action="setAuditLogDateRange('today')" class="px-3 py-2 rounded-lg bg-white border border-gray-200 text-gray-700 hover:bg-accent-50 hover:text-accent-600">Aujourd'hui</button>
+                  <button data-action="setAuditLogDateRange('7d')" class="px-3 py-2 rounded-lg bg-white border border-gray-200 text-gray-700 hover:bg-accent-50 hover:text-accent-600">7 derniers jours</button>
+                  <button data-action="setAuditLogDateRange('30d')" class="px-3 py-2 rounded-lg bg-white border border-gray-200 text-gray-700 hover:bg-accent-50 hover:text-accent-600">30 derniers jours</button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <select id="auditLogDomainSelect" class="h-10 rounded-lg border border-gray-300 px-3"><option value="">Tous domaines</option><option value="ENTRY">Entrees</option><option value="EXIT">Sorties</option><option value="RETURN">Retours</option><option value="TRANSFER">Transferts</option><option value="INVENTORY">Inventaire</option><option value="REFERENTIAL">Referentiel</option><option value="SYSTEM">Systeme</option></select>
+                  <select id="auditLogActionSelect" class="h-10 rounded-lg border border-gray-300 px-3"><option value="">Toutes actions</option></select>
+                  <div id="auditLogCount" class="h-10 rounded-lg border border-gray-200 bg-white px-3 flex items-center text-sm font-semibold text-gray-500">0 trace</div>
+                </div>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm min-w-[1050px]">
+                  <thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Heure</th><th class="px-5 py-3 text-left">Utilisateur</th><th class="px-5 py-3 text-left">Action metier</th><th class="px-5 py-3 text-left">Document</th><th class="px-5 py-3 text-left">Article / emplacement</th><th class="px-5 py-3 text-left">Resultat</th><th class="px-5 py-3 text-right">Action</th></tr></thead>
+                  <tbody class="divide-y divide-gray-200"><tr><td class="px-5 py-8 text-center text-gray-500" colspan="7">Aucune trace audit pour le moment.</td></tr></tbody>
+                </table>
+              </div>
+              <div class="px-5 py-4 bg-gray-50 border-t text-sm text-gray-600">Les lignes du journal audit ne sont pas supprimables. Elles servent a comprendre l'historique des actions.</div>
+            </div>
+          </div>
+        </section>
