@@ -258,7 +258,13 @@ import {
   stockMovementMetrics as computeStockMovementMetrics,
   stockStatusCategory,
 } from "./services/stock-logic";
-import type { BeforeInstallPromptEvent } from "./types/browser";
+import {
+  installPwa,
+  requireOnlineAction,
+  setupPwa,
+  updateProfilePwaCards,
+  type PwaContext,
+} from "./services/pwa";
 import type {
   ExcelCellValue,
   ExcelExportColumn,
@@ -268,7 +274,7 @@ import type {
 } from "./types/export";
 import type { ReferentialImportType } from "./types/import";
 import type { HeaderAction } from "./types/ui";
-import { isOnline, selectedText, setText, setVisible } from "./utils/dom";
+import { selectedText, setText, setVisible } from "./utils/dom";
 import { escapeHtml, formatDate, formatNumber, isToday } from "./utils/format";
 import {
   actionEye,
@@ -368,8 +374,6 @@ let latestSuppliers: Supplier[] = [];
 let latestProjects: StockProject[] = [];
 let latestLocations: StockLocation[] = [];
 let latestUsers: StockUser[] = [];
-let deferredPwaInstallPrompt: BeforeInstallPromptEvent | null = null;
-let pwaServiceWorkerRegistered = false;
 let currentUser: StockUser | null = readStoredUser();
 
 function readStoredUser(): StockUser | null {
@@ -432,6 +436,10 @@ function loginContext(): LoginContext {
   };
 }
 
+function pwaContext(): PwaContext {
+  return { showToast };
+}
+
 function applyRoleAccess(root: HTMLElement) {
   root
     .querySelectorAll<HTMLElement>(".nav-btn[data-view]")
@@ -492,181 +500,6 @@ function setCardValue(
   value: number | string,
 ) {
   return setCardValuePage(root, label, value, tableauDeBordContext());
-}
-function updatePwaInstallButton(root: HTMLElement) {
-  const standalone =
-    window.matchMedia?.("(display-mode: standalone)").matches ||
-    (navigator as Navigator & { standalone?: boolean }).standalone === true;
-  const visible = import.meta.env.PROD && Boolean(deferredPwaInstallPrompt) && !standalone;
-  root.querySelectorAll<HTMLElement>("[data-profile-pwa-install]").forEach((button) => {
-    button.classList.toggle("hidden", !visible);
-    button.classList.toggle("inline-flex", visible);
-  });
-  updateProfilePwaCards(root);
-}
-
-function updateNetworkStatus(root: HTMLElement) {
-  const banner = root.querySelector<HTMLElement>("#networkStatusBanner");
-  if (banner) banner.classList.toggle("hidden", isOnline());
-  updatePwaInstallButton(root);
-}
-
-async function installPwa(root: HTMLElement) {
-  if (!deferredPwaInstallPrompt) {
-    showToast(root, "Installation indisponible sur ce navigateur pour le moment.", "error");
-    return;
-  }
-  const prompt = deferredPwaInstallPrompt;
-  deferredPwaInstallPrompt = null;
-  updatePwaInstallButton(root);
-  await prompt.prompt();
-  const choice = await prompt.userChoice;
-  if (choice.outcome === "accepted") {
-    showToast(root, "Stock Hub est pret a etre lance comme application.");
-  }
-}
-
-function offlineActionLabel(type: string) {
-  const labels: Record<string, string> = {
-    "import-articles": "importer le referentiel",
-    "import-inventory-rows": "importer l'inventaire",
-    "submit-referential": "enregistrer le referentiel",
-    "submit-quick-article": "creer un article",
-    "submit-referential-edit": "modifier le referentiel",
-    "deactivate-referential-detail": "desactiver un element",
-    "submit-stock-entry": "enregistrer une entree stock",
-    "upload-signed-entry-proof": "joindre une preuve d'entree",
-    "submit-entry-resolution": "resoudre une entree",
-    "submit-exit-request": "creer une demande materiel",
-    "submit-material-request-preparation": "preparer une demande",
-    "submit-direct-exit": "enregistrer une sortie",
-    "submit-stock-return": "enregistrer un retour",
-    "submit-return-control": "controler un retour",
-    "submit-stock-transfer": "enregistrer un transfert",
-    "submit-inventory-count": "enregistrer un inventaire",
-    "submit-equipment-assignment": "affecter un equipement",
-    "submit-equipment-creation": "creer un equipement",
-    "submit-equipment-edit": "modifier un equipement",
-    "unassign-equipment": "retirer une affectation",
-    "submit-vehicle": "enregistrer un vehicule",
-    "submit-vehicle-edit": "modifier un vehicule",
-    "submit-user": "enregistrer un utilisateur",
-    "submit-profile": "enregistrer le profil",
-    "submit-password-change": "changer le mot de passe",
-    "submit-exit-request-rejection": "refuser une demande",
-  };
-  return labels[type] ?? "";
-}
-
-function requireOnlineAction(root: HTMLElement, type: string) {
-  const label = offlineActionLabel(type);
-  if (!label || isOnline()) return true;
-  showToast(
-    root,
-    `Connexion requise pour ${label}. Le mode hors ligne est limite a la consultation.`,
-    "error",
-  );
-  return false;
-}
-
-function cleanupDevelopmentPwa() {
-  if (!import.meta.env.DEV) return;
-  deferredPwaInstallPrompt = null;
-
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker
-      .getRegistrations()
-      .then((registrations) =>
-        Promise.all(
-          registrations
-            .filter((registration) => registration.active?.scriptURL.includes("/sw.js"))
-            .map((registration) => registration.unregister()),
-        ),
-      )
-      .catch(() => undefined);
-  }
-
-  if ("caches" in window) {
-    caches
-      .keys()
-      .then((keys) =>
-        Promise.all(
-          keys
-            .filter((key) => key.startsWith("stock-hub-shell-") || key.startsWith("stock-hub-cdn-"))
-            .map((key) => caches.delete(key)),
-        ),
-      )
-      .catch(() => undefined);
-  }
-}
-
-function setupPwa(root: HTMLElement) {
-  cleanupDevelopmentPwa();
-
-  const registerServiceWorker = () => {
-    if (!import.meta.env.PROD) return;
-    const alreadyControlled = Boolean(navigator.serviceWorker.controller);
-    navigator.serviceWorker
-      .register("/sw.js")
-      .then((registration) => {
-        pwaServiceWorkerRegistered = true;
-        registration.update().catch(() => undefined);
-        if (!alreadyControlled) {
-          showToast(root, "Stock Hub peut maintenant se lancer hors ligne.");
-        }
-      })
-      .catch(() => undefined);
-  };
-
-  if (import.meta.env.PROD && "serviceWorker" in navigator && !pwaServiceWorkerRegistered) {
-    if (document.readyState === "complete") {
-      registerServiceWorker();
-    } else {
-      window.addEventListener("load", registerServiceWorker, { once: true });
-    }
-  }
-
-  const onBeforeInstallPrompt = (event: Event) => {
-    if (!import.meta.env.PROD) return;
-    event.preventDefault();
-    deferredPwaInstallPrompt = event as BeforeInstallPromptEvent;
-    updatePwaInstallButton(root);
-  };
-  const onAppInstalled = () => {
-    deferredPwaInstallPrompt = null;
-    updatePwaInstallButton(root);
-    showToast(root, "Stock Hub est installe.");
-  };
-  const onNetworkChange = () => updateNetworkStatus(root);
-
-  window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt);
-  window.addEventListener("appinstalled", onAppInstalled);
-  window.addEventListener("online", onNetworkChange);
-  window.addEventListener("offline", onNetworkChange);
-  updateNetworkStatus(root);
-
-  return () => {
-    window.removeEventListener("load", registerServiceWorker);
-    window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt);
-    window.removeEventListener("appinstalled", onAppInstalled);
-    window.removeEventListener("online", onNetworkChange);
-    window.removeEventListener("offline", onNetworkChange);
-  };
-}
-
-function updateProfilePwaCards(root: HTMLElement) {
-  const available = root.querySelector<HTMLElement>("#profilePwaAvailableCard");
-  const dev = root.querySelector<HTMLElement>("#profilePwaDevCard");
-  const installed = root.querySelector<HTMLElement>("#profilePwaInstalledCard");
-  const standalone =
-    window.matchMedia?.("(display-mode: standalone)").matches ||
-    (navigator as Navigator & { standalone?: boolean }).standalone === true;
-  available?.classList.toggle(
-    "hidden",
-    !import.meta.env.PROD || standalone || !deferredPwaInstallPrompt,
-  );
-  dev?.classList.toggle("hidden", !import.meta.env.DEV);
-  installed?.classList.toggle("hidden", !import.meta.env.PROD || !standalone);
 }
 
 function updateDashboard(root: HTMLElement) {
@@ -3834,7 +3667,7 @@ function StockHubTemplate() {
     updateApiBackedViews(root);
     openRoute(root, { replace: true, skipHistory: true });
     window.lucide?.createIcons();
-    const cleanupPwa = setupPwa(root);
+    const cleanupPwa = setupPwa(root, pwaContext());
 
     const onClick = (event: MouseEvent) => {
       const clicked = event.target as HTMLElement;
@@ -3855,10 +3688,10 @@ function StockHubTemplate() {
       }
       closeFloatingExitActions(root);
       if (parsed.type === "install-pwa") {
-        void installPwa(root);
+        void installPwa(root, pwaContext());
         return;
       }
-      if (!requireOnlineAction(root, parsed.type)) return;
+      if (!requireOnlineAction(root, parsed.type, pwaContext())) return;
       if (parsed.type === "view") navigateToView(root, parsed.id, target);
       if (parsed.type === "open") openModal(root, parsed.id);
       if (parsed.type === "download-article-import-template")
