@@ -8,6 +8,7 @@ import type {
   StockUser,
   TeamService,
 } from "../../api";
+import { requestForExitFromMovements } from "../../services/movements";
 import { selectedText } from "../../utils/dom";
 import { escapeHtml, formatDate, formatNumber, isToday } from "../../utils/format";
 
@@ -170,15 +171,7 @@ function uploadExitRequestProof(id: string, payload: Parameters<SortiesStockCont
 function getExitRequestProof(id: string) { return requireCtx().getExitRequestProof(id); }
 
 function requestForExit(movement: StockMovement) {
-  if (movement.type !== "EXIT") return null;
-  return (
-    latestMovements.find(
-      (item) =>
-        item.type === "EXIT_REQUEST" && looksLikeGeneratedExit(item, movement),
-    ) ??
-    movement.sourceRequest ??
-    null
-  );
+  return requestForExitFromMovements(movement, latestMovements);
 }
 
 function materialPdfMovement(movement: StockMovement) {

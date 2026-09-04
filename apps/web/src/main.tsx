@@ -82,7 +82,6 @@ import {
   removeMaterialRequestLinePage,
   renderExitRegistryPage,
   renderExitRequestDetailPage,
-  requestForExitPage,
   setExitFilter as setExitFilterPage,
   setMaterialRequestModePage,
   submitDirectExitPage,
@@ -272,6 +271,24 @@ import {
   stockMovementMetrics as computeStockMovementMetrics,
   stockStatusCategory,
 } from "./services/stock-logic";
+import {
+  hasCommonArticle as movementHasCommonArticle,
+  linkedExitForRequestFromMovements,
+  looksLikeGeneratedExit as movementLooksLikeGeneratedExit,
+  movementActor as movementActorValue,
+  movementArticleKeys as movementArticleKeysValue,
+  movementArticleLabel as movementArticleLabelValue,
+  movementCompletedTotal as movementCompletedTotalValue,
+  movementDateKey as movementDateKeyValue,
+  movementPersonKey as movementPersonKeyValue,
+  movementProjectKey as movementProjectKeyValue,
+  movementQuantity as movementQuantityValue,
+  movementRequestedTotal as movementRequestedTotalValue,
+  movementStatusLabel as movementStatusLabelValue,
+  movementTextKey as movementTextKeyValue,
+  movementTypeLabel as movementTypeLabelValue,
+  requestForExitFromMovements,
+} from "./services/movements";
 import {
   installPwa,
   requireOnlineAction,
@@ -1216,54 +1233,19 @@ async function submitEquipmentAssignment(root: HTMLElement) {
   return submitEquipmentAssignmentPage(root, equipementsContext());
 }
 function movementTypeLabel(type: StockMovement["type"]) {
-  const labels: Record<StockMovement["type"], string> = {
-    ENTRY: "Entree",
-    EXIT_REQUEST: "Demande de sortie",
-    EXIT: "Sortie",
-    RETURN: "Retour",
-    TRANSFER: "Transfert",
-    ADJUSTMENT: "Inventaire",
-    INITIAL: "Stock de depart",
-  };
-  return labels[type] ?? type;
+  return movementTypeLabelValue(type);
 }
 
 function movementQuantity(movement: StockMovement) {
-  const multiplier =
-    movement.type === "EXIT" ||
-    movement.type === "EXIT_REQUEST" ||
-    movement.type === "TRANSFER"
-      ? -1
-      : 1;
-  const total = movement.lines.reduce(
-    (sum, line) =>
-      sum +
-      Number(
-        line.completedQuantity ??
-          line.requestedQuantity ??
-          line.expectedQuantity ??
-          0,
-      ),
-    0,
-  );
-  return total * multiplier;
+  return movementQuantityValue(movement);
 }
 
 function movementActor(movement: StockMovement) {
-  return (
-    movement.handledBy ??
-    movement.receivedBy ??
-    movement.deliveredBy ??
-    movement.requestedBy ??
-    "-"
-  );
+  return movementActorValue(movement);
 }
 
 function movementArticleLabel(movement: StockMovement) {
-  if (movement.lines.length > 1) return movement.lines.length + " articles";
-  const first = movement.lines[0];
-  if (!first?.article) return "-";
-  return first.article.designation + " (" + first.article.code + ")";
+  return movementArticleLabelValue(movement);
 }
 
 function movementProofSource(movement: StockMovement) {
@@ -2050,110 +2032,52 @@ async function submitEntryResolution(root: HTMLElement) {
 }
 
 function movementStatusLabel(movement: StockMovement) {
-  if (movement.type === "EXIT") return "Sortie reelle";
-  if (movement.status === "SUBMITTED") return "Demandee";
-  if (movement.status === "PREPARED") return "Preparee";
-  if (movement.status === "COMPLETED") return "Terminee";
-  if (movement.status === "REJECTED") return "Refusee";
-  if (movement.status === "CANCELLED") return "Annulee";
-  return movement.status;
+  return movementStatusLabelValue(movement);
 }
 
 function movementTextKey(value: string | null | undefined) {
-  return (value ?? "").trim().toLowerCase();
+  return movementTextKeyValue(value);
 }
 
 function movementDateKey(value: string | null | undefined) {
-  return (value ?? "").slice(0, 10);
+  return movementDateKeyValue(value);
 }
 
 function movementProjectKey(movement: StockMovement) {
-  return (
-    movement.projectId ??
-    movementTextKey(movement.project?.code ?? movement.project?.name)
-  );
+  return movementProjectKeyValue(movement);
 }
 
 function movementPersonKey(movement: StockMovement) {
-  return movementTextKey(
-    movement.receivedBy ?? movement.requestedBy ?? movement.handledBy,
-  );
+  return movementPersonKeyValue(movement);
 }
 
 function movementArticleKeys(movement: StockMovement) {
-  return new Set(
-    movement.lines
-      .map(
-        (line) =>
-          line.articleId ||
-          line.article?.id ||
-          line.article?.code ||
-          line.article?.designation ||
-          "",
-      )
-      .filter(Boolean),
-  );
+  return movementArticleKeysValue(movement);
 }
 
 function movementRequestedTotal(movement: StockMovement) {
-  return movement.lines.reduce(
-    (sum, line) => sum + Number(line.requestedQuantity ?? 0),
-    0,
-  );
+  return movementRequestedTotalValue(movement);
 }
 
 function movementCompletedTotal(movement: StockMovement) {
-  return movement.lines.reduce(
-    (sum, line) => sum + Number(line.completedQuantity ?? 0),
-    0,
-  );
+  return movementCompletedTotalValue(movement);
 }
 
 function hasCommonArticle(left: StockMovement, right: StockMovement) {
-  const leftKeys = movementArticleKeys(left);
-  const rightKeys = movementArticleKeys(right);
-  return [...leftKeys].some((key) => rightKeys.has(key));
+  return movementHasCommonArticle(left, right);
 }
 
 function looksLikeGeneratedExit(request: StockMovement, exit: StockMovement) {
-  if (request.type !== "EXIT_REQUEST" || exit.type !== "EXIT") return false;
-  if (
-    exit.sourceRequestId === request.id ||
-    request.generatedExits?.some((item) => item.id === exit.id)
-  )
-    return true;
-
-  const requestProject = movementProjectKey(request);
-  const exitProject = movementProjectKey(exit);
-  const requestPerson = movementPersonKey(request);
-  const exitPerson = movementPersonKey(exit);
-  const requestedTotal = movementRequestedTotal(request);
-  const completedTotal = movementCompletedTotal(exit);
-
-  return Boolean(
-    requestProject &&
-    exitProject &&
-    requestProject === exitProject &&
-    (!requestPerson || !exitPerson || requestPerson === exitPerson) &&
-    movementDateKey(request.date) === movementDateKey(exit.date) &&
-    hasCommonArticle(request, exit) &&
-    completedTotal > 0 &&
-    (!requestedTotal || requestedTotal >= completedTotal),
-  );
+  return movementLooksLikeGeneratedExit(request, exit);
 }
 
 function linkedExitForRequest(movement: StockMovement) {
-  if (movement.type !== "EXIT_REQUEST") return null;
-  return (
-    latestMovements.find(
-      (item) => item.type === "EXIT" && looksLikeGeneratedExit(movement, item),
-    ) ??
-    movement.generatedExits?.[0] ??
-    null
-  );
+  return linkedExitForRequestFromMovements(movement, latestMovements);
 }
 
-function requestForExit(movement: StockMovement) { return requestForExitPage(movement, sortiesStockContext()); }
+function requestForExit(movement: StockMovement) {
+  return requestForExitFromMovements(movement, latestMovements);
+}
 
 function materialPdfMovement(movement: StockMovement) { return materialPdfMovementPage(movement, sortiesStockContext()); }
 
