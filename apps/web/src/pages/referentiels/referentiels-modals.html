@@ -1,0 +1,165 @@
+  <div id="referentialModal" class="modal fixed inset-0 bg-gray-900/50 items-start justify-center px-6 py-8 z-50 overflow-y-auto">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[calc(100vh-4rem)] flex flex-col overflow-hidden">
+      <div class="px-6 py-5 border-b flex justify-between items-center">
+        <div>
+          <div class="text-xs text-gray-500 font-semibold">Referentiels Stock Hub</div>
+          <h2 class="text-xl font-bold">Nouvel element referentiel</h2>
+        </div>
+        <button data-action="closeModal('referentialModal')" class="text-gray-500 hover:text-gray-900"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div class="p-6 overflow-y-auto flex-1 min-h-0 space-y-5">
+        <div class="p-4 rounded-xl bg-accent-50 border border-accent-100 text-sm text-gray-700">
+          Chaque type garde ses propres champs. Les codes sont proposes par le systeme pour eviter les doublons.
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <label><span class="text-sm font-semibold">Type element</span><select id="referentialType" class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner</option><option value="article">Article</option><option value="supplier">Fournisseur</option><option value="client">Client</option><option value="project">Projet</option><option value="site">Site / chantier</option><option value="teamService">Equipe / service</option><option value="employee">Employe</option><option value="location">Emplacement</option></select></label>
+          <label><span class="text-sm font-semibold">Code propose</span><div id="referentialCode" class="mt-2 h-11 border rounded-lg px-3 bg-gray-50 flex items-center font-semibold">FO-0001</div></label>
+          <label><span class="text-sm font-semibold">Statut</span><select class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner</option><option>Actif</option><option>A verifier</option><option>Inactif</option></select></label>
+        </div>
+
+        <div id="ref-form-empty" class="referential-empty border border-dashed border-gray-300 rounded-xl p-8 text-center bg-gray-50"><div class="mx-auto w-11 h-11 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-accent-600"><i data-lucide="list-plus" class="w-5 h-5"></i></div><div class="font-bold mt-3">Selectionne un type de referentiel</div><p class="text-sm text-gray-500 mt-1">Les champs adaptes apparaissent ici apres selection.</p></div>
+
+        <div id="ref-form-article" class="referential-form hidden border border-gray-200 rounded-xl overflow-hidden">
+          <div class="px-5 py-4 bg-gray-50 border-b"><h3 class="font-bold">Article stock</h3><p class="text-sm text-gray-500 mt-1">Un code article correspond a une designation. La quantite se gere ensuite dans les entrees, sorties et inventaires.</p></div>
+          <div class="p-5 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <label><span class="text-sm font-semibold">Designation</span><input id="articleDesignationInput" name="designation" class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Ex : Cable HDMI 5m"></label>
+            <label><span class="text-sm font-semibold">Famille</span><select id="articleFamilySelect" name="category" class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner</option><option>FO</option><option>GSM</option><option>BLR</option></select></label>
+            <label><span class="text-sm font-semibold">Unite</span><select id="articleUnitSelect" name="unit" class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner</option><option>Piece</option><option>Metre</option><option>Boite</option></select></label>
+            <label><span class="text-sm font-semibold">Type de gestion</span><select id="articleTrackingSelect" name="trackingMode" class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner</option><option value="QUANTITY">Article en quantite</option><option value="INDIVIDUAL">Materiel identifie</option></select></label>
+            <label><span class="text-sm font-semibold">Stock minimum</span><input id="articleMinimumStockInput" name="minimumStock" type="number" class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Ex : 10"></label>
+            <label><span class="text-sm font-semibold">Stock securite</span><input id="articleSecurityStockInput" name="securityStock" type="number" class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Ex : 20"></label>
+            <label><span class="text-sm font-semibold">Stock de depart</span><input id="articleInitialStockInput" name="initialStock" type="number" class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Quantite trouvee au demarrage"></label>
+            <label><span class="text-sm font-semibold">Prix indicatif</span><input id="articleReferencePriceInput" name="referencePrice" type="number" class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Ex : 3500"></label>
+            <label><span class="text-sm font-semibold">Fournisseur habituel</span><select id="articleSupplierSelect" name="defaultSupplierId" class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner fournisseur</option></select></label>
+            <label><span class="text-sm font-semibold">Emplacement de depart</span><select id="articleInitialLocationSelect" name="initialLocationId" class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner emplacement</option></select><span class="text-xs text-gray-500 mt-2 block">A renseigner seulement si un stock de depart est saisi.</span></label>
+          </div>
+        </div>
+
+        <div id="ref-form-supplier" class="referential-form hidden border border-gray-200 rounded-xl overflow-hidden">
+          <div class="px-5 py-4 bg-gray-50 border-b"><h3 class="font-bold">Fournisseur</h3><p class="text-sm text-gray-500 mt-1">Utilise pour les entrees stock, commandes et factures fournisseurs.</p></div>
+          <div class="p-5 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <label><span class="text-sm font-semibold">Raison sociale</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Ex : Fournisseur A"></label>
+            <label><span class="text-sm font-semibold">ID fiscal / NCC</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Optionnel"></label>
+            <label><span class="text-sm font-semibold">Categorie</span><select class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner</option><option>Materiel</option><option>Logistique</option><option>Service</option></select></label>
+            <label><span class="text-sm font-semibold">Contact principal</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Ex : Awa Stock"></label>
+            <label><span class="text-sm font-semibold">Telephone</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="0101010101"></label>
+            <label><span class="text-sm font-semibold">Email</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="contact@fournisseur.com"></label>
+            <label class="md:col-span-3"><span class="text-sm font-semibold">Adresse</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Adresse fournisseur"></label>
+          </div>
+        </div>
+
+        <div id="ref-form-client" class="referential-form hidden border border-gray-200 rounded-xl overflow-hidden">
+          <div class="px-5 py-4 bg-gray-50 border-b"><h3 class="font-bold">Client</h3><p class="text-sm text-gray-500 mt-1">Utilise dans les demandes de materiel et le rattachement des projets.</p></div>
+          <div class="p-5 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <label><span class="text-sm font-semibold">Raison sociale</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Ex : MITO-CI"></label>
+            <label><span class="text-sm font-semibold">Contact principal</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Nom du contact"></label>
+            <label><span class="text-sm font-semibold">Telephone</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="0101010101"></label>
+            <label><span class="text-sm font-semibold">Email</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="contact@client.com"></label>
+          </div>
+        </div>
+
+        <div id="ref-form-teamService" class="referential-form hidden border border-gray-200 rounded-xl overflow-hidden">
+          <div class="px-5 py-4 bg-gray-50 border-b"><h3 class="font-bold">Equipe / service</h3><p class="text-sm text-gray-500 mt-1">Utilise pour indiquer l'equipe, le service ou le departement demandeur.</p></div>
+          <div class="p-5 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <label><span class="text-sm font-semibold">Nom equipe / service</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Ex : Equipe Samba"></label>
+            <label><span class="text-sm font-semibold">Type</span><select class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner</option><option value="EQUIPE">Equipe terrain</option><option value="SERVICE">Service interne</option><option value="DEPARTEMENT">Departement</option></select></label>
+            <label><span class="text-sm font-semibold">Responsable</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Nom du responsable"></label>
+          </div>
+        </div>
+
+        <div id="ref-form-project" class="referential-form hidden border border-gray-200 rounded-xl overflow-hidden">
+          <div class="px-5 py-4 bg-gray-50 border-b"><h3 class="font-bold">Projet / chantier</h3><p class="text-sm text-gray-500 mt-1">Utilise comme destination des sorties stock. Le chef de projet doit etre un utilisateur actif de l'application.</p></div>
+          <div class="p-5 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <label><span class="text-sm font-semibold">Nom projet</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Ex : Projet Riviera"></label>
+            <label><span class="text-sm font-semibold">Client</span><select id="projectClientSelect" class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner client</option></select></label>
+            <label><span class="text-sm font-semibold">Chef de projet</span><select id="projectManagerSelect" class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner chef projet</option></select></label>
+            <label><span class="text-sm font-semibold">Region</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Ex : Abidjan"></label>
+            <label><span class="text-sm font-semibold">Ville</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Ex : Cocody"></label>
+            <label><span class="text-sm font-semibold">Date debut</span><input type="date" class="mt-2 w-full h-11 border rounded-lg px-3"></label>
+            <label><span class="text-sm font-semibold">Date fin prevue</span><input type="date" class="mt-2 w-full h-11 border rounded-lg px-3"></label>
+          </div>
+        </div>
+
+        <div id="ref-form-site" class="referential-form hidden border border-gray-200 rounded-xl overflow-hidden">
+          <div class="px-5 py-4 bg-gray-50 border-b"><h3 class="font-bold">Site / chantier</h3><p class="text-sm text-gray-500 mt-1">Un projet peut avoir plusieurs sites, zones ou chantiers.</p></div>
+          <div class="p-5 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <label><span class="text-sm font-semibold">Nom du site</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Ex : Zone A - Riviera"></label>
+            <label><span class="text-sm font-semibold">Projet rattache</span><select class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner projet</option></select></label>
+            <label><span class="text-sm font-semibold">Responsable site</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Ex : Chef chantier"></label>
+            <label><span class="text-sm font-semibold">Region</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Ex : Abidjan"></label>
+            <label><span class="text-sm font-semibold">Ville</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Ex : Cocody"></label>
+            <label><span class="text-sm font-semibold">Adresse / repere</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Ex : Riviera Palmeraie"></label>
+          </div>
+        </div>
+
+        <div id="ref-form-employee" class="referential-form hidden border border-gray-200 rounded-xl overflow-hidden">
+          <div class="px-5 py-4 bg-gray-50 border-b"><h3 class="font-bold">Employe / beneficiaire</h3><p class="text-sm text-gray-500 mt-1">Utilise pour tracer les sorties et affectations de materiel.</p></div>
+          <div class="p-5 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <label><span class="text-sm font-semibold">Matricule</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Ex : EMP-020"></label>
+            <label><span class="text-sm font-semibold">Nom</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Ex : Dago"></label>
+            <label><span class="text-sm font-semibold">Prenom</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Ex : Edgar Michael"></label>
+            <label><span class="text-sm font-semibold">Departement</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Ex : Personnel bureau"></label>
+            <label><span class="text-sm font-semibold">Role</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Ex : Technicien"></label>
+            <label><span class="text-sm font-semibold">Telephone</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Optionnel"></label>
+          </div>
+        </div>
+
+        <div id="ref-form-location" class="referential-form hidden border border-gray-200 rounded-xl overflow-hidden">
+          <div class="px-5 py-4 bg-gray-50 border-b"><h3 class="font-bold">Emplacement stock</h3><p class="text-sm text-gray-500 mt-1">Magasin, depot, bureau, zone ou emplacement physique de stockage.</p></div>
+          <div class="p-5 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <label><span class="text-sm font-semibold">Nom emplacement</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Ex : Magasin principal"></label>
+            <label><span class="text-sm font-semibold">Type emplacement</span><select class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner</option><option>Magasin</option><option>Depot</option><option>Bureau</option><option>Vehicule</option><option>Chantier</option></select></label>
+            <label><span class="text-sm font-semibold">Responsable</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Ex : Awa Stock"></label>
+            <label><span class="text-sm font-semibold">Site rattache</span><select class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner</option><option>Siege</option><option>Site Riviera</option><option>Non rattache</option></select></label>
+            <label><span class="text-sm font-semibold">Ville</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Ex : Abidjan"></label>
+            <label><span class="text-sm font-semibold">Adresse / zone</span><input class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Ex : Bureau principal"></label>
+          </div>
+        </div>
+      </div>
+      <div class="px-6 py-4 border-t bg-white flex justify-end gap-3 shrink-0">
+        <button data-action="closeModal('referentialModal')" class="px-4 py-2 bg-white border rounded-lg font-semibold">Annuler</button>
+        <button class="px-4 py-2 bg-accent-600 text-white rounded-lg font-semibold">Creer element</button>
+      </div>
+    </div>
+  </div>
+  <div id="articleModal" class="modal fixed inset-0 bg-gray-900/50 items-center justify-center p-6 z-50">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+      <div class="px-6 py-5 border-b flex justify-between items-center">
+        <div><div class="text-xs text-gray-500 font-semibold">Referentiel articles</div><h2 class="text-xl font-bold">Creer article rapidement</h2></div>
+        <button data-action="closeModal('articleModal')"><i data-lucide="x"></i></button>
+      </div>
+      <div class="p-6 overflow-y-auto flex-1 min-h-0 space-y-5">
+        <div class="p-4 rounded-xl bg-accent-50 border border-accent-100 text-sm text-gray-700">L'article cree ici est ajoute au referentiel, puis selectionne dans l'entree stock. Le code article est propose par le systeme pour eviter les doublons.</div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <label><span class="text-sm font-semibold">Designation</span><input id="quickArticleDesignationInput" class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Ex : Cable HDMI 5m"></label>
+          <label><span class="text-sm font-semibold">Famille</span><select id="quickArticleFamilySelect" class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner</option><option value="FO">FO</option><option value="GSM">GSM</option><option value="BLR">BLR</option></select></label>
+          <label><span class="text-sm font-semibold">Unite</span><select id="quickArticleUnitSelect" class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner</option><option value="Piece">Piece</option><option value="Metre">Metre</option><option value="Boite">Boite</option></select></label><label><span class="text-sm font-semibold">Type de gestion</span><select id="quickArticleTrackingSelect" class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner</option><option value="QUANTITY">Article en quantite</option><option value="INDIVIDUAL">Materiel identifie</option></select><span class="text-xs text-gray-500 mt-2 block">Article en quantite = suivi par nombre total. Materiel identifie = suivi piece par piece.</span></label>
+          <label><span class="text-sm font-semibold">Code propose</span><div id="quickArticleCodePreview" class="mt-2 h-11 border rounded-lg px-3 bg-gray-50 flex items-center font-semibold">FO-0001</div></label>
+          <label><span class="text-sm font-semibold">Stock minimum</span><input id="quickArticleMinimumStockInput" class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Ex : 10"></label>
+          <label><span class="text-sm font-semibold">Stock de depart</span><input id="quickArticleInitialStockInput" class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Quantite trouvee au demarrage"></label>
+          <label><span class="text-sm font-semibold">Prix indicatif</span><input id="quickArticleReferencePriceInput" class="mt-2 w-full h-11 border rounded-lg px-3" placeholder="Ex : 3500"></label>
+          <label><span class="text-sm font-semibold">Fournisseur habituel</span><select id="quickArticleSupplierSelect" class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner fournisseur</option></select></label>
+          <label><span class="text-sm font-semibold">Emplacement de depart</span><select id="quickArticleInitialLocationSelect" class="mt-2 w-full h-11 border rounded-lg px-3"><option value="">Selectionner emplacement</option></select></label>
+          <label><span class="text-sm font-semibold">Statut</span><select id="quickArticleStatusSelect" class="mt-2 w-full h-11 border rounded-lg px-3"><option value="ACTIVE">Actif</option><option value="CHECK">A verifier</option></select></label>
+        </div>
+      </div>
+      <div class="px-6 py-4 border-t flex justify-end gap-3"><button data-action="closeModal('articleModal')" class="px-4 py-2 bg-white border rounded-lg font-semibold">Annuler</button><button data-action="submitQuickArticle" class="px-4 py-2 bg-accent-600 text-white rounded-lg font-semibold">Creer et selectionner</button></div>
+    </div>
+  </div>
+  <div id="referentialDetailModal" class="modal fixed inset-0 bg-gray-900/50 items-center justify-center p-6 z-50">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden">
+      <div class="px-6 py-5 border-b flex justify-between items-start gap-4">
+        <div>
+          <div id="refDetailKind" class="text-xs text-gray-500 font-semibold">Fiche referentiel</div>
+          <h2 id="refDetailTitle" class="text-xl font-bold">Element referentiel</h2>
+          <p id="refDetailSubtitle" class="text-sm text-gray-500 mt-1">Informations de l'element selectionne.</p>
+        </div>
+        <div id="refDetailActions" class="flex flex-wrap items-center justify-end gap-2 shrink-0"></div>
+      </div>
+      <div class="p-6 overflow-y-auto flex-1 min-h-0 space-y-5">
+        <div id="refDetailCards" class="grid grid-cols-1 md:grid-cols-4 gap-3"></div>
+        <div class="border rounded-xl overflow-hidden"><div id="refDetailContentTitle" class="px-5 py-4 bg-gray-50 border-b font-bold">Informations</div><div id="refDetailFields" class="p-5 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm"></div></div>
+      </div>
+    </div>
+  </div>
+  <div id="importModal" class="modal fixed inset-0 bg-gray-900/50 items-center justify-center p-6 z-50"><div class="flex flex-col bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[92vh] overflow-hidden"><div class="px-6 py-5 border-b flex justify-between"><div><div class="text-xs text-gray-500 font-semibold">Reprise Excel</div><h2 class="text-xl font-bold">CrÃ©er des Ã©lÃ©ments en masse</h2><p class="text-sm text-gray-500 mt-1">Les codes sont gÃ©nÃ©rÃ©s automatiquement Ã  l'enregistrement. Remplis uniquement les informations mÃ©tier du modÃ¨le.</p></div><button data-action="closeModal('importModal')"><i data-lucide="x"></i></button></div><div class="p-6 space-y-4 overflow-y-auto flex-1 min-h-0"><label class="block"><span class="text-sm font-semibold">Type d'Ã©lÃ©ment Ã  importer</span><select id="referentialImportType" class="mt-2 w-full h-11 border rounded-lg px-3 bg-white"><option value="article">Articles</option><option value="supplier">Fournisseurs</option><option value="client">Clients</option><option value="project">Projets</option><option value="site">Sites / chantiers</option><option value="employee">EmployÃ©s</option><option value="location">Emplacements</option><option value="teamService">Ã‰quipes / services</option></select></label><div class="p-4 bg-accent-50 border border-accent-100 rounded-xl text-sm text-gray-700">L'import initialise les Ã©lÃ©ments du rÃ©fÃ©rentiel. Utilise le modÃ¨le pour respecter exactement les colonnes attendues; les anciens codes saisis dans un fichier seront ignorÃ©s.</div><div class="flex flex-wrap items-center justify-between gap-4 rounded-xl border-2 border-accent-300 bg-accent-50 p-5 shadow-sm"><div class="flex items-center gap-3"><div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent-600 text-white shadow-sm"><i data-lucide="file-down" class="w-5 h-5"></i></div><div><div class="text-xs font-bold uppercase tracking-wide text-accent-700">Ã‰tape 1 â€” indispensable</div><div class="mt-0.5 font-bold text-gray-900">TÃ©lÃ©charger le modÃ¨le Excel</div><div class="text-sm text-gray-700">Le fichier contient les colonnes attendues et une ligne d'exemple sans colonne Code.</div></div></div><button type="button" data-action="downloadArticleImportTemplate" class="inline-flex items-center gap-2 rounded-lg bg-accent-600 px-4 py-2.5 font-semibold text-white shadow-sm transition hover:bg-accent-700 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2"><i data-lucide="download" class="w-4 h-4"></i>TÃ©lÃ©charger le modÃ¨le</button></div><div class="rounded-xl border-2 border-accent-300 bg-white p-5 shadow-sm"><div class="mb-3 flex items-center gap-3"><div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent-600 text-white shadow-sm"><i data-lucide="file-up" class="w-5 h-5"></i></div><div><div class="text-xs font-bold uppercase tracking-wide text-accent-700">Ã‰tape 2 â€” Ã  effectuer ensuite</div><div class="mt-0.5 font-bold text-gray-900">Importer le fichier complÃ©tÃ©</div><div class="text-sm text-gray-700">SÃ©lectionne le modÃ¨le Excel rempli pour vÃ©rifier les donnÃ©es avant l'enregistrement.</div></div></div><label for="articleImportFile" class="flex min-h-24 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-accent-300 bg-accent-50/50 px-4 py-4 text-center transition hover:border-accent-500 hover:bg-accent-50"><i data-lucide="upload-cloud" class="mb-1 h-6 w-6 text-accent-600"></i><span class="font-semibold text-accent-700">Choisir un fichier Excel</span><span class="mt-1 text-xs text-gray-600">Formats acceptÃ©s : .xlsx, .xls ou .csv</span><input id="articleImportFile" type="file" accept=".xlsx,.xls,.csv" class="sr-only"></label><div id="articleImportSummary" class="hidden grid-cols-2 gap-3 md:grid-cols-4"></div><div id="articleImportTable" class="hidden"></div></div><div class="shrink-0 px-6 py-4 border-t flex justify-end gap-3"><button data-action="closeModal('importModal')" class="px-4 py-2 bg-white border rounded-lg font-semibold">Annuler</button><button id="articleImportSaveButton" data-action="importArticles" disabled class="px-4 py-2 bg-accent-600 text-white rounded-lg font-semibold opacity-50 cursor-not-allowed">Enregistrer les lignes valides</button></div></div></div>

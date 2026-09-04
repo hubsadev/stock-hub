@@ -9,6 +9,8 @@ import equipementsModalsHtml from "../pages/equipements/equipements-modals.html?
 import historiqueHtml from "../pages/historique/historique.html?raw";
 import parcAutoHtml from "../pages/parc-auto/parc-auto.html?raw";
 import parcAutoModalsHtml from "../pages/parc-auto/parc-auto-modals.html?raw";
+import referentielsHtml from "../pages/referentiels/referentiels.html?raw";
+import referentielsModalsHtml from "../pages/referentiels/referentiels-modals.html?raw";
 import retoursTransfertsHtml from "../pages/retours-transferts/retours-transferts.html?raw";
 import retoursTransfertsModalsHtml from "../pages/retours-transferts/retours-transferts-modals.html?raw";
 import sortiesStockHtml from "../pages/sorties-stock/sorties-stock.html?raw";
@@ -47,6 +49,18 @@ const equipmentDetailModalHtml = htmlFrom(equipementsModalsHtml, '  <div id="equ
 const equipmentModalsHtml = htmlBefore(equipementsModalsHtml, '  <div id="equipmentDetailModal"');
 const vehicleDetailModalHtml = htmlFrom(parcAutoModalsHtml, '  <div id="vehicleDetailModal"');
 const vehicleModalHtml = htmlBefore(parcAutoModalsHtml, '  <div id="vehicleDetailModal"');
+const referentialModalHtml = htmlBefore(referentielsModalsHtml, '  <div id="articleModal"');
+const quickArticleModalHtml = htmlBetween(
+  referentielsModalsHtml,
+  '  <div id="articleModal"',
+  '  <div id="referentialDetailModal"',
+);
+const referentialDetailModalHtml = htmlBetween(
+  referentielsModalsHtml,
+  '  <div id="referentialDetailModal"',
+  '  <div id="importModal"',
+);
+const referentialImportModalHtml = htmlFrom(referentielsModalsHtml, '  <div id="importModal"');
 
 export function LoginOverlay() {
   return <HtmlPart html={loginHtml} />;
@@ -61,6 +75,7 @@ export function Workspace() {
     <HtmlPart
       html={workspaceHtml
         .replace("<!-- entrees-stock-page -->", entreesStockHtml)
+        .replace("<!-- referentiels-page -->", referentielsHtml)
         .replace("<!-- vue-stock-page -->", vueStockHtml)
         .replace("<!-- sorties-stock-page -->", sortiesStockHtml)
         .replace("<!-- retours-transferts-page -->", retoursTransfertsHtml)
@@ -80,10 +95,14 @@ export function ModalLayer() {
         .replace("<!-- retours-transferts-modals -->", retoursTransfertsModalsHtml)
         .replace("<!-- parc-auto-modal -->", vehicleModalHtml)
         .replace("<!-- equipements-modals -->", equipmentModalsHtml)
+        .replace("<!-- referentiels-create-modal -->", referentialModalHtml)
+        .replace("<!-- referentiels-quick-article-modal -->", quickArticleModalHtml)
+        .replace("<!-- referentiels-detail-modal -->", referentialDetailModalHtml)
         .replace("<!-- entrees-stock-detail-modal -->", entryDetailModalHtml)
         .replace("<!-- entrees-stock-resolution-modal -->", entryResolutionModalHtml)
         .replace("<!-- equipements-detail-modal -->", equipmentDetailModalHtml)
         .replace("<!-- parc-auto-detail-modal -->", vehicleDetailModalHtml)
+        .replace("<!-- referentiels-import-modal -->", referentialImportModalHtml)
         .replace("<!-- vue-stock-modals -->", vueStockModalsHtml)}
     />
   );
