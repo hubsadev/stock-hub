@@ -26,61 +26,7 @@
         <!-- sorties-stock-page -->
         <!-- retours-transferts-page -->
         <!-- reapprovisionnement-page -->
-        <section id="inventaire" class="view">
-          <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-6">
-            <div>
-              <h1 class="text-3xl font-bold">Inventaire de stock</h1>
-              <p class="text-sm text-gray-500 mt-2">Comptage par emplacement, puis synthese globale des ecarts et validations.</p>
-            </div>
-            <div class="flex flex-wrap gap-3">
-              <div class="inline-flex rounded-xl bg-gray-100 p-1">
-                <button data-action="showInventoryMode('local')" id="inventoryLocalTab" class="inventory-tab px-4 py-2 rounded-lg bg-white shadow-sm text-sm font-bold">Par emplacement</button>
-                <button data-action="showInventoryMode('global')" id="inventoryGlobalTab" class="inventory-tab px-4 py-2 rounded-lg text-sm font-bold text-gray-500">Synthese globale</button>
-              </div>
-              <button data-action="openModal('inventoryExportModal')" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold flex items-center gap-2"><i data-lucide="download" class="w-4 h-4"></i>Telecharger</button>
-              <button data-action="openModal('inventoryImportModal')" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold flex items-center gap-2"><i data-lucide="upload" class="w-4 h-4"></i>Importer Excel</button>
-            </div>
-          </div>
-
-          <div id="inventoryLocalPanel">
-            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm mb-6">
-              <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 items-end">
-                <label class="block lg:col-span-2"><span class="text-xs font-semibold text-gray-500">Emplacement inventorie</span><select id="inventoryLocationSelect" class="mt-2 w-full h-11 rounded-lg border border-gray-300 px-3 font-semibold"><option value="">Selectionner un emplacement</option></select></label>
-                <div class="p-4 rounded-xl bg-gray-50 border"><div class="text-xs font-semibold text-gray-500">Date inventaire</div><div id="inventoryDate" class="mt-1 font-bold">-</div></div>
-                <div class="p-4 rounded-xl bg-gray-50 border"><div class="text-xs font-semibold text-gray-500">Responsable comptage</div><div id="inventoryResponsible" class="mt-1 font-bold">-</div></div>
-                <div class="p-4 rounded-xl bg-accent-50 border border-accent-100"><div class="text-xs font-semibold text-accent-600">Articles de cet emplacement</div><div id="inventoryLocationCount" class="mt-1 font-bold">0 <span class="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">0 saisi</span></div></div>
-              </div>
-              <div class="mt-4 p-4 rounded-xl bg-warning-50 border border-warning-100 text-sm text-gray-700"><span class="font-bold text-warning-700">Important :</span> un inventaire corrige seulement l'emplacement selectionne. Les autres magasins, chantiers ou bureaux gardent leur propre comptage.</div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-bold">1. Choisir l'emplacement</div><p class="text-sm text-gray-500 mt-2">Le comptage concerne un seul magasin, depot, chantier ou bureau.</p></div>
-              <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-bold">2. Compter sur place</div><p class="text-sm text-gray-500 mt-2">La quantite constatee est saisie a la main pour cet emplacement.</p></div>
-              <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-bold">3. Justifier l'ecart</div><p class="text-sm text-gray-500 mt-2">Une justification est demandee seulement si le compte differe du stock theorique.</p></div>
-            </div>
-
-            <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-              <div class="p-4 border-b flex items-center justify-between gap-4"><div class="relative w-80 max-w-full shrink-0"><i data-lucide="search" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400"></i><input id="inventorySearchInput" class="w-full h-10 rounded-lg border border-gray-300 pl-10 pr-3" placeholder="Rechercher un article ou un code"></div><label class="ml-auto flex shrink-0 items-center gap-2 text-sm text-gray-700"><input id="inventoryHideValidated" type="checkbox"> Masquer les lignes validees</label></div>
-              <div class="overflow-x-auto"><table id="inventoryTable" class="w-full text-sm"><thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Article</th><th class="px-5 py-3 text-right">Stock theorique emplacement</th><th class="px-5 py-3 text-right">Quantite constatee</th><th class="px-5 py-3 text-right">Bon etat</th><th class="px-5 py-3 text-right">A reparer</th><th class="px-5 py-3 text-right">Hors service</th><th class="px-5 py-3 text-center">Ecart</th><th class="px-5 py-3 text-left">Justification</th><th class="px-5 py-3 text-left">Controle</th><th class="px-5 py-3 text-right">Action</th></tr></thead><tbody class="divide-y"><tr><td class="px-5 py-8 text-center text-gray-500" colspan="10">Aucun stock theorique disponible pour lancer l'inventaire.</td></tr></tbody></table></div>
-            </div>
-          </div>
-
-          <div id="inventoryGlobalPanel" class="hidden space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Emplacements inventories</div><div id="inventoryGlobalLocations" class="text-3xl font-bold mt-3">0</div><div class="text-xs text-gray-500 mt-1">Magasins, depots, chantiers</div></div>
-              <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Articles comptes</div><div id="inventoryGlobalArticles" class="text-3xl font-bold mt-3">0</div><div class="text-xs text-gray-500 mt-1">Toutes zones consolidees</div></div>
-              <div class="bg-white rounded-xl border border-warning-100 p-5 shadow-sm"><div class="text-sm font-semibold text-warning-700">Ecarts ouverts</div><div id="inventoryGlobalGaps" class="text-3xl font-bold mt-3 text-warning-700">0</div><div class="text-xs text-gray-500 mt-1">Lignes en ecart</div></div>
-              <div class="bg-white rounded-xl border border-success-100 p-5 shadow-sm"><div class="text-sm font-semibold text-success-700">Inventaires valides</div><div id="inventoryGlobalValid" class="text-3xl font-bold mt-3 text-success-700">0</div><div id="inventoryGlobalValidHint" class="text-xs text-gray-500 mt-1">Sur 0 emplacements</div></div>
-            </div>
-            <div class="grid grid-cols-1 gap-6">
-              <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                <div class="p-5 border-b border-gray-200"><h2 class="text-lg font-bold">Synthese globale par article</h2><p class="text-sm text-gray-500 mt-1">Les valeurs sont consolidees sur tous les emplacements.</p></div>
-                <div class="overflow-x-auto"><table id="inventoryGlobalTable" class="w-full min-w-[1120px] text-sm"><thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Article</th><th class="px-5 py-3 text-right">Stock theorique global</th><th class="px-5 py-3 text-right">Quantite constatee</th><th class="px-5 py-3 text-right">Bon etat</th><th class="px-5 py-3 text-right">A reparer</th><th class="px-5 py-3 text-right">Hors service</th><th class="px-5 py-3 text-center">Ecart</th><th class="px-5 py-3 text-left">Emplacements concernes</th><th class="px-5 py-3 text-left">Statut</th></tr></thead><tbody class="divide-y"><tr><td class="px-5 py-8 text-center text-gray-500" colspan="9">Aucune synthese inventaire pour le moment.</td></tr></tbody></table></div>
-              </div>
-            </div>
-          </div>
-        </section>
-
+        <!-- inventaire-stock-page -->
         <!-- equipements-page -->
         <!-- parc-auto-page -->
         <!-- audit-alertes-page -->

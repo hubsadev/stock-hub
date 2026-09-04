@@ -9,6 +9,8 @@ import entreesStockModalsHtml from "../pages/entrees-stock/entrees-stock-modals.
 import equipementsHtml from "../pages/equipements/equipements.html?raw";
 import equipementsModalsHtml from "../pages/equipements/equipements-modals.html?raw";
 import historiqueHtml from "../pages/historique/historique.html?raw";
+import inventaireStockHtml from "../pages/inventaire-stock/inventaire-stock.html?raw";
+import inventaireStockModalsHtml from "../pages/inventaire-stock/inventaire-stock-modals.html?raw";
 import parcAutoHtml from "../pages/parc-auto/parc-auto.html?raw";
 import parcAutoModalsHtml from "../pages/parc-auto/parc-auto-modals.html?raw";
 import referentielsHtml from "../pages/referentiels/referentiels.html?raw";
@@ -65,6 +67,13 @@ const referentialDetailModalHtml = htmlBetween(
   '  <div id="importModal"',
 );
 const referentialImportModalHtml = htmlFrom(referentielsModalsHtml, '  <div id="importModal"');
+const inventoryExportModalHtml = htmlBefore(inventaireStockModalsHtml, '  <div id="countModal"');
+const inventoryCountModalHtml = htmlBetween(
+  inventaireStockModalsHtml,
+  '  <div id="countModal"',
+  '  <div id="inventoryImportModal"',
+);
+const inventoryImportModalHtml = htmlFrom(inventaireStockModalsHtml, '  <div id="inventoryImportModal"');
 
 export function LoginOverlay() {
   return <HtmlPart html={loginHtml} />;
@@ -85,6 +94,7 @@ export function Workspace() {
         .replace("<!-- sorties-stock-page -->", sortiesStockHtml)
         .replace("<!-- retours-transferts-page -->", retoursTransfertsHtml)
         .replace("<!-- reapprovisionnement-page -->", reapprovisionnementHtml)
+        .replace("<!-- inventaire-stock-page -->", inventaireStockHtml)
         .replace("<!-- equipements-page -->", equipementsHtml)
         .replace("<!-- parc-auto-page -->", parcAutoHtml)
         .replace("<!-- audit-alertes-page -->", auditAlertesHtml)
@@ -103,6 +113,9 @@ export function ModalLayer() {
         .replace("<!-- parc-auto-modal -->", vehicleModalHtml)
         .replace("<!-- equipements-modals -->", equipmentModalsHtml)
         .replace("<!-- referentiels-create-modal -->", referentialModalHtml)
+        .replace("<!-- inventaire-stock-export-modal -->", inventoryExportModalHtml)
+        .replace("<!-- inventaire-stock-count-modal -->", inventoryCountModalHtml)
+        .replace("<!-- inventaire-stock-import-modal -->", inventoryImportModalHtml)
         .replace("<!-- referentiels-quick-article-modal -->", quickArticleModalHtml)
         .replace("<!-- referentiels-detail-modal -->", referentialDetailModalHtml)
         .replace("<!-- entrees-stock-detail-modal -->", entryDetailModalHtml)
