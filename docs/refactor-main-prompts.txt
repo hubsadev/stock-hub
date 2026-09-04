@@ -1,0 +1,385 @@
+ETAPE 00 - Baseline propre
+
+Verifie l'etat actuel du repo avant toute nouvelle extraction.
+
+Actions:
+- Lancer `git status --short --branch`.
+- Verifier que les deplacements deja faits restent presents:
+  - apps/web/src/components/layout/sidebar.html
+  - apps/web/src/pages/login/login.html
+  - apps/web/src/pages/login/render.ts
+- Lancer `pnpm --filter @stock-hub/web typecheck`.
+- Lancer `git diff --check`.
+- Ne modifier aucun fichier fonctionnel dans cette etape.
+
+Si tout est OK, faire un commit dedie:
+`refactor(web): stabilize shell fragments`
+
+Verification:
+- `pnpm --filter @stock-hub/web typecheck`
+- `git status --short`
+
+================================================================================
+
+ETAPE 01 - Extraire les helpers UI HTML partages
+
+Dans `apps/web/src/main.tsx`, deplace les helpers UI generiques lies au rendu HTML commun vers `apps/web/src/components/ui/html.ts`.
+
+Fonctions visees:
+- badge
+- emptyRow
+- actionEye
+- actionEyeFor
+- detailCard
+- detailField
+- lifecycleFields
+
+Contraintes:
+- Ne change ni le nom, ni la signature, ni le HTML genere.
+- Si une fonction depend de `escapeHtml` ou `formatDate`, importe-les depuis les utils existants.
+- Remplace les usages dans `main.tsx` par des imports.
+- Ne deplace pas les fonctions metier ni les wrappers de pages.
+
+Verification:
+- `pnpm --filter @stock-hub/web typecheck`
+- `git diff --check`
+- Demarrer l'app et verifier rapidement tableaux, badges, drawers et modales.
+
+Commit:
+`refactor(web): extract shared html helpers`
+
+================================================================================
+
+ETAPE 02 - Extraire PWA et etat reseau
+
+Dans `apps/web/src/main.tsx`, deplace la logique PWA/reseau dans `apps/web/src/services/pwa.ts`.
+
+Fonctions/etat vises:
+- deferredPwaInstallPrompt
+- pwaServiceWorkerRegistered
+- updatePwaInstallButton
+- updateNetworkStatus
+- installPwa
+- offlineActionLabel
+- requireOnlineAction
+- cleanupDevelopmentPwa
+- setupPwa
+- updateProfilePwaCards
+
+Contraintes:
+- Ne change aucun comportement PWA.
+- Le service worker reste desactive en dev.
+- Les actions offline restent bloquees comme aujourd'hui.
+- Utilise un contexte explicite si necessaire pour `showToast`, `setVisible`, `isOnline`.
+
+Verification:
+- `pnpm --filter @stock-hub/web typecheck`
+- Demarrage dev: aucun bouton installation actif en dev.
+- Build/preview si possible: PWA toujours disponible en production/preview.
+
+Commit:
+`refactor(web): extract pwa service`
+
+================================================================================
+
+ETAPE 03 - Extraire la page Profil
+
+Dans `apps/web/src/template-parts/workspace.html`, identifie le bloc HTML de la page Profil (`section id="profil"` si present) et deplace-le dans `apps/web/src/pages/profil/profil.html`.
+
+Dans `apps/web/src/main.tsx`, deplace la logique Profil vers `apps/web/src/pages/profil/render.ts`.
+
+Fonctions visees:
+- roleLabel
+- accessLabel
+- profileRoleBadge
+- updateProfileView
+- syncCurrentUser
+- submitProfile
+- submitPasswordChange
+
+Contraintes:
+- Garder `userIdentity`, `userDisplayName`, `userInitials` partages si encore utilises ailleurs, ou les extraire dans un service utilisateur commun uniquement si cela ne change rien.
+- Conserver les wrappers dans `main.tsx`.
+- Ne change aucun ID, data-action, texte, style ou comportement.
+- La carte PWA du profil continue d'utiliser la logique PWA extraite.
+
+Verification:
+- `pnpm --filter @stock-hub/web typecheck`
+- Ouvrir `/profil`.
+- Modifier profil, changer mot de passe, verifier affichage sidebar/header.
+- Verifier carte installation PWA en dev.
+
+Commit:
+`refactor(web): extract profil page`
+
+================================================================================
+
+ETAPE 04 - Extraire les actions header et navigation visuelle
+
+Dans `apps/web/src/main.tsx`, deplace la logique d'actions d'en-tete et d'etat visuel de navigation vers `apps/web/src/components/layout/view-actions.ts`.
+
+Fonctions visees:
+- clearActiveNav
+- activateNavButton
+- renderHeaderButton
+- canUseHeaderAction
+- setViewActions
+
+Contraintes:
+- Ne change pas les actions disponibles par vue.
+- Ne change pas les droits d'affichage.
+- `showView`, `navigateToView` et `openRoute` restent dans `main.tsx` pour cette etape.
+- Utilise un contexte explicite pour `currentUser`, `hasRole` et les helpers requis.
+
+Verification:
+- `pnpm --filter @stock-hub/web typecheck`
+- Naviguer entre plusieurs pages.
+- Verifier les boutons d'en-tete selon les roles.
+
+Commit:
+`refactor(web): extract view header actions`
+
+================================================================================
+
+ETAPE 05 - Extraire le controleur de modales
+
+Dans `apps/web/src/main.tsx`, deplace la logique generique de modales vers `apps/web/src/app/modals.ts`.
+
+Fonctions visees:
+- openModal
+- closeModal
+- prepareTemplateActions
+
+Contraintes:
+- Conserver des wrappers `openModal`, `closeModal`, `prepareTemplateActions` dans `main.tsx`.
+- Le module extrait recoit un contexte explicite avec toutes les callbacks de preparation existantes.
+- Ne change aucun ID de modale, aucune condition, aucun ordre d'initialisation.
+- Ne touche pas au HTML.
+
+Verification:
+- `pnpm --filter @stock-hub/web typecheck`
+- Ouvrir chaque type de modale principale: referentiel, entree, sortie, retour, inventaire, user, equipement, vehicule.
+- `git diff --check`
+
+Commit:
+`refactor(web): extract modal controller`
+
+================================================================================
+
+ETAPE 06 - Extraire les helpers formulaires et selects
+
+Dans `apps/web/src/main.tsx`, deplace les helpers de formulaires/selects vers `apps/web/src/utils/forms.ts`.
+
+Fonctions visees:
+- fillSelect
+- option
+- userOptions
+- articleOptions
+- projectOptions
+- clientOptions
+- supplierOptions
+- teamServiceOptions
+- sitesForProject
+- siteOptions
+- setProjectSiteOptions
+- locationOptions
+- toNumber
+- articleStockAtLocation si elle reste strictement utilitaire, sinon la garder jusqu'a extraction stock transverse.
+
+Contraintes:
+- Ne change pas les labels/options generes.
+- Les fonctions qui dependent de donnees globales doivent recevoir ces donnees en parametre, avec wrappers conserves dans `main.tsx` si besoin.
+- Aucun changement visuel.
+
+Verification:
+- `pnpm --filter @stock-hub/web typecheck`
+- Tester selects dans Entrees, Sorties, Retours, Transferts, Referentiels, Equipements.
+- `git diff --check`
+
+Commit:
+`refactor(web): extract form helpers`
+
+================================================================================
+
+ETAPE 07 - Extraire la logique mouvement partagee
+
+Dans `apps/web/src/main.tsx`, deplace la logique transverse des mouvements vers `apps/web/src/services/movements.ts`.
+
+Fonctions visees:
+- movementTypeLabel
+- movementTypeBadge si possible sans dependance UI, sinon separer label pur et garder badge wrapper
+- movementQuantity
+- movementActor
+- movementArticleLabel
+- movementStatus
+- movementStatusLabel
+- movementTextKey
+- movementDateKey
+- movementProjectKey
+- movementPersonKey
+- movementArticleKeys
+- movementRequestedTotal
+- movementCompletedTotal
+- hasCommonArticle
+- looksLikeGeneratedExit
+- linkedExitForRequest
+- requestForExit si elle peut etre parametree proprement
+
+Contraintes:
+- Ne change aucune regle metier.
+- Les fonctions dependantes de `latestMovements` recoivent la liste en parametre.
+- Conserver les wrappers dans `main.tsx` pour eviter de modifier tous les appels d'un coup.
+- Les fonctions qui generent du HTML stylise peuvent rester wrappers dans `main.tsx`.
+
+Verification:
+- `pnpm --filter @stock-hub/web typecheck`
+- Tester Historique, Sorties, Retours/Transferts.
+- Verifier dedoublonnage demandes/sorties.
+- `git diff --check`
+
+Commit:
+`refactor(web): extract movement logic`
+
+================================================================================
+
+ETAPE 08 - Extraire la logique preuves signees
+
+Dans `apps/web/src/main.tsx`, deplace la logique transverse des preuves vers `apps/web/src/services/proofs.ts`.
+
+Fonctions visees:
+- movementProofSource
+- movementProofCount
+- movementHasProof
+- movementRequiresSignedProof
+- movementProofStatus
+- proofRequestForMovement
+- canUploadSignedProofFor si applicable
+
+Contraintes:
+- Ne change pas quels mouvements exigent une preuve.
+- Entrees, sorties, retours et transferts continuent d'ouvrir la bonne preuve.
+- Les fonctions d'action UI `viewSigned...` peuvent rester wrappers si elles dependent des pages.
+- Aucun changement API.
+
+Verification:
+- `pnpm --filter @stock-hub/web typecheck`
+- Historique: verifier `Jointe`, `Manquante`, `Non requise`.
+- Voir preuve depuis Entrees, Sorties, Retours, Transferts.
+- `git diff --check`
+
+Commit:
+`refactor(web): extract proof logic`
+
+================================================================================
+
+ETAPE 09 - Extraire les exports transverses
+
+Dans `apps/web/src/main.tsx`, deplace la logique d'export commune vers `apps/web/src/services/exports.ts`.
+
+Fonctions visees:
+- csvValue
+- toCsv
+- downloadCsv si encore utilise
+- excelCellText
+- autoExcelColumnWidth
+- exportWorkbook
+- exportDateValue
+- exportDataset
+- exportRows
+- exportData
+
+Constantes visees:
+- stockHubExcelBlue
+- stockHubExcelBorder
+- stockHubExcelStripe
+
+Contraintes:
+- Ne change pas le format des fichiers exportes.
+- Les datasets qui dependent des pages doivent passer par un contexte explicite ou rester wrappers dans `main.tsx`.
+- Les exports Vue Stock, Reappro, Inventaire, Audit doivent rester identiques.
+
+Verification:
+- `pnpm --filter @stock-hub/web typecheck`
+- Exporter Vue Stock, Reapprovisionnement, Inventaire, Audit.
+- Verifier que les fichiers restent `.xlsx` styles.
+- `git diff --check`
+
+Commit:
+`refactor(web): extract export service`
+
+================================================================================
+
+ETAPE 10 - Extraire le rafraichissement API
+
+Dans `apps/web/src/main.tsx`, deplace `updateApiBackedViews` vers `apps/web/src/app/data-refresh.ts`.
+
+Contraintes:
+- Le module extrait doit recevoir un contexte explicite contenant:
+  - toutes les fonctions API appelees;
+  - les setters des listes `latest...`;
+  - les render callbacks;
+  - `setText`, `isToday`, `window.lucide?.createIcons`.
+- Ne change pas l'ordre logique des appels ni les catch existants.
+- `main.tsx` garde un wrapper `updateApiBackedViews(root)`.
+
+Verification:
+- `pnpm --filter @stock-hub/web typecheck`
+- Demarrer l'app et verifier chargement dashboard, referentiels, stock, historique, audit.
+- Tester un refresh navigateur.
+- `git diff --check`
+
+Commit:
+`refactor(web): extract data refresh orchestration`
+
+================================================================================
+
+ETAPE 11 - Extraire parsing et dispatch des actions
+
+Dans `apps/web/src/main.tsx`, deplace `parseAction` vers `apps/web/src/app/actions.ts`.
+
+Puis, seulement si le diff reste lisible, deplace aussi le dispatch click/change/input dans le meme module.
+
+Contraintes:
+- Commencer par `parseAction` uniquement.
+- Ne change aucune chaine `data-action`.
+- Ne change aucun type retourne par `parseAction`.
+- Si le dispatch est trop risque, s'arreter apres `parseAction` et garder les listeners dans `main.tsx`.
+
+Verification:
+- `pnpm --filter @stock-hub/web typecheck`
+- Cliquer sur actions principales: navigation, modales, submit, filtres, drawers.
+- `git diff --check`
+
+Commit:
+`refactor(web): extract action parser`
+
+================================================================================
+
+ETAPE 12 - Nettoyage final de main.tsx
+
+Nettoie `apps/web/src/main.tsx` sans changement fonctionnel.
+
+Objectif:
+- `main.tsx` doit devenir le point d'assemblage:
+  - imports;
+  - etat applicatif global restant;
+  - context builders;
+  - wrappers;
+  - routing/session;
+  - listeners React;
+  - render ReactDOM.
+
+Actions:
+- Supprimer les lignes vides excessives.
+- Regrouper les wrappers par domaine avec de courts commentaires si utile.
+- Ne pas renommer les fonctions appelees par les handlers.
+- Ne pas modifier la logique.
+
+Verification:
+- `pnpm --filter @stock-hub/web typecheck`
+- `git diff --check`
+- Demarrage app.
+- Parcours rapide: login, dashboard, stock, entrees, sorties, inventaire, historique, profil.
+
+Commit:
+`refactor(web): tidy main app shell`
