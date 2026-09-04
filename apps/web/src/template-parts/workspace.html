@@ -134,45 +134,7 @@
           </div>
         </section>
 
-        <section id="users" class="view">
-          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
-            <div>
-              <div class="text-xs text-gray-500 font-semibold">Administration Stock Hub</div>
-              <h1 class="text-3xl font-bold mt-1">Utilisateurs et roles</h1>
-              <p class="text-sm text-gray-500 mt-2">Gestion des profils qui accedent au stock, aux inventaires, aux demandes et aux controles.</p>
-            </div>
-            <button data-action="openModal('userModal')" class="px-4 py-2 bg-accent-600 text-white rounded-lg text-sm font-semibold flex items-center gap-2"><i data-lucide="user-plus" class="w-4 h-4"></i>Nouvel utilisateur</button>
-          </div>
-
-          <div class="grid grid-flow-col auto-cols-[minmax(180px,1fr)] gap-4 mb-6 overflow-x-auto pb-1">
-            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Admin Stock</div><div id="usersAdminCount" class="text-3xl font-bold mt-3">0</div><div class="text-xs text-gray-500 mt-1">Tous droits</div></div>
-            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Gestionnaires</div><div id="usersManagersCount" class="text-3xl font-bold mt-3">0</div><div class="text-xs text-gray-500 mt-1">Entrees, sorties, retours</div></div>
-            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Audit</div><div id="usersAuditCount" class="text-3xl font-bold mt-3">0</div><div class="text-xs text-gray-500 mt-1">Controle sans saisie</div></div>
-            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Chefs projet</div><div id="usersProjectManagersCount" class="text-3xl font-bold mt-3">0</div><div class="text-xs text-gray-500 mt-1">Demandes et suivi</div></div>
-            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><div class="text-sm font-semibold text-gray-500">Direction</div><div id="usersDirectionCount" class="text-3xl font-bold mt-3">0</div><div class="text-xs text-gray-500 mt-1">Vue KPI controlee</div></div>
-          </div>
-
-          <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            <div class="xl:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-              <div class="p-5 border-b border-gray-200 flex items-center justify-between gap-3"><h2 class="text-lg font-bold">Registre utilisateurs</h2><input class="h-10 rounded-lg border border-gray-300 px-3 text-sm" placeholder="Rechercher utilisateur"></div>
-              <div class="overflow-x-auto">
-                <table class="w-full min-w-[850px] text-sm">
-                  <thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3 text-left">Utilisateur</th><th class="px-5 py-3 text-left">Identifiant / contact</th><th class="px-5 py-3 text-left">Role principal</th><th class="px-5 py-3 text-left">Acces</th><th class="px-5 py-3 text-left">Statut</th><th class="px-5 py-3 text-right">Action</th></tr></thead>
-                  <tbody class="divide-y divide-gray-200"><tr><td class="px-5 py-8 text-center text-gray-500" colspan="6">Chargement des utilisateurs...</td></tr></tbody>
-                </table>
-              </div>
-            </div>
-            <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-              <div class="p-5 border-b border-gray-200"><h2 class="text-lg font-bold">Regles d'acces</h2><p class="text-sm text-gray-500 mt-1">La maquette garde les roles simples au depart.</p></div>
-              <div class="p-5 space-y-3 text-sm">
-                <div class="p-3 rounded-xl bg-accent-50 border border-accent-100"><div class="font-bold text-accent-700">Admin</div><div class="text-gray-600 mt-1">Parametrage, corrections, toutes actions.</div></div>
-                <div class="p-3 rounded-xl bg-success-50 border border-success-100"><div class="font-bold text-success-700">Gestionnaire stock</div><div class="text-gray-600 mt-1">Entrees, sorties, retours, transferts, inventaire.</div></div>
-                <div class="p-3 rounded-xl bg-warning-50 border border-warning-100"><div class="font-bold text-warning-700">Audit / Direction</div><div class="text-gray-600 mt-1">Controle, KPI, alertes, historique, exports.</div></div>
-                <div class="p-3 rounded-xl bg-gray-50 border border-gray-200"><div class="font-bold text-gray-700">Chef projet</div><div class="text-gray-600 mt-1">Demander du materiel et suivre les sorties de son projet.</div></div>
-              </div>
-            </div>
-          </div>
-        </section>
+        <!-- utilisateurs-roles-page -->
         <!-- historique-page -->
       </div>
     </div>

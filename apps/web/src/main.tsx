@@ -227,6 +227,14 @@ import {
   writeRoute,
 } from "./router/routes";
 import {
+  openUserDetailPage,
+  renderUsersListPage,
+  resetUserModalPage,
+  submitUserPage,
+  toggleUserPasswordPage,
+  type UtilisateursRolesContext,
+} from "./pages/utilisateurs-roles/render";
+import {
   canAccessView as canAccessViewForUser,
   canPrepareMaterialRequests as canPrepareMaterialRequestsForUser,
   hasRole as userHasRole,
@@ -343,7 +351,6 @@ let latestLocations: StockLocation[] = [];
 let latestUsers: StockUser[] = [];
 let deferredPwaInstallPrompt: BeforeInstallPromptEvent | null = null;
 let pwaServiceWorkerRegistered = false;
-let selectedUserId: string | null = null;
 let currentUser: StockUser | null = readStoredUser();
 
 function readStoredUser(): StockUser | null {
@@ -1019,6 +1026,31 @@ function parcAutoContext(): ParcAutoContext {
     updateApiBackedViews,
     createVehicle,
     updateVehicle,
+  };
+}
+
+function utilisateursRolesContext(): UtilisateursRolesContext {
+  return {
+    latestUsers,
+    setLatestUsers: (users) => {
+      latestUsers = users;
+    },
+    currentUser,
+    createUser,
+    updateUser,
+    getUsers,
+    badge,
+    emptyRow,
+    setText,
+    showToast,
+    openModal,
+    closeModal,
+    updateApiBackedViews,
+    escapeHtml,
+    userIdentity,
+    userDisplayName,
+    roleLabel,
+    accessLabel,
   };
 }
 
@@ -2691,47 +2723,8 @@ async function submitPasswordChange(root: HTMLElement) {
   }
 }
 
-function userRow(user: StockUser) {
-  const fullName = userDisplayName(user);
-  const role = user.roles[0] ?? "GESTIONNAIRE_STOCK";
-  const identity = userIdentity(user);
-  const contact = user.email ?? "Email non renseigne";
-  return `<tr><td class="px-5 py-4"><div class="font-bold">${escapeHtml(fullName)}</div><div class="text-xs text-gray-500">${escapeHtml(user.roles.map(roleLabel).join(", "))}</div></td><td class="px-5 py-4"><div class="font-semibold">${escapeHtml(identity)}</div><div class="text-xs text-gray-500">${escapeHtml(contact)}</div></td><td class="px-5 py-4">${badge(roleLabel(role), role === "ADMIN_STOCK" ? "accent" : role === "AUDIT" ? "warning" : "success")}</td><td class="px-5 py-4">${escapeHtml(accessLabel(user.roles))}</td><td class="px-5 py-4">${badge(user.active ? "Actif" : "Inactif", user.active ? "success" : "gray")}</td><td class="px-5 py-4 text-right"><button data-action="openUserDetail('${escapeHtml(user.id)}')" title="Voir utilisateur" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-accent-600"><i data-lucide="eye" class="w-4 h-4"></i></button></td></tr>`;
-}
-
 function renderUsersList(root: HTMLElement) {
-  const usersBody = root.querySelector<HTMLElement>("#users tbody");
-  if (usersBody)
-    usersBody.innerHTML = latestUsers.length
-      ? latestUsers.map(userRow).join("")
-      : emptyRow(6, "Aucun utilisateur en base pour le moment.");
-  setText(
-    root,
-    "#usersAdminCount",
-    latestUsers.filter((user) => user.roles.includes("ADMIN_STOCK")).length,
-  );
-  setText(
-    root,
-    "#usersManagersCount",
-    latestUsers.filter((user) => user.roles.includes("GESTIONNAIRE_STOCK"))
-      .length,
-  );
-  setText(
-    root,
-    "#usersAuditCount",
-    latestUsers.filter((user) => user.roles.includes("AUDIT")).length,
-  );
-  setText(
-    root,
-    "#usersProjectManagersCount",
-    latestUsers.filter((user) => user.roles.includes("CHEF_PROJET")).length,
-  );
-  setText(
-    root,
-    "#usersDirectionCount",
-    latestUsers.filter((user) => user.roles.includes("DIRECTION")).length,
-  );
-  window.lucide?.createIcons();
+  return renderUsersListPage(root, utilisateursRolesContext());
 }
 
 
@@ -2878,37 +2871,7 @@ function updateApiBackedViews(root: HTMLElement) {
   getUsers()
     .then((users) => {
       latestUsers = users;
-      const usersBody = root.querySelector<HTMLElement>("#users tbody");
-      if (usersBody)
-        usersBody.innerHTML = users.length
-          ? users.map(userRow).join("")
-          : emptyRow(6, "Aucun utilisateur en base pour le moment.");
-      setText(
-        root,
-        "#usersAdminCount",
-        users.filter((user) => user.roles.includes("ADMIN_STOCK")).length,
-      );
-      setText(
-        root,
-        "#usersManagersCount",
-        users.filter((user) => user.roles.includes("GESTIONNAIRE_STOCK"))
-          .length,
-      );
-      setText(
-        root,
-        "#usersAuditCount",
-        users.filter((user) => user.roles.includes("AUDIT")).length,
-      );
-      setText(
-        root,
-        "#usersProjectManagersCount",
-        users.filter((user) => user.roles.includes("CHEF_PROJET")).length,
-      );
-      setText(
-        root,
-        "#usersDirectionCount",
-        users.filter((user) => user.roles.includes("DIRECTION")).length,
-      );
+      renderUsersList(root);
       renderAuditLogs(root);
       renderHistory(root);
       window.lucide?.createIcons();
@@ -3224,72 +3187,12 @@ function showRef(root: HTMLElement, ref: string, button?: HTMLElement) {
   return showRefPage(root, ref, button, referentielsContext());
 }
 
-function setUserModalMode(root: HTMLElement, title: string, subtitle: string) {
-  const modal = root.querySelector<HTMLElement>("#userModal");
-  const subtitleNode = modal?.querySelector<HTMLElement>(
-    ".text-xs.text-gray-500.font-semibold",
-  );
-  const titleNode = modal?.querySelector<HTMLHeadingElement>("h2");
-  if (subtitleNode) subtitleNode.textContent = subtitle;
-  if (titleNode) titleNode.textContent = title;
-}
-
 function prepareUserModal(root: HTMLElement) {
-  selectedUserId = null;
-  setUserModalMode(root, "Nouvel utilisateur", "Administration");
-  const firstName = root.querySelector<HTMLInputElement>("#userFirstName");
-  const lastName = root.querySelector<HTMLInputElement>("#userLastName");
-  const identifier = root.querySelector<HTMLInputElement>("#userIdentifier");
-  const email = root.querySelector<HTMLInputElement>("#userEmail");
-  const password = root.querySelector<HTMLInputElement>("#userPassword");
-  const active = root.querySelector<HTMLSelectElement>("#userActive");
-  if (firstName) firstName.value = "";
-  if (lastName) lastName.value = "";
-  if (identifier) identifier.value = "";
-  if (email) email.value = "";
-  if (password) password.value = "";
-  if (active) active.value = "true";
-  root
-    .querySelectorAll<HTMLInputElement>('input[name="userRole"]')
-    .forEach((input) => {
-      input.checked = input.value === "GESTIONNAIRE_STOCK";
-    });
-}
-
-function fillUserModal(root: HTMLElement, user: StockUser) {
-  selectedUserId = user.id;
-  setUserModalMode(root, userDisplayName(user), "Compte utilisateur");
-  const firstName = root.querySelector<HTMLInputElement>("#userFirstName");
-  const lastName = root.querySelector<HTMLInputElement>("#userLastName");
-  const identifier = root.querySelector<HTMLInputElement>("#userIdentifier");
-  const email = root.querySelector<HTMLInputElement>("#userEmail");
-  const password = root.querySelector<HTMLInputElement>("#userPassword");
-  const active = root.querySelector<HTMLSelectElement>("#userActive");
-  if (firstName) firstName.value = user.firstName;
-  if (lastName) lastName.value = user.lastName;
-  if (identifier) identifier.value = user.identifier;
-  if (email) email.value = user.email ?? "";
-  if (password) password.value = "";
-  if (active) active.value = user.active ? "true" : "false";
-  root
-    .querySelectorAll<HTMLInputElement>('input[name="userRole"]')
-    .forEach((input) => {
-      input.checked = user.roles.includes(input.value);
-    });
+  return resetUserModalPage(root);
 }
 
 function openUserDetail(root: HTMLElement, id: string) {
-  const user = latestUsers.find((item: StockUser) => item.id === id);
-  if (!user) {
-    showToast(
-      root,
-      "Utilisateur introuvable dans le registre charge.",
-      "error",
-    );
-    return;
-  }
-  openModal(root, "userModal");
-  fillUserModal(root, user);
+  return openUserDetailPage(root, id, utilisateursRolesContext());
 }
 function articleImportKey(value: unknown) {
   return String(value ?? "")
@@ -3612,77 +3515,11 @@ async function submitReferential(root: HTMLElement) {
 }
 
 async function submitUser(root: HTMLElement) {
-  const identifier =
-    root
-      .querySelector<HTMLInputElement>("#userIdentifier")
-      ?.value.trim()
-      .toLowerCase() ?? "";
-  const email =
-    root
-      .querySelector<HTMLInputElement>("#userEmail")
-      ?.value.trim()
-      .toLowerCase() ?? "";
-  const firstName =
-    root.querySelector<HTMLInputElement>("#userFirstName")?.value.trim() ?? "";
-  const lastName =
-    root.querySelector<HTMLInputElement>("#userLastName")?.value.trim() ?? "";
-  const password =
-    root.querySelector<HTMLInputElement>("#userPassword")?.value ?? "";
-  const active =
-    root.querySelector<HTMLSelectElement>("#userActive")?.value !== "false";
-  const roles = Array.from(
-    root.querySelectorAll<HTMLInputElement>('input[name="userRole"]:checked'),
-  ).map((input) => input.value);
-  if (!identifier || !firstName || !lastName) {
-    showToast(root, "Identifiant, prenom et nom sont requis.", "error");
-    return;
-  }
-  if (roles.length === 0) {
-    showToast(root, "Selectionne au moins un role.", "error");
-    return;
-  }
-  try {
-    if (selectedUserId) {
-      await updateUser(selectedUserId, {
-        identifier,
-        email: email || null,
-        firstName,
-        lastName,
-        roles,
-        password: password || undefined,
-        active,
-      });
-      showToast(root, "Utilisateur mis a jour.");
-    } else {
-      await createUser({
-        identifier,
-        email: email || null,
-        firstName,
-        lastName,
-        roles,
-        password: password || undefined,
-        active,
-      });
-      showToast(root, "Utilisateur cree et registre mis a jour.");
-    }
-    closeModal(root, "userModal");
-    selectedUserId = null;
-    updateApiBackedViews(root);
-  } catch (error) {
-    showToast(
-      root,
-      error instanceof Error
-        ? error.message
-        : "Enregistrement utilisateur impossible.",
-      "error",
-    );
-  }
+  return submitUserPage(root, utilisateursRolesContext());
 }
 
 function toggleUserPassword(root: HTMLElement) {
-  const input = root.querySelector<HTMLInputElement>("#userPassword");
-  if (!input) return;
-  input.type = input.type === "password" ? "text" : "password";
+  return toggleUserPasswordPage(root);
 }
 function parseAction(action: string) {
   const viewMatch = action.match(/^showView\('([^']+)'/);

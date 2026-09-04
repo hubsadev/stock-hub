@@ -21,6 +21,8 @@ import retoursTransfertsModalsHtml from "../pages/retours-transferts/retours-tra
 import sortiesStockHtml from "../pages/sorties-stock/sorties-stock.html?raw";
 import sortiesStockModalsHtml from "../pages/sorties-stock/sorties-stock-modals.html?raw";
 import tableauDeBordHtml from "../pages/tableau-de-bord/tableau-de-bord.html?raw";
+import utilisateursRolesHtml from "../pages/utilisateurs-roles/utilisateurs-roles.html?raw";
+import utilisateursRolesModalsHtml from "../pages/utilisateurs-roles/utilisateurs-roles-modals.html?raw";
 import vueStockHtml from "../pages/vue-stock/vue-stock.html?raw";
 import vueStockModalsHtml from "../pages/vue-stock/vue-stock-modals.html?raw";
 
@@ -98,6 +100,7 @@ export function Workspace() {
         .replace("<!-- equipements-page -->", equipementsHtml)
         .replace("<!-- parc-auto-page -->", parcAutoHtml)
         .replace("<!-- audit-alertes-page -->", auditAlertesHtml)
+        .replace("<!-- utilisateurs-roles-page -->", utilisateursRolesHtml)
         .replace("<!-- historique-page -->", historiqueHtml)}
     />
   );
@@ -107,6 +110,7 @@ export function ModalLayer() {
   return (
     <HtmlPart
       html={modalsHtml
+        .replace("<!-- utilisateurs-roles-modal -->", utilisateursRolesModalsHtml)
         .replace("<!-- entrees-stock-entry-modal -->", entryModalHtml)
         .replace("<!-- sorties-stock-modals -->", sortiesStockModalsHtml)
         .replace("<!-- retours-transferts-modals -->", retoursTransfertsModalsHtml)
