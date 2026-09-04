@@ -356,9 +356,9 @@ function renderExitRequestDetail(root: HTMLElement, movement: StockMovement) {
     sourceRequest?.reference ??
     (movement.type === "EXIT_REQUEST" ? movement.reference : "-");
   const ficheStatus = hasProof
-    ? "SignÃƒÂ©e uploadÃƒÂ©e"
+    ? "Signee uploadee"
     : canDownloadPdf
-      ? "Ãƒâ‚¬ signer"
+      ? "A signer"
       : "En attente";
   const ficheStatusClass = hasProof
     ? "text-success-700"
@@ -415,22 +415,22 @@ function renderExitRequestDetail(root: HTMLElement, movement: StockMovement) {
           </div>
           <div class="mt-4 grid gap-3 text-sm md:grid-cols-2">
             <div><span class="detail-label">Demande source</span> <strong>${escapeHtml(sourceReference)}</strong></div>
-            <div><span class="detail-label">Fiche signÃƒÂ©e</span> <strong class="${ficheStatusClass}">${ficheStatus}</strong></div>
+            <div><span class="detail-label">Fiche signee</span> <strong class="${ficheStatusClass}">${ficheStatus}</strong></div>
             <div><span class="detail-label">Projet / chantier</span> <strong>${escapeHtml(displayedRequest.project?.name ?? movement.project?.name ?? movement.toLocation?.name ?? "-")}</strong></div>
             <div><span class="detail-label">Magasin source</span> <strong>${escapeHtml(movement.fromLocation?.name ?? displayedRequest.fromLocation?.name ?? "-")}</strong></div>
           </div>
         </div>
         <div class="border-t bg-gray-50 p-5 md:border-l md:border-t-0">
           <div class="grid gap-3 text-sm">
-            <div><span class="detail-label">Demandeur / bÃƒÂ©nÃƒÂ©ficiaire</span> <strong>${escapeHtml(displayedRequest.requestedBy ?? movement.receivedBy ?? "-")}</strong></div>
+            <div><span class="detail-label">Demandeur / beneficiaire</span> <strong>${escapeHtml(displayedRequest.requestedBy ?? movement.receivedBy ?? "-")}</strong></div>
             <div><span class="detail-label">Sorti par</span> <strong>${escapeHtml(movement.handledBy ?? "-")}</strong></div>
-            <div><span class="detail-label">TransportÃƒÂ© par</span> <strong>${escapeHtml(movement.deliveredBy ?? "-")}</strong></div>
-            <div><span class="detail-label">Remis ÃƒÂ </span> <strong>${escapeHtml(movement.receivedBy ?? displayedRequest.receivedBy ?? displayedRequest.requestedBy ?? "-")}</strong></div>
+            <div><span class="detail-label">Transporte par</span> <strong>${escapeHtml(movement.deliveredBy ?? "-")}</strong></div>
+            <div><span class="detail-label">Remis a</span> <strong>${escapeHtml(movement.receivedBy ?? displayedRequest.receivedBy ?? displayedRequest.requestedBy ?? "-")}</strong></div>
           </div>
         </div>
       </div>
     </div>
-    ${movement.type === "EXIT_REQUEST" && movement.status === "SUBMITTED" ? `<div class="rounded-xl border border-accent-100 bg-accent-50 p-4 text-sm text-gray-700"><div class="font-bold text-accent-700 mb-1">Demande transmise au stock</div>En attente de prÃƒÂ©paration par le gestionnaire stock.</div>` : ""}
+    ${movement.type === "EXIT_REQUEST" && movement.status === "SUBMITTED" ? `<div class="rounded-xl border border-accent-100 bg-accent-50 p-4 text-sm text-gray-700"><div class="font-bold text-accent-700 mb-1">Demande transmise au stock</div>En attente de preparation par le gestionnaire stock.</div>` : ""}
     ${movement.type === "EXIT_REQUEST" && movement.status === "REJECTED" ? `<div class="rounded-xl border border-error-100 bg-error-50 p-4 text-sm text-gray-700"><div class="font-bold text-error-700 mb-1">Demande refusee</div><div>${escapeHtml(movement.rejectionReason ?? "Motif non renseigne")}</div><div class="mt-2 text-xs text-gray-500">${escapeHtml(movement.rejectedBy ? "Refusee par " + movement.rejectedBy : "")}${movement.rejectedAt ? " - " + escapeHtml(formatDate(movement.rejectedAt)) : ""}</div></div>` : ""}
     ${preparedPanel}
     <div class="border border-gray-200 rounded-xl overflow-hidden">
@@ -543,7 +543,7 @@ function exitActionItems(movement: StockMovement) {
     actions.push(
       exitMenuItem(
         "download",
-        "TÃƒÂ©lÃƒÂ©charger fiche",
+        "Telecharger fiche",
         `downloadPreparedMaterialPdf('${movement.id}')`,
       ),
     );
@@ -552,7 +552,7 @@ function exitActionItems(movement: StockMovement) {
     actions.push(
       exitMenuItem(
         "upload",
-        "Uploader fiche signÃƒÂ©e",
+        "Uploader fiche signee",
         `openExitRequestDetail('${movement.id}')`,
       ),
     );
@@ -1190,7 +1190,7 @@ async function uploadSignedMaterialProof(root: HTMLElement, id: string) {
       latestMovements.find((item) => item.id === updated.id) ?? updated,
     );
     updateApiBackedViews(root);
-    showToast(root, "Fiche signÃƒÂ©e. Demande terminÃƒÂ©e.");
+    showToast(root, "Fiche signee. Demande terminee.");
   } catch (error) {
     showToast(
       root,

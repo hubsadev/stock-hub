@@ -1076,7 +1076,7 @@ function stockStatus(level: StockLevel) {
 
 function movementTypeBadge(type: StockMovement["type"]) {
   const labels: Record<StockMovement["type"], string> = {
-    ENTRY: "EntrÃƒÂ©e",
+    ENTRY: "Entree",
     EXIT_REQUEST: "Dem. sortie",
     EXIT: "Sortie",
     RETURN: "Retour",
@@ -2380,10 +2380,10 @@ function materialRequestDocumentHtml(input: {
   <main class="page">
     <header class="doc-head">
       <div class="logo-cell">${hubLogoMarkup()}</div>
-      <div class="doc-name"><div class="small">Document interne</div><div class="value">Demande de matÃƒÂ©riels</div><div class="hint">Document de sortie stock et remise matÃƒÂ©riel</div></div>
+      <div class="doc-name"><div class="small">Document interne</div><div class="value">Demande de materiels</div><div class="hint">Document de sortie stock et remise materiel</div></div>
       <div class="meta"><div><b>Doc N</b><span>${escapeHtml(input.docCode)}</span></div><div><b>Demande</b><span>${escapeHtml(input.reference)}</span></div><div><b>Bon sortie</b><span>${escapeHtml(input.exitReference)}</span></div><div><b>Date</b><span>${escapeHtml(formatDate(input.date))}</span></div></div>
     </header>
-    <div class="title">Demande de matÃƒÂ©riels</div>
+    <div class="title">Demande de materiels</div>
     <section class="info-strip" aria-label="Informations de la demande">
       <div class="info-item"><div class="label">Client</div><div class="value">${escapeHtml(input.client)}</div></div>
       <div class="info-item"><div class="label">Projet</div><div class="value">${escapeHtml(input.project)}</div></div>
