@@ -245,6 +245,14 @@ import {
   type LoginContext,
 } from "./pages/login/render";
 import {
+  profileRoleBadgePage,
+  submitPasswordChangePage,
+  submitProfilePage,
+  syncCurrentUserPage,
+  updateProfileViewPage,
+  type ProfilContext,
+} from "./pages/profil/render";
+import {
   canAccessView as canAccessViewForUser,
   canPrepareMaterialRequests as canPrepareMaterialRequestsForUser,
   hasRole as userHasRole,
@@ -438,6 +446,33 @@ function loginContext(): LoginContext {
 
 function pwaContext(): PwaContext {
   return { showToast };
+}
+
+function profilContext(): ProfilContext {
+  return {
+    currentUser,
+    latestUsers,
+    setCurrentUser: (user) => {
+      currentUser = user;
+    },
+    setLatestUsers: (users) => {
+      latestUsers = users;
+    },
+    readStoredUser,
+    userIdentity,
+    userDisplayName,
+    userInitials,
+    roleLabel,
+    accessLabel,
+    badge,
+    setText,
+    showToast,
+    updateProfilePwaCards,
+    updateCurrentUserDisplay,
+    renderUsersList,
+    updateMyProfile,
+    changeMyPassword,
+  };
 }
 
 function applyRoleAccess(root: HTMLElement) {
@@ -2470,92 +2505,23 @@ function userInitials(user: Pick<StockUser, "firstName" | "lastName" | "identifi
 }
 
 function profileRoleBadge(role: string) {
-  const variant = role === "ADMIN_STOCK" ? "accent" : role === "AUDIT" ? "warning" : "success";
-  return badge(roleLabel(role), variant);
+  return profileRoleBadgePage(role, profilContext());
 }
 
 function updateProfileView(root: HTMLElement) {
-  const user = currentUser ?? readStoredUser();
-  if (!user) return;
-  setText(root, "#profileInitials", userInitials(user));
-  setText(root, "#profileDisplayName", userDisplayName(user));
-  setText(root, "#profileIdentity", userIdentity(user));
-  const firstName = root.querySelector<HTMLInputElement>("#profileFirstName");
-  const lastName = root.querySelector<HTMLInputElement>("#profileLastName");
-  const email = root.querySelector<HTMLInputElement>("#profileEmail");
-  const identifier = root.querySelector<HTMLInputElement>("#profileIdentifier");
-  if (firstName) firstName.value = user.firstName;
-  if (lastName) lastName.value = user.lastName;
-  if (email) email.value = user.email ?? "";
-  if (identifier) identifier.value = user.identifier;
-  const roles = root.querySelector<HTMLElement>("#profileRoleBadges");
-  if (roles) roles.innerHTML = user.roles.map(profileRoleBadge).join("");
-  const status = root.querySelector<HTMLElement>("#profileStatus");
-  if (status) status.innerHTML = badge(user.active ? "Actif" : "Inactif", user.active ? "success" : "gray");
-  setText(root, "#profileAccess", accessLabel(user.roles));
-  updateProfilePwaCards(root);
-  window.lucide?.createIcons();
+  return updateProfileViewPage(root, profilContext());
 }
 
 function syncCurrentUser(root: HTMLElement, user: StockUser) {
-  currentUser = user;
-  localStorage.setItem("stock-hub.user", JSON.stringify(user));
-  updateCurrentUserDisplay(root);
-  updateProfileView(root);
+  return syncCurrentUserPage(root, user, profilContext());
 }
 
 async function submitProfile(root: HTMLElement) {
-  if (!currentUser) return;
-  const firstName = root.querySelector<HTMLInputElement>("#profileFirstName")?.value.trim() ?? "";
-  const lastName = root.querySelector<HTMLInputElement>("#profileLastName")?.value.trim() ?? "";
-  const emailValue = root.querySelector<HTMLInputElement>("#profileEmail")?.value.trim() ?? "";
-  if (!firstName || !lastName) {
-    showToast(root, "Prenom et nom sont requis.", "error");
-    return;
-  }
-  try {
-    const user = await updateMyProfile(currentUser.id, {
-      firstName,
-      lastName,
-      email: emailValue || null,
-    });
-    syncCurrentUser(root, user);
-    latestUsers = latestUsers.map((item) => (item.id === user.id ? user : item));
-    renderUsersList(root);
-    showToast(root, "Profil mis a jour.");
-  } catch (error) {
-    showToast(root, error instanceof Error ? error.message : "Modification du profil impossible.", "error");
-  }
+  return submitProfilePage(root, profilContext());
 }
 
 async function submitPasswordChange(root: HTMLElement) {
-  if (!currentUser) return;
-  const currentPassword = root.querySelector<HTMLInputElement>("#profileCurrentPassword")?.value ?? "";
-  const newPassword = root.querySelector<HTMLInputElement>("#profileNewPassword")?.value ?? "";
-  const confirmPassword = root.querySelector<HTMLInputElement>("#profileConfirmPassword")?.value ?? "";
-  if (!currentPassword || !newPassword) {
-    showToast(root, "Ancien et nouveau mot de passe sont requis.", "error");
-    return;
-  }
-  if (newPassword.length < 8) {
-    showToast(root, "Le nouveau mot de passe doit contenir au moins 8 caracteres.", "error");
-    return;
-  }
-  if (newPassword !== confirmPassword) {
-    showToast(root, "La confirmation ne correspond pas au nouveau mot de passe.", "error");
-    return;
-  }
-  try {
-    const user = await changeMyPassword(currentUser.id, { currentPassword, newPassword });
-    syncCurrentUser(root, user);
-    ["#profileCurrentPassword", "#profileNewPassword", "#profileConfirmPassword"].forEach((selector) => {
-      const input = root.querySelector<HTMLInputElement>(selector);
-      if (input) input.value = "";
-    });
-    showToast(root, "Mot de passe mis a jour.");
-  } catch (error) {
-    showToast(root, error instanceof Error ? error.message : "Changement de mot de passe impossible.", "error");
-  }
+  return submitPasswordChangePage(root, profilContext());
 }
 
 function renderUsersList(root: HTMLElement) {

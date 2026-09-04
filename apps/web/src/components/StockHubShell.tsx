@@ -13,6 +13,7 @@ import inventaireStockHtml from "../pages/inventaire-stock/inventaire-stock.html
 import inventaireStockModalsHtml from "../pages/inventaire-stock/inventaire-stock-modals.html?raw";
 import parcAutoHtml from "../pages/parc-auto/parc-auto.html?raw";
 import parcAutoModalsHtml from "../pages/parc-auto/parc-auto-modals.html?raw";
+import profilHtml from "../pages/profil/profil.html?raw";
 import referentielsHtml from "../pages/referentiels/referentiels.html?raw";
 import referentielsModalsHtml from "../pages/referentiels/referentiels-modals.html?raw";
 import reapprovisionnementHtml from "../pages/reapprovisionnement/reapprovisionnement.html?raw";
@@ -100,6 +101,7 @@ export function Workspace() {
         .replace("<!-- equipements-page -->", equipementsHtml)
         .replace("<!-- parc-auto-page -->", parcAutoHtml)
         .replace("<!-- audit-alertes-page -->", auditAlertesHtml)
+        .replace("<!-- profil-page -->", profilHtml)
         .replace("<!-- utilisateurs-roles-page -->", utilisateursRolesHtml)
         .replace("<!-- historique-page -->", historiqueHtml)}
     />
