@@ -307,6 +307,10 @@ import {
   exportWorkbook,
 } from "./services/exports";
 import {
+  exportRowsFromContext,
+  type ExportDatasetsContext,
+} from "./services/export-datasets";
+import {
   downloadMaterialRequestPdfDocument,
   hubLogoMarkup as hubLogoMarkupDocument,
   materialRequestDocumentHtml as materialRequestDocumentHtmlDocument,
@@ -659,6 +663,30 @@ function dataRefreshContext(): DataRefreshContext {
     setText,
     isToday,
     createIcons: () => window.lucide?.createIcons(),
+  };
+}
+
+function exportDatasetsContext(): ExportDatasetsContext {
+  return {
+    latestStockLevels,
+    latestAuditLogs,
+    latestMovements,
+    inventoryGlobalExportRows,
+    reapproLevels,
+    reorderQuantity,
+    filteredHistory,
+    movementTypeLabel,
+    movementArticleLabel,
+    movementQuantity,
+    movementActor,
+    auditLogUserLabel,
+    auditActionLabel,
+    auditDocumentLabel,
+    auditLogResult,
+    auditLogResultLabel,
+    exportDateValue,
+    exportWorkbook,
+    showToast,
   };
 }
 
@@ -1703,11 +1731,7 @@ function exportDataset(kind: string, root: HTMLElement): {
 }
 
 function exportRows(kind: string, root: HTMLElement) {
-  const dataset = exportDataset(kind, root);
-  return [
-    dataset.columns.map((column) => column.header),
-    ...dataset.rows.map((row) => dataset.columns.map((column) => row[column.key])),
-  ];
+  return exportRowsFromContext(kind, root, exportDatasetsContext());
 }
 
 async function exportData(root: HTMLElement, kind: string) {
