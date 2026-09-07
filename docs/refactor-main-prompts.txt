@@ -383,3 +383,262 @@ Verification:
 
 Commit:
 `refactor(web): tidy main app shell`
+
+================================================================================
+
+ETAPE 13 - Extraire les helpers utilisateur partages
+
+Dans `apps/web/src/main.tsx`, deplace les helpers utilisateur partages vers `apps/web/src/services/users.ts`.
+
+Fonctions visees:
+- userIdentity
+- userDisplayName
+- userInitials
+- roleLabel
+- accessLabel
+
+Contraintes:
+- Ne change ni les noms, ni les signatures, ni les valeurs retournees.
+- Conserver des wrappers dans `main.tsx` si des contextes/pages en dependent encore.
+- Ne pas deplacer la logique Profil deja extraite, ni les fonctions de session/login.
+
+Verification:
+- `pnpm --filter @stock-hub/web typecheck`
+- Verifier header/sidebar, Profil, Historique, Utilisateurs & roles.
+- `git diff --check`
+
+Commit:
+`refactor(web): extract user helpers`
+
+================================================================================
+
+ETAPE 14 - Extraire le toast global
+
+Dans `apps/web/src/main.tsx`, deplace `showToast` vers `apps/web/src/components/ui/toast.ts`.
+
+Contraintes:
+- Ne change pas le rendu, les classes, les durees, ni les tons.
+- Garder un wrapper `showToast(root, message, tone)` dans `main.tsx`.
+- Les pages continuent a recevoir `showToast` via leurs contextes.
+
+Verification:
+- `pnpm --filter @stock-hub/web typecheck`
+- Tester une action succes, une erreur et une action bloquee offline.
+- `git diff --check`
+
+Commit:
+`refactor(web): extract toast helper`
+
+================================================================================
+
+ETAPE 15 - Extraire les documents PDF partages
+
+Dans `apps/web/src/main.tsx`, deplace la logique PDF/document encore centrale vers un module dedie.
+
+Fichier cible recommande:
+- `apps/web/src/services/documents.ts`
+
+Fonctions visees:
+- hubLogoMarkup
+- materialRequestDocumentHtml
+- downloadMaterialRequestPdf
+
+Contraintes:
+- Ne change pas le HTML/PDF genere.
+- Ne change aucun libelle, signature, style ou logique de donnees.
+- Si une fonction est uniquement liee aux sorties, elle peut etre exposee au contexte Sorties depuis ce service.
+
+Verification:
+- `pnpm --filter @stock-hub/web typecheck`
+- Telecharger une fiche demande/sortie et comparer visuellement.
+- `git diff --check`
+
+Commit:
+`refactor(web): extract document helpers`
+
+================================================================================
+
+ETAPE 16A - Preparer le service datasets d'export sans le brancher
+
+Suite au rollback du commit `e693fc0`, ne pas refaire l'extraction export en une seule passe.
+
+Dans cette etape, creer uniquement `apps/web/src/services/export-datasets.ts` avec les types et fonctions prepares, mais ne modifier aucun appel runtime dans `main.tsx`.
+
+Objectif:
+- Copier la logique de `exportDataset`, `exportRows` et `exportData` dans des fonctions parametrees.
+- Ne pas brancher ces fonctions au dispatch ni aux wrappers existants.
+- Garder `main.tsx` fonctionnel exactement comme avant.
+
+Fonctions a preparer:
+- exportDatasetFromContext
+- exportRowsFromContext
+- exportDataFromContext
+
+Contraintes:
+- Aucun comportement runtime ne doit changer dans cette etape.
+- `main.tsx` peut importer seulement des types si necessaire, mais ne doit pas appeler le nouveau service.
+- Ne pas toucher aux exports Vue Stock, Inventaire, Reapprovisionnement, Audit.
+
+Verification:
+- `pnpm --filter @stock-hub/web typecheck`
+- `git diff --check`
+- Demarrer l'app et verifier visuellement que rien n'a bouge:
+  - KPI dashboard;
+  - filtres Vue Stock;
+  - filtres Historique;
+  - ouverture/fermeture d'une modale.
+
+Commit:
+`refactor(web): prepare export datasets service`
+
+================================================================================
+
+ETAPE 16B - Brancher uniquement exportRows sur le service
+
+Dans `apps/web/src/main.tsx`, brancher seulement le wrapper `exportRows(kind, root)` vers `exportRowsFromContext(...)`.
+
+Contraintes:
+- Ne pas brancher `exportDataset`.
+- Ne pas brancher `exportData`.
+- Garder les exports utilisateur actuels inchanges.
+- Si `exportRows` n'est pas utilise runtime, cette etape doit rester sans effet visuel.
+
+Verification:
+- `pnpm --filter @stock-hub/web typecheck`
+- `git diff --check`
+- Demarrer l'app et verifier:
+  - dashboard KPI;
+  - modales avec donnees;
+  - filtres qui gardent leur largeur normale;
+  - fermeture des modales.
+
+Commit:
+`refactor(web): route export rows helper`
+
+================================================================================
+
+ETAPE 16C - Brancher exportDataset et exportData avec verification visuelle stricte
+
+Brancher `exportDataset(kind, root)` et `exportData(root, kind)` vers le service `export-datasets.ts`.
+
+Contraintes:
+- Ne change ni noms de fichiers, ni colonnes, ni feuilles Excel, ni donnees exportees.
+- Garder un wrapper `exportData(root, kind)` dans `main.tsx`.
+- Apres branchement, lancer obligatoirement l'app en dev et verifier visuellement les ecrans principaux avant commit.
+
+Verification:
+- `pnpm --filter @stock-hub/web typecheck`
+- `git diff --check`
+- Verifier visuellement:
+  - KPI dashboard non etires;
+  - filtres Vue Stock et Historique normaux;
+  - modales avec donnees;
+  - boutons fermer fonctionnels;
+  - export Reapprovisionnement;
+  - export Audit;
+  - exports Vue Stock et Inventaire inchanges.
+
+Commit:
+`refactor(web): extract export datasets`
+
+================================================================================
+
+ETAPE 17 - Extraire les badges et lignes HTML metier restantes
+
+Dans `apps/web/src/main.tsx`, deplace les helpers HTML metier restants vers `apps/web/src/components/ui/stock-html.ts`.
+
+Fonctions visees:
+- stockStatus
+- movementTypeBadge
+- watchStockRow
+
+Contraintes:
+- Ne change pas le HTML genere.
+- Importer `badge`, `escapeHtml`, `formatNumber` ou `formatDate` selon les besoins.
+- Garder des wrappers dans `main.tsx` si les contextes existants les utilisent.
+
+Verification:
+- `pnpm --filter @stock-hub/web typecheck`
+- Verifier Vue Stock, Dashboard, Historique, Entrees, Sorties.
+- `git diff --check`
+
+Commit:
+`refactor(web): extract stock html helpers`
+
+================================================================================
+
+ETAPE 18 - Extraire le controleur shell
+
+Dans `apps/web/src/main.tsx`, deplace la logique de shell applicatif vers `apps/web/src/app/shell-controller.ts`.
+
+Fonctions visees:
+- applyRoleAccess
+- updateCurrentUserDisplay
+- showView
+- navigateToView
+- openRoute
+
+Contraintes:
+- Conserver les wrappers dans `main.tsx`.
+- Ne change aucune route, aucun alias, aucun droit d'acces, aucun bouton header.
+- Le module recoit un contexte explicite pour `currentUser`, `canAccessView`, `setViewActions`, `showLogin`, `hideLogin`, `updateApiBackedViews`, `showToast`.
+
+Verification:
+- `pnpm --filter @stock-hub/web typecheck`
+- Naviguer entre 5 ecrans.
+- Tester F5 sur `/historiques`, `/vue-stock`, `/profil`.
+- Tester logout/login.
+- `git diff --check`
+
+Commit:
+`refactor(web): extract shell controller`
+
+================================================================================
+
+ETAPE 19 - Extraire le dispatch des actions
+
+Dans `apps/web/src/main.tsx`, deplace progressivement le dispatch `onClick` vers `apps/web/src/app/dispatch.ts`.
+
+Contraintes:
+- Ne change aucune chaine `data-action`.
+- Commencer par extraire une fonction `dispatchAction(root, parsed, target, ctx)`.
+- Garder les listeners React dans `main.tsx`.
+- Le contexte contient tous les handlers actuels appeles par le dispatch.
+- Si le diff devient trop large, extraire seulement le dispatch click et laisser change/input dans `main.tsx`.
+
+Verification:
+- `pnpm --filter @stock-hub/web typecheck`
+- Tester navigation, modales, filtres, drawers, submits, downloads et uploads.
+- `git diff --check`
+
+Commit:
+`refactor(web): extract action dispatch`
+
+================================================================================
+
+ETAPE 20 - Nettoyage final apres dispatch
+
+Nettoie `apps/web/src/main.tsx` apres extraction du dispatch.
+
+Objectif:
+- Garder uniquement:
+  - imports;
+  - etat global restant;
+  - context builders;
+  - wrappers indispensables;
+  - listeners React;
+  - render ReactDOM.
+
+Actions:
+- Supprimer les wrappers devenus inutiles.
+- Regrouper les context builders.
+- Supprimer les commentaires de section obsoletes.
+- Ne pas modifier la logique.
+
+Verification:
+- `pnpm --filter @stock-hub/web typecheck`
+- `git diff --check`
+- Parcours rapide complet: login, dashboard, stock, entrees, sorties, retours, inventaire, historique, profil.
+
+Commit:
+`refactor(web): slim main shell`
