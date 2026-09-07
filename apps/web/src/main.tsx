@@ -36,7 +36,6 @@ import {
   renderAuditAlertsPage,
   renderAuditLogsPage,
   setAuditAlertFilterPage,
-  setAuditCardValuePage,
   setAuditLogDateRangePage,
   showAuditTabPage,
   toggleAuditLogDayPage,
@@ -47,7 +46,6 @@ import {
   renderDashboardAuditLogCountPage,
   renderDashboardPendingExitRequestsPage,
   renderDashboardWatchStockPage,
-  setCardValuePage,
   updateDashboardPage,
   type TableauDeBordContext,
 } from "./pages/tableau-de-bord/render";
@@ -96,7 +94,6 @@ import {
   refreshMaterialRequestLinesPage,
   removeMaterialRequestLinePage,
   renderExitRegistryPage,
-  renderExitRequestDetailPage,
   setExitFilter as setExitFilterPage,
   setMaterialRequestModePage,
   submitDirectExitPage,
@@ -121,8 +118,6 @@ import {
   removeReturnLinePage,
   removeTransferLinePage,
   renderReturnTransferRegistryPage,
-  returnedQuantityForSourcePage,
-  returnSourceLinesPage,
   submitReturnControlPage,
   submitStockReturnPage,
   submitStockTransferPage,
@@ -170,10 +165,8 @@ import {
   cancelEquipmentEditPage,
   editEquipmentDetailPage,
   openEquipmentDetailPage,
-  openEquipmentEditPage,
   populateEquipmentCreateModalPage,
   populateEquipmentModalPage,
-  renderEquipmentDetailPage,
   renderEquipmentsRegistryPage,
   submitEquipmentAssignmentPage,
   submitEquipmentCreationPage,
@@ -210,7 +203,6 @@ import {
   readArticleImportFilePage,
   readReferentialImportFilePage,
   renderReferentialsRegistryPage,
-  renderReferentialDetailPage,
   resetReferentialImportPage,
   setReferentialImportTypePage,
   showRefPage,
@@ -259,7 +251,6 @@ import {
   loginPage,
   logoutPage,
   readStoredUserPage,
-  setLoginErrorPage,
   showLoginPage,
   togglePasswordPage,
   type LoginContext,
@@ -279,11 +270,7 @@ import {
   rolePriority,
 } from "./services/permissions";
 import {
-  initialQuantityForLevel as computeInitialQuantityForLevel,
   stockAvailableFor as computeStockAvailableFor,
-  stockInitialForLevel as computeStockInitialForLevel,
-  stockLastMovementDate as computeStockLastMovementDate,
-  stockMovementMetrics as computeStockMovementMetrics,
   stockStatusCategory,
 } from "./services/stock-logic";
 import {
@@ -493,10 +480,6 @@ function userDisplayName(
   user: Pick<StockUser, "firstName" | "lastName" | "identifier" | "email">,
 ) {
   return userDisplayNameService(user);
-}
-
-function setLoginError(root: HTMLElement, message: string | null) {
-  return setLoginErrorPage(root, message);
 }
 
 function hasRole(role: string) {
@@ -910,14 +893,6 @@ function showLogin(root: HTMLElement) {
 
 function hideLogin(root: HTMLElement) {
   return hideLoginPage(root);
-}
-
-function setCardValue(
-  root: HTMLElement,
-  label: string,
-  value: number | string,
-) {
-  return setCardValuePage(root, label, value, tableauDeBordContext());
 }
 
 function updateDashboard(root: HTMLElement) {
@@ -1369,28 +1344,11 @@ function inventaireStockContext(): InventaireStockContext {
   };
 }
 
-// ---- Page and service wrappers ----
-function stockInitialForLevel(level: StockLevel) {
-  return computeStockInitialForLevel(level, latestMovements);
-}
-
-function stockMovementMetrics(level: StockLevel) {
-  return computeStockMovementMetrics(level, latestMovements);
-}
-
-function stockLastMovementDate(level: StockLevel): string {
-  return computeStockLastMovementDate(level, latestMovements, formatDate);
-}
-
+// ---- Stock, drawers and reappro wrappers ----
 function renderStock(root: HTMLElement) {
   renderVueStock(root, vueStockContext());
 }
 
-function populateStockFilters(root: HTMLElement) {
-  populateVueStockFilters(root, vueStockContext());
-}
-
-// ---- Stock Drawer ----
 function openStockDrawer(root: HTMLElement, levelId: string) {
   clearInventoryDrawerStatePage();
   clearHistoryMovementDrawerPage();
@@ -1413,16 +1371,14 @@ function closeStockDrawer(root: HTMLElement) {
   backdrops.forEach((backdrop) => backdrop.classList.add("hidden"));
 }
 
-function initialQuantityForLevel(
-  level: StockLevel,
-  movements: StockMovement[],
-) {
-  return computeInitialQuantityForLevel(level, movements);
-}
-
 function renderStockDrawer(root: HTMLElement) {
   renderVueStockDrawer(root, vueStockContext());
 }
+
+function populateStockFilters(root: HTMLElement) {
+  populateVueStockFilters(root, vueStockContext());
+}
+
 function stockStatus(level: StockLevel) {
   return stockStatusHtml(level, stockStatusCategory, badge);
 }
@@ -1442,20 +1398,17 @@ function reorderQuantity(level: StockLevel) {
 function watchStockRow(level: StockLevel) {
   return watchStockRowHtml(level, { stockStatus });
 }
+
 function renderReappro(root: HTMLElement) {
   return renderReapproPage(root, reapprovisionnementContext());
 }
 
-function renderEquipmentsRegistry(root: HTMLElement, equipments = latestEquipments) {
-  return renderEquipmentsRegistryPage(root, equipementsContext(), equipments);
-}
-
-async function renderEquipmentDetail(
+// ---- Equipment wrappers ----
+function renderEquipmentsRegistry(
   root: HTMLElement,
-  id: string,
-  editing = false,
+  equipments = latestEquipments,
 ) {
-  return renderEquipmentDetailPage(root, id, editing, equipementsContext());
+  return renderEquipmentsRegistryPage(root, equipementsContext(), equipments);
 }
 
 function openEquipmentDetail(root: HTMLElement, id: string) {
@@ -1468,10 +1421,6 @@ function editEquipmentDetail(root: HTMLElement) {
 
 function cancelEquipmentEdit(root: HTMLElement) {
   return cancelEquipmentEditPage(root, equipementsContext());
-}
-
-async function openEquipmentEdit(root: HTMLElement) {
-  return openEquipmentEditPage(root, equipementsContext());
 }
 
 async function submitEquipmentEdit(root: HTMLElement) {
@@ -1497,6 +1446,8 @@ async function submitEquipmentCreation(root: HTMLElement) {
 async function submitEquipmentAssignment(root: HTMLElement) {
   return submitEquipmentAssignmentPage(root, equipementsContext());
 }
+
+// ---- Movement, proof and history wrappers ----
 function movementTypeLabel(type: StockMovement["type"]) {
   return movementTypeLabelValue(type);
 }
@@ -1587,22 +1538,26 @@ function materialRequestDocumentHtml(input: MaterialRequestDocumentInput) {
   return materialRequestDocumentHtmlDocument(input);
 }
 
-function cleanEntryLineObservation(value: string | null | undefined) {
-  return cleanEntryLineObservationPage(value);
+function downloadReturnPdf(root: HTMLElement, id: string) {
+  return downloadReturnPdfPage(root, id, retoursTransfertsContext());
 }
 
-function downloadEntryPdf(root: HTMLElement, id: string) {
-  return downloadEntryPdfPage(root, id, entreesStockContext());
+function downloadTransferPdf(root: HTMLElement, id: string) {
+  return downloadTransferPdfPage(root, id, retoursTransfertsContext());
 }
 
-function downloadReturnPdf(root: HTMLElement, id: string) { return downloadReturnPdfPage(root, id, retoursTransfertsContext()); }
-
-function downloadTransferPdf(root: HTMLElement, id: string) { return downloadTransferPdfPage(root, id, retoursTransfertsContext()); }
-
-function renderReturnTransferRegistry(root: HTMLElement, movements = latestMovements) {
-  return renderReturnTransferRegistryPage(root, retoursTransfertsContext(), movements);
+function renderReturnTransferRegistry(
+  root: HTMLElement,
+  movements = latestMovements,
+) {
+  return renderReturnTransferRegistryPage(
+    root,
+    retoursTransfertsContext(),
+    movements,
+  );
 }
 
+// ---- Inventory wrappers ----
 function renderInventory(root: HTMLElement) {
   return renderInventoryPage(root, inventaireStockContext());
 }
@@ -1625,7 +1580,11 @@ function openInventoryDetail(
 }
 
 function openInventoryGlobalDetail(root: HTMLElement, articleId: string) {
-  return openInventoryGlobalDetailPage(root, articleId, inventaireStockContext());
+  return openInventoryGlobalDetailPage(
+    root,
+    articleId,
+    inventaireStockContext(),
+  );
 }
 
 function renderInventoryDrawer(root: HTMLElement) {
@@ -1633,7 +1592,10 @@ function renderInventoryDrawer(root: HTMLElement) {
 }
 
 function inventoryComputedLinesForLocation(locationId: string) {
-  return inventoryComputedLinesForLocationPage(locationId, inventaireStockContext());
+  return inventoryComputedLinesForLocationPage(
+    locationId,
+    inventaireStockContext(),
+  );
 }
 
 function allInventoryComputedLines() {
@@ -1707,6 +1669,7 @@ function updateInventoryImportCell(
   );
 }
 
+// ---- Export wrappers ----
 function exportDataset(kind: string, root: HTMLElement) {
   return exportDatasetFromContext(kind, root, exportDatasetsContext());
 }
@@ -1742,6 +1705,16 @@ function downloadStockPdf(root: HTMLElement, scope: StockExportScope) {
 function prepareStockExportModal(root: HTMLElement) {
   prepareVueStockExportModal(root, vueStockContext());
 }
+
+// ---- Entry wrappers ----
+function cleanEntryLineObservation(value: string | null | undefined) {
+  return cleanEntryLineObservationPage(value);
+}
+
+function downloadEntryPdf(root: HTMLElement, id: string) {
+  return downloadEntryPdfPage(root, id, entreesStockContext());
+}
+
 function movementStatus(movement: StockMovement) {
   if (movement.status === "CANCELLED") return badge("Annulee", "gray");
   return badge(entryStatusLabel(movement), entryStatusTone(movement));
@@ -1794,6 +1767,7 @@ async function submitEntryResolution(root: HTMLElement) {
   return submitEntryResolutionPage(root, entreesStockContext());
 }
 
+// ---- Exit movement wrappers ----
 function movementStatusLabel(movement: StockMovement) {
   return movementStatusLabelValue(movement);
 }
@@ -1842,9 +1816,13 @@ function requestForExit(movement: StockMovement) {
   return requestForExitFromMovements(movement, latestMovements);
 }
 
-function materialPdfMovement(movement: StockMovement) { return materialPdfMovementPage(movement, sortiesStockContext()); }
+function materialPdfMovement(movement: StockMovement) {
+  return materialPdfMovementPage(movement, sortiesStockContext());
+}
 
-function materialPdfLinkedExit(movement: StockMovement) { return materialPdfLinkedExitPage(movement, sortiesStockContext()); }
+function materialPdfLinkedExit(movement: StockMovement) {
+  return materialPdfLinkedExitPage(movement, sortiesStockContext());
+}
 
 function proofRequestForMovement(movement: StockMovement) {
   return proofRequestForMovementValue(movement, requestForExit);
@@ -1858,27 +1836,57 @@ function canUploadSignedProofFor(movement: StockMovement) {
   );
 }
 
-function visibleExitMovements(movements: StockMovement[]) { return visibleExitMovementsPage(movements, sortiesStockContext()); }
+function visibleExitMovements(movements: StockMovement[]) {
+  return visibleExitMovementsPage(movements, sortiesStockContext());
+}
 
-function renderExitRegistry(root: HTMLElement) { return renderExitRegistryPage(root, sortiesStockContext()); }
+function renderExitRegistry(root: HTMLElement) {
+  return renderExitRegistryPage(root, sortiesStockContext());
+}
 
-function renderExitRequestDetail(root: HTMLElement, movement: StockMovement) { return renderExitRequestDetailPage(root, movement, sortiesStockContext()); }
+function openPreparedExitForAction(
+  root: HTMLElement,
+  action: "download" | "upload",
+) {
+  return openPreparedExitForActionPage(root, action, sortiesStockContext());
+}
 
-function openPreparedExitForAction(root: HTMLElement, action: "download" | "upload") { return openPreparedExitForActionPage(root, action, sortiesStockContext()); }
+function openExitRequestDetail(root: HTMLElement, id: string) {
+  return openExitRequestDetailPage(root, id, sortiesStockContext());
+}
 
-function openExitRequestDetail(root: HTMLElement, id: string) { return openExitRequestDetailPage(root, id, sortiesStockContext()); }
+async function prepareExitFromRequest(root: HTMLElement, id: string) {
+  return prepareExitFromRequestPage(root, id, sortiesStockContext());
+}
 
-async function prepareExitFromRequest(root: HTMLElement, id: string) { return prepareExitFromRequestPage(root, id, sortiesStockContext()); }
+function closeFloatingExitActions(root: HTMLElement) {
+  return closeFloatingExitActionsPage(root, sortiesStockContext());
+}
 
-function closeFloatingExitActions(root: HTMLElement) { return closeFloatingExitActionsPage(root, sortiesStockContext()); }
+function toggleFloatingExitActions(
+  root: HTMLElement,
+  movementId: string,
+  trigger: HTMLElement,
+) {
+  return toggleFloatingExitActionsPage(
+    root,
+    movementId,
+    trigger,
+    sortiesStockContext(),
+  );
+}
 
-function toggleFloatingExitActions(root: HTMLElement, movementId: string, trigger: HTMLElement) { return toggleFloatingExitActionsPage(root, movementId, trigger, sortiesStockContext()); }
+function openReturnTransferDetail(root: HTMLElement, id: string) {
+  return openReturnTransferDetailPage(root, id, retoursTransfertsContext());
+}
 
-function openReturnTransferDetail(root: HTMLElement, id: string) { return openReturnTransferDetailPage(root, id, retoursTransfertsContext()); }
+function openReturnControl(root: HTMLElement) {
+  return openReturnControlPage(root, retoursTransfertsContext());
+}
 
-function openReturnControl(root: HTMLElement) { return openReturnControlPage(root, retoursTransfertsContext()); }
-
-async function submitReturnControl(root: HTMLElement) { return submitReturnControlPage(root, retoursTransfertsContext()); }
+async function submitReturnControl(root: HTMLElement) {
+  return submitReturnControlPage(root, retoursTransfertsContext());
+}
 
 function userOptions(users: StockUser[]) {
   return formUserOptions(users, userDisplayName);
@@ -1918,78 +1926,152 @@ function selectArticleInEntry(root: HTMLElement, articleId: string) {
 async function submitQuickArticle(root: HTMLElement) {
   return submitQuickArticlePage(root, referentielsContext());
 }
+
 async function submitStockEntry(root: HTMLElement) {
   return submitStockEntryPage(root, entreesStockContext());
 }
 
-async function populateExitModals(root: HTMLElement, modalId: "exitModal" | "directExitModal") { return populateExitModalsPage(root, modalId, sortiesStockContext()); }
+async function populateExitModals(
+  root: HTMLElement,
+  modalId: "exitModal" | "directExitModal",
+) {
+  return populateExitModalsPage(root, modalId, sortiesStockContext());
+}
 
-function setMaterialRequestMode(root: HTMLElement, mode: "create" | "prepare", movement?: StockMovement) { return setMaterialRequestModePage(root, mode, movement, sortiesStockContext()); }
+function setMaterialRequestMode(
+  root: HTMLElement,
+  mode: "create" | "prepare",
+  movement?: StockMovement,
+) {
+  return setMaterialRequestModePage(
+    root,
+    mode,
+    movement,
+    sortiesStockContext(),
+  );
+}
 
-function syncMaterialPreparationState(root: HTMLElement) { return syncMaterialPreparationStatePage(root, sortiesStockContext()); }
+function syncMaterialPreparationState(root: HTMLElement) {
+  return syncMaterialPreparationStatePage(root, sortiesStockContext());
+}
 
-function downloadPreparedMaterialPdf(root: HTMLElement, id: string) { return downloadPreparedMaterialPdfPage(root, id, sortiesStockContext()); }
+function downloadPreparedMaterialPdf(root: HTMLElement, id: string) {
+  return downloadPreparedMaterialPdfPage(root, id, sortiesStockContext());
+}
 
-async function uploadSignedMaterialProof(root: HTMLElement, id: string) { return uploadSignedMaterialProofPage(root, id, sortiesStockContext()); }
+async function uploadSignedMaterialProof(root: HTMLElement, id: string) {
+  return uploadSignedMaterialProofPage(root, id, sortiesStockContext());
+}
 
 async function uploadSignedEntryProof(root: HTMLElement, id: string) {
   return uploadSignedEntryProofPage(root, id, entreesStockContext());
 }
 
-async function viewSignedMaterialProof(root: HTMLElement, id: string) { return viewSignedMaterialProofPage(root, id, sortiesStockContext()); }
+async function viewSignedMaterialProof(root: HTMLElement, id: string) {
+  return viewSignedMaterialProofPage(root, id, sortiesStockContext());
+}
 
 async function viewSignedEntryProof(root: HTMLElement, id: string) {
   return viewSignedEntryProofPage(root, id, entreesStockContext());
 }
 
-async function uploadSignedReturnProof(root: HTMLElement, id: string) { return uploadSignedReturnProofPage(root, id, retoursTransfertsContext()); }
-
-async function uploadSignedTransferProof(root: HTMLElement, id: string) { return uploadSignedTransferProofPage(root, id, retoursTransfertsContext()); }
-
-async function viewSignedReturnProof(root: HTMLElement, id: string) { return viewSignedReturnProofPage(root, id, retoursTransfertsContext()); }
-
-async function viewSignedTransferProof(root: HTMLElement, id: string) { return viewSignedTransferProofPage(root, id, retoursTransfertsContext()); }
-
-function openExitRequestRejection(root: HTMLElement, id: string, reason = "") { return openExitRequestRejectionPage(root, id, reason, sortiesStockContext()); }
-
-async function submitExitRequestRejection(root: HTMLElement) { return submitExitRequestRejectionPage(root, sortiesStockContext()); }
-
-async function openMaterialRequestPreparation(root: HTMLElement, id: string) { return openMaterialRequestPreparationPage(root, id, sortiesStockContext()); }
-
-async function submitMaterialRequestPreparation(root: HTMLElement) { return submitMaterialRequestPreparationPage(root, sortiesStockContext()); }
-
-function addTransferLine(root: HTMLElement) { return addTransferLinePage(root, retoursTransfertsContext()); }
-
-function removeTransferLine(root: HTMLElement, trigger: HTMLElement) { return removeTransferLinePage(root, trigger, retoursTransfertsContext()); }
-
-function refreshMaterialRequestLines(root: HTMLElement) { return refreshMaterialRequestLinesPage(root, sortiesStockContext()); }
-
-function addMaterialRequestLine(root: HTMLElement) { return addMaterialRequestLinePage(root, sortiesStockContext()); }
-
-function removeMaterialRequestLine(root: HTMLElement, trigger: HTMLElement) { return removeMaterialRequestLinePage(root, trigger, sortiesStockContext()); }
-
-async function submitExitRequest(root: HTMLElement) { return submitExitRequestPage(root, sortiesStockContext()); }
-
-async function submitDirectExit(root: HTMLElement) { return submitDirectExitPage(root, sortiesStockContext()); }
-
-function returnSourceLines(source: StockMovement | undefined | null) { return returnSourceLinesPage(source, retoursTransfertsContext()); }
-
-function returnedQuantityForSource(sourceMovementId: string, articleId: string) { return returnedQuantityForSourcePage(sourceMovementId, articleId, retoursTransfertsContext()); }
-
-function addReturnLine(root: HTMLElement) { return addReturnLinePage(root, retoursTransfertsContext()); }
-
-function removeReturnLine(root: HTMLElement, trigger: HTMLElement) { return removeReturnLinePage(root, trigger, retoursTransfertsContext()); }
-
-async function populateReturnTransferModals(root: HTMLElement, modalId: "returnModal" | "transferModal") { return populateReturnTransferModalsPage(root, modalId, retoursTransfertsContext()); }
-
-async function submitStockReturn(root: HTMLElement) { return submitStockReturnPage(root, retoursTransfertsContext()); }
-
-async function submitStockTransfer(root: HTMLElement) { return submitStockTransferPage(root, retoursTransfertsContext()); }
-
-function setAuditCardValue(root: HTMLElement, label: string, value: number | string) {
-  return setAuditCardValuePage(root, label, value, auditAlertesContext());
+async function uploadSignedReturnProof(root: HTMLElement, id: string) {
+  return uploadSignedReturnProofPage(root, id, retoursTransfertsContext());
 }
 
+async function uploadSignedTransferProof(root: HTMLElement, id: string) {
+  return uploadSignedTransferProofPage(root, id, retoursTransfertsContext());
+}
+
+async function viewSignedReturnProof(root: HTMLElement, id: string) {
+  return viewSignedReturnProofPage(root, id, retoursTransfertsContext());
+}
+
+async function viewSignedTransferProof(root: HTMLElement, id: string) {
+  return viewSignedTransferProofPage(root, id, retoursTransfertsContext());
+}
+
+function openExitRequestRejection(
+  root: HTMLElement,
+  id: string,
+  reason = "",
+) {
+  return openExitRequestRejectionPage(
+    root,
+    id,
+    reason,
+    sortiesStockContext(),
+  );
+}
+
+async function submitExitRequestRejection(root: HTMLElement) {
+  return submitExitRequestRejectionPage(root, sortiesStockContext());
+}
+
+async function openMaterialRequestPreparation(root: HTMLElement, id: string) {
+  return openMaterialRequestPreparationPage(root, id, sortiesStockContext());
+}
+
+async function submitMaterialRequestPreparation(root: HTMLElement) {
+  return submitMaterialRequestPreparationPage(root, sortiesStockContext());
+}
+
+function addTransferLine(root: HTMLElement) {
+  return addTransferLinePage(root, retoursTransfertsContext());
+}
+
+function removeTransferLine(root: HTMLElement, trigger: HTMLElement) {
+  return removeTransferLinePage(root, trigger, retoursTransfertsContext());
+}
+
+function refreshMaterialRequestLines(root: HTMLElement) {
+  return refreshMaterialRequestLinesPage(root, sortiesStockContext());
+}
+
+function addMaterialRequestLine(root: HTMLElement) {
+  return addMaterialRequestLinePage(root, sortiesStockContext());
+}
+
+function removeMaterialRequestLine(root: HTMLElement, trigger: HTMLElement) {
+  return removeMaterialRequestLinePage(root, trigger, sortiesStockContext());
+}
+
+async function submitExitRequest(root: HTMLElement) {
+  return submitExitRequestPage(root, sortiesStockContext());
+}
+
+async function submitDirectExit(root: HTMLElement) {
+  return submitDirectExitPage(root, sortiesStockContext());
+}
+
+function addReturnLine(root: HTMLElement) {
+  return addReturnLinePage(root, retoursTransfertsContext());
+}
+
+function removeReturnLine(root: HTMLElement, trigger: HTMLElement) {
+  return removeReturnLinePage(root, trigger, retoursTransfertsContext());
+}
+
+async function populateReturnTransferModals(
+  root: HTMLElement,
+  modalId: "returnModal" | "transferModal",
+) {
+  return populateReturnTransferModalsPage(
+    root,
+    modalId,
+    retoursTransfertsContext(),
+  );
+}
+
+async function submitStockReturn(root: HTMLElement) {
+  return submitStockReturnPage(root, retoursTransfertsContext());
+}
+
+async function submitStockTransfer(root: HTMLElement) {
+  return submitStockTransferPage(root, retoursTransfertsContext());
+}
+
+// ---- Audit wrappers ----
 function auditAlertDomain(alert: AuditAlert) {
   return auditAlertDomainPage(alert, auditAlertesContext());
 }
@@ -2042,6 +2124,7 @@ function openAuditLogDetail(root: HTMLElement, id: string) {
   return openAuditLogDetailPage(root, id, auditAlertesContext());
 }
 
+// ---- Vehicle wrappers ----
 function renderVehicles(
   root: HTMLElement,
   vehicles: Vehicle[] = latestVehicles,
@@ -2101,6 +2184,8 @@ async function openVehicleEdit(root: HTMLElement, focusDriver = false) {
 async function submitVehicleEdit(root: HTMLElement) {
   return submitVehicleEditPage(root, parcAutoContext());
 }
+
+// ---- User and profile wrappers ----
 function roleLabel(role: string) {
   return roleLabelService(role);
 }
@@ -2109,7 +2194,9 @@ function accessLabel(roles: string[]) {
   return accessLabelService(roles);
 }
 
-function userInitials(user: Pick<StockUser, "firstName" | "lastName" | "identifier" | "email">) {
+function userInitials(
+  user: Pick<StockUser, "firstName" | "lastName" | "identifier" | "email">,
+) {
   return userInitialsService(user);
 }
 
@@ -2172,7 +2259,7 @@ function openRoute(
   return openRoutePage(root, options, shellControllerContext());
 }
 
-// ---- Modals and actions ----
+// ---- Referential and import wrappers ----
 function showRef(root: HTMLElement, ref: string, button?: HTMLElement) {
   return showRefPage(root, ref, button, referentielsContext());
 }
@@ -2247,10 +2334,6 @@ function prepareTemplateActions(root: HTMLElement) {
   return prepareTemplateActionsPage(root);
 }
 
-function renderReferentialDetail(root: HTMLElement, type: string, id: string, editing = false) {
-  return renderReferentialDetailPage(root, type, id, editing, referentielsContext());
-}
-
 function openReferentialDetail(root: HTMLElement, type: string, id: string) {
   return openReferentialDetailPage(root, type, id, referentielsContext());
 }
@@ -2275,6 +2358,7 @@ function updateReferentialForm(root: HTMLElement, type: string) {
   return updateReferentialFormPage(root, type, referentielsContext());
 }
 
+// ---- Shared form, modal and session actions ----
 function articleStockAtLocation(
   articleId: string,
   locationId: string | null | undefined,
