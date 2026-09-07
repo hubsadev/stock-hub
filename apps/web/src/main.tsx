@@ -13,6 +13,10 @@ import {
   type DataRefreshContext,
 } from "./app/data-refresh";
 import {
+  dispatchAction,
+  type DispatchActionContext,
+} from "./app/dispatch";
+import {
   applyRoleAccessPage,
   navigateToViewPage,
   openRoutePage,
@@ -738,6 +742,157 @@ function shellControllerContext(): ShellControllerContext {
     rolePriority,
     canAccessView,
     viewActionsContext,
+  };
+}
+
+function dispatchContext(): DispatchActionContext {
+  return {
+    toggleFloatingExitActions,
+    closeFloatingExitActions,
+    installPwa: (root) => installPwa(root, pwaContext()),
+    requireOnlineAction: (root, actionType) =>
+      requireOnlineAction(root, actionType, pwaContext()),
+    navigateToView,
+    openModal,
+    closeModal,
+    downloadArticleImportTemplate,
+    downloadReferentialTemplate,
+    importArticles,
+    importReferentialElements,
+    downloadInventoryImportTemplate,
+    importInventoryRows,
+    populateCountModal,
+    togglePassword,
+    toggleUserPassword,
+    login,
+    logout,
+    showRef,
+    openReferentialDetail,
+    showToast,
+    submitReferential,
+    submitQuickArticle,
+    editReferentialDetail,
+    cancelReferentialEdit,
+    submitReferentialEdit,
+    deactivateReferentialDetail,
+    submitStockEntry,
+    openEntryResolution,
+    submitEntryResolution,
+    addEntryLine,
+    removeEntryLine,
+    submitExitRequest,
+    submitMaterialRequestPreparation,
+    downloadMaterialRequestPdf,
+    addMaterialRequestLine,
+    removeMaterialRequestLine,
+    submitDirectExit,
+    submitStockReturn,
+    submitStockTransfer,
+    addReturnLine,
+    removeReturnLine,
+    openReturnControl,
+    submitReturnControl,
+    addTransferLine,
+    removeTransferLine,
+    submitInventoryCount,
+    submitEquipmentAssignment,
+    submitEquipmentCreation,
+    editEquipmentDetail,
+    cancelEquipmentEdit,
+    submitEquipmentEdit,
+    unassignSelectedEquipment,
+    submitVehicle,
+    editVehicleDetail,
+    changeVehicleDriver,
+    cancelVehicleEdit,
+    submitVehicleEdit,
+    setVehicleMaintenance,
+    submitUser,
+    submitProfile,
+    submitPasswordChange,
+    openUserDetail,
+    openExitRequestDetail,
+    openReturnTransferDetail,
+    openPreparedExitForAction,
+    openMaterialRequestPreparation,
+    prepareExitFromRequest,
+    downloadPreparedMaterialPdf,
+    uploadSignedMaterialProof,
+    viewSignedMaterialProof,
+    openExitRequestRejection,
+    submitExitRequestRejection,
+    openVehicleDetail,
+    openEntryDetail,
+    openHistoryMovementDrawer,
+    downloadEntryPdf,
+    uploadSignedEntryProof,
+    viewSignedEntryProof,
+    downloadReturnPdf,
+    downloadTransferPdf,
+    uploadSignedReturnProof,
+    uploadSignedTransferProof,
+    viewSignedReturnProof,
+    viewSignedTransferProof,
+    openEquipmentDetail,
+    toggleVehicleHistory,
+    setExitFilter: (root, filter) => {
+      setExitFilterPage(filter, sortiesStockContext());
+      renderExitRegistry(root);
+    },
+    setEntryFilter: (root, filter) => {
+      setEntryFilterPage(filter, entreesStockContext());
+      renderEntriesRegistry(root);
+    },
+    setVehicleFilter,
+    setAuditFilter: (root, filter) => {
+      setAuditAlertFilterPage(filter, auditAlertesContext());
+      renderAuditAlerts(root);
+    },
+    showAuditTab,
+    openAuditAlertDetail,
+    openAuditLogDetail,
+    setAuditLogDateRange,
+    toggleAuditLogDay,
+    renderHistory,
+    setHistoryProofFilter,
+    exportData,
+    downloadStockExcel,
+    downloadStockPdf,
+    downloadInventoryExcel,
+    downloadInventoryPdf,
+    renderStock,
+    openStockDrawer,
+    openInventoryDetail,
+    openInventoryGlobalDetail,
+    closeStockDrawer,
+    refreshStockDrawer: (root) =>
+      hasOpenHistoryMovementDrawer()
+        ? renderHistoryMovementDrawer(root)
+        : hasOpenInventoryDrawerPage()
+          ? renderInventoryDrawer(root)
+          : renderStockDrawer(root),
+    sortStock: (root, key) => {
+      sortVueStock(key);
+      renderStock(root);
+    },
+    filterStockByLocation: (root, id) => {
+      navigateToView(root, "stock");
+      populateStockFilters(root);
+      const select = root.querySelector<HTMLSelectElement>(
+        "#stockLocationSelect",
+      );
+      if (select) select.value = id;
+      renderStock(root);
+    },
+    showInventoryMode,
+    showInventoryLocation: (root, id) => {
+      const select = root.querySelector<HTMLSelectElement>(
+        "#inventoryLocationSelect",
+      );
+      if (select) select.value = id;
+      showInventoryMode(root, "local");
+      renderInventory(root);
+    },
   };
 }
 
@@ -2179,227 +2334,7 @@ function StockHubTemplate() {
       const action = target.dataset.action;
       if (!action) return;
       const parsed = parseAction(action);
-      if (parsed.type === "toggle-exit-actions") {
-        toggleFloatingExitActions(root, parsed.id, target);
-        return;
-      }
-      if (parsed.type === "toggle-panel") {
-        root
-          .querySelector<HTMLElement>(`#${CSS.escape(parsed.id)}`)
-          ?.classList.toggle("hidden");
-        return;
-      }
-      closeFloatingExitActions(root);
-      if (parsed.type === "install-pwa") {
-        void installPwa(root, pwaContext());
-        return;
-      }
-      if (!requireOnlineAction(root, parsed.type, pwaContext())) return;
-      if (parsed.type === "view") navigateToView(root, parsed.id, target);
-      if (parsed.type === "open") openModal(root, parsed.id);
-      if (parsed.type === "download-article-import-template")
-        ((root.querySelector<HTMLSelectElement>("#referentialImportType")
-          ?.value as ReferentialImportType) || "article") === "article"
-          ? downloadArticleImportTemplate(root)
-          : downloadReferentialTemplate(root);
-      if (parsed.type === "import-articles")
-        void (((root.querySelector<HTMLSelectElement>("#referentialImportType")
-          ?.value as ReferentialImportType) || "article") === "article"
-          ? importArticles(root)
-          : importReferentialElements(root));
-      if (parsed.type === "download-inventory-import-template")
-        downloadInventoryImportTemplate(root);
-      if (parsed.type === "import-inventory-rows")
-        void importInventoryRows(root);
-      if (parsed.type === "count") {
-        openModal(root, "countModal");
-        void populateCountModal(root, parsed.articleId, parsed.locationId);
-      }
-      if (parsed.type === "close") closeModal(root, parsed.id);
-      if (parsed.type === "toggle-password") togglePassword(root);
-      if (parsed.type === "toggle-user-password") toggleUserPassword(root);
-      if (parsed.type === "login") login(root);
-      if (parsed.type === "logout") logout(root);
-      if (parsed.type === "ref") showRef(root, parsed.id, target);
-      if (parsed.type === "ref-detail")
-        openReferentialDetail(root, parsed.refType, parsed.id);
-      if (parsed.type === "toast") showToast(root, parsed.message);
-      if (parsed.type === "submit-referential") void submitReferential(root);
-      if (parsed.type === "submit-quick-article") void submitQuickArticle(root);
-      if (parsed.type === "edit-referential-detail")
-        editReferentialDetail(root);
-      if (parsed.type === "cancel-referential-edit")
-        cancelReferentialEdit(root);
-      if (parsed.type === "submit-referential-edit")
-        void submitReferentialEdit(root);
-      if (parsed.type === "deactivate-referential-detail")
-        void deactivateReferentialDetail(root);
-      if (parsed.type === "submit-stock-entry") void submitStockEntry(root);
-      if (parsed.type === "open-entry-resolution") openEntryResolution(root);
-      if (parsed.type === "submit-entry-resolution")
-        void submitEntryResolution(root);
-      if (parsed.type === "add-entry-line") addEntryLine(root);
-      if (parsed.type === "remove-entry-line") removeEntryLine(root, target);
-      if (parsed.type === "submit-exit-request") void submitExitRequest(root);
-      if (parsed.type === "submit-material-request-preparation")
-        void submitMaterialRequestPreparation(root);
-      if (parsed.type === "download-material-request-pdf")
-        downloadMaterialRequestPdf(root);
-      if (parsed.type === "add-material-request-line")
-        addMaterialRequestLine(root);
-      if (parsed.type === "remove-material-request-line")
-        removeMaterialRequestLine(root, target);
-      if (parsed.type === "submit-direct-exit") void submitDirectExit(root);
-      if (parsed.type === "submit-stock-return") void submitStockReturn(root);
-      if (parsed.type === "submit-stock-transfer")
-        void submitStockTransfer(root);
-      if (parsed.type === "add-return-line") addReturnLine(root);
-      if (parsed.type === "remove-return-line") removeReturnLine(root, target);
-      if (parsed.type === "open-return-control") openReturnControl(root);
-      if (parsed.type === "submit-return-control")
-        void submitReturnControl(root);
-      if (parsed.type === "add-transfer-line") addTransferLine(root);
-      if (parsed.type === "remove-transfer-line")
-        removeTransferLine(root, target);
-      if (parsed.type === "submit-inventory-count")
-        void submitInventoryCount(root);
-      if (parsed.type === "submit-equipment-assignment")
-        void submitEquipmentAssignment(root);
-      if (parsed.type === "submit-equipment-creation")
-        void submitEquipmentCreation(root);
-      if (parsed.type === "edit-equipment-detail") editEquipmentDetail(root);
-      if (parsed.type === "cancel-equipment-edit") cancelEquipmentEdit(root);
-      if (parsed.type === "submit-equipment-edit")
-        void submitEquipmentEdit(root);
-      if (parsed.type === "unassign-equipment")
-        void unassignSelectedEquipment(root);
-      if (parsed.type === "submit-vehicle") void submitVehicle(root);
-      if (parsed.type === "edit-vehicle-detail") editVehicleDetail(root);
-      if (parsed.type === "change-vehicle-driver") changeVehicleDriver(root);
-      if (parsed.type === "cancel-vehicle-edit") cancelVehicleEdit(root);
-      if (parsed.type === "submit-vehicle-edit") void submitVehicleEdit(root);
-      if (parsed.type === "set-vehicle-maintenance")
-        void setVehicleMaintenance(root);
-      if (parsed.type === "submit-user") void submitUser(root);
-      if (parsed.type === "submit-profile") void submitProfile(root);
-      if (parsed.type === "submit-password-change")
-        void submitPasswordChange(root);
-      if (parsed.type === "user-detail") openUserDetail(root, parsed.id);
-      if (parsed.type === "exit-detail") openExitRequestDetail(root, parsed.id);
-      if (parsed.type === "return-transfer-detail")
-        openReturnTransferDetail(root, parsed.id);
-      if (parsed.type === "prepared-exit-action")
-        openPreparedExitForAction(root, parsed.action);
-      if (parsed.type === "material-request-prep")
-        openMaterialRequestPreparation(root, parsed.id);
-      if (parsed.type === "prepare-exit-from-request")
-        void prepareExitFromRequest(root, parsed.id);
-      if (parsed.type === "download-prepared-material-pdf")
-        downloadPreparedMaterialPdf(root, parsed.id);
-      if (parsed.type === "upload-signed-material-proof")
-        void uploadSignedMaterialProof(root, parsed.id);
-      if (parsed.type === "view-signed-material-proof")
-        void viewSignedMaterialProof(root, parsed.id);
-      if (parsed.type === "open-exit-request-rejection")
-        openExitRequestRejection(root, parsed.id);
-      if (parsed.type === "submit-exit-request-rejection")
-        void submitExitRequestRejection(root);
-      if (parsed.type === "vehicle-detail") openVehicleDetail(root, parsed.id);
-      if (parsed.type === "entry-detail") openEntryDetail(root, parsed.id);
-      if (parsed.type === "history-movement-detail")
-        openHistoryMovementDrawer(root, parsed.id);
-      if (parsed.type === "download-entry-pdf")
-        downloadEntryPdf(root, parsed.id);
-      if (parsed.type === "upload-signed-entry-proof")
-        void uploadSignedEntryProof(root, parsed.id);
-      if (parsed.type === "view-signed-entry-proof")
-        void viewSignedEntryProof(root, parsed.id);
-      if (parsed.type === "download-return-pdf")
-        downloadReturnPdf(root, parsed.id);
-      if (parsed.type === "download-transfer-pdf")
-        downloadTransferPdf(root, parsed.id);
-      if (parsed.type === "upload-signed-return-proof")
-        void uploadSignedReturnProof(root, parsed.id);
-      if (parsed.type === "upload-signed-transfer-proof")
-        void uploadSignedTransferProof(root, parsed.id);
-      if (parsed.type === "view-signed-return-proof")
-        void viewSignedReturnProof(root, parsed.id);
-      if (parsed.type === "view-signed-transfer-proof")
-        void viewSignedTransferProof(root, parsed.id);
-      if (parsed.type === "equipment-detail")
-        openEquipmentDetail(root, parsed.id);
-      if (parsed.type === "toggle-vehicle-history") toggleVehicleHistory(root);
-      if (parsed.type === "exit-filter") {
-        setExitFilterPage(parsed.filter, sortiesStockContext());
-        renderExitRegistry(root);
-      }
-      if (parsed.type === "entry-filter") {
-        setEntryFilterPage(parsed.filter, entreesStockContext());
-        renderEntriesRegistry(root);
-      }
-      if (parsed.type === "vehicle-filter") {
-        setVehicleFilter(root, parsed.filter);
-      }
-      if (parsed.type === "audit-filter") {
-        setAuditAlertFilterPage(parsed.filter, auditAlertesContext());
-        renderAuditAlerts(root);
-      }
-      if (parsed.type === "audit-tab") {
-        showAuditTab(root, parsed.id, target);
-      }
-      if (parsed.type === "audit-alert-detail")
-        openAuditAlertDetail(root, parsed.id);
-      if (parsed.type === "audit-log-detail") openAuditLogDetail(root, parsed.id);
-      if (parsed.type === "audit-log-date-range")
-        setAuditLogDateRange(root, parsed.range);
-      if (parsed.type === "audit-log-day")
-        toggleAuditLogDay(root, parsed.dayKey);
-      if (parsed.type === "refresh-history") renderHistory(root);
-      if (parsed.type === "history-proof-filter")
-        setHistoryProofFilter(root, parsed.filter);
-      if (parsed.type === "export") exportData(root, parsed.kind);
-      if (parsed.type === "download-stock-excel")
-        void downloadStockExcel(root, parsed.scope);
-      if (parsed.type === "download-stock-pdf")
-        downloadStockPdf(root, parsed.scope);
-      if (parsed.type === "download-inventory-excel")
-        void downloadInventoryExcel(root, parsed.scope);
-      if (parsed.type === "download-inventory-pdf")
-        downloadInventoryPdf(root, parsed.scope);
-      if (parsed.type === "stock-filter") renderStock(root);
-      if (parsed.type === "stock-drawer-open") openStockDrawer(root, parsed.id);
-      if (parsed.type === "inventory-detail-open")
-        openInventoryDetail(root, parsed.articleId, parsed.locationId);
-      if (parsed.type === "inventory-global-detail-open")
-        openInventoryGlobalDetail(root, parsed.articleId);
-      if (parsed.type === "stock-drawer-close") closeStockDrawer(root);
-      if (parsed.type === "stock-drawer-refresh")
-        hasOpenHistoryMovementDrawer()
-          ? renderHistoryMovementDrawer(root)
-          : hasOpenInventoryDrawerPage()
-            ? renderInventoryDrawer(root)
-            : renderStockDrawer(root);
-      if (parsed.type === "stock-sort") {
-        sortVueStock(parsed.key);
-        renderStock(root);
-      }
-      if (parsed.type === "stock-location") {
-        navigateToView(root, "stock");
-        populateStockFilters(root);
-        const select = root.querySelector<HTMLSelectElement>(
-          "#stockLocationSelect",
-        );
-        if (select) select.value = parsed.id;
-        renderStock(root);
-      }
-      if (parsed.type === "inventory-mode")
-        showInventoryMode(root, parsed.mode);
-      if (parsed.type === "inventory-location") {
-        const select = root.querySelector<HTMLSelectElement>("#inventoryLocationSelect");
-        if (select) select.value = parsed.id;
-        showInventoryMode(root, "local");
-        renderInventory(root);
-      }
+      dispatchAction(root, parsed, target, dispatchContext());
     };
     const importFile =
       root.querySelector<HTMLInputElement>("#articleImportFile");
