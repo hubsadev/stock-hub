@@ -313,6 +313,13 @@ import {
   updateProfilePwaCards,
   type PwaContext,
 } from "./services/pwa";
+import {
+  accessLabel as accessLabelService,
+  roleLabel as roleLabelService,
+  userDisplayName as userDisplayNameService,
+  userIdentity as userIdentityService,
+  userInitials as userInitialsService,
+} from "./services/users";
 import type {
   ExcelExportColumn,
   ExcelExportRow,
@@ -451,16 +458,13 @@ function readStoredUser(): StockUser | null {
 }
 
 function userIdentity(user: Pick<StockUser, "identifier" | "email">) {
-  return user.identifier || user.email || "-";
+  return userIdentityService(user);
 }
 
 function userDisplayName(
   user: Pick<StockUser, "firstName" | "lastName" | "identifier" | "email">,
 ) {
-  return (
-    `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() ||
-    userIdentity(user)
-  );
+  return userDisplayNameService(user);
 }
 
 function setLoginError(root: HTMLElement, message: string | null) {
@@ -2292,37 +2296,15 @@ async function submitVehicleEdit(root: HTMLElement) {
   return submitVehicleEditPage(root, parcAutoContext());
 }
 function roleLabel(role: string) {
-  return (
-    (
-      {
-        ADMIN_STOCK: "Admin Stock",
-        GESTIONNAIRE_STOCK: "Gestionnaire",
-        AUDIT: "Audit",
-        RH: "RH",
-        DIRECTION: "Direction",
-        CHEF_PROJET: "Chef projet",
-      } as Record<string, string>
-    )[role] ?? role
-  );
+  return roleLabelService(role);
 }
 
 function accessLabel(roles: string[]) {
-  if (roles.includes("ADMIN_STOCK")) return "Tous modules";
-  if (roles.includes("GESTIONNAIRE_STOCK"))
-    return "Referentiels, stock, equipements, parc auto, mouvements";
-  if (roles.includes("AUDIT")) return "Inventaire, alertes, exports";
-  if (roles.includes("DIRECTION")) return "KPI et controles";
-  if (roles.includes("CHEF_PROJET")) return "Demandes, stock consulte";
-  if (roles.includes("RH")) return "Consultation inventaire";
-  return "Acces limite";
+  return accessLabelService(roles);
 }
 
 function userInitials(user: Pick<StockUser, "firstName" | "lastName" | "identifier" | "email">) {
-  return (
-    `${user.firstName?.[0] ?? ""}${user.lastName?.[0] ?? ""}`
-      .trim()
-      .toUpperCase() || userIdentity(user).slice(0, 2).toUpperCase()
-  );
+  return userInitialsService(user);
 }
 
 function profileRoleBadge(role: string) {
