@@ -307,6 +307,8 @@ import {
   exportWorkbook,
 } from "./services/exports";
 import {
+  exportDataFromContext,
+  exportDatasetFromContext,
   exportRowsFromContext,
   type ExportDatasetsContext,
 } from "./services/export-datasets";
@@ -331,8 +333,6 @@ import {
   userInitials as userInitialsService,
 } from "./services/users";
 import type {
-  ExcelExportColumn,
-  ExcelExportRow,
   InventoryExportScope,
   StockExportScope,
 } from "./types/export";
@@ -1590,144 +1590,8 @@ function updateInventoryImportCell(
   );
 }
 
-function exportDataset(kind: string, root: HTMLElement): {
-  filenameKind: string;
-  sheetName: string;
-  columns: ExcelExportColumn[];
-  rows: ExcelExportRow[];
-} {
-  if (kind === "stock" || kind === "inventory") {
-    if (kind === "inventory") {
-      return {
-        filenameKind: "inventory",
-        sheetName: "Inventaire",
-        columns: [
-          { key: "article", header: "Article" },
-          { key: "code", header: "Code" },
-          { key: "theoretical", header: "Stock theorique global", type: "number" },
-          { key: "counted", header: "Quantite constatee", type: "number" },
-          { key: "good", header: "Bon etat", type: "number" },
-          { key: "repair", header: "A reparer", type: "number" },
-          { key: "outOfService", header: "Hors service", type: "number" },
-          { key: "gap", header: "Ecart", type: "number" },
-          { key: "locations", header: "Emplacements concernes" },
-          { key: "status", header: "Statut" },
-        ],
-        rows: inventoryGlobalExportRows(),
-      };
-    }
-    return {
-      filenameKind: "stock",
-      sheetName: "Vue Stock",
-      columns: [
-        { key: "article", header: "Article" },
-        { key: "code", header: "Code" },
-        { key: "category", header: "Categorie" },
-        { key: "location", header: "Emplacement" },
-        { key: "quantity", header: "Quantite", type: "number" },
-        { key: "minimumStock", header: "Stock minimum", type: "number" },
-        { key: "status", header: "Statut" },
-      ],
-      rows: [...latestStockLevels]
-        .sort((a, b) => {
-          const quantityDiff = Number(b.quantity ?? 0) - Number(a.quantity ?? 0);
-          if (quantityDiff !== 0) return quantityDiff;
-          return a.article.designation.localeCompare(b.article.designation);
-        })
-        .map((level) => ({
-          article: level.article.designation,
-          code: level.article.code,
-          category: level.article.category,
-          location: level.location.name,
-          quantity: Number(level.quantity ?? 0),
-          minimumStock: Number(level.article.minimumStock ?? 0),
-          status:
-            level.quantity <= 0
-              ? "Rupture"
-              : level.quantity <= level.article.minimumStock
-                ? "Stock bas"
-                : "OK",
-        })),
-    };
-  }
-  if (kind === "reappro") {
-    const levels = reapproLevels();
-    return {
-      filenameKind: "reappro",
-      sheetName: "Reapprovisionnement",
-      columns: [
-        { key: "article", header: "Article" },
-        { key: "code", header: "Code" },
-        { key: "location", header: "Emplacement" },
-        { key: "available", header: "Disponible", type: "number" },
-        { key: "minimumStock", header: "Stock minimum", type: "number" },
-        { key: "recommended", header: "A recommander", type: "number" },
-        { key: "referencePrice", header: "Prix indicatif", type: "currency" },
-        { key: "estimatedValue", header: "Valeur estimee", type: "currency" },
-      ],
-      rows: levels.map((level) => ({
-        article: level.article.designation,
-        code: level.article.code,
-        location: level.location.name,
-        available: Number(level.quantity ?? 0),
-        minimumStock: Number(level.article.minimumStock ?? 0),
-        recommended: reorderQuantity(level),
-        referencePrice: Number(level.article.referencePrice ?? 0),
-        estimatedValue: reorderQuantity(level) * Number(level.article.referencePrice ?? 0),
-      })),
-    };
-  }
-  if (kind === "audit") {
-    return {
-      filenameKind: "audit",
-      sheetName: "Journal audit",
-      columns: [
-        { key: "date", header: "Date", type: "date" },
-        { key: "user", header: "Utilisateur" },
-        { key: "action", header: "Action metier" },
-        { key: "document", header: "Document" },
-        { key: "result", header: "Resultat" },
-      ],
-      rows: latestAuditLogs.map((log) => ({
-        date: exportDateValue(log.createdAt),
-        user: auditLogUserLabel(log),
-        action: auditActionLabel(log.action),
-        document: auditDocumentLabel(log),
-        result: auditLogResultLabel(auditLogResult(log)),
-      })),
-    };
-  }
-  const movements = kind === "all" ? latestMovements : filteredHistory(root);
-  return {
-    filenameKind: "mouvements",
-    sheetName: "Mouvements",
-    columns: [
-      { key: "date", header: "Date", type: "date" },
-      { key: "type", header: "Type" },
-      { key: "reference", header: "Reference" },
-      { key: "article", header: "Article" },
-      { key: "quantity", header: "Quantite", type: "number" },
-      { key: "user", header: "Utilisateur" },
-      { key: "project", header: "Projet" },
-      { key: "supplier", header: "Fournisseur" },
-      { key: "origin", header: "Origine" },
-      { key: "destination", header: "Destination" },
-      { key: "status", header: "Statut" },
-    ],
-    rows: movements.map((movement) => ({
-      date: exportDateValue(movement.date),
-      type: movementTypeLabel(movement.type),
-      reference: movement.reference,
-      article: movementArticleLabel(movement),
-      quantity: movementQuantity(movement),
-      user: movementActor(movement),
-      project: movement.project?.name ?? "",
-      supplier: movement.supplier?.name ?? "",
-      origin: movement.fromLocation?.name ?? "",
-      destination: movement.toLocation?.name ?? "",
-      status: movement.status,
-    })),
-  };
+function exportDataset(kind: string, root: HTMLElement) {
+  return exportDatasetFromContext(kind, root, exportDatasetsContext());
 }
 
 function exportRows(kind: string, root: HTMLElement) {
@@ -1735,24 +1599,7 @@ function exportRows(kind: string, root: HTMLElement) {
 }
 
 async function exportData(root: HTMLElement, kind: string) {
-  try {
-    const dataset = exportDataset(kind, root);
-    const date = new Date().toISOString().slice(0, 10);
-    const filename = "stock-hub-" + dataset.filenameKind + "-" + date + ".xlsx";
-    await exportWorkbook({
-      filename,
-      sheetName: dataset.sheetName,
-      columns: dataset.columns,
-      rows: dataset.rows,
-    });
-    showToast(root, "Export Excel prepare : " + filename);
-  } catch (error) {
-    showToast(
-      root,
-      error instanceof Error ? error.message : "Export Excel impossible.",
-      "error",
-    );
-  }
+  return exportDataFromContext(root, kind, exportDatasetsContext());
 }
 
 function stockLocationExportRows(root: HTMLElement) {
