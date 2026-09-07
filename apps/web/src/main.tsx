@@ -13,6 +13,14 @@ import {
   type DataRefreshContext,
 } from "./app/data-refresh";
 import {
+  applyRoleAccessPage,
+  navigateToViewPage,
+  openRoutePage,
+  showViewPage,
+  updateCurrentUserDisplayPage,
+  type ShellControllerContext,
+} from "./app/shell-controller";
+import {
   auditActionLabelPage,
   auditAlertDomainPage,
   auditDocumentLabelPage,
@@ -695,52 +703,51 @@ function exportDatasetsContext(): ExportDatasetsContext {
   };
 }
 
+function shellControllerContext(): ShellControllerContext {
+  return {
+    getCurrentUser: () => currentUser,
+    setCurrentUser: (user) => {
+      currentUser = user;
+    },
+    getPendingRouteAfterLogin: () => pendingRouteAfterLogin,
+    setPendingRouteAfterLogin: (route) => {
+      pendingRouteAfterLogin = route;
+    },
+    VIEW_ROUTES,
+    DEFAULT_ROUTE,
+    LOGIN_ROUTE,
+    normalizeRoute,
+    viewForRoute,
+    writeRoute,
+    writeLoginRoute,
+    navButtonForView,
+    closeStockDrawer,
+    setVisible,
+    clearActiveNav,
+    activateNavButton,
+    setViewActions,
+    showLogin,
+    hideLogin,
+    showToast,
+    updateProfileView,
+    createIcons: () => window.lucide?.createIcons(),
+    readStoredUser,
+    userDisplayName,
+    userIdentity,
+    roleLabel,
+    rolePriority,
+    canAccessView,
+    viewActionsContext,
+  };
+}
+
 // ---- Shell UI ----
 function applyRoleAccess(root: HTMLElement) {
-  root
-    .querySelectorAll<HTMLElement>(".nav-btn[data-view]")
-    .forEach((button) => {
-      const view = button.dataset.view ?? "";
-      button.classList.toggle("hidden", !canAccessView(view));
-    });
-  root.querySelectorAll<HTMLElement>("aside nav").forEach((nav) => {
-    const hasVisibleItem = Array.from(
-      nav.querySelectorAll<HTMLElement>(".nav-btn[data-view]"),
-    ).some((button) => !button.classList.contains("hidden"));
-    nav.classList.toggle("hidden", !hasVisibleItem);
-    const title = nav.previousElementSibling;
-    if (
-      title instanceof HTMLElement &&
-      title.classList.contains("uppercase")
-    ) {
-      title.classList.toggle("hidden", !hasVisibleItem);
-    }
-  });
+  return applyRoleAccessPage(root, shellControllerContext());
 }
 
 function updateCurrentUserDisplay(root: HTMLElement) {
-  const storedUser = readStoredUser();
-  const user = currentUser ?? storedUser;
-  if (user) currentUser = user;
-  const fullName = user ? userDisplayName(user) : "Utilisateur";
-  const primaryRole = user
-    ? roleLabel(rolePriority(user.roles))
-    : "Non connecte";
-  const initials = user
-    ? `${user.firstName?.[0] ?? ""}${user.lastName?.[0] ?? ""}`
-        .trim()
-        .toUpperCase() || userIdentity(user).slice(0, 2).toUpperCase()
-    : "--";
-  const nameNode = root.querySelector<HTMLElement>("#currentUserName");
-  const roleNode = root.querySelector<HTMLElement>("#currentUserRole");
-  const initialsNodes = root.querySelectorAll<HTMLElement>(
-    "#currentUserInitials, #topUserInitials",
-  );
-  if (nameNode) nameNode.textContent = fullName;
-  if (roleNode) roleNode.textContent = primaryRole;
-  initialsNodes.forEach((node) => {
-    node.textContent = initials;
-  });
+  return updateCurrentUserDisplayPage(root, shellControllerContext());
 }
 function showLogin(root: HTMLElement) {
   return showLoginPage(root);
@@ -1985,40 +1992,7 @@ function updateApiBackedViews(root: HTMLElement) {
 
 // ---- Routing ----
 function showView(root: HTMLElement, view: string, navButton?: HTMLElement) {
-  closeStockDrawer(root);
-  root
-    .querySelectorAll(".view")
-    .forEach((section) => setVisible(section, section.id === view));
-  const activeButton = navButton?.classList.contains("nav-btn")
-    ? navButton
-    : navButtonForView(root, view);
-  if (activeButton?.classList.contains("nav-btn")) {
-    clearActiveNav(root);
-    activateNavButton(activeButton);
-  } else if (view === "profil") {
-    clearActiveNav(root);
-  }
-  const crumb = root.querySelector("#crumbPage");
-  const titles: Record<string, string> = {
-    home: "Accueil Module",
-    referentiels: "Referentiels",
-    stock: "Vue Stock",
-    equipements: "Equipements",
-    parcAuto: "Parc auto",
-    entrees: "Entrees stock",
-    sortie: "Sorties stock",
-    retours: "Retours & transferts",
-    reappro: "Reapprovisionnement",
-    inventaire: "Inventaire de stock",
-    audit: "Audit & alertes",
-    historique: "Historique des mouvements",
-    users: "Utilisateurs & roles",
-    profil: "Mon profil",
-  };
-  if (crumb) crumb.textContent = titles[view] ?? "Accueil Module";
-  setViewActions(root, view, viewActionsContext());
-  if (view === "profil") updateProfileView(root);
-  window.lucide?.createIcons();
+  return showViewPage(root, view, navButton, shellControllerContext());
 }
 
 function navigateToView(
@@ -2027,64 +2001,20 @@ function navigateToView(
   navButton?: HTMLElement,
   options: { replace?: boolean; skipHistory?: boolean } = {},
 ) {
-  const targetRoute = VIEW_ROUTES[view];
-  let targetView = targetRoute ? view : "home";
-
-  if (!currentUser) {
-    pendingRouteAfterLogin = targetRoute ?? DEFAULT_ROUTE;
-    showLogin(root);
-    writeLoginRoute(true);
-    return;
-  }
-
-  if (!canAccessView(targetView)) {
-    showToast(root, "Acces non autorise pour cette page.");
-    targetView = "home";
-    options.replace = true;
-  }
-
-  hideLogin(root);
-  showView(
+  return navigateToViewPage(
     root,
-    targetView,
-    navButton ?? navButtonForView(root, targetView) ?? undefined,
+    view,
+    navButton,
+    options,
+    shellControllerContext(),
   );
-
-  if (!options.skipHistory) {
-    writeRoute(targetView, options.replace);
-  }
 }
 
 function openRoute(
   root: HTMLElement,
   options: { replace?: boolean; skipHistory?: boolean } = {},
 ) {
-  const route = normalizeRoute();
-
-  if (route === LOGIN_ROUTE) {
-    if (currentUser) {
-      navigateToView(root, "home", undefined, { replace: true });
-    } else {
-      showLogin(root);
-    }
-    return;
-  }
-
-  const view = viewForRoute(route);
-  if (!currentUser) {
-    pendingRouteAfterLogin = view ? route : DEFAULT_ROUTE;
-    showLogin(root);
-    writeLoginRoute(true);
-    return;
-  }
-
-  if (!view) {
-    showToast(root, "Page introuvable. Retour au tableau de bord.");
-    navigateToView(root, "home", undefined, { replace: true });
-    return;
-  }
-
-  navigateToView(root, view, undefined, options);
+  return openRoutePage(root, options, shellControllerContext());
 }
 
 // ---- Modals and actions ----
