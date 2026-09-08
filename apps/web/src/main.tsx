@@ -50,6 +50,7 @@ import {
   toggleAuditLogDayPage,
   type AuditAlertesContext,
 } from "./pages/audit-alertes/render";
+import { createAuditAlertesContext } from "./pages/audit-alertes/context";
 import {
   renderDashboardAuditAlertsPage,
   renderDashboardAuditLogCountPage,
@@ -58,12 +59,14 @@ import {
   updateDashboardPage,
   type TableauDeBordContext,
 } from "./pages/tableau-de-bord/render";
+import { createTableauDeBordContext } from "./pages/tableau-de-bord/context";
 import {
   reapproLevelsPage,
   renderReapproPage,
   reorderQuantityPage,
   type ReapprovisionnementContext,
 } from "./pages/reapprovisionnement/render";
+import { createReapprovisionnementContext } from "./pages/reapprovisionnement/context";
 import {
   addEntryLinePage,
   cleanEntryLineObservation as cleanEntryLineObservationPage,
@@ -147,6 +150,7 @@ import {
   setHistoryProofFilterPage,
   type HistoriqueContext,
 } from "./pages/historique/render";
+import { createHistoriqueContext } from "./pages/historique/context";
 import {
   allInventoryComputedLinesPage,
   clearInventoryDrawerStatePage,
@@ -237,6 +241,7 @@ import {
   stockLocationExportRows as vueStockLocationExportRows,
   type VueStockContext,
 } from "./pages/vue-stock/render";
+import { createVueStockContext } from "./pages/vue-stock/context";
 import {
   DEFAULT_ROUTE,
   LOGIN_ROUTE,
@@ -255,6 +260,7 @@ import {
   toggleUserPasswordPage,
   type UtilisateursRolesContext,
 } from "./pages/utilisateurs-roles/render";
+import { createUtilisateursRolesContext } from "./pages/utilisateurs-roles/context";
 import {
   hideLoginPage,
   loginPage,
@@ -910,7 +916,7 @@ function updateDashboard(root: HTMLElement) {
 
 // ---- Feature contexts ----
 function tableauDeBordContext(): TableauDeBordContext {
-  return {
+  return createTableauDeBordContext({
     latestAuditAlerts,
     latestMovements,
     latestStockLevels,
@@ -921,11 +927,11 @@ function tableauDeBordContext(): TableauDeBordContext {
     setText,
     formatNumber,
     escapeHtml,
-  };
+  });
 }
 
 function reapprovisionnementContext(): ReapprovisionnementContext {
-  return {
+  return createReapprovisionnementContext({
     latestStockLevels,
     badge,
     emptyRow,
@@ -934,11 +940,11 @@ function reapprovisionnementContext(): ReapprovisionnementContext {
     escapeHtml,
     renderDashboardWatchStock: (root, levels) =>
       renderDashboardWatchStockPage(root, levels, tableauDeBordContext()),
-  };
+  });
 }
 
 function auditAlertesContext(): AuditAlertesContext {
-  return {
+  return createAuditAlertesContext({
     latestAuditAlerts,
     latestAuditLogs,
     latestUsers,
@@ -950,7 +956,7 @@ function auditAlertesContext(): AuditAlertesContext {
     openModal,
     showToast,
     articleImportKey,
-  };
+  });
 }
 
 function referentielsContext(): ReferentielsContext {
@@ -1184,7 +1190,7 @@ function retoursTransfertsContext(): RetoursTransfertsContext {
 }
 
 function historiqueContext(): HistoriqueContext {
-  return {
+  return createHistoriqueContext({
     latestMovements,
     latestAuditLogs,
     latestUsers,
@@ -1208,7 +1214,7 @@ function historiqueContext(): HistoriqueContext {
     requestForExit,
     cleanEntryLineObservation,
     entryStatusLabel,
-  };
+  });
 }
 
 function equipementsContext(): EquipementsContext {
@@ -1268,7 +1274,7 @@ function parcAutoContext(): ParcAutoContext {
 }
 
 function utilisateursRolesContext(): UtilisateursRolesContext {
-  return {
+  return createUtilisateursRolesContext({
     latestUsers,
     setLatestUsers: (users) => {
       latestUsers = users;
@@ -1289,11 +1295,11 @@ function utilisateursRolesContext(): UtilisateursRolesContext {
     userDisplayName,
     roleLabel,
     accessLabel,
-  };
+  });
 }
 
 function vueStockContext(): VueStockContext {
-  return {
+  return createVueStockContext({
     stockLevels: latestStockLevels,
     movements: latestMovements,
     suppliers: latestSuppliers,
@@ -1307,7 +1313,7 @@ function vueStockContext(): VueStockContext {
     hubLogoMarkup,
     closeModal,
     showToast,
-  };
+  });
 }
 
 function inventaireStockContext(): InventaireStockContext {
