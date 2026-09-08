@@ -642,3 +642,378 @@ Verification:
 
 Commit:
 `refactor(web): slim main shell`
+
+================================================================================
+
+ETAPE 21 - Baseline avant decoupage avance
+
+Verifie l'etat actuel avant de continuer le decoupage de `main.tsx`.
+
+Actions:
+- Lancer `git status --short --branch`.
+- Verifier que le dernier commit attendu existe:
+  - `git log --oneline -5`
+  - le commit `refactor(web): slim main shell` doit etre present.
+- Lancer:
+  - `pnpm --filter @stock-hub/web typecheck`
+  - `git diff --check`
+- Ne modifier aucun fichier dans cette etape.
+
+Si tout est OK, ne fais pas de commit sauf s'il y a un changement strictement documentaire deja present.
+
+Verification:
+- repo propre;
+- typecheck OK.
+
+================================================================================
+
+ETAPE 22 - Extraire les contextes globaux app
+
+Dans `apps/web/src/main.tsx`, deplace les context builders globaux vers `apps/web/src/app/context-builders.ts`.
+
+Fonctions ciblees:
+- `pwaContext`
+- `viewActionsContext`
+- `modalControllerContext`
+- `dataRefreshContext`
+- `exportDatasetsContext`
+- `shellControllerContext`
+- `dispatchContext`
+
+Contraintes:
+- Ne change aucune logique.
+- Ne change aucun nom de fonction visible cote `main.tsx`.
+- Garder dans `main.tsx` des wrappers de meme nom qui appellent les builders extraits.
+- Le nouveau fichier doit exposer des fonctions `createXContext(...)`.
+- `main.tsx` reste proprietaire de l'etat global `latest...`, `currentUser`, `pendingRouteAfterLogin`.
+- Les dependances doivent etre passees explicitement au module extrait.
+- Ne pas toucher aux listeners React ni au dispatch.
+
+Verification:
+- `pnpm --filter @stock-hub/web typecheck`
+- `git diff --check`
+- Demarrer l'app.
+- Verifier login, navigation, ouverture modale, filtre Historique, export Reappro.
+
+Commit:
+`refactor(web): extract app context builders`
+
+================================================================================
+
+ETAPE 23 - Extraire les contextes pages simples
+
+Dans `apps/web/src/main.tsx`, deplace les context builders des pages simples vers leurs dossiers respectifs.
+
+Fonctions ciblees:
+- `tableauDeBordContext`
+- `reapprovisionnementContext`
+- `auditAlertesContext`
+- `historiqueContext`
+- `utilisateursRolesContext`
+- `vueStockContext`
+
+Fichiers cibles:
+- `apps/web/src/pages/tableau-de-bord/context.ts`
+- `apps/web/src/pages/reapprovisionnement/context.ts`
+- `apps/web/src/pages/audit-alertes/context.ts`
+- `apps/web/src/pages/historique/context.ts`
+- `apps/web/src/pages/utilisateurs-roles/context.ts`
+- `apps/web/src/pages/vue-stock/context.ts`
+
+Contraintes:
+- Chaque fichier exporte `createXContext(...)`.
+- `main.tsx` garde des wrappers `xContext()` de meme nom.
+- Aucun comportement runtime ne change.
+- Ne pas modifier les fichiers `render.ts` sauf import type-only si necessaire.
+- Ne pas deplacer les actions dans cette etape.
+
+Verification:
+- `pnpm --filter @stock-hub/web typecheck`
+- `git diff --check`
+- Verifier visuellement Dashboard, Reappro, Audit, Historique, Users, Vue Stock.
+
+Commit:
+`refactor(web): extract simple page contexts`
+
+================================================================================
+
+ETAPE 24 - Extraire les contextes pages complexes
+
+Dans `apps/web/src/main.tsx`, deplace les context builders des pages complexes vers leurs dossiers respectifs.
+
+Fonctions ciblees:
+- `referentielsContext`
+- `entreesStockContext`
+- `sortiesStockContext`
+- `retoursTransfertsContext`
+- `inventaireStockContext`
+- `equipementsContext`
+- `parcAutoContext`
+- `profilContext`
+- `loginContext`
+
+Fichiers cibles:
+- `pages/referentiels/context.ts`
+- `pages/entrees-stock/context.ts`
+- `pages/sorties-stock/context.ts`
+- `pages/retours-transferts/context.ts`
+- `pages/inventaire-stock/context.ts`
+- `pages/equipements/context.ts`
+- `pages/parc-auto/context.ts`
+- `pages/profil/context.ts`
+- `pages/login/context.ts`
+
+Contraintes:
+- Extraction structurelle uniquement.
+- `main.tsx` conserve les fonctions `xContext()` comme wrappers.
+- Les setters `latest...` restent dans `main.tsx`.
+- Ne pas changer les signatures des contextes attendus par `render.ts`.
+- Ne pas modifier les regles metier, preuve, stock, droits ou routing.
+
+Verification:
+- `pnpm --filter @stock-hub/web typecheck`
+- `git diff --check`
+- Tester Entrees, Sorties, Retours, Inventaire, Referentiels, Profil.
+
+Commit:
+`refactor(web): extract complex page contexts`
+
+================================================================================
+
+ETAPE 25 - Creer des action groups par domaine sans branchement runtime
+
+Prepare l'architecture d'actions par domaine, mais sans modifier le dispatch runtime.
+
+Creer des fichiers:
+- `pages/entrees-stock/actions.ts`
+- `pages/sorties-stock/actions.ts`
+- `pages/retours-transferts/actions.ts`
+- `pages/inventaire-stock/actions.ts`
+- `pages/referentiels/actions.ts`
+- `pages/historique/actions.ts`
+- `pages/equipements/actions.ts`
+- `pages/parc-auto/actions.ts`
+- `pages/utilisateurs-roles/actions.ts`
+- `pages/profil/actions.ts`
+
+Objectif:
+- Chaque fichier expose une fonction `createXActions(ctxDeps)` preparee.
+- Ne pas appeler ces actions depuis `main.tsx`.
+- Ne pas modifier `dispatch.ts`.
+- Copier uniquement des wrappers existants sous forme preparee.
+
+Contraintes:
+- Aucun comportement runtime ne doit changer.
+- Aucun `data-action` ne change.
+- Si une action depend de `root`, elle doit garder `root` en parametre.
+- Les fichiers peuvent rester inutilises dans cette etape.
+
+Verification:
+- `pnpm --filter @stock-hub/web typecheck`
+- `git diff --check`
+- Demarrage app et verification rapide qu'aucun comportement n'a change.
+
+Commit:
+`refactor(web): prepare page action groups`
+
+================================================================================
+
+ETAPE 26 - Brancher les actions simples au dispatch
+
+Dans `main.tsx`, remplace progressivement une partie de `dispatchContext()` par les action groups prepares.
+
+Domaines a brancher dans cette etape:
+- Profil
+- Utilisateurs & roles
+- Historique
+- Audit
+- Vue Stock
+- Reapprovisionnement
+
+Contraintes:
+- Ne pas brancher Entrees, Sorties, Retours, Inventaire ni Referentiels dans cette etape.
+- Garder les wrappers existants dans `main.tsx` si un autre contexte en depend encore.
+- Ne pas modifier `parseAction`.
+- Ne pas modifier les listeners React.
+- Le dispatch doit continuer a recevoir exactement les memes handlers.
+
+Verification:
+- `pnpm --filter @stock-hub/web typecheck`
+- `git diff --check`
+- Tester:
+  - Profil;
+  - Users;
+  - Historique;
+  - Audit;
+  - Vue Stock;
+  - Reapprovisionnement.
+
+Commit:
+`refactor(web): route simple page actions`
+
+================================================================================
+
+ETAPE 27 - Brancher les actions Referentiels et Inventaire
+
+Dans `main.tsx`, branche les action groups prepares pour:
+- Referentiels
+- Inventaire
+
+Contraintes:
+- Ne change aucun import Excel.
+- Ne change aucun modele Excel/PDF.
+- Ne change aucun `data-action`.
+- Garder les wrappers encore utilises par les autres pages.
+- Ne pas toucher aux actions Entrees/Sorties/Retours dans cette etape.
+
+Verification:
+- `pnpm --filter @stock-hub/web typecheck`
+- `git diff --check`
+- Tester:
+  - onglets Referentiels;
+  - creation element;
+  - import Excel referentiel;
+  - import inventaire;
+  - comptage inventaire;
+  - export inventaire.
+
+Commit:
+`refactor(web): route referentials inventory actions`
+
+================================================================================
+
+ETAPE 28 - Brancher les actions Entrees, Sorties, Retours
+
+Dans `main.tsx`, branche les action groups prepares pour:
+- Entrees stock
+- Sorties stock
+- Retours & transferts
+
+Contraintes:
+- C'est une etape sensible: ne modifier que le wiring d'actions.
+- Ne change aucun endpoint API.
+- Ne change aucune regle preuve/PDF.
+- Ne change aucune regle de dedoublonnage sortie/demande.
+- Garder les wrappers necessaires aux contextes partages.
+
+Verification:
+- `pnpm --filter @stock-hub/web typecheck`
+- `git diff --check`
+- Tester:
+  - creation entree;
+  - detail entree;
+  - creation demande sortie;
+  - preparation sortie;
+  - sortie directe;
+  - creation retour;
+  - creation transfert;
+  - upload/voir preuve.
+
+Commit:
+`refactor(web): route movement page actions`
+
+================================================================================
+
+ETAPE 29 - Supprimer les wrappers rendus inutiles par les action groups
+
+Dans `main.tsx`, supprime uniquement les wrappers devenus inutiles apres branchement des action groups.
+
+Methode obligatoire:
+- Pour chaque wrapper candidat, lancer:
+  - `rg -n "\\bNOM_FONCTION\\b" apps/web/src`
+- Supprimer uniquement si:
+  - il n'est plus appele dans `main.tsx`;
+  - il n'est plus passe a un contexte;
+  - il n'est plus utilise par `dispatchContext`;
+  - il n'est plus utilise par un fichier `actions.ts`, `context.ts`, `render.ts` ou service.
+
+Contraintes:
+- Ne pas supprimer les wrappers encore utilises comme facade transversale.
+- Ne pas renommer les fonctions restantes.
+- Ne pas modifier la logique.
+
+Verification:
+- `pnpm --filter @stock-hub/web typecheck`
+- `git diff --check`
+- Parcours rapide complet de l'application.
+
+Commit:
+`refactor(web): remove obsolete main wrappers`
+
+================================================================================
+
+ETAPE 30 - Extraire les listeners React hors du corps du composant
+
+Dans `apps/web/src/main.tsx`, deplace la logique d'attachement des listeners vers `apps/web/src/app/listeners.ts`.
+
+Fonctions ciblees:
+- logique `onClick`
+- logique `onChange`
+- logique `onInput`
+- logique scroll/resize/popstate
+- cleanup associe
+
+Contraintes:
+- `main.tsx` garde le composant React et appelle une seule fonction:
+  - `setupAppListeners(root, ctx)`
+- Ne change aucun comportement.
+- Ne change aucun listener ni ordre d'enregistrement.
+- Ne change pas `dispatchAction`.
+- Ne change pas les handlers appeles.
+
+Verification:
+- `pnpm --filter @stock-hub/web typecheck`
+- `git diff --check`
+- Tester:
+  - navigation;
+  - changement filtres;
+  - recherche input;
+  - import fichier;
+  - scroll fermeture menu sorties;
+  - F5 / popstate.
+
+Commit:
+`refactor(web): extract app listeners`
+
+================================================================================
+
+ETAPE 31 - Transformer `main.tsx` en bootstrap minimal
+
+Nettoie `main.tsx` apres extraction des contextes, actions et listeners.
+
+Objectif final:
+- `main.tsx` contient uniquement:
+  - imports principaux;
+  - etat global restant;
+  - wrappers indispensables restants;
+  - creation des contextes via modules;
+  - composant `StockHubTemplate`;
+  - `ReactDOM.createRoot`.
+
+Contraintes:
+- Ne pas supprimer un wrapper sans recherche `rg`.
+- Ne pas modifier la logique.
+- Ne pas modifier les routes.
+- Ne pas modifier les `data-action`.
+- Ne pas lancer de formatter global automatique.
+
+Verification:
+- `pnpm --filter @stock-hub/web typecheck`
+- `git diff --check`
+- Demarrer l'app.
+- Parcours complet:
+  - login/logout;
+  - dashboard;
+  - Vue Stock;
+  - Entrees;
+  - Sorties;
+  - Retours/transferts;
+  - Inventaire;
+  - Historique;
+  - Profil;
+  - Referentiels;
+  - Audit;
+  - Users.
+
+Commit:
+`refactor(web): minimize main bootstrap`
