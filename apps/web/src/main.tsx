@@ -91,6 +91,7 @@ import {
   viewSignedEntryProofPage,
   type EntreesStockContext,
 } from "./pages/entrees-stock/render";
+import { createEntreesStockContext } from "./pages/entrees-stock/context";
 import {
   addMaterialRequestLinePage,
   closeFloatingExitActionsPage,
@@ -119,6 +120,7 @@ import {
   visibleExitMovementsPage,
   type SortiesStockContext,
 } from "./pages/sorties-stock/render";
+import { createSortiesStockContext } from "./pages/sorties-stock/context";
 import {
   addReturnLinePage,
   addTransferLinePage,
@@ -139,6 +141,7 @@ import {
   viewSignedTransferProofPage,
   type RetoursTransfertsContext,
 } from "./pages/retours-transferts/render";
+import { createRetoursTransfertsContext } from "./pages/retours-transferts/context";
 import {
   clearHistoryMovementDrawerPage,
   filteredHistoryPage,
@@ -174,6 +177,7 @@ import {
   updateInventoryImportCellPage,
   type InventaireStockContext,
 } from "./pages/inventaire-stock/render";
+import { createInventaireStockContext } from "./pages/inventaire-stock/context";
 import {
   cancelEquipmentEditPage,
   editEquipmentDetailPage,
@@ -187,6 +191,7 @@ import {
   unassignSelectedEquipmentPage,
   type EquipementsContext,
 } from "./pages/equipements/render";
+import { createEquipementsContext } from "./pages/equipements/context";
 import {
   cancelVehicleEditPage,
   changeVehicleDriverPage,
@@ -203,6 +208,7 @@ import {
   toggleVehicleHistoryPage,
   type ParcAutoContext,
 } from "./pages/parc-auto/render";
+import { createParcAutoContext } from "./pages/parc-auto/context";
 import {
   cancelReferentialEditPage,
   deactivateReferentialDetailPage,
@@ -226,6 +232,7 @@ import {
   updateReferentialFormPage,
   type ReferentielsContext,
 } from "./pages/referentiels/render";
+import { createReferentielsContext } from "./pages/referentiels/context";
 import {
   clearVueStockDrawerState,
   downloadStockExcel as downloadVueStockExcel,
@@ -270,6 +277,7 @@ import {
   togglePasswordPage,
   type LoginContext,
 } from "./pages/login/render";
+import { createLoginContext } from "./pages/login/context";
 import {
   profileRoleBadgePage,
   submitPasswordChangePage,
@@ -278,6 +286,7 @@ import {
   updateProfileViewPage,
   type ProfilContext,
 } from "./pages/profil/render";
+import { createProfilContext } from "./pages/profil/context";
 import {
   canAccessView as canAccessViewForUser,
   canPrepareMaterialRequests as canPrepareMaterialRequestsForUser,
@@ -517,7 +526,7 @@ let pendingRouteAfterLogin = DEFAULT_ROUTE;
 
 // ---- Context builders ----
 function loginContext(): LoginContext {
-  return {
+  return createLoginContext({
     loginUser,
     getCurrentUser: () => currentUser,
     setCurrentUser: (user) => {
@@ -534,7 +543,7 @@ function loginContext(): LoginContext {
     viewForRoute,
     writeLoginRoute,
     DEFAULT_ROUTE,
-  };
+  });
 }
 
 function pwaContext(): PwaContext {
@@ -542,7 +551,7 @@ function pwaContext(): PwaContext {
 }
 
 function profilContext(): ProfilContext {
-  return {
+  return createProfilContext({
     currentUser,
     latestUsers,
     setCurrentUser: (user) => {
@@ -565,7 +574,7 @@ function profilContext(): ProfilContext {
     renderUsersList,
     updateMyProfile,
     changeMyPassword,
-  };
+  });
 }
 
 function viewActionsContext(): ViewActionsContext {
@@ -960,7 +969,7 @@ function auditAlertesContext(): AuditAlertesContext {
 }
 
 function referentielsContext(): ReferentielsContext {
-  return {
+  return createReferentielsContext({
     latestStockLevels,
     setLatestStockLevels: (levels) => {
       latestStockLevels = levels;
@@ -1031,11 +1040,11 @@ function referentielsContext(): ReferentielsContext {
     updateLocation,
     updateProject,
     updateTeamService,
-  };
+  });
 }
 
 function entreesStockContext(): EntreesStockContext {
-  return {
+  return createEntreesStockContext({
     latestMovements,
     setLatestMovements: (movements) => {
       latestMovements = movements;
@@ -1079,11 +1088,11 @@ function entreesStockContext(): EntreesStockContext {
     resolveStockEntryDispute,
     uploadEntryProof,
     getEntryProof,
-  };
+  });
 }
 
 function sortiesStockContext(): SortiesStockContext {
-  return {
+  return createSortiesStockContext({
     latestMovements,
     setLatestMovements: (movements) => {
       latestMovements = movements;
@@ -1143,11 +1152,11 @@ function sortiesStockContext(): SortiesStockContext {
     rejectExitRequest,
     uploadExitRequestProof,
     getExitRequestProof,
-  };
+  });
 }
 
 function retoursTransfertsContext(): RetoursTransfertsContext {
-  return {
+  return createRetoursTransfertsContext({
     latestMovements,
     setLatestMovements: (movements) => {
       latestMovements = movements;
@@ -1186,7 +1195,7 @@ function retoursTransfertsContext(): RetoursTransfertsContext {
     uploadTransferProof,
     getReturnProof,
     getTransferProof,
-  };
+  });
 }
 
 function historiqueContext(): HistoriqueContext {
@@ -1218,7 +1227,7 @@ function historiqueContext(): HistoriqueContext {
 }
 
 function equipementsContext(): EquipementsContext {
-  return {
+  return createEquipementsContext({
     latestEquipments,
     setLatestEquipments: (equipments) => {
       latestEquipments = equipments;
@@ -1252,11 +1261,11 @@ function equipementsContext(): EquipementsContext {
     createEquipment,
     updateEquipment,
     unassignEquipment,
-  };
+  });
 }
 
 function parcAutoContext(): ParcAutoContext {
-  return {
+  return createParcAutoContext({
     latestVehicles,
     setLatestVehicles: (vehicles) => {
       latestVehicles = vehicles;
@@ -1270,7 +1279,7 @@ function parcAutoContext(): ParcAutoContext {
     updateApiBackedViews,
     createVehicle,
     updateVehicle,
-  };
+  });
 }
 
 function utilisateursRolesContext(): UtilisateursRolesContext {
@@ -1317,7 +1326,7 @@ function vueStockContext(): VueStockContext {
 }
 
 function inventaireStockContext(): InventaireStockContext {
-  return {
+  return createInventaireStockContext({
     latestArticles,
     latestLocations,
     latestStockLevels,
@@ -1356,7 +1365,7 @@ function inventaireStockContext(): InventaireStockContext {
     hubLogoMarkup,
     movementTypeBadge,
     updateApiBackedViews,
-  };
+  });
 }
 
 // ---- Stock, drawers and reappro wrappers ----
