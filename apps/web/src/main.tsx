@@ -3,6 +3,15 @@ import ReactDOM from "react-dom/client";
 import { StockHubShell } from "./components/StockHubShell";
 import { parseAction } from "./app/actions";
 import {
+  createDataRefreshContext,
+  createDispatchContext,
+  createExportDatasetsContext,
+  createModalControllerContext,
+  createPwaContext,
+  createShellControllerContext,
+  createViewActionsContext,
+} from "./app/context-builders";
+import {
   closeModalPage,
   openModalPage,
   prepareTemplateActionsPage,
@@ -523,7 +532,7 @@ function loginContext(): LoginContext {
 }
 
 function pwaContext(): PwaContext {
-  return { showToast };
+  return createPwaContext({ showToast });
 }
 
 function profilContext(): ProfilContext {
@@ -554,14 +563,14 @@ function profilContext(): ProfilContext {
 }
 
 function viewActionsContext(): ViewActionsContext {
-  return {
+  return createViewActionsContext({
     currentUser,
     hasRole,
-  };
+  });
 }
 
 function modalControllerContext(): ModalControllerContext {
-  return {
+  return createModalControllerContext({
     prepareStockExportModal,
     prepareInventoryExportModal,
     resetReferentialImport: (root) =>
@@ -576,11 +585,11 @@ function modalControllerContext(): ModalControllerContext {
     populateReturnTransferModals,
     populateEquipmentModal,
     populateEquipmentCreateModal,
-  };
+  });
 }
 
 function dataRefreshContext(): DataRefreshContext {
-  return {
+  return createDataRefreshContext({
     getArticles,
     getSuppliers,
     getClients,
@@ -663,11 +672,11 @@ function dataRefreshContext(): DataRefreshContext {
     setText,
     isToday,
     createIcons: () => window.lucide?.createIcons(),
-  };
+  });
 }
 
 function exportDatasetsContext(): ExportDatasetsContext {
-  return {
+  return createExportDatasetsContext({
     latestStockLevels,
     latestAuditLogs,
     latestMovements,
@@ -687,11 +696,11 @@ function exportDatasetsContext(): ExportDatasetsContext {
     exportDateValue,
     exportWorkbook,
     showToast,
-  };
+  });
 }
 
 function shellControllerContext(): ShellControllerContext {
-  return {
+  return createShellControllerContext({
     getCurrentUser: () => currentUser,
     setCurrentUser: (user) => {
       currentUser = user;
@@ -725,11 +734,11 @@ function shellControllerContext(): ShellControllerContext {
     rolePriority,
     canAccessView,
     viewActionsContext,
-  };
+  });
 }
 
 function dispatchContext(): DispatchActionContext {
-  return {
+  return createDispatchContext({
     toggleFloatingExitActions,
     closeFloatingExitActions,
     installPwa: (root) => installPwa(root, pwaContext()),
@@ -876,7 +885,7 @@ function dispatchContext(): DispatchActionContext {
       showInventoryMode(root, "local");
       renderInventory(root);
     },
-  };
+  });
 }
 
 // ---- Shell UI ----
